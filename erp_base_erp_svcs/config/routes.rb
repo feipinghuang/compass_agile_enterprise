@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       resources :note_types
       resources :categories
       resources :contact_purposes
+      resources :geo_zones
     end
   end
 
