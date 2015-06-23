@@ -20,4 +20,19 @@ class ChargeLine < ActiveRecord::Base
   belongs_to :money, :dependent => :destroy
   belongs_to :charge_type
 
+  has_many :sales_tax_lines, as: :taxed_record, dependent: :destroy
+
+  # calculates tax and save to sales_tax
+  def calculate_tax(ctx={})
+    taxation = ErpOrders::Taxation.new
+
+    self.sales_tax = taxation.calculate_tax(self,
+                                            ctx.merge({
+                                                          amount: money.amount
+                                                      }))
+
+    self.save
+    self.sales_tax
+  end
+
 end

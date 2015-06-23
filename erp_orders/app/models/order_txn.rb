@@ -41,6 +41,7 @@ class OrderTxn < ActiveRecord::Base
   acts_as_biz_txn_event
   has_tracked_status
 
+
   belongs_to :order_txn_record, :polymorphic => true
   has_many :order_line_items, :dependent => :destroy
   has_many :charge_lines, :as => :charged_item, :dependent => :destroy
@@ -89,13 +90,13 @@ class OrderTxn < ActiveRecord::Base
   # There may be multiple Monies associated with an order, such as points and
   # dollars. To handle this, the method should return an array of Monies
   # if a currency is passed in return the amount for only that currency
-  def total_amount(currency=nil)
+  def total_amount(currency=Currency.usd)
     if currency and currency.is_a?(String)
       currency = Currency.send(currency)
     end
 
 
-    charges = {}
+    charges = {"USD" => {amount: 0}}
     # get any charges directly on this order_txn or on order_line_items
     charge_lines.each do |charge|
       charge_money = charge.money
@@ -113,10 +114,10 @@ class OrderTxn < ActiveRecord::Base
     end
 
     # TODO currency will eventually need to be accounted for here.
-    line_items.each do |order_line_item|
-      charges["USD"] ||= {amount: 0}
-      charges["USD"][:amount] += order_line_item.total_amount["USD"][:amount]
-    end
+    charges["USD"][:amount] += line_items.sum(&:total_amount).round(2)
+
+    # add tax
+    charges["USD"][:amount] += (self.sales_tax.nil? ? 0 : self.sales_tax)
 
     if charges.empty?
       0
@@ -125,11 +126,15 @@ class OrderTxn < ActiveRecord::Base
       # if there is only one currency then return that amount
       # if there is more than once currency return the hash
       if currency
-        charges[currency.internal_identifier][:amount]
+        charges[currency.internal_identifier][:amount].round(2)
       else
         charges
       end
     end
+  end
+
+  def sub_total(currency=Currency.usd)
+    line_items.collect{|item| item.total_amount(currency)}.inject(:+)
   end
 
   # gets the total amount of payments made against this order via charge line payments
@@ -168,8 +173,24 @@ class OrderTxn < ActiveRecord::Base
     order_line_items.pluck(:quantity).inject(:+)
   end
 
-  def submit
-    #Template Method
+  # calculates tax for each line item and save to sales_tax
+  def calculate_tax(ctx)
+    tax = 0
+    order_line_items.select{|line_item| line_item.taxable?}.each do |line_item|
+      tax += line_item.calculate_tax(ctx)
+    end
+
+    # only get charges that are USD currency
+    charge_lines.joins(:money)
+        .where('money.currency_id' => Currency.usd)
+        .where(taxable: true).readonly(false).each do |charge_line|
+      tax += charge_line.calculate_tax(ctx)
+    end
+
+    self.sales_tax = tax
+    self.save
+
+    tax
   end
 
   #add product_type or product_instance line item

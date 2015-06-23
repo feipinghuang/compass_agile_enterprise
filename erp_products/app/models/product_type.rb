@@ -6,25 +6,27 @@
 #   #which is implemented using a standard relationship structure.
 #   #
 #   #This is to allow quick construction of highly nested product types.
-#   t.column  	:parent_id,    :integer
-#   t.column  	:lft,          :integer
-#   t.column  	:rgt,          :integer
+#   t.column  	:parent_id,              :integer
+#   t.column  	:lft,                    :integer
+#   t.column  	:rgt,                    :integer
 #
 #   #custom columns go here
-#   t.column  :description,                 :string
-#   t.column  :product_type_record_id,      :integer
-#   t.column  :product_type_record_type,    :string
-#   t.column 	:external_identifier, 	      :string
-#   t.column  :internal_identifier,         :string
-#   t.column 	:external_id_source, 	        :string
-#   t.column  :default_image_url,           :string
-#   t.column  :list_view_image_id,          :integer
-#   t.column  :product_types, :length,      :decimal
-#   t.column  :product_types, :width,       :decimal
-#   t.column  :product_types, :height,      :decimal
-#   t.column  :product_types, :weight,      :decimal
-#   t.column  :product_types, :cylindrical, :boolean
-#   remove_column :product_types, :shipping_cost#
+#   t.column  :description,              :string
+#   t.column  :product_type_record_id,   :integer
+#   t.column  :product_type_record_type, :string
+#   t.column 	:external_identifier, 	   :string
+#   t.column  :internal_identifier,      :string
+#   t.column 	:external_id_source, 	     :string
+#   t.column  :default_image_url,        :string
+#   t.column  :list_view_image_id,       :integer
+#   t.column  :length,                   :decimal
+#   t.column  :width,                    :decimal
+#   t.column  :height,                   :decimal
+#   t.column  :weight,                   :decimal
+#   t.column  :cylindrical,              :boolean
+#   t.column  :taxable                   :boolean
+#   t.column  :available_on_web          :boolean
+#
 #   t.timestamps
 # end
 
@@ -48,6 +50,10 @@ class ProductType < ActiveRecord::Base
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
+
+  def taxable?
+    self.taxable
+  end
 
   def prod_type_relns_to
     ProdTypeReln.where('prod_type_id_to = ?', id)

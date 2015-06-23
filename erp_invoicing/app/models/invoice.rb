@@ -63,6 +63,17 @@ class Invoice < ActiveRecord::Base
     # message - Message to display on Invoice
     # invoice_date - Date of Invoice
     # due_date - Due date of Invoice
+    # taxation - context for taxation
+    #   {
+    #     is_online_sale: true,
+    #         origin_address: {
+    #         state: "FL"
+    #     },
+    #         destination_address: {
+    #         state: "FL"
+    #     }
+    #   }
+    #
     def generate_from_order(order_txn, options={})
       ActiveRecord::Base.connection.transaction do
         invoice = Invoice.new
@@ -72,6 +83,7 @@ class Invoice < ActiveRecord::Base
         invoice.description = "Invoice for #{order_txn.order_number.to_s}"
         invoice.message = options[:message]
         invoice.invoice_date = options[:invoice_date]
+        invoice.due_date = options[:due_date]
         invoice.due_date = options[:due_date]
 
         invoice.save
@@ -88,12 +100,15 @@ class Invoice < ActiveRecord::Base
         order_txn.order_line_items.each do |line_item|
           invoice_item = InvoiceItem.new
 
-          invoice_item.item_description = line_item.product_type.description
           invoice_item.invoice = invoice
+
           charged_item = line_item.product_instance || line_item.product_offer ||line_item.product_type
+
+          invoice_item.item_description = charged_item.description
           invoice_item.quantity = line_item.quantity
           invoice_item.unit_price = line_item.sold_price
           invoice_item.amount = (line_item.quantity * line_item.sold_price)
+          invoice_item.taxable = charged_item.taxable?
           invoice_item.add_invoiced_record(charged_item)
 
           invoice_item.save
@@ -112,14 +127,17 @@ class Invoice < ActiveRecord::Base
             invoice_item.quantity = charged_item.quantity
             invoice_item.unit_price = charged_item.sold_price
             invoice_item.amount = charged_item.sold_amount
+            invoice_item.taxable = charged_item.taxable?
             invoice_item.add_invoiced_record(charged_item.line_item_record)
           elsif charged_item.is_a?(OrderTxn)
             invoice_item.quantity = 1
             invoice_item.unit_price = charge_line.money.amount
             invoice_item.amount = charge_line.money.amount
+            invoice_item.taxable = charge_line.taxable?
             invoice_item.add_invoiced_record(charge_line)
           end
-          invoice_item.save
+
+          invoice_item.save!
         end
 
         # handles shipping charge lines, one invoice item created from all iterations
@@ -127,6 +145,7 @@ class Invoice < ActiveRecord::Base
         if shipping_charges.length > 0
           shipping_invoice_item = InvoiceItem.new
           shipping_charges.each do |charge_line|
+            shipping_invoice_item.taxable = true
             shipping_invoice_item.item_description = charge_line.description
             shipping_invoice_item.invoice = invoice
             shipping_invoice_item.quantity = 1
@@ -138,6 +157,9 @@ class Invoice < ActiveRecord::Base
         end
 
         invoice.generated_by = order_txn
+
+        # calculate taxes
+        invoice.calculate_tax(options[:taxation])
 
         invoice
       end
@@ -244,16 +266,17 @@ class Invoice < ActiveRecord::Base
     self.get_payment_applications(:successful).sum { |item| item.money.amount }
   end
 
-  def total_tax
-    total = 0
-
-    items.each do |item|
-      if item.taxable?
-        total += item.sales_tax
-      end
+  # calculates tax for each line item and save to sales_tax
+  def calculate_tax(ctx={})
+    tax = 0
+    invoice_items.where(taxable: true).each do |line_item|
+      tax += line_item.calculate_tax(ctx)
     end
 
-    total.round(2)
+    self.sales_tax = tax
+    self.save
+
+    tax
   end
 
   def calculate_balance
