@@ -52,7 +52,9 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addHostOptions = function (self, ite
                                                 }
                                             },
                                             failure: function (form, action) {
-                                                Ext.Msg.alert("Error", "Error updating Host");
+                                                var obj = Ext.decode(action.response.responseText);
+                                                var message = obj.message.indexOf('Host') == 0 ? obj.message : "Error Updating Host"
+                                                Ext.Msg.alert("Error", message);
                                             }
                                         });
                                     }
