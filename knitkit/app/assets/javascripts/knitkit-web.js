@@ -10,12 +10,13 @@
 // WARNING: THE FIRST BLANK LINE MARKS THE END OF WHAT'S TO BE PROCESSED, ANY BLANK LINE SHOULD
 // GO AFTER THE REQUIRES BELOW.
 //
-//= require ./knitkit/bootstrap.min.js
-//= require ./knitkit/jquery.maskedinput.min.js
-//= require ./knitkit/confirm-bootstrap.js
-//= require ./knitkit/inline_editing.js
-//= require ./knitkit/jquery.validate.min.js
-//= require ./knitkit/additional-methods.min.js
+//= require ./knitkit/bootstrap.min
+//= require ./knitkit/jquery.maskedinput.min
+//= require ./knitkit/confirm-bootstrap
+//= require ./knitkit/inline_editing
+//= require ./knitkit/jquery.validate.min
+//= require ./knitkit/additional-methods.min
 //= require moment
 //= require bootstrap-datetimepicker
+
 
