@@ -14,6 +14,8 @@
 #   t.integer     :quantity
 #   t.integer     :unit_of_measurement_id
 #   t.decimal     :unit_price, :precision => 8, :scale => 2
+#   t.boolean     :taxable
+#   t.decimal     :sales_tax, :precision => 8, :scale => 2
 #
 #   t.timestamps
 # end
@@ -47,6 +49,10 @@ class OrderLineItem < ActiveRecord::Base
 
   def taxable?
     line_item_record.taxable?
+  end
+
+  def taxed?
+    self.taxed
   end
 
   # helper method to get dba_organization related to this order_line_item
@@ -113,9 +119,9 @@ class OrderLineItem < ActiveRecord::Base
                                            }))
 
     # only get charges that are USD currency
-    charge_lines.joins(:money)
+    charge_lines.joins(:money).joins(:charge_type)
         .where('money.currency_id' => Currency.usd)
-        .where(:taxable => true).readonly(false).each do |charge_line|
+        .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
       tax += charge_line.calculate_tax(ctx)
     end
 

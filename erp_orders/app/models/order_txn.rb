@@ -134,7 +134,7 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def sub_total(currency=Currency.usd)
-    line_items.collect{|item| item.total_amount(currency)}.inject(:+)
+    line_items.collect { |item| item.total_amount(currency) }.inject(:+)
   end
 
   # gets the total amount of payments made against this order via charge line payments
@@ -176,14 +176,14 @@ class OrderTxn < ActiveRecord::Base
   # calculates tax for each line item and save to sales_tax
   def calculate_tax(ctx)
     tax = 0
-    order_line_items.select{|line_item| line_item.taxable?}.each do |line_item|
+    order_line_items.select { |line_item| line_item.taxable? }.each do |line_item|
       tax += line_item.calculate_tax(ctx)
     end
 
     # only get charges that are USD currency
-    charge_lines.joins(:money)
+    charge_lines.joins(:money).joins(:charge_type)
         .where('money.currency_id' => Currency.usd)
-        .where(taxable: true).readonly(false).each do |charge_line|
+        .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
       tax += charge_line.calculate_tax(ctx)
     end
 

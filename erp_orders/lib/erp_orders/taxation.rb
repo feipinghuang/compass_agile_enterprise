@@ -21,20 +21,26 @@ module ErpOrders
       # determine taxes else taxes are 0
       if ctx[:origin_address][:state] == ctx[:destination_address][:state]
         taxes = (tax_service[:state_tax_rate] * ctx[:amount]).round(2)
+        taxed_record.taxed = true
+        taxed_record.sales_tax = taxes
+        taxed_record.save!
+
+        # create a tax line to record the tax rate
+        if taxed_record.sales_tax_lines.empty?
+          sales_tax_line = SalesTaxLine.new
+          sales_tax_line.taxed_record = taxed_record
+        else
+          sales_tax_line = taxed_record.sales_tax_lines.first
+        end
+
+        sales_tax_line.rate = tax_service[:state_tax_rate]
+        sales_tax_line.save!
       else
         taxes = 0
+        taxed_record.taxed = false
+        taxed_record.sales_tax = taxes
+        taxed_record.save
       end
-
-      # create a tax line to record the tax rate
-      if taxed_record.sales_tax_lines.empty?
-        sales_tax_line = SalesTaxLine.new
-        sales_tax_line.taxed_record = taxed_record
-      else
-        sales_tax_line = taxed_record.sales_tax_lines.first
-      end
-
-      sales_tax_line.rate = tax_service[:state_tax_rate]
-      sales_tax_line.save
 
       taxes
     end

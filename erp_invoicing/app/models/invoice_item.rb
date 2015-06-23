@@ -32,13 +32,13 @@ class InvoiceItem < ActiveRecord::Base
 
   has_payment_applications
 
-  def taxable?
-    self.taxable
+  def taxed?
+    self.taxed
   end
 
   def total_amount
-    if taxable?
-      (sub_total + self.sales_tax).round(2)
+    if taxed?
+      (sub_total + (self.sales_tax || 0)).round(2)
     else
       sub_total
     end
@@ -62,15 +62,10 @@ class InvoiceItem < ActiveRecord::Base
   def calculate_tax(ctx={})
     taxation = ErpOrders::Taxation.new
 
-    tax = taxation.calculate_tax(self,
-                                 ctx.merge({
-                                               amount: (self.unit_price * (self.quantity || 1))
-                                           }))
-
-    self.sales_tax = tax
-    self.save
-
-    tax
+    taxation.calculate_tax(self,
+                           ctx.merge({
+                                         amount: (self.unit_price * (self.quantity || 1))
+                                     }))
   end
 
   def add_invoiced_record(record)

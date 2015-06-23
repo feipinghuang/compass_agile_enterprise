@@ -22,6 +22,10 @@ class ChargeLine < ActiveRecord::Base
 
   has_many :sales_tax_lines, as: :taxed_record, dependent: :destroy
 
+  def taxed?
+    self.taxed
+  end
+
   # calculates tax and save to sales_tax
   def calculate_tax(ctx={})
     taxation = ErpOrders::Taxation.new
@@ -30,9 +34,6 @@ class ChargeLine < ActiveRecord::Base
                                             ctx.merge({
                                                           amount: money.amount
                                                       }))
-
-    self.save
-    self.sales_tax
   end
 
 end
