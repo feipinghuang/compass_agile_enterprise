@@ -13,8 +13,9 @@ class UserMailer < ActionMailer::Base
 
   def reset_password_email(user)
     @user = user
+    @reset_password_token = @user.reset_password_token
 
-    @url  = "#{get_domain(user.instance_attributes[:domain])}#{@user.instance_attributes[:login_url]}"
+    @url  = "#{get_domain(user.instance_attributes[:domain])}#{@user.instance_attributes[:reset_password_url]}?token=#{@reset_password_token}"
     mail(:to => user.email, :subject => "Your password has been reset")
   end
 

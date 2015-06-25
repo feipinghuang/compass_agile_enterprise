@@ -14,6 +14,8 @@
 #   t.integer     :quantity
 #   t.integer     :unit_of_measurement_id
 #   t.decimal     :unit_price, :precision => 8, :scale => 2
+#   t.boolean     :taxable
+#   t.decimal     :sales_tax, :precision => 8, :scale => 2
 #
 #   t.timestamps
 # end
@@ -38,11 +40,20 @@ class OrderLineItem < ActiveRecord::Base
 
   has_many :order_line_item_pty_roles, :dependent => :destroy
   has_many :role_types, :through => :order_line_item_pty_roles
+  has_many :sales_tax_lines, as: :taxed_record, dependent: :destroy
 
   ## Allow for polymorphic subtypes of this class
   belongs_to :order_line_record, :polymorphic => true
 
   before_destroy :destroy_order_line_item_relationships
+
+  def taxable?
+    line_item_record.taxable?
+  end
+
+  def taxed?
+    self.taxed
+  end
 
   # helper method to get dba_organization related to this order_line_item
   def dba_organization
@@ -58,7 +69,7 @@ class OrderLineItem < ActiveRecord::Base
   # There may be multiple Monies assocated with an order, such as points and
   # dollars. To handle this, the method should return an array of Monies
   # if a currency is passed in return the amount for only that currency
-  def total_amount(currency=nil)
+  def total_amount(currency=Currency.usd)
     if currency and currency.is_a?(String)
       currency = Currency.send(currency)
     end
@@ -92,10 +103,32 @@ class OrderLineItem < ActiveRecord::Base
     # if there is only one currency then return that amount
     # if there is more than once currency return the hash
     if currency
-      charges[currency.internal_identifier][:amount]
+      charges[currency.internal_identifier][:amount].round(2)
     elsif charges.keys.count == 1
       charges
     end
+  end
+
+  # calculates tax and save to sales_tax
+  def calculate_tax(ctx={})
+    taxation = ErpOrders::Taxation.new
+
+    tax = taxation.calculate_tax(self,
+                                 ctx.merge({
+                                               amount: (self.sold_price * (self.quantity || 1))
+                                           }))
+
+    # only get charges that are USD currency
+    charge_lines.joins(:money).joins(:charge_type)
+        .where('money.currency_id' => Currency.usd)
+        .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
+      tax += charge_line.calculate_tax(ctx)
+    end
+
+    self.sales_tax = tax
+    self.save
+
+    tax
   end
 
   # Alias for to_s

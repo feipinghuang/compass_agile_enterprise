@@ -16,6 +16,8 @@ ErpApp::Engine.routes.draw do
   ##########################
   match '/application/:action' => "application"
   match '/login(/:application)' => "login#index"
+  match '/reset_password' => "login#reset_password"
+  match '/update_password' => "login#update_password"
   match '/public/:action' => "public"
 
   #############################

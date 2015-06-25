@@ -180,7 +180,12 @@ class FileAsset < ActiveRecord::Base
   end
 
   def fully_qualified_url
-    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, data.url)}"
+    case ErpTechSvcs::Config.file_storage
+      when :filesystem
+        "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, data.url)}"
+      when :s3
+        data.url
+    end
   end
 
   def check_name_uniqueness

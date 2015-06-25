@@ -30,25 +30,15 @@ module ErpTechSvcs
 
     def reset_password
       begin
-        login_url = params[:login_url].blank? ? ErpTechSvcs::Config.login_url : params[:login_url]
         login = params[:login].strip
         if user = (User.where('username = ? or email = ?', login, login)).first
 
-          # generate new password with only letters
-          charset = %w{ A C D E F G H J K M N P Q R T V W X Y Z }
-          new_password = (0...8).map{ charset.to_a[rand(charset.size)] }.join
+          user.add_instance_attribute(:reset_password_url, params[:reset_password_url])
+          user.add_instance_attribute(:domain, params[:domain])
+          user.deliver_reset_password_instructions!
+          message = "Password has been reset. An email has been sent with further instructions to #{user.email}."
+          success = true
 
-          user.password_confirmation = new_password
-          if user.change_password!(new_password)
-            user.add_instance_attribute(:login_url, login_url)
-            user.add_instance_attribute(:domain, params[:domain])
-            user.deliver_reset_password_instructions!
-            message = "Password has been reset.  An email has been sent with further instructions to #{user.email}."
-            success = true
-          else
-            message = "Error re-setting password."
-            success = false
-          end
         else
           message = "Invalid user name or email address."
           success = false

@@ -138,6 +138,12 @@ module Knitkit
                 first_publication.published_by = current_user
                 first_publication.save
 
+                website_host = WebsiteHost.find_by_host(params[:host])
+                if website_host
+                  website_name = website_host.website.name
+                  raise "Host #{website_host.host} already used by #{website_name}"
+                end
+
                 website.hosts << WebsiteHost.create(:host => params[:host])
                 website.configurations.first.update_configuration_item(ConfigurationItemType.find_by_internal_identifier('primary_host'), params[:host])
                 website.save

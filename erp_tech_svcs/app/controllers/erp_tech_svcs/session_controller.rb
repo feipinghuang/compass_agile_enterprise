@@ -20,7 +20,7 @@ module ErpTechSvcs
 
     def destroy
       message = "You have logged out."
-      logged_out_user_id = current_user.id unless current_user === false
+      logged_out_user_id = current_user.id if current_user
       logout_to = session[:logout_to]
 
       logout

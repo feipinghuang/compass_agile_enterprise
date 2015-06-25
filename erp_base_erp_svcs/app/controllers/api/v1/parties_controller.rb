@@ -28,6 +28,35 @@ module Api
         render :json => {party: party.to_data_hash}
       end
 
+      def update_roles
+        ActiveRecord::Base.transaction do
+          begin
+            party = Party.find(params[:id])
+            role_type_iids = params[:role_type_iids].split(',')
+
+            # remove current party roles
+            party.party_roles.destroy_all
+
+            # assign new roles
+            role_type_iids.each do |role_type_iid|
+              role_type = RoleType.iid(role_type_iid)
+
+              PartyRole.create(party: party, role_type: role_type)
+            end
+
+            # add a new relationship to the root dba_org with this role type
+
+            render :json => {success: true}
+
+          rescue Exception => ex
+            Rails.logger.error(e.message)
+            Rails.logger.error(e.backtrace.join("\n"))
+
+            render :json => {success: false}
+          end # begin
+        end # transaction
+      end
+
     end # PartiesController
   end # V1
 end # Api

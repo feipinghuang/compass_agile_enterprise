@@ -23,6 +23,10 @@ class ProductOffer < ActiveRecord::Base
     if self.product_offer_record && !self.product_offer_record.frozen?
       self.product_offer_record.destroy
     end 
-  end	
+  end
+
+  def taxable?
+    self.product_offer_record.taxable?
+  end
   
 end

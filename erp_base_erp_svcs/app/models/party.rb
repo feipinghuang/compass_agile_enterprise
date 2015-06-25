@@ -15,6 +15,25 @@ class Party < ActiveRecord::Base
   attr_reader :relationships
   attr_writer :create_relationship
 
+  class << self
+    def find_by_email(email, contact_purpose=nil)
+      if contact_purpose
+        self.joins(:contacts => [:contact_purposes])
+            .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
+                and contacts.contact_mechanism_type = 'EmailAddress'")
+            .where('contact_mechanism_type = ?', 'EmailAddress')
+            .where('contact_purposes.internal_identifier = ?', contact_purpose)
+            .where('email_address = ?', email).readonly(false).first
+      else
+        self.joins(:contacts)
+            .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
+                and contacts.contact_mechanism_type = 'EmailAddress'")
+            .where('contact_mechanism_type = ?', 'EmailAddress')
+            .where('email_address = ?', email).readonly(false).first
+      end
+    end
+  end
+
   # helper method to get dba_organization related to this party
   def dba_organization
     find_related_parties_with_role('dba_org').first
@@ -178,23 +197,6 @@ class Party < ActiveRecord::Base
   #************************************************************************************************
   #** Contact Methods
   #************************************************************************************************
-
-  def self.find_by_email(email, contact_purpose=nil)
-    if contact_purpose
-      self.joins(:contacts => [:contact_purposes])
-          .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
-                and contacts.contact_mechanism_type = 'EmailAddress'")
-          .where('contact_mechanism_type = ?', 'EmailAddress')
-          .where('contact_purposes.internal_identifier = ?', contact_purpose)
-          .where('email_address = ?', email).readonly(false).first
-    else
-      self.joins(:contacts)
-          .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
-                and contacts.contact_mechanism_type = 'EmailAddress'")
-          .where('contact_mechanism_type = ?', 'EmailAddress')
-          .where('email_address = ?', email).readonly(false).first
-    end
-  end
 
   # check if party has contact with purpose
   def has_contact?(contact_mechanism_klass, contact_purpose)

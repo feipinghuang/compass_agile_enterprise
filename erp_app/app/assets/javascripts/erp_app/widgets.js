@@ -21,15 +21,14 @@ Compass.ErpApp.Widgets = {
             authenticity_token: Compass.ErpApp.AuthentictyToken
         };
 
-        jQuery.ajax({
+        $.ajax({
             url: '/erp_app/widgets/' + name + '/' + action + '/' + uuid,
             type: 'GET',
             data: widgetParams,
             success:function(data, textStatus, xhr){
-                var widgetDiv = jQuery('#' + uuid);
+                var $widgetDiv = $('#' + uuid);
 
-                widgetDiv.innerHTML = data.html;
-                Compass.ErpApp.Utility.evaluateScriptTags(widgetDiv[0]);
+                $widgetDiv.html(data.html);
                 Compass.ErpApp.JQuerySupport.setupHtmlReplace();
                 if (addToLoaded)
                     Compass.ErpApp.Widgets.LoadedWidgets.push({
@@ -46,13 +45,13 @@ Compass.ErpApp.Widgets = {
     },
 
     refreshWidgets: function () {
-        jQuery.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget){
+        $.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget){
             Compass.ErpApp.Widgets.setup(widget.id, widget.name, widget.action, widget.params, false);
         });
     },
 
     refreshWidget: function (name, action) {
-        jQuery.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget){
+        $.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget){
             if (widget.name == name && widget.action == action) {
                 Compass.ErpApp.Widgets.setup(widget.id, widget.name, widget.action, widget.params, false);
             }
@@ -60,23 +59,23 @@ Compass.ErpApp.Widgets = {
     },
 
     setupAjaxNavigation: function (css_class, home_url) {
-        jQuery.address.value('nav?url=' + home_url);
+        $.address.value('nav?url=' + home_url);
 
         var bindCss = 'a.' + css_class;
         var anchor = null;
-        jQuery(bindCss).bind('click', function () {
+        $(bindCss).bind('click', function () {
             anchor = $(this);
             var href = anchor.attr('href');
-            jQuery.address.value('nav?url=' + href + '&key=' + Compass.ErpApp.Utility.randomString(10));
+            $.address.value('nav?url=' + href + '&key=' + Compass.ErpApp.Utility.randomString(10));
             anchor.closest('div.compass_ae-widget').mask("Loading....");
 
             return false;
         });
 
-        jQuery.address.change(function (event) {
+        $.address.change(function (event) {
             try {
                 if (!Ext.isEmpty(event.parameters.url)) {
-                    jQuery.ajax({
+                    $.ajax({
                         url: event.parameters.url,
                         success: Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse
                     });

@@ -3,7 +3,7 @@
     <div class="col-md-6 col-md-offset-3" style="margin: 0 auto;float:none;">
       <h2><%= @website_section.title %></h2>
 
-      <%= render_widget :reset_password, :params => {:login_url => "/login"} %>
+      <%= render_widget :reset_password, :params => {:login_url => "/login", :reset_password_url => '/reset-password'} %>
 
     </div>
   </div>

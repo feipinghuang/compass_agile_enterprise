@@ -233,15 +233,11 @@ Ext.define('Compass.ErpApp.Shared.Crm.UserForm', {
 
         me.userId = userId;
 
-        var myMask = new Ext.LoadMask(me, {msg: "Please wait..."});
-        myMask.show();
-
         // Load user details
         Ext.Ajax.request({
             url: '/erp_app/organizer/crm/users/' + userId,
             method: 'GET',
             success: function (response) {
-                myMask.hide();
                 var responseObj = Ext.JSON.decode(response.responseText);
 
                 if (responseObj.success) {
@@ -299,7 +295,6 @@ Ext.define('Compass.ErpApp.Shared.Crm.UserForm', {
                 }
             },
             failure: function (response) {
-                myMask.hide();
                 Ext.Msg.alert('Error', 'Could not load user details');
             }
         });

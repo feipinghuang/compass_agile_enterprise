@@ -108,6 +108,7 @@ class ErpAppSetup
     )
     admin_user.password = 'password'
     admin_user.password_confirmation = 'password'
+	admin_user.save
     admin_user.party = admin_party
     admin_user.activate!
     admin_user.save

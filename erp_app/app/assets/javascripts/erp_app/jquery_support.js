@@ -20,7 +20,7 @@ if (jQuery) {
     });
 
     Compass.ErpApp.JQuerySupport.setupHtmlReplace = function () {
-        jQuery(document).bind('ajaxSuccess', Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse);
+        jQuery(document).unbind('ajaxSuccess', Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse).bind('ajaxSuccess', Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse);
     };
 
     Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse = function (e, xhr, options, data) {
@@ -38,8 +38,8 @@ if (jQuery) {
             catch (ex) {
                 //messy catch for no update div
             }
-            updateDiv.get(0).innerHTML = data.html;
-            utility.evaluateScriptTags(updateDiv.get(0));
+
+            updateDiv.html(data.html);
         }
     };
 }

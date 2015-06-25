@@ -296,7 +296,9 @@ Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu = function () {
                                                     }
                                                 },
                                                 failure: function (form, action) {
-                                                    Ext.Msg.alert("Error", "Error creating website");
+                                                    var obj = Ext.decode(action.response.responseText);
+                                                    var message = obj.message.indexOf('Host') == 0 ? obj.message : "Error creating website"
+                                                    Ext.Msg.alert("Error", message);
                                                 }
                                             });
                                         }
@@ -1032,7 +1034,9 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem = {
                                     }
                                 },
                                 failure: function (form, action) {
-                                    Ext.Msg.alert("Error", "Error adding Host");
+                                    var obj = Ext.decode(action.response.responseText);
+                                    var message = obj.message.indexOf('Host') == 0 ? obj.message : "Error adding Host"
+                                    Ext.Msg.alert("Error", message);
                                 }
                             });
                         }

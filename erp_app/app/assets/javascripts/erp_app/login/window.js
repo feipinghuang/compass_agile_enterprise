@@ -29,6 +29,9 @@ Ext.define("Compass.ErpApp.Login.Window", {
         if (basicForm.isValid()) {
             basicForm.submit({
                 waitMsg: 'Authenticating User...',
+                params:{
+                    logout_to: '/erp_app/login'
+                },
                 success: function (form, action) {
                     var result = Ext.decode(action.response.responseText);
                     if (result.success) {
@@ -57,7 +60,7 @@ Ext.define("Compass.ErpApp.Login.Window", {
             extForm.submit({
                 url: '/users/reset_password',
                 params:{
-                    loginUrl: '/erp_app/login'
+                    reset_password_url: '/erp_app/reset_password'
                 },
                 waitMsg: 'Resetting Password...',
                 success: function (form, action) {

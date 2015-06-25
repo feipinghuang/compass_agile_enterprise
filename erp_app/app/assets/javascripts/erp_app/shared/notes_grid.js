@@ -56,7 +56,7 @@ Ext.define("Compass.ErpApp.Shared.NotesGrid", {
         return Ext.create('Ext.data.Store', {
             proxy: {
                 type: 'ajax',
-                url: '/erp_app/shared/notes/note_types',
+                url: '/api/v1/note_types',
                 reader: {
                     type: 'json',
                     root: 'note_types'
