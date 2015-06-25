@@ -106,12 +106,12 @@ module ErpTechSvcs
       alias_method_chain :to_json, :leaf
 
       def to_tree_hash(options={})
-        options = options.merge({
-                                    only: [:parent_id, :internal_identifier],
-                                    leaf: self.leaf?,
-                                    text: self.to_label,
-                                    children: self.children.collect { |child| child.to_tree_hash(options) }
-                                })
+        options = {
+            only: [:parent_id, :internal_identifier],
+            leaf: self.leaf?,
+            text: self.to_label,
+            children: self.children.collect { |child| child.to_tree_hash(options) }
+        }.merge(options)
 
         self.to_hash(options)
       end
