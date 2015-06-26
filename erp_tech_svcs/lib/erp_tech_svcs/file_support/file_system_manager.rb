@@ -83,6 +83,12 @@ module ErpTechSvcs
               result = false
             else
               FileUtils.rm_rf(path)
+
+              child_files = FileAsset.where(FileAsset.arel_table[:directory].matches("#{path.gsub(root, '')}%"))
+              child_files.each do |file|
+                file.destroy
+              end
+
               message = "Folder #{name} was deleted #{name} successfully"
               result = true
             end

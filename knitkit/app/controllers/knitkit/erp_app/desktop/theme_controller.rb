@@ -232,7 +232,7 @@ module Knitkit
               current_user.with_capability('view', 'Theme') do
                 begin
                   name = File.basename(path)
-                  result, message, is_folder = @file_support.delete_file(File.join(@file_support.root, path))
+                  result, message, is_folder = @file_support.delete_file(File.join(@file_support.root, path), {force: true})
                   if result && !is_folder
                     theme_file = get_theme_file(path)
                     theme_file.destroy
