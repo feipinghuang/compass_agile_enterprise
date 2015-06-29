@@ -67,6 +67,10 @@ class Website < ActiveRecord::Base
     parents.each { |parent| parent.destroy }
   end
 
+  def dba_organization
+    self.website_party_roles.where(role_type_id: RoleType.iid('dba_org')).first.party
+  end
+
   def publishing?
     self.publishing
   end
