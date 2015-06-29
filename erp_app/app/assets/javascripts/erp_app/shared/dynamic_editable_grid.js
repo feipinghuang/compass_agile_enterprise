@@ -109,9 +109,50 @@ Ext.define("Compass.ErpApp.Shared.DynamicEditableGrid", {
                     ]
                 };
 
+                if (config.searchable){
+                    var searchable_toolbar = [
+                        '-',
+                        'Search',
+                        {
+                            xtype: 'textfield',
+                            emptyText: 'Find',
+                            width: 200,
+                            listeners: {
+                                specialkey: function (field, e) {
+                                    if (e.getKey() == e.ENTER) {
+                                        var button = field.up('toolbar').down('#searchbtn');
+                                        button.fireEvent('click', button);
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            xtype: 'button',
+                            itemId: 'searchbtn',
+                            icon: '/assets/erp_app/organizer/applications/crm/toolbar_find.png',
+                            listeners: {
+                                click: function (button, e, eOpts) {
+                                    var value = this.up().down('textfield').getValue();
+                                    me.store.load({
+                                        params: {
+                                            query_filter: value
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    ]
+
+                }
+                else{
+                    var searchable_toolbar = [];
+                }
+
+                tbar.items = tbar.items.concat(searchable_toolbar);
                 config = Ext.apply({
                     tbar: tbar
                 }, config);
+
             }
         }
 
