@@ -93,6 +93,7 @@ module RailsDbAdmin
           start = params[:start] || 0
           limit = params[:limit] || 30
           table = params[:table]
+          query_filter = params[:query_filter] || ''
 
           order = nil
 
@@ -102,7 +103,7 @@ module RailsDbAdmin
             order = 'created_at desc'
           end
 
-          @json_data_builder.build_json_data(:table => table, :limit => limit, :offset => start, :order => order)
+          @json_data_builder.build_json_data(:table => table, :limit => limit, :offset => start, :order => order, :query_filter => query_filter)
         end
 
         def create_table_row
