@@ -3,9 +3,15 @@ module Api
     class NoteTypesController < BaseController
 
       def index
-        NoteType.include_root_in_json = false
+        if params[:ids]
+          NoteType.include_root_in_json = false
 
-        render json: {note_types: NoteType.all}
+          render json: {note_types: NoteType.where(id: params[:ids].split(',')).all}
+        else
+          NoteType.include_root_in_json = false
+
+          render json: {note_types: NoteType.all}
+        end
       end
 
     end # NoteTypesController
