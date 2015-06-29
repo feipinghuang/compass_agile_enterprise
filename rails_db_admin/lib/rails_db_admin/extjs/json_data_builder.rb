@@ -26,18 +26,6 @@ module RailsDbAdmin
             end
           end
           rows = table_name.where(where_clause)
-          # if options[:limit] && options[:offset] && options[:order]
-          #   rows = rows.order(options[:order]).
-          #     limit(options[:limit]).
-          #     offset(options[:offset].to_i)
-          # elsif options[:limit] && options[:order]
-          #   rows = rows.order(options[:order]).limit(options[:limit])
-          # elsif options[:limit] && !options[:order]
-          #   rows = rows.order(options[:order]).limit(options[:limit])
-          # elsif !options[:limit] && options[:order]
-          #   rows = rows.order(options[:order])
-          # end
-
         else
 
           if options[:limit] && options[:offset] && options[:order]
