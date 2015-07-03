@@ -394,7 +394,11 @@ class Party < ActiveRecord::Base
     contact_mechanism = contact_mechanism_class.new(contact_mechanism_args)
     contact_mechanism.contact.party = self
     contact_purposes.each do |contact_purpose|
-      contact_mechanism.contact.contact_purposes << ContactPurpose.iid(contact_purpose)
+      if contact_purpose.is_a?(String)
+        contact_mechanism.contact.contact_purposes << ContactPurpose.iid(contact_purpose)
+      else
+        contact_mechanism.contact.contact_purposes << contact_purpose
+      end
     end
     contact_mechanism.contact.save
     contact_mechanism.save
