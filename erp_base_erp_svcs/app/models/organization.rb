@@ -14,6 +14,7 @@ class Organization < ActiveRecord::Base
       pty.business_party = self
 
       pty.save
+      self.party = pty
       self.save
     end
   end

@@ -41,6 +41,7 @@ class Individual < ActiveRecord::Base
       pty.description = [current_personal_title, current_first_name, current_last_name].join(' ').strip
       pty.business_party = self
       pty.save
+      self.party = pty
       self.save
     end
   end
