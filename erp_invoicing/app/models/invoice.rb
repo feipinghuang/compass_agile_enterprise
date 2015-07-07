@@ -203,6 +203,10 @@ class Invoice < ActiveRecord::Base
 
   end
 
+  def has_invoice_items?
+    !self.items.empty?
+  end
+
   def has_payments?(status=:all)
     selected_payment_applications = self.get_payment_applications(status)
 
@@ -298,7 +302,11 @@ class Invoice < ActiveRecord::Base
       end
     else
       unless self.balance.nil?
-        (self.balance - self.total_payments).round(2)
+        if has_invoice_items?
+          (self.balance - self.total_payments).round(2)
+        else
+          self.balance.round(2)
+        end
       end
     end
   end
