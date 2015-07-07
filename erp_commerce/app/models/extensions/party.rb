@@ -1,8 +1,8 @@
 Party.class_eval do
 
   #credit cards
-	has_many :credit_card_account_party_roles, :dependent => :destroy
-  
+  has_many :credit_card_account_party_roles, :dependent => :destroy
+
   # return primary credit card
   def primary_credit_card
     return get_credit_card('primary')
@@ -21,12 +21,22 @@ Party.class_eval do
     credit_card
   end
 
+  def credit_cards
+    credit_cards = []
+
+    self.credit_card_account_party_roles.each do |ccapr|
+      credit_cards << ccapr.credit_card
+    end
+
+    credit_cards
+  end
+
   def credit_card_accounts
-     self.accounts.where('biz_txn_acct_type = ?', 'CreditCardAccount').all.collect(&:account)
+    self.accounts.where('biz_txn_acct_type = ?', 'CreditCardAccount').all.collect(&:account)
   end
 
   def bank_accounts
-     self.accounts.where('biz_txn_acct_type = ?', 'BankAccount').all.collect(&:account)
+    self.accounts.where('biz_txn_acct_type = ?', 'BankAccount').all.collect(&:account)
   end
 
   def payment_accounts
@@ -38,12 +48,12 @@ Party.class_eval do
   #displaying in CSR, website, etc.
   def payment_accounts_hash
     cc_results = credit_card_accounts.map do |cca|
-      { id: cca.id,
-        description: cca.credit_card.description,
-        card_type: cca.credit_card.card_type,
-        last_four: nil, #not stored yet
-        exp_dt: "#{cca.credit_card.expiration_month}-#{cca.credit_card.expiration_year}",
-        account_type: 'Credit Card'}
+      {id: cca.id,
+       description: cca.credit_card.description,
+       card_type: cca.credit_card.card_type,
+       last_four: nil, #not stored yet
+       exp_dt: "#{cca.credit_card.expiration_month}-#{cca.credit_card.expiration_year}",
+       account_type: 'Credit Card'}
     end
 
     ba_results = bank_accounts.map do |ba|
