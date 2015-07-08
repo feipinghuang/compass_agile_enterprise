@@ -164,7 +164,7 @@ module ErpBaseErpSvcs
             if args.is_a?(Array)
               status = args[0]
               options = args[1]
-              user_id = args[2]
+              party_id = args[2]
             else
               status = args
             end
@@ -184,7 +184,7 @@ module ErpBaseErpSvcs
               status_application = StatusApplication.new
               status_application.tracked_status_type = tracked_status_type
               status_application.from_date = options[:from_date].nil? ? Time.now : options[:from_date]
-              status_application.user_id = user_id
+              status_application.party_id = party_id
               status_application.save
 
               self.status_applications << status_application
