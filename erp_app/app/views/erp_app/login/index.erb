@@ -1,30 +1,35 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-    <title>Compass AE Login</title>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <title>Compass AE Login</title>
 
-    <%= stylesheet_link_tag('erp_app/shared/compass-ext-all.css','erp_app/login/main.css') %>
+  <%= stylesheet_link_tag('erp_app/shared/compass-ext-all.css', 'erp_app/login/main.css') %>
 
-    <%= include_extjs(:debug => (Rails.env == 'development' or Rails.env == 'shared_dev') ) %>
+  <%= include_extjs(:debug => (Rails.env == 'development' or Rails.env == 'shared_dev')) %>
 
-    <%= javascript_include_tag("erp_app/utility.js","erp_app/login/window.js")%>
+  <%= javascript_include_tag("erp_app/utility.js", "erp_app/login/window.js") %>
 
-    <%= add_authenticity_token_to_extjs%>
+  <%= add_authenticity_token_to_extjs %>
 
-  </head>
-  <body style="background-color:#253241;">
-    <div style="text-align:center;width:100%; padding-top: 4%; margin-bottom: 100px;">
-      <img alt="Compass Agile Enterprise" src="/assets/art/desktop-logo.png" />
-   </div>
-    <script type="text/javascript">
-      Ext.onReady(function(){
-          var appContainers = [['/erp_app/organizer/','CompassAE CSR'], ['/erp_app/desktop/','Admin Console']];
-          var loginWindow = Ext.create('Compass.ErpApp.Login.Window',{appContainers:appContainers, selectedAppContainerValue:'<%= @app_container %>',redirectTo:'/erp_app/desktop/', logoutTo:'/erp_app/login', message:'<%=flash[:notice]%>', authenticity_token:'<%=form_authenticity_token%>'});
-          loginWindow.show();
-      });
-    </script>
+</head>
+<body style="background-color:#253241;">
+<div style="text-align:center;width:100%; padding-top: 4%; margin-bottom: 100px;">
+  <img alt="Compass Agile Enterprise" src="/assets/art/desktop-logo.png"/>
+</div>
+<script type="text/javascript">
+  Ext.onReady(function () {
+    var appContainers = [['/erp_app/organizer/', 'CompassAE CSR'], ['/erp_app/desktop/', 'Admin Console']];
+    Ext.create('Compass.ErpApp.Login.Window',
+        {
+          appContainers: appContainers,
+          selectedAppContainerValue: '<%= @app_container %>',
+          redirectTo: '/erp_app/desktop/',
+          logoutTo: '/erp_app/login',
+          message: '<%=flash[:notice]%>'
+        }).show();
+  });
+</script>
 
-
-  </body>
+</body>
 </html>

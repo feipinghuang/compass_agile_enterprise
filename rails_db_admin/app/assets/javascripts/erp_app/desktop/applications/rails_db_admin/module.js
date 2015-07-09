@@ -31,6 +31,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 setupUrl: '/rails_db_admin/erp_app/desktop/base/setup_table_grid/' + table,
                 dataUrl: '/rails_db_admin/erp_app/desktop/base/table_data/' + table,
                 editable: true,
+                searchable: true,
                 page: true,
                 pageSize: 25,
                 displayMsg: 'Displaying {0} - {1} of {2}',

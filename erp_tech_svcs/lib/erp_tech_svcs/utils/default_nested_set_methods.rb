@@ -5,31 +5,40 @@ module ErpTechSvcs
         base.extend(ClassMethods)
       end
 
-      def to_label
-        description
-      end
-
-      def leaf
-        children.size == 0
-      end
-
-      def to_json_with_leaf(options = {})
-        self.to_json_without_leaf(options.merge(:methods => :leaf))
-      end
-
-      alias_method_chain :to_json, :leaf
-
-      def to_tree_hash(options={})
-        options = options.merge({
-                                    :text => self.to_label,
-                                    :leaf => self.leaf,
-                                    :children => self.children.collect { |child| child.to_tree_hash(options) }
-                                })
-
-        self.to_hash(options)
-      end
-
       module ClassMethods
+        # returns an array of hashes which represent all nodes in nested set order,
+        # each of which consists of the node's id, internal identifier and representation
+        # if a parent is passed it starts there in the tree
+        def to_all_representation(parent=nil, container_arr=[], level=0)
+          if parent
+            parent.children.each do |node|
+              container_arr << {id: node.id,
+                                description: node.to_representation(level),
+                                internal_identifier: node.internal_identifier}
+
+              unless node.leaf?
+                to_all_representation(node, container_arr, (level + 1))
+              end
+
+            end
+          else
+            self.roots.each do |root|
+              root.children.each do |node|
+                container_arr << {id: node.id,
+                                  description: node.to_representation(level),
+                                  internal_identifier: node.internal_identifier}
+
+                unless node.leaf?
+                  to_all_representation(node, container_arr, (level + 1))
+                end
+
+              end
+            end
+          end
+
+          container_arr
+        end
+
         def find_roots
           where("parent_id is null")
         end
@@ -59,8 +68,8 @@ module ErpTechSvcs
           node
         end
 
-        # find existing role type or create it and return it.  Parent can be passed
-        # which will scope this type by the parent
+        # find existing node or create it and return it.  Parent can be passed
+        # which will scope this node by the parent
         def find_or_create(iid, description, parent=nil)
           # look for it
           record = if parent
@@ -80,6 +89,66 @@ module ErpTechSvcs
           record
         end
 
+      end
+
+      def to_label
+        description
+      end
+
+      def leaf
+        children.size == 0
+      end
+
+      def to_json_with_leaf(options = {})
+        self.to_json_without_leaf(options.merge(:methods => :leaf))
+      end
+
+      alias_method_chain :to_json, :leaf
+
+      def to_tree_hash(options={})
+        options = {
+            only: [:parent_id, :internal_identifier],
+            leaf: self.leaf?,
+            text: self.to_label,
+            children: self.children.collect { |child| child.to_tree_hash(options) }
+        }.merge(options)
+
+        self.to_hash(options)
+      end
+
+      def children_to_tree_hash(options={})
+        self.children.collect { |child| child.to_tree_hash(options) }
+      end
+
+      def to_representation(level)
+        # returns a string that consists of 1) a number of dashes equal to
+        # the category's level and 2) the category's description attr
+        rep = ''
+
+        if level > 0
+          level.times { rep << '-' }
+          rep += ' '
+        end
+
+        rep << description
+      end
+
+      def to_record_representation(root = self.class.root)
+        # returns a string of category descriptions like
+        # 'main_category > sub_category n > ... > this category instance'
+        if root?
+          description
+        else
+          crawl_up_from(self, root).split('///').reverse.join(' > ')
+        end
+      end
+
+      private
+
+      def crawl_up_from(node, to_node = self.class.root)
+        # returns a string that is a '///'-separated list of nodes
+        # from child node to root
+        "#{node.description}///#{crawl_up_from(node.parent, to_node) if node != to_node}"
       end
 
     end #DefaultNestedSetMethods

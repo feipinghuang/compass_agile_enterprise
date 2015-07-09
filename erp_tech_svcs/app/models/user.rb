@@ -7,7 +7,11 @@ class User < ActiveRecord::Base
   belongs_to :party
 
   attr_accessible :email, :password, :password_confirmation
+  
   authenticates_with_sorcery!
+  
+  attr_protected :created_at, :updated_at
+  
   has_capability_accessors
 
   #password validations

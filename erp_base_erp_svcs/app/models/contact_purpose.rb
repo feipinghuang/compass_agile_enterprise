@@ -5,4 +5,12 @@ class ContactPurpose < ActiveRecord::Base
   acts_as_erp_type
 
   has_and_belongs_to_many :contacts
+
+  def to_data_hash
+    {
+        id: id,
+        description: description,
+        internal_identifier: internal_identifier
+    }
+  end
 end

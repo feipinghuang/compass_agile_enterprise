@@ -1,6 +1,7 @@
 module Widgets
   module Signup
     class Base < ErpApp::Widgets::Base
+
       def index
         @login_url = params[:login_url]
         @user = User.new
@@ -67,8 +68,6 @@ module Widgets
 
               after_registration
 
-
-
               render :update => {:id => "#{@uuid}_result", :view => :success}
             else
               render :update => {:id => "#{@uuid}_result", :view => :error}
@@ -79,6 +78,10 @@ module Widgets
           logger.error ex.backtrace
           render :update => {:id => "#{@uuid}_result", :view => :error}
         end
+      end
+
+      def after_registration
+        #override in your code to do special registration logic
       end
 
       #should not be modified
@@ -105,13 +108,9 @@ module Widgets
           end
         end
 
-        def after_registration
-          #override in your code to do special registration logic
-        end
-
       end
 
-    end
-  end
-end
+    end # Base
+  end # Signup
+end # Widgets
 

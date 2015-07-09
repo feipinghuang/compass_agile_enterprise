@@ -15,6 +15,25 @@ class Party < ActiveRecord::Base
   attr_reader :relationships
   attr_writer :create_relationship
 
+  class << self
+    def find_by_email(email, contact_purpose=nil)
+      if contact_purpose
+        self.joins(:contacts => [:contact_purposes])
+            .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
+                and contacts.contact_mechanism_type = 'EmailAddress'")
+            .where('contact_mechanism_type = ?', 'EmailAddress')
+            .where('contact_purposes.internal_identifier = ?', contact_purpose)
+            .where('email_address = ?', email).readonly(false).first
+      else
+        self.joins(:contacts)
+            .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
+                and contacts.contact_mechanism_type = 'EmailAddress'")
+            .where('contact_mechanism_type = ?', 'EmailAddress')
+            .where('email_address = ?', email).readonly(false).first
+      end
+    end
+  end
+
   # helper method to get dba_organization related to this party
   def dba_organization
     find_related_parties_with_role('dba_org').first
@@ -25,8 +44,10 @@ class Party < ActiveRecord::Base
         where('party_id_to = ?', id).
         where('role_type_id_to' => RoleType.iid('dba_org')).each do |party_reln|
 
-      dba_orgs.push(party_reln.from_party)
-      party_reln.from_party.child_dba_organizations(dba_orgs)
+      if party_reln.from_party.has_role_type?('dba_org')
+        dba_orgs.push(party_reln.from_party)
+        party_reln.from_party.child_dba_organizations(dba_orgs)
+      end
     end
 
     dba_orgs.uniq
@@ -178,23 +199,6 @@ class Party < ActiveRecord::Base
   #************************************************************************************************
   #** Contact Methods
   #************************************************************************************************
-
-  def self.find_by_email(email, contact_purpose=nil)
-    if contact_purpose
-      self.joins(:contacts => [:contact_purposes])
-          .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
-                and contacts.contact_mechanism_type = 'EmailAddress'")
-          .where('contact_mechanism_type = ?', 'EmailAddress')
-          .where('contact_purposes.internal_identifier = ?', contact_purpose)
-          .where('email_address = ?', email).readonly(false).first
-    else
-      self.joins(:contacts)
-          .joins("INNER JOIN email_addresses on email_addresses.id = contacts.contact_mechanism_id
-                and contacts.contact_mechanism_type = 'EmailAddress'")
-          .where('contact_mechanism_type = ?', 'EmailAddress')
-          .where('email_address = ?', email).readonly(false).first
-    end
-  end
 
   # check if party has contact with purpose
   def has_contact?(contact_mechanism_klass, contact_purpose)
@@ -392,7 +396,11 @@ class Party < ActiveRecord::Base
     contact_mechanism = contact_mechanism_class.new(contact_mechanism_args)
     contact_mechanism.contact.party = self
     contact_purposes.each do |contact_purpose|
-      contact_mechanism.contact.contact_purposes << ContactPurpose.iid(contact_purpose)
+      if contact_purpose.is_a?(String)
+        contact_mechanism.contact.contact_purposes << ContactPurpose.iid(contact_purpose)
+      else
+        contact_mechanism.contact.contact_purposes << contact_purpose
+      end
     end
     contact_mechanism.contact.save
     contact_mechanism.save

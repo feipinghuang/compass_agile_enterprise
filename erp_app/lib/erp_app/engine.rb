@@ -29,6 +29,7 @@ module ErpApp
       Rails.application.config.assets.precompile += %w{ erp_app/authentication/compass_user.js }
       Rails.application.config.assets.precompile += %w{ erp_app/ecommerce/credit_card_window.js }
       Rails.application.config.assets.precompile += %w{ erp_app/login/mobile.js erp_app/login/window.js }
+      Rails.application.config.assets.precompile += %w{ erp_app/login/mobile.js erp_app/login/ResetPassword.js }
       Rails.application.config.assets.precompile += %w{ erp_app/organizer/app.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/app.js }
 

@@ -15,6 +15,7 @@ class Application < ActiveRecord::Base
 
   has_user_preferences
   has_file_assets
+  has_party_roles
 
   has_and_belongs_to_many :users
 
@@ -27,6 +28,14 @@ class Application < ActiveRecord::Base
 
     def apps
       where('type is null')
+    end
+
+    def associated_to_party(party, role_type)
+      entity_party_roles_tbl = EntityPartyRole.arel_table
+
+      joins("left outer join entity_party_roles on entity_party_roles.entity_record_type = 'Application'
+             and entity_party_roles.entity_record_id = applications.id")
+          .where(entity_party_roles_tbl[:party_id].eq(party.id).and(entity_party_roles_tbl[:role_type_id].eq(role_type.id)))
     end
 
     def allows_business_modules

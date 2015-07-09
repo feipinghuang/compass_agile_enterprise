@@ -24,6 +24,30 @@ Ext.override(Ext.ZIndexManager, {
     }
 });
 
+Ext.override(Ext.Msg, {
+    warning: function (title, msg, fn, scope) {
+        Ext.Msg.show({
+            title: title,
+            msg: msg,
+            buttons: Ext.Msg.OK,
+            icon: Ext.Msg.WARNING,
+            fn: fn,
+            scope: scope
+        });
+    },
+
+    error: function (title, msg, fn, scope) {
+        Ext.Msg.show({
+            title: title,
+            msg: msg,
+            buttons: Ext.Msg.OK,
+            icon: Ext.Msg.ERROR,
+            fn: fn,
+            scope: scope
+        })
+    }
+});
+
 Ext.define('Compass.ErpApp.Shared.RowEditingOverride', {
     override: 'Ext.grid.plugin.RowEditing',
     startEdit: function (record, columnHeader) {

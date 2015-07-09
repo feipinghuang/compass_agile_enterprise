@@ -1,3 +1,8 @@
+Version 4.1.3
+- Updated Sorcery Gem to 0.9.1
+- Added APIs
+  - Security Roles
+  - Users
 Version 4.1.2 - 4-01-2015
 - Fixed bug in is_json
 Version 4.1.1 - 3-31-2015

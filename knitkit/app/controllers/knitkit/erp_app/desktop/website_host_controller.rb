@@ -26,6 +26,11 @@ module Knitkit
           begin
             current_user.with_capability('create', 'WebsiteHost') do
               website = Website.find(params[:website_id])
+              existing_website_host = WebsiteHost.find_by_host(params[:host])
+              if existing_website_host
+                website_name = existing_website_host.website.name
+                raise "Host #{existing_website_host.host} already used by #{website_name}"
+              end
               website_host = WebsiteHost.create(:host => params[:host])
               website.hosts << website_host
               website.save
@@ -51,12 +56,19 @@ module Knitkit
           begin
             current_user.with_capability('edit', 'WebsiteHost') do
               website_host = WebsiteHost.find(params[:id])
+              existing_website_host = WebsiteHost.find_by_host(params[:host])
+              if existing_website_host
+                website_name = existing_website_host.website.name
+                raise "Host #{existing_website_host.host} already used by #{website_name}"
+              end
               website_host.host = params[:host]
               website_host.save
 
               render :json => {:success => true}
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
+            render :json => {:success => false, :message => ex.message}
+          rescue => ex
             render :json => {:success => false, :message => ex.message}
           end
         end

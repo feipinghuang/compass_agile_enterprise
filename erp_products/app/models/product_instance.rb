@@ -18,5 +18,9 @@ class ProductInstance < ActiveRecord::Base
   def prod_instance_relns_from
     ProdInstanceReln.where('prod_instance_id_from = ?',id)
   end
+
+  def taxable?
+    self.product_type.taxable?
+  end
   
 end

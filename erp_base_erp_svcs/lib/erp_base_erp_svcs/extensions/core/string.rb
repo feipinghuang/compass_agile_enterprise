@@ -19,9 +19,16 @@ module StringToInternalIdentifier
   end
 end
 
+module IsInteger
+  def is_integer?
+    /\A[-+]?\d+\z/ === self
+  end
+end
+
 class String;
   include StringToBoolean
   include StringToInternalIdentifier
+  include IsInteger
 end
 
 module BooleanToBoolean

@@ -128,6 +128,10 @@
     padding: 5px;
 }
 
+.icon-code{
+    background: url(/assets/icons/code/code_16x16.png) center no-repeat !important;
+}
+
 .icon-document_pulse {
     background-image: url(/assets/icons/document_pulse/document_pulse_16x16.png) !important;
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/document_pulse/document_pulse_16x16.png', sizingMethod='crop');

@@ -53,12 +53,6 @@ module ErpApp
         Note.find(params[:id]).destroy ? (render :json => {:success => true}) : (render :json => {:success => false})
       end
 
-      def note_types
-        NoteType.include_root_in_json = false
-
-        render :json => {:note_types => NoteType.all}
-      end
-
     end # NotesController
   end # Shared
 end # ErpApp

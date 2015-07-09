@@ -36,11 +36,14 @@ class Individual < ActiveRecord::Base
   end
 
   def create_party
-    pty = Party.new
-    pty.description = [current_personal_title, current_first_name, current_last_name].join(' ').strip
-    pty.business_party = self
-    pty.save
-    self.save
+    unless self.party
+      pty = Party.new
+      pty.description = [current_personal_title, current_first_name, current_last_name].join(' ').strip
+      pty.business_party = self
+      pty.save
+      self.party = pty
+      self.save
+    end
   end
 
   def save_party

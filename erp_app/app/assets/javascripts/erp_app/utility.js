@@ -209,13 +209,6 @@ Compass.ErpApp.Utility.disableEnterSubmission = function () {
     });
 };
 
-Compass.ErpApp.Utility.evaluateScriptTags = function (element) {
-    var scriptTags = element.getElementsByTagName("script");
-    for (var i = 0; i < scriptTags.length; i++) {
-        eval(scriptTags[i].text);
-    }
-};
-
 Compass.ErpApp.Utility.promptReload = function () {
     if (window['Ext']) {
         Ext.MessageBox.confirm('Confirm', 'Page must reload for changes to take affect. Reload now?', function (btn) {
@@ -456,8 +449,10 @@ function OnDemandLoadByAjax() {
                 return;
             }
         }
+
         var s = document.createElement("script");
         s.type = "text/javascript";
+        s.async = true;
         s.src = scriptToLoad.url;
         var head = document.getElementsByTagName("head")[0];
         head.appendChild(s);

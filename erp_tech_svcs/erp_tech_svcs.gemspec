@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
   s.add_dependency('delayed_job_active_record','0.3.3')
   s.add_dependency('paperclip','3.3.1')
   s.add_dependency('pdfkit','0.5.2')
-  s.add_dependency('sorcery','0.7.13')
+  s.add_dependency('sorcery','0.9.1')
   s.add_dependency('mail_alternatives_with_attachments','1.0.0')
 
 end
