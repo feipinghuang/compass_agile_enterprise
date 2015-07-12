@@ -49,30 +49,36 @@ class ProductFeature < ActiveRecord::Base
     product_feature_applicabilities.map { |o| o.feature_of_record_type.constantize.find(o.feature_of_record_id) }
   end
 
-  def self.get_values(feature_type, product_feature=nil)
+  def self.get_values(feature_type, product_features=[])
     feature_value_ids = feature_type.product_feature_values.order('description').pluck(:id)
     valid_feature_value_ids = feature_value_ids.dup
 
-    # if there is a product feature passed then it is being scoped by that product feature and
+    # if there are a product features passed then it is being scoped by that product feature and
     # we only what valid interactions
-    if product_feature
+    unless product_features.empty?
+      product_features.each do |product_feature|
 
-      # check each possible feature type / feature value combination for the given feature_type
-      feature_value_ids.each do |value_id|
+        # check each possible feature type / feature value combination for the given feature_type
+        feature_value_ids.each do |value_id|
 
-        # Is there a product feature to support this feature type / feature value combination?
-        test_product_feature = ProductFeature.where(product_features: {product_feature_type_id: feature_type.id, product_feature_value_id: value_id}).last
+          # Is there a product feature to support this feature type / feature value combination?
+          test_product_feature = ProductFeature.where(product_features: {product_feature_type_id: feature_type.id, product_feature_value_id: value_id}).last
 
-        valid_feature_value_ids.delete_at(valid_feature_value_ids.index(value_id)) unless test_product_feature
-        next unless test_product_feature
+          valid_feature_value_ids.delete_at(valid_feature_value_ids.index(value_id)) unless test_product_feature
+          next unless test_product_feature
 
-        unless test_product_feature.find_interactions(:invalid).empty?
-          if test_product_feature.find_interactions(:invalid).where('product_feature_to_id = ?', product_feature.id).count == 1
-            valid_feature_value_ids.delete_at(valid_feature_value_ids.index(value_id))
+          unless test_product_feature.find_interactions(:invalid).empty?
+            if test_product_feature.find_interactions(:invalid).where('product_feature_to_id = ?', product_feature.id).count == 1
+              index = valid_feature_value_ids.index(value_id)
+              if index
+                valid_feature_value_ids.delete_at(index)
+              end
+            end
           end
-        end
 
-      end
+        end # feature_value_ids loop
+      end # product_features loop
+
     end
 
     valid_feature_value_ids.uniq
