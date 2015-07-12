@@ -63,7 +63,7 @@ class ProductFeature < ActiveRecord::Base
         # Is there a product feature to support this feature type / feature value combination?
         test_product_feature = ProductFeature.where(product_features: {product_feature_type_id: feature_type.id, product_feature_value_id: value_id}).last
 
-        valid_feature_value_ids -= value_id unless test_product_feature
+        valid_feature_value_ids.delete_at(valid_feature_value_ids.index(value_id)) unless test_product_feature
         next unless test_product_feature
 
         unless test_product_feature.find_interactions(:invalid).empty?
