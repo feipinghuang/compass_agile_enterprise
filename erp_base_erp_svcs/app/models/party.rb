@@ -44,7 +44,7 @@ class Party < ActiveRecord::Base
         where('party_id_to = ?', id).
         where('role_type_id_to' => RoleType.iid('dba_org')).each do |party_reln|
 
-      if party_reln.from_party.has_role_type?('dba_org')
+      if party_reln.from_party && party_reln.from_party.has_role_type?('dba_org')
         dba_orgs.push(party_reln.from_party)
         party_reln.from_party.child_dba_organizations(dba_orgs)
       end
@@ -58,8 +58,10 @@ class Party < ActiveRecord::Base
         where('party_id_from = ?', id).
         where('role_type_id_to' => RoleType.iid('dba_org')).each do |party_reln|
 
-      dba_orgs.push(party_reln.to_party)
-      party_reln.to_party.parent_dba_organizations(dba_orgs)
+      if party_reln.to_party
+        dba_orgs.push(party_reln.to_party)
+        party_reln.to_party.parent_dba_organizations(dba_orgs)
+      end
     end
 
     dba_orgs.uniq
