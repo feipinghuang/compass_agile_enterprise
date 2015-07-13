@@ -1,4 +1,4 @@
-class AddTaskStatuses
+class AddTaskTrackedStatuses
   
   def self.up
 
