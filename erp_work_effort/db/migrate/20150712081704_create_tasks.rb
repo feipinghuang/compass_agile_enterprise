@@ -3,11 +3,12 @@ class CreateTasks < ActiveRecord::Migration
   def self.up
     unless table_exists?(:tasks)
       create_table :tasks do |t|
-        t.string  :description
-        t.text    :content
+        t.string   :description
+        t.text     :content
         t.datetime :start
         t.datetime :end
-        t.text    :custom_fields
+        t.boolean  :unread
+        t.text     :custom_fields
         t.timestamps
       end
     end

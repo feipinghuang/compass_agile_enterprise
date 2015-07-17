@@ -7,7 +7,10 @@ class AddTaskPartyRoleTypes
   end
 
   def self.down
-    TaskPartyRoleType.find_by_internal_identifier('assignee').destroy
+    unless TaskPartyRoleType.find_by_internal_identifier('assignee').nil?
+      TaskPartyRoleType.find_by_internal_identifier('assignee').destroy
+    end
   end
 
 end
+
