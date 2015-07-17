@@ -42,9 +42,6 @@ class BizTxnEvent < ActiveRecord::Base
 	alias :account= :biz_txn_acct_root=
 	alias :descriptions :biz_txn_event_descs
 
-  # serialize ExtJs attributes
-  is_json :custom_fields
-
   def destroy_biz_txn_relationships
     BizTxnRelationship.where("txn_event_id_from = ? or txn_event_id_to = ?", self.id, self.id).destroy_all
   end
