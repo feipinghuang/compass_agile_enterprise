@@ -16,10 +16,23 @@ module ErpProducts
       end
 
       def get_values
-        product_feature_type = params[:productFeatureTypeId] ? ProductFeatureType.find(params[:productFeatureTypeId]) : nil
+        if params[:product_feature_type_id].present?
+          product_feature_type = ProductFeatureType.find(params[:product_feature_type_id])
 
-        if product_feature_type
-          value_ids = ProductFeature.get_values(product_feature_type, params[:productFeatures].to_a.flatten.delete_if { |o| !o.is_a? Hash })
+          if params[:product_features].present?
+            product_features = []
+            product_feature_params = params[:product_features].to_a.flatten.delete_if { |o| !o.is_a? Hash }
+            product_feature_params.each do |product_feature_hash|
+              product_features << ProductFeature.where('product_feature_type_id = ? and product_feature_value_id = ?',
+                                                       product_feature_hash['product_feature_type_id'],
+                                                       product_feature_hash['product_feature_value_id']).first
+            end
+
+            value_ids = ProductFeature.get_values(product_feature_type, product_features)
+          else
+            value_ids = ProductFeature.get_values(product_feature_type)
+          end
+
         else
           value_ids = []
         end

@@ -26,6 +26,25 @@ class Application < ActiveRecord::Base
       find_by_internal_identifier(internal_identifier)
     end
 
+    def generate_unique_iid(name)
+      iid = name.to_iid
+
+      iid_exists = true
+      iid_test = iid
+      iid_counter = 1
+      while iid_exists
+        if Application.where(:internal_identifier => iid_test).first
+          iid_test = "#{iid}_#{iid_counter}"
+          iid_counter += 1
+        else
+          iid_exists = false
+          iid = iid_test
+        end
+      end
+
+      iid
+    end
+
     def apps
       where('type is null')
     end

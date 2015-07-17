@@ -40,14 +40,14 @@ class Party < ActiveRecord::Base
   end
 
   def child_dba_organizations(dba_orgs=[])
-    PartyRelationship.
-        where('party_id_to = ?', id).
-        where('role_type_id_to' => RoleType.iid('dba_org')).each do |party_reln|
+    PartyRelationship.joins('inner join parties on parties.id = party_relationships.party_id_from')
+        .joins('inner join party_roles on party_roles.party_id = parties.id')
+        .where('party_id_to' => self.id)
+        .where('party_roles.role_type_id' => RoleType.iid('dba_org').id).each do |party_reln|
 
-      if party_reln.from_party.has_role_type?('dba_org')
-        dba_orgs.push(party_reln.from_party)
-        party_reln.from_party.child_dba_organizations(dba_orgs)
-      end
+      dba_orgs.push(party_reln.from_party)
+      party_reln.from_party.child_dba_organizations(dba_orgs)
+
     end
 
     dba_orgs.uniq

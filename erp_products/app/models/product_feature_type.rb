@@ -1,3 +1,20 @@
+# create_table :product_feature_types do |t|
+#
+#   t.integer :parent_id
+#   t.integer :lft
+#   t.integer :rgt
+#
+#   t.string :description
+#   t.string :internal_identifier
+#   t.string :external_identifier
+#   t.string :external_id
+#
+#   t.timestamps
+# end
+#
+# add_index :product_feature_types, :internal_identifier, name: 'product_ft_types_iid_idx'
+# add_index :product_feature_types, [:rgt, :lft, :parent_id], name: 'product_ft_types_nested_set_idx'
+
 class ProductFeatureType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 

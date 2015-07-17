@@ -1,3 +1,15 @@
+# create_table :product_feature_values do |t|
+#   t.string :value
+#   t.string :internal_identifier
+#   t.string :external_identifier
+#   t.string :external_id_source
+#   t.string :description
+#
+#   t.timestamps
+# end
+#
+# add_index :product_feature_values, :internal_identifier, name: 'product_ft_vals_iid_idx'
+
 class ProductFeatureValue < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
