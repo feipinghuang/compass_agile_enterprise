@@ -1,5 +1,5 @@
 class AddTaskTrackedStatuses
-  
+
   def self.up
 
     task_statuses = TrackedStatusType.create(internal_identifier: 'task_statuses', description: 'Task Statuses')
@@ -16,9 +16,10 @@ class AddTaskTrackedStatuses
     end
 
   end
-  
+
   def self.down
-    task_statuses = TrackedStatusType.find
+    task_statuses = TrackedStatusType.find_by_internal_identifier('task_statuses')
+    task_statuses.destroy
   end
 
 end
