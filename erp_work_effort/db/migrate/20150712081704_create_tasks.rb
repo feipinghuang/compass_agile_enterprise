@@ -7,7 +7,6 @@ class CreateTasks < ActiveRecord::Migration
         t.text     :content
         t.datetime :start
         t.datetime :end
-        t.boolean  :unread
         t.column   :project_id, :integer
         t.column   :task_record_id, :integer
         t.column   :task_record_type, :string
