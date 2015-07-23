@@ -113,6 +113,7 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                     direction: 'ASC'
                 }
             ],
+            autoSync: false,
             folderSort: true,
             proxy: {
                 method: 'GET',
@@ -434,7 +435,8 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                                 msg.hide();
                                                 if (responseObj.success) {
                                                     self.fireEvent('filedeleted', this, record);
-                                                    record.parentNode.removeChild(record, true);
+
+                                                    record.parentNode.removeChild(record);
                                                 }
                                                 else {
                                                     Ext.Msg.alert("Error", responseObj.error);
