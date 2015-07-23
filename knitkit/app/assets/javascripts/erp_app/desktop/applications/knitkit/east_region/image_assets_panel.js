@@ -1,6 +1,14 @@
 var imagesTreeStatus = {
     websiteImagesNodes: [],
     sharedImagesNodes: [],
+    websitePreviewId: null,
+    sharedPreviewId: null,
+
+    setPreviewDirectory: function(nodeId, nodeType){
+        var me = this,
+            attributeName = nodeType + 'PreviewId';
+        me[attributeName] = nodeId;
+    },
     getNodes: function(nodeType){
         var me = this,
             nodes,
@@ -159,10 +167,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                 },
                 'load': function(tree, node, records, successful, eOpts){
                     var me = this;
+                    var parentNode = tree.getRootNode();
 
                     if(!imagesTreeStatus.isEmpty('shared')){
-                        var parentNode = tree.getRootNode();
-
                         Ext.each(imagesTreeStatus.sharedImagesNodes, function(nodeObject, index){
                             var node = parentNode.findChildBy(function(child){
                                     return child.get('id') == nodeObject['id'];
@@ -177,6 +184,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                                 }
                             }
                         });
+                    }
+
+                    if(imagesTreeStatus.sharedPreviewId){
+                        var previewNode = parentNode.findChildBy(function(child){
+                            return child.get('id') == imagesTreeStatus.sharedPreviewId;
+                        }, null, true);
+
+                        if(previewNode){
+                            me.getSelectionModel().select(previewNode, false);
+                            me.fireEvent('fileUploaded', me, previewNode);
+                        }
                     }
                 },
                 'allowdelete': function () {
@@ -195,6 +213,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                                 directory: record.data.id
                             }
                         });
+                        imagesTreeStatus.setPreviewDirectory(record.get('id'), 'shared');
                     }
                     else {
                         return false;
@@ -289,6 +308,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                                 }
                             }
                         });
+
+                        if(imagesTreeStatus.websitePreviewId){
+                            var previewNode = parentNode.findChildBy(function(child){
+                                return child.get('id') == imagesTreeStatus.websitePreviewId;
+                            }, null, true);
+
+                            if(previewNode){
+                                me.getSelectionModel().select(previewNode, false);
+                                me.fireEvent('fileUploaded', me, previewNode);
+                            }
+                        }
                     }
 
                 },
@@ -305,6 +335,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                                     website_id: self.websiteId
                                 }
                             });
+                            imagesTreeStatus.setPreviewDirectory(record.get('id'), 'website');
                         }
                         else {
                             return false;
