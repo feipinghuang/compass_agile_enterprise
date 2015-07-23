@@ -1,3 +1,65 @@
+var imagesTreeStatus = {
+    websiteImagesNodes: [],
+    sharedImagesNodes: [],
+    getNodes: function(nodeType){
+        var me = this,
+            nodes,
+            attributeName = nodeType + 'ImagesNodes';
+
+        nodes = me[attributeName];
+        if(nodes == undefined){
+            nodes = [];
+        }
+        return nodes;
+    },
+    updateNodes: function(nodes, nodeType){
+        var me = this,
+            attributeName = nodeType + 'ImagesNodes';
+
+        if(me[attributeName]){
+            me[attributeName] = nodes;
+        }
+    },
+    isEmpty: function(nodeType){
+        var me = this,
+            attributeName = nodeType + 'ImagesNodes';
+
+        if(me[attributeName]){
+            return me[attributeName].length == 0;
+        }else{
+            return 0;
+        }
+    },
+    addNode: function(node, nodeType){
+        window.n = node;
+        if(nodeType){
+            var me = this,
+                id = node.get('id'),
+                isExpanded = node.get('expanded'),
+                item = null,
+                nodes = me.getNodes(nodeType);
+
+            Ext.each(nodes, function(obj, index){
+                if(obj.id == id){
+                    item = obj;
+                    return false;
+                }
+            });
+
+            if(!item){
+                nodes.push({
+                    id: id,
+                    isExpanded: isExpanded
+                });
+            }else{
+                item['isExpanded'] = isExpanded;
+            }
+
+            me.updateNodes(nodes, nodeType);
+        }
+    }
+};
+
 Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
     extend: "Ext.tab.Panel",
     alias: 'widget.knitkit_ImageAssetsPanel',
@@ -89,6 +151,34 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                 }
             ],
             listeners: {
+                'afteritemexpand': function(node, index, item, eOpts){
+                    imagesTreeStatus.addNode(node, 'shared');
+                },
+                'afteritemcollapse': function(node, index, item, eOpts){
+                    imagesTreeStatus.addNode(node, 'shared');
+                },
+                'load': function(tree, node, records, successful, eOpts){
+                    var me = this;
+
+                    if(!imagesTreeStatus.isEmpty('shared')){
+                        var parentNode = tree.getRootNode();
+
+                        Ext.each(imagesTreeStatus.sharedImagesNodes, function(nodeObject, index){
+                            var node = parentNode.findChildBy(function(child){
+                                    return child.get('id') == nodeObject['id'];
+                                }, null, true),
+                                isNodeExpanded = nodeObject['isExpanded'];
+
+                            if(node){
+                                if(isNodeExpanded){
+                                    node.expand(false);
+                                } else{
+                                    node.collapse(false);
+                                }
+                            }
+                        });
+                    }
+                },
                 'allowdelete': function () {
                     return currentUser.hasCapability('delete', 'GlobalImageAsset');
                 },
@@ -169,9 +259,38 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                 }
             ],
             listeners: {
+                'afteritemexpand': function(node, index, item, eOpts){
+                    imagesTreeStatus.addNode(node, 'website');
+                },
+                'afteritemcollapse': function(node, index, item, eOpts){
+                    imagesTreeStatus.addNode(node, 'website');
+                },
                 'load': function (store, node, records) {
                     store.getRootNode().data.text = self.websiteName;
                     self.websiteImageAssetsTreePanel.view.refresh();
+
+                    var me = this,
+                        tree = store;
+
+                    if(!imagesTreeStatus.isEmpty('website')){
+                        var parentNode = tree.getRootNode();
+
+                        Ext.each(imagesTreeStatus.websiteImagesNodes, function(nodeObject, index){
+                            var node = parentNode.findChildBy(function(child){
+                                    return child.get('id') == nodeObject['id'];
+                                }, null, true),
+                                isNodeExpanded = nodeObject['isExpanded'];
+
+                            if(node){
+                                if(isNodeExpanded){
+                                    node.expand(false);
+                                } else{
+                                    node.collapse(false);
+                                }
+                            }
+                        });
+                    }
+
                 },
                 'itemclick': function (view, record, item, index, e) {
                     if (self.websiteId !== null) {
