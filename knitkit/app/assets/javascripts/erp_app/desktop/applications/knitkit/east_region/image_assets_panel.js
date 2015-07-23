@@ -13,19 +13,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             uploadUrl: '/knitkit/erp_app/desktop/image_assets/shared/upload_file',
             module: config.module,
             listeners: {
-                afterrender: function () {
-                    if (currentUser.hasCapability('view', 'GlobalImageAsset')) {
-                        self.sharedImageAssetsDataView.directory = 'root_node';
-                        var store = self.sharedImageAssetsDataView.getStore();
-                        store.load({
-                            params: {
-                                directory: 'root_node'
-                            }
-                        });
-                    }
-                },
                 imageuploaded: function (comp) {
+                    Ext.apply(self.sharedImageAssetsTreePanel.extraPostData, {
+                        directory: self.sharedImageAssetsTreePanel.selectedDirectoryNode.data.id
+                    });
+
                     self.sharedImageAssetsTreePanel.getStore().load({
+                        node: self.sharedImageAssetsTreePanel.selectedDirectoryNode,
+                        params: self.sharedImageAssetsTreePanel.extraPostData,
                         callback: function () {
                             self.sharedImageAssetsTreePanel.getView().refresh();
                         }
@@ -39,17 +34,23 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             uploadUrl: '/knitkit/erp_app/desktop/image_assets/website/upload_file',
             listeners: {
                 imageuploaded: function (comp) {
-                    var store = self.websiteImageAssetsTreePanel.getStore();
-                    store.load({
-                        callback: function () {
-                            self.websiteImageAssetsDataView.getStore().load({
-                                params: {
-                                    directory: 'root_node',
-                                    website_id: self.websiteId
-                                }
-                            });
-                        }
-                    });
+                    if(self.websiteImageAssetsTreePanel.selectedDirectoryNode.isExpanded()){
+                        Ext.apply(self.websiteImageAssetsTreePanel.extraPostData, {
+                            directory: self.websiteImageAssetsTreePanel.selectedDirectoryNode.data.id
+                        });
+
+                        var store = self.websiteImageAssetsTreePanel.getStore();
+                        store.load({
+                            node: self.websiteImageAssetsTreePanel.selectedDirectoryNode,
+                            params: self.websiteImageAssetsTreePanel.extraPostData,
+                            callback: function () {
+                                self.websiteImageAssetsTreePanel.getView().refresh();
+                            }
+                        });
+                    }
+                    else{
+                        selectedDirectoryNode.expand();
+                    }
                 }
             }
         });
@@ -98,6 +99,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                 'itemclick': function (view, record, item, index, e) {
                     e.stopEvent();
                     if (!record.data["leaf"]) {
+                        this.selectedDirectoryNode = record;
+                        self.sharedImageAssetsDataView.setPath(record.getPath('text'));
                         self.sharedImageAssetsDataView.directory = record.data.id;
                         var store = self.sharedImageAssetsDataView.getStore();
                         store.load({
@@ -110,7 +113,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                         return false;
                     }
                 },
-                'fileDeleted': function (fileTreePanel, node) {
+                'filedeleted': function (fileTreePanel, node) {
                     var store = self.sharedImageAssetsDataView.getStore();
                     store.load({
                         params: {
@@ -118,7 +121,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                         }
                     });
                 },
-                'fileUploaded': function (fileTreePanel, node) {
+                'fileuploaded': function (fileTreePanel, node) {
                     var store = self.sharedImageAssetsDataView.getStore();
                     store.load({
                         params: {
@@ -177,6 +180,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                     if (self.websiteId !== null) {
                         e.stopEvent();
                         if (!record.data["leaf"]) {
+                            this.selectedDirectoryNode = record;
+                            self.websiteImageAssetsDataView.setPath(record.getPath('text'));
                             self.websiteImageAssetsDataView.directory = record.data.id;
                             self.websiteImageAssetsDataView.websiteId = self.websiteId;
                             var store = self.websiteImageAssetsDataView.getStore();
@@ -192,15 +197,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                         }
                     }
                 },
-                'fileDeleted': function (fileTreePanel, node) {
+                'filedeleted': function (fileTreePanel, node) {
                     self.websiteImageAssetsDataView.getStore().load({
                         params: {
-                            directory: node.parentNode.data.downloadPath,
+                            directory: node.data.id,
                             website_id: self.websiteId
                         }
                     });
                 },
-                'fileUploaded': function (fileTreePanel, node) {
+                'fileuploaded': function (fileTreePanel, node) {
                     self.websiteImageAssetsDataView.getStore().load({
                         params: {
                             directory: node.data.id,
