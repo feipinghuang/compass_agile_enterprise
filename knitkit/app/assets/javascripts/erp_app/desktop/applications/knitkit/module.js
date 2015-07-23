@@ -241,8 +241,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
                 listeners: {
                     beforeclose: function(comp, eopts){
                         if(imagesTreeStatus){
-                            imagesTreeStatus.sharedImagesNodes = [];
-                            imagesTreeStatus.websiteImagesNodes = [];
+                            imagesTreeStatus.reset();
                         }
                     }
                 }

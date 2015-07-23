@@ -3,7 +3,13 @@ var imagesTreeStatus = {
     sharedImagesNodes: [],
     websitePreviewId: null,
     sharedPreviewId: null,
-
+    reset: function(){
+        var me = this;
+        me.websiteImagesNodes = [];
+        me.sharedImagesNodes = [];
+        me.websitePreviewId = null;
+        me.sharedPreviewId = null;
+    },
     setPreviewDirectory: function(nodeId, nodeType){
         var me = this,
             attributeName = nodeType + 'PreviewId';
