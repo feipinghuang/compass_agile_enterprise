@@ -247,6 +247,12 @@ module Knitkit
           # example found in knitkit module.js
         end
 
+        def get_current_host
+          current_host = request.host_with_port
+          existing_website_host = WebsiteHost.find_by_host(current_host)
+          render :json => {:success => !existing_website_host.present?, :host => current_host}
+        end
+
       end # WebsiteController
     end # Desktop
   end # ErpApp
