@@ -307,12 +307,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
         };
 
         var items = [];
-        if (currentUser.hasCapability('view', 'GlobalImageAsset')) {
-            items.push(sharedImagesLayout);
-        }
 
         if (currentUser.hasCapability('view', 'SiteImageAsset')) {
             items.push(websiteImagesLayout);
+        }
+
+        if (currentUser.hasCapability('view', 'GlobalImageAsset')) {
+            items.push(sharedImagesLayout);
         }
 
         config = Ext.apply({
