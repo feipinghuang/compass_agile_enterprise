@@ -106,7 +106,7 @@ module Knitkit
               theme = get_theme(path)
               theme.add_file('#Empty File', File.join(path, name))
 
-              render :json => {:success => true, :node => @file_support.find_node(File.join(path, name), false, {:file_asset_holder => theme})}
+              render :json => {:success => true, :node => @file_support.find_node(File.join(path, name), {:file_asset_holder => theme})}
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
             render :json => {:success => false, :message => ex.message}
@@ -120,7 +120,7 @@ module Knitkit
               name = params[:name]
 
               @file_support.create_folder(path, name)
-              render :json => {:success => true, :node => @file_support.build_node(File.join(path, name))}
+              render :json => {:success => true, :node => @file_support.find_node(File.join(path, name), {keep_full_path: false})}
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
             render :json => {:success => false, :message => ex.message}

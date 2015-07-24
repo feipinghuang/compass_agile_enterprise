@@ -27,7 +27,7 @@ module ErpApp
 
           @file_support.create_file(path, name, "#Empty File")
 
-          render :json => {:success => true, :node => @file_support.find_node(File.join(path, name))}
+          render :json => {:success => true, :node => @file_support.find_node(File.join(path, name), {keep_full_path: true})}
         end
 
         def create_folder

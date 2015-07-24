@@ -120,41 +120,47 @@ module ErpTechSvcs
       end
 
       def find_node(path, options={})
-        parent = if options[:file_asset_holder]
-                   super
-                 else
-                   path_pieces = path.split('/')
-                   parent = build_tree_for_directory(path, options)
-                   unless parent[:id] == path
-                     path_pieces.each do |path_piece|
-                       next if path_piece.blank?
-                       parent[:children].each do |child_node|
-                         if child_node[:text] == path_piece
-                           parent = child_node
-                           break
-                         end
-                       end
-                     end
-                   end
+        if options[:file_asset_holder]
+          super
+        else
+          if File.exists? path
+            if File.directory? path
+              path_pieces = path.split('/')
+              parent = build_tree_for_directory(path, options)
+              unless parent[:id] == path
+                path_pieces.each do |path_piece|
+                  next if path_piece.blank?
+                  parent[:children].each do |child_node|
+                    if child_node[:text] == path_piece
+                      parent = child_node
+                      break
+                    end
+                  end
+                end
+              end
 
-                   parent = nil if parent[:id] != path
-                   parent
-                 end
-
-        parent
+              parent = nil if parent[:id] != path
+              parent
+            else
+              build_node(path, options)
+            end
+          else
+            nil
+          end
+        end
       end
 
-      def build_node(path, keep_full_path=false, options={})
+      def build_node(path, options={})
         if File.directory?(path)
           if options[:preload]
             build_tree_for_directory(path, options) if options[:preload]
           else
-            path.gsub!(root, '') unless keep_full_path
+            path.gsub!(root, '') unless options[:keep_full_path]
 
             {:text => path.split('/').last, :id => path, :iconCls => 'icon-content'}
           end
         else
-          path.gsub!(root, '') unless keep_full_path
+          path.gsub!(root, '') unless options[:keep_full_path]
 
           parts = path.split('/')
           parts.pop
@@ -172,9 +178,8 @@ module ErpTechSvcs
       private
 
       def build_tree_for_directory(directory, options)
-        keep_full_path = nil
-        unless directory.index(root).nil?
-          keep_full_path = true
+        if options[:keep_full_path] != false and !directory.index(root).nil?
+          options[:keep_full_path] = true
         end
 
         tree_data = {
@@ -185,13 +190,13 @@ module ErpTechSvcs
             :children => []
         }
 
-        tree_data[:id].gsub!(root, '') unless keep_full_path
+        tree_data[:id].gsub!(root, '') unless options[:keep_full_path]
 
         Dir.entries(directory).each do |entry|
           #ignore .svn folders and any other folders starting with .
           next if entry =~ REMOVE_FILES_REGEX
 
-          tree_data[:children] << build_node(File.join(directory, entry), keep_full_path, options)
+          tree_data[:children] << build_node(File.join(directory, entry), options)
 
         end if File.directory?(directory)
 

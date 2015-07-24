@@ -10,8 +10,8 @@ class Theme < ActiveRecord::Base
                   :knitkit_website_images_path, :knitkit_website_javascripts_path
   end
   @base_layouts_views_path = "#{Knitkit::Engine.root.to_s}/app/views"
-  @knitkit_website_stylesheets_path = "#{Knitkit::Engine.root.to_s}/public/stylesheets/knitkit"
-  @knitkit_website_javascripts_path = "#{Knitkit::Engine.root.to_s}/public/javascripts/knitkit"
+  @knitkit_website_stylesheets_path = "#{Knitkit::Engine.root.to_s}/app/assets/stylesheets/knitkit"
+  @knitkit_website_javascripts_path = "#{Knitkit::Engine.root.to_s}/app/assets/public/javascripts/knitkit"
   @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/public/images/knitkit"
 
   protected_with_capabilities
@@ -39,12 +39,12 @@ class Theme < ActiveRecord::Base
           data = ''
           entry.get_input_stream { |io| data = io.read }
           data = StringIO.new(data) if data.present?
-          theme_file = self.files.where("name = ? and directory = ?", File.basename(name), File.join(self.url,File.dirname(name))).first
+          theme_file = self.files.where("name = ? and directory = ?", File.basename(name), File.join(self.url, File.dirname(name))).first
           unless theme_file.nil?
             theme_file.data = data
             theme_file.save
           else
-            self.add_file(data, File.join(file_support.root, self.url,name)) rescue next
+            self.add_file(data, File.join(file_support.root, self.url, name)) rescue next
           end
         end
       end
@@ -54,12 +54,12 @@ class Theme < ActiveRecord::Base
 
   class << self
     def import_download_item(tempfile, website)
-          name_and_id = tempfile.gsub(/(^.*(\\|\/))|(\.zip$)/, '')
-          theme_name = name_and_id.split('[').first
-          theme_id = name_and_id.split('[').last.gsub(']','')
-          Theme.create(:name => theme_name.sub(/-theme/, ''), :theme_id => theme_id, :website_id => website.id).tap do |theme|
-            theme.import_download_item_file(tempfile)
-          end
+      name_and_id = tempfile.gsub(/(^.*(\\|\/))|(\.zip$)/, '')
+      theme_name = name_and_id.split('[').first
+      theme_id = name_and_id.split('[').last.gsub(']', '')
+      Theme.create(:name => theme_name.sub(/-theme/, ''), :theme_id => theme_id, :website_id => website.id).tap do |theme|
+        theme.import_download_item_file(tempfile)
+      end
     end
 
 
@@ -77,7 +77,6 @@ class Theme < ActiveRecord::Base
     end
 
 
-
     def root_dir
       @@root_dir ||= "#{Rails.root}/public"
     end
@@ -89,7 +88,7 @@ class Theme < ActiveRecord::Base
     def import(file, website)
       name_and_id = file.original_filename.to_s.gsub(/(^.*(\\|\/))|(\.zip$)/, '')
       theme_name = name_and_id.split('[').first
-      theme_id = name_and_id.split('[').last.gsub(']','')
+      theme_id = name_and_id.split('[').last.gsub(']', '')
       return false unless valid_theme?(file)
       Theme.create(:name => theme_name, :theme_id => theme_id, :website => website).tap do |theme|
         theme.import(file)
@@ -119,6 +118,7 @@ class Theme < ActiveRecord::Base
 
   extend FriendlyId
   friendly_id :name, :use => [:slugged, :scoped], :slug_column => :theme_id, :scope => [:website_id]
+
   def should_generate_new_friendly_id?
     new_record?
   end
@@ -147,18 +147,18 @@ class Theme < ActiveRecord::Base
   def themed_widgets
     Rails.application.config.erp_app.widgets.select do |widget_hash|
       !(self.files.where("directory like '#{File.join(self.url, 'widgets', widget_hash[:name])}%'").all.empty?)
-    end.collect{|item| item[:name]}
+    end.collect { |item| item[:name] }
   end
 
   def non_themed_widgets
     already_themed_widgets = self.themed_widgets
     Rails.application.config.erp_app.widgets.select do |widget_hash|
       !already_themed_widgets.include?(widget_hash[:name])
-    end.collect{|item| item[:name]}
+    end.collect { |item| item[:name] }
   end
 
   def create_layouts_for_widget(widget)
-    widget_hash = Rails.application.config.erp_app.widgets.find{|item| item[:name] == widget}
+    widget_hash = Rails.application.config.erp_app.widgets.find { |item| item[:name] == widget }
     widget_hash[:view_files].each do |view_file|
       save_theme_file(view_file[:path], :widgets, {:path_to_replace => view_file[:path].split('/views')[0], :widget_name => widget})
     end
@@ -199,12 +199,12 @@ class Theme < ActiveRecord::Base
             data = ''
             entry.get_input_stream { |io| data = io.read }
             data = StringIO.new(data) if data.present?
-            theme_file = self.files.where("name = ? and directory = ?", File.basename(name), File.join(self.url,File.dirname(name))).first
+            theme_file = self.files.where("name = ? and directory = ?", File.basename(name), File.join(self.url, File.dirname(name))).first
             unless theme_file.nil?
               theme_file.data = data
               theme_file.save
             else
-              self.add_file(data, File.join(file_support.root, self.url,name)) rescue next
+              self.add_file(data, File.join(file_support.root, self.url, name)) rescue next
             end
           end
         end
@@ -219,13 +219,13 @@ class Theme < ActiveRecord::Base
     (tmp_dir + "#{name}[#{theme_id}].zip").tap do |file_name|
       file_name.unlink if file_name.exist?
       Zip::ZipFile.open(file_name.to_s, Zip::ZipFile::CREATE) do |zip|
-        files.each {|file|
-          contents = file_support.get_contents(File.join(file_support.root,file.directory,file.name))
-          relative_path = file.directory.sub("#{url}",'')
-          path = FileUtils.mkdir_p(File.join(tmp_dir,relative_path))
-          full_path = File.join(path,file.name)
-          File.open(full_path, 'wb+') {|f| f.puts(contents) }
-          zip.add(File.join(relative_path[1..relative_path.length],file.name), full_path) if ::File.exists?(full_path)
+        files.each { |file|
+          contents = file_support.get_contents(File.join(file_support.root, file.directory, file.name))
+          relative_path = file.directory.sub("#{url}", '')
+          path = FileUtils.mkdir_p(File.join(tmp_dir, relative_path))
+          full_path = File.join(path, file.name)
+          File.open(full_path, 'wb+') { |f| f.puts(contents) }
+          zip.add(File.join(relative_path[1..relative_path.length], file.name), full_path) if ::File.exists?(full_path)
         }
         ::File.open(tmp_dir + 'about.yml', 'wb+') { |f| f.puts(about.to_yaml) }
         zip.add('about.yml', tmp_dir + 'about.yml')
@@ -234,7 +234,7 @@ class Theme < ActiveRecord::Base
   end
 
   def has_template?(directory, name)
-    self.templates.find{|item| item.directory == File.join(path,directory).gsub(Rails.root.to_s, '') and item.name == name}
+    self.templates.find { |item| item.directory == File.join(path, directory).gsub(Rails.root.to_s, '') and item.name == name }
   end
 
   class << self
@@ -271,7 +271,7 @@ class Theme < ActiveRecord::Base
 
   def delete_theme_files!
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
-    file_support.delete_file(File.join(file_support.root,self.url), :force => true)
+    file_support.delete_file(File.join(file_support.root, self.url), :force => true)
   end
 
   def create_theme_files!
@@ -285,8 +285,10 @@ class Theme < ActiveRecord::Base
   private
 
   def create_theme_files_for_directory_node(node, type, options={})
-    node[:children].each do |child_node|
-      child_node[:leaf] ? save_theme_file(child_node[:id], type, options) : create_theme_files_for_directory_node(child_node, type, options)
+    if node
+      node[:children].each do |child_node|
+        child_node[:leaf] ? save_theme_file(child_node[:id], type, options) : create_theme_files_for_directory_node(child_node, type, options)
+      end
     end
   end
 
@@ -312,8 +314,8 @@ class Theme < ActiveRecord::Base
 
     unless ignored_files.any? { |w| path =~ /#{w}/ }
       contents = IO.read(path)
-      contents.gsub!("<%= static_stylesheet_link_tag 'knitkit/custom.css' %>","<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= static_javascript_include_tag 'knitkit/theme.js' %>","<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= static_stylesheet_link_tag 'knitkit/custom.css' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= static_javascript_include_tag 'knitkit/theme.js' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
 
       path = case type
                when :widgets

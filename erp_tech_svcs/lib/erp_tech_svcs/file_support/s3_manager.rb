@@ -11,10 +11,10 @@ module ErpTechSvcs
           @@configuration = YAML::load_file(File.join(Rails.root, 'config', 's3.yml'))[Rails.env]
 
           # S3 debug logging
-           AWS.config(
-               :logger => Rails.logger,
-               :log_level => :info
-           )
+          AWS.config(
+              :logger => Rails.logger,
+              :log_level => :info
+          )
 
           @@s3_connection = AWS::S3.new(
               :access_key_id => @@configuration['access_key_id'],
@@ -132,13 +132,9 @@ module ErpTechSvcs
         result = false
         message = nil
         begin
-          if options[:force] or bucket.as_tree(:prefix => path).children.count == 0
-            bucket.objects.with_prefix(path).delete_all
-            message = "File was deleted successfully"
-            result = true
-          else
-            message = FOLDER_IS_NOT_EMPTY
-          end
+          bucket.objects.with_prefix(path).delete_all
+          message = "File was deleted successfully"
+          result = true
         rescue => ex
           result = false
           message = ex
@@ -178,55 +174,72 @@ module ErpTechSvcs
       end
 
       def find_node(path, options={})
+        parent = {:text => path.split('/').pop, :iconCls => "icon-content", :leaf => false, :id => path, :children => []}
+
         #remove proceeding slash for s3
         path.sub!(%r{^/}, '')
 
-        parent = {:text => path.split('/').pop, :leaf => false, :id => path, :children => []}
+        if File.extname(path).blank?
+          tree = bucket.as_tree(:prefix => path)
 
-        tree = bucket.as_tree(:prefix => path)
-        tree.children.each do |node|
-          if node.leaf?
-            #ignore current path that comes as leaf from s3
-            next if node.key == path + '/'
+          tree.children.each do |node|
+            if node.leaf?
+              #ignore current path that comes as leaf from s3
+              next if node.key == path + '/'
 
-            leaf_hash = {
-                :text => node.key.split('/').pop,
-                :downloadPath => "/#{node.key.split('/')[0..-2].join('/')}",
-                :id => "/#{node.key}",
-                :leaf => true
-            }
+              leaf_hash = {
+                  :text => node.key.split('/').pop,
+                  :downloadPath => "/#{node.key.split('/')[0..-2].join('/')}",
+                  :id => "/#{node.key}",
+                  :iconCls => 'icon-document',
+                  :leaf => true
+              }
 
-            if options[:file_asset_holder]
-              files = options[:file_asset_holder].files
-
-              parent_directories =  leaf_hash[:id].split('/')
-              parent_directories.pop
-              parent_directory = parent_directories.join('/')
-
-              file = files.find { |file| file.directory == parent_directory and file.name == leaf_hash[:text] }
-              unless file.nil?
-                leaf_hash[:isSecured] = file.is_secured?
-                leaf_hash[:roles] = file.roles.collect { |r| r.internal_identifier }
-                leaf_hash[:iconCls] = 'icon-document_lock' if leaf_hash[:isSecured]
-                leaf_hash[:size] = file.data_file_size
-                leaf_hash[:width] = file.width
-                leaf_hash[:height] = file.height
-                leaf_hash[:url] = file.url
+              if options[:file_asset_holder]
+                leaf_hash = apply_file_asset_properties(options[:file_asset_holder], leaf_hash)
               end
-            end
 
-            parent[:children] << leaf_hash
-          else
-            parent[:children] << {
-                :iconCls => "icon-content",
-                :text => node.prefix.split('/').pop,
-                :id => "/#{node.prefix}".chop,
-                :leaf => false
-            }
+              parent[:children] << leaf_hash
+            else
+              parent[:children] << {
+                  :iconCls => "icon-content",
+                  :text => node.prefix.split('/').pop,
+                  :id => "/#{node.prefix}".chop,
+                  :leaf => false
+              }
+            end
+          end
+
+        else
+          parent[:iconCls] = 'icon-document'
+          parent[:leaf] = true
+          parent[:downloadPath] = "/#{path.split('/')[0..-2].join('/')}"
+
+          if options[:file_asset_holder]
+            parent = apply_file_asset_properties(options[:file_asset_holder], parent)
           end
         end
 
         parent
+      end
+
+      private
+
+      def apply_file_asset_properties(file_asset_holder, hash)
+        files = file_asset_holder.files
+
+        file = files.find { |file| file.directory == hash[:downloadPath] and file.name == hash[:text] }
+        unless file.nil?
+          hash[:isSecured] = file.is_secured?
+          hash[:roles] = file.roles.collect { |r| r.internal_identifier }
+          hash[:iconCls] = 'icon-document_lock' if hash[:isSecured]
+          hash[:size] = file.data_file_size
+          hash[:width] = file.width
+          hash[:height] = file.height
+          hash[:url] = file.data.url
+        end
+
+        hash
       end
 
     end #S3Manager

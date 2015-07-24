@@ -43,7 +43,7 @@ module Knitkit
 
           @file_support.create_folder(path, name)
 
-          render :json => {:success => true, :node => @file_support.build_node(File.join(path, name))}
+          render :json => {:success => true, :node => @file_support.find_node(File.join(path, name), {keep_full_path: false})}
         end
 
         def upload_file
