@@ -61,7 +61,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsDataView", {
                                                 directory: self.directory
                                             }
                                         });
-                                        self.fireEvent('imageuploaded', self);
+                                        self.fireEvent('imageuploaded', self, resultObj.node);
                                     }
                                     else {
                                         Ext.Msg.alert('Error', 'Could not upload image');

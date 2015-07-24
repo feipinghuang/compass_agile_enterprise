@@ -32,7 +32,7 @@ module Knitkit
 
           @assets_model.add_file('#Empty File', File.join(path, name))
 
-          render :json => {:success => true}
+          render :json => {:success => true, :node => @file_support.find_node(File.join(path, name), :file_asset_holder => @assets_model)}
         end
 
         def create_folder
@@ -42,7 +42,8 @@ module Knitkit
           path = File.join(@file_support.root, path) if path.index(@file_support.root).nil?
 
           @file_support.create_folder(path, name)
-          render :json => {:success => true}
+
+          render :json => {:success => true, :node => @file_support.build_node(File.join(path, name))}
         end
 
         def upload_file
@@ -55,7 +56,6 @@ module Knitkit
             capability_resource = "GlobalFileAsset"
           end
 
-          model = DesktopApplication.find_by_internal_identifier('knitkit')
           begin
             current_user.with_capability(capability_type, capability_resource) do
               result = {}
@@ -64,8 +64,10 @@ module Knitkit
               data = request.raw_post
 
               begin
-                upload_path == 'root_node' ? @assets_model.add_file(data, File.join(base_path, name)) : @assets_model.add_file(data, File.join(@file_support.root, upload_path, name))
-                result = {:success => true}
+                path = (upload_path == 'root_node') ? File.join(base_path, name) : File.join(@file_support.root, upload_path, name)
+
+                @assets_model.add_file(data, path)
+                result = {:success => true, :node => @file_support.find_node(path, :file_asset_holder => @assets_model)}
               rescue => ex
                 logger.error ex.message
                 logger.error ex.backtrace.join("\n")

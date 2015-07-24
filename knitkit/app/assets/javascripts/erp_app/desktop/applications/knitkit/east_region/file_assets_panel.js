@@ -314,12 +314,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel", {
 
         var items = [];
 
-        if (currentUser.hasCapability('view', 'GlobalFileAsset')) {
-            items.push(this.sharedFileAssetsTreePanel);
-        }
-
         if (currentUser.hasCapability('view', 'SiteFileAsset')) {
             items.push(this.websiteFileAssetsTreePanel);
+        }
+
+        if (currentUser.hasCapability('view', 'GlobalFileAsset')) {
+            items.push(this.sharedFileAssetsTreePanel);
         }
 
         config = Ext.apply({
