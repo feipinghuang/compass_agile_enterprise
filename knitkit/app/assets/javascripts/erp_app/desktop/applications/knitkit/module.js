@@ -243,6 +243,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
                         if(imagesTreeStatus){
                             imagesTreeStatus.reset();
                         }
+
+                        if(themeTreeStatus){
+                            themeTreeStatus.reset();
+                        }
                     }
                 }
             });

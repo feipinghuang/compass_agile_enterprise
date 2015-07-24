@@ -1,3 +1,39 @@
+var themeTreeStatus = {
+    nodes: [],
+    addNodeState: function(node){
+        var me = this,
+            id = node.get('id'),
+            parentId = node.get('parentId'),
+            isExpanded = node.get('expanded'),
+            item = null;
+
+        Ext.each(me.nodes, function(obj, index){
+            if(obj.id == id && obj.parentId == parentId){
+                item = obj;
+                return false;
+            }
+        });
+
+        if(!item){
+            me.nodes.push({
+                id: id,
+                parentId: parentId,
+                isExpanded: isExpanded
+            });
+        } else{
+            item['isExpanded'] = isExpanded;
+        }
+
+    },
+    isEmpty: function(){
+        var me = this;
+        return me.nodes.length == 0;
+    },
+    reset: function(){
+        var me = this;
+        me.nodes = [];
+    }
+};
 Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
     extend: "Compass.ErpApp.Shared.FileManagerTree",
     alias: 'widget.knitkit_themestreepanel',
@@ -239,8 +275,34 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             scroll: 'vertical',
             //containerScroll: true,
             listeners: {
+                'afteritemexpand': function(node, index, item, eOpts){
+                    themeTreeStatus.addNodeState(node);
+                },
+                'afteritemcollapse': function(node, index, item, eOpts){
+                    themeTreeStatus.addNodeState(node);
+                },
                 'load': function (store) {
-                    store.getRootNode().expandChildren();
+                    var parentNode = store.getRootNode();
+                    parentNode.expandChildren();
+
+                    if(!themeTreeStatus.isEmpty()){
+                        Ext.each(themeTreeStatus.nodes, function(nodeObject, index){
+                            var node = parentNode.findChildBy(function(child){
+                                    return (child.get('id') == nodeObject['id'] &&
+                                        child.get('parentId') == nodeObject['parentId']);
+                                }, null, true),
+                                isNodeExpanded = nodeObject['isExpanded'];
+
+                            if(node){
+                                if(isNodeExpanded){
+                                    node.expand(false);
+                                } else{
+                                    node.collapse(false);
+                                }
+                            }
+                        });
+                    }
+
                 },
                 'showImage': function (fileManager, node, themeId) {
                     var themeId = null;
