@@ -86,23 +86,23 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             uploadUrl: '/knitkit/erp_app/desktop/image_assets/shared/upload_file',
             module: config.module,
             listeners: {
-                afterrender: function () {
-                    if (currentUser.hasCapability('view', 'GlobalImageAsset')) {
-                        self.sharedImageAssetsDataView.directory = 'root_node';
-                        var store = self.sharedImageAssetsDataView.getStore();
-                        store.load({
-                            params: {
-                                directory: 'root_node'
+                imageuploaded: function (comp) {
+                    if (self.sharedImageAssetsTreePanel.selectedDirectoryNode.isExpanded()) {
+                        Ext.apply(self.sharedImageAssetsTreePanel.extraPostData, {
+                            directory: self.sharedImageAssetsTreePanel.selectedDirectoryNode.data.id
+                        });
+
+                        self.sharedImageAssetsTreePanel.getStore().load({
+                            node: self.sharedImageAssetsTreePanel.selectedDirectoryNode,
+                            params: self.sharedImageAssetsTreePanel.extraPostData,
+                            callback: function () {
+                                self.sharedImageAssetsTreePanel.getView().refresh();
                             }
                         });
                     }
-                },
-                imageuploaded: function (comp) {
-                    self.sharedImageAssetsTreePanel.getStore().load({
-                        callback: function () {
-                            self.sharedImageAssetsTreePanel.getView().refresh();
-                        }
-                    });
+                    else {
+                        self.sharedImageAssetsTreePanel.selectedDirectoryNode.expand();
+                    }
                 }
             }
         });
@@ -112,17 +112,22 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             uploadUrl: '/knitkit/erp_app/desktop/image_assets/website/upload_file',
             listeners: {
                 imageuploaded: function (comp) {
-                    var store = self.websiteImageAssetsTreePanel.getStore();
-                    store.load({
-                        callback: function () {
-                            self.websiteImageAssetsDataView.getStore().load({
-                                params: {
-                                    directory: 'root_node',
-                                    website_id: self.websiteId
-                                }
-                            });
-                        }
-                    });
+                    if (self.websiteImageAssetsTreePanel.selectedDirectoryNode.isExpanded()) {
+                        Ext.apply(self.websiteImageAssetsTreePanel.extraPostData, {
+                            directory: self.websiteImageAssetsTreePanel.selectedDirectoryNode.data.id
+                        });
+
+                        self.websiteImageAssetsTreePanel.getStore().load({
+                            node: self.websiteImageAssetsTreePanel.selectedDirectoryNode,
+                            params: self.websiteImageAssetsTreePanel.extraPostData,
+                            callback: function () {
+                                self.websiteImageAssetsTreePanel.getView().refresh();
+                            }
+                        });
+                    }
+                    else {
+                        self.websiteImageAssetsTreePanel.selectedDirectoryNode.expand();
+                    }
                 }
             }
         });
@@ -198,6 +203,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                 'itemclick': function (view, record, item, index, e) {
                     e.stopEvent();
                     if (!record.data["leaf"]) {
+                        this.selectedDirectoryNode = record;
+                        self.sharedImageAssetsDataView.setPath(record.getPath('text'));
                         self.sharedImageAssetsDataView.directory = record.data.id;
                         var store = self.sharedImageAssetsDataView.getStore();
                         store.load({
@@ -210,17 +217,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                         return false;
                     }
                 },
-                'fileDeleted': function (fileTreePanel, node) {
-                    var store = self.sharedImageAssetsDataView.getStore();
-                    store.load({
+                'filedeleted': function (fileTreePanel, node) {
+                    self.sharedImageAssetsDataView.getStore().load({
                         params: {
                             directory: node.parentNode.data.id
                         }
                     });
                 },
-                'fileUploaded': function (fileTreePanel, node) {
-                    var store = self.sharedImageAssetsDataView.getStore();
-                    store.load({
+                'fileuploaded': function (fileTreePanel, node) {
+                    self.sharedImageAssetsDataView.getStore().load({
                         params: {
                             directory: node.data.id
                         }
@@ -306,6 +311,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                     if (self.websiteId !== null) {
                         e.stopEvent();
                         if (!record.data["leaf"]) {
+                            this.selectedDirectoryNode = record;
+                            self.websiteImageAssetsDataView.setPath(record.getPath('text'));
                             self.websiteImageAssetsDataView.directory = record.data.id;
                             self.websiteImageAssetsDataView.websiteId = self.websiteId;
                             var store = self.websiteImageAssetsDataView.getStore();
@@ -321,15 +328,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                         }
                     }
                 },
-                'fileDeleted': function (fileTreePanel, node) {
+                'filedeleted': function (fileTreePanel, node) {
                     self.websiteImageAssetsDataView.getStore().load({
                         params: {
-                            directory: node.parentNode.data.downloadPath,
+                            directory: node.parentNode.data.id,
                             website_id: self.websiteId
                         }
                     });
                 },
-                'fileUploaded': function (fileTreePanel, node) {
+                'fileuploaded': function (fileTreePanel, node) {
                     self.websiteImageAssetsDataView.getStore().load({
                         params: {
                             directory: node.data.id,
@@ -370,13 +377,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             autoRender: true,
             layout: 'border',
             title: 'Website',
-            items: [this.websiteImageAssetsTreePanel, websiteImagesPanel],
-            listeners: {
-                scope: self,
-                'show': function (panel) {
-                    self.reloadWebsiteImageAssetsTreePanel(self.websiteId);
-                }
-            }
+            items: [this.websiteImageAssetsTreePanel, websiteImagesPanel]
         });
 
         this.selectWebsite = function (website) {
@@ -416,10 +417,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             });
 
             if (websiteId) {
-                while (delNode = this.websiteImageAssetsTreePanel.getRootNode().childNodes[0]) {
-                    this.websiteImageAssetsTreePanel.getRootNode().removeChild(delNode);
+                var rootNode = this.websiteImageAssetsTreePanel.getRootNode();
+
+                while (delNode = rootNode.childNodes[0]) {
+                    rootNode.removeChild(delNode);
                 }
-                this.websiteImageAssetsTreePanel.getRootNode().expand();
+                rootNode.expand();
 
                 if (!this.websiteImageAssetsTreePanel.getStore().isLoading()) {
                     this.websiteImageAssetsTreePanel.getStore().load();
@@ -429,6 +432,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                         params: {
                             directory: 'root_node',
                             website_id: websiteId
+                        },
+                        callback: function () {
+                            self.websiteImageAssetsTreePanel.selectedDirectoryNode = rootNode;
+                            self.websiteImageAssetsDataView.setPath('/' + rootNode.data.text);
                         }
                     });
                 }
@@ -436,12 +443,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
         };
 
         var items = [];
-        if (currentUser.hasCapability('view', 'GlobalImageAsset')) {
-            items.push(sharedImagesLayout);
-        }
 
         if (currentUser.hasCapability('view', 'SiteImageAsset')) {
             items.push(websiteImagesLayout);
+        }
+
+        if (currentUser.hasCapability('view', 'GlobalImageAsset')) {
+            items.push(sharedImagesLayout);
         }
 
         config = Ext.apply({
@@ -454,6 +462,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                 afterrender: function (panel) {
                     // workaround for extJS rendering bug. set activetab 1 above and 0 afterrender
                     panel.setActiveTab(0);
+
+                    // load shared assets
+                    var rootNode = panel.sharedImageAssetsTreePanel.getRootNode();
+                    panel.sharedImageAssetsTreePanel.selectedDirectoryNode = rootNode;
+                    panel.sharedImageAssetsDataView.setPath(rootNode.getPath('text'));
+                    panel.sharedImageAssetsDataView.directory = rootNode.data.id;
+                    panel.sharedImageAssetsDataView.getStore().load({
+                        params: {
+                            directory: rootNode.data.id
+                        }
+                    });
                 }
             }
         }, config);

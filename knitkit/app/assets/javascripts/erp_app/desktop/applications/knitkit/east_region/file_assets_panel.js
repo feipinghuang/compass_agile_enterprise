@@ -148,9 +148,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel", {
                     e.stopEvent();
                     return false;
                 },
-                'fileDeleted': function (fileTreePanel, node) {
+                'filedeleted': function (fileTreePanel, node) {
                 },
-                'fileUploaded': function (fileTreePanel, node) {
+                'fileuploaded': function (fileTreePanel, node) {
                 },
                 'downloadfile': function (fileTreePanel, node) {
                     window.open("/download/" + node.data.text + "?path=" + node.data.downloadPath + '&disposition=attachment', 'mywindow', 'width=400,height=200');
@@ -253,9 +253,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel", {
                     e.stopEvent();
                     return false;
                 },
-                'fileDeleted': function (fileTreePanel, node) {
+                'filedeleted': function (fileTreePanel, node) {
                 },
-                'fileUploaded': function (fileTreePanel, node) {
+                'fileuploaded': function (fileTreePanel, node) {
                 },
                 'downloadfile': function (fileTreePanel, node) {
                     window.open("/download/" + node.data.text + "?path=" + node.data.downloadPath + '&disposition=attachment', 'mywindow', 'width=400,height=200');
