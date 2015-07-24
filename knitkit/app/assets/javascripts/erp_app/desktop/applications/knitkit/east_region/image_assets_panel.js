@@ -1,14 +1,11 @@
 var imagesTreeStatus = {
     websiteImagesNodes: [],
     sharedImagesNodes: [],
-    websitePreviewId: null,
-    sharedPreviewId: null,
+
     reset: function(){
         var me = this;
         me.websiteImagesNodes = [];
         me.sharedImagesNodes = [];
-        me.websitePreviewId = null;
-        me.sharedPreviewId = null;
     },
     setPreviewDirectory: function(nodeId, nodeType){
         var me = this,
@@ -191,17 +188,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                             }
                         });
                     }
-
-                    if(imagesTreeStatus.sharedPreviewId){
-                        var previewNode = parentNode.findChildBy(function(child){
-                            return child.get('id') == imagesTreeStatus.sharedPreviewId;
-                        }, null, true);
-
-                        if(previewNode){
-                            me.getSelectionModel().select(previewNode, false);
-                            me.fireEvent('fileUploaded', me, previewNode);
-                        }
-                    }
                 },
                 'allowdelete': function () {
                     return currentUser.hasCapability('delete', 'GlobalImageAsset');
@@ -219,7 +205,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                                 directory: record.data.id
                             }
                         });
-                        imagesTreeStatus.setPreviewDirectory(record.get('id'), 'shared');
                     }
                     else {
                         return false;
@@ -314,17 +299,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                                 }
                             }
                         });
-
-                        if(imagesTreeStatus.websitePreviewId){
-                            var previewNode = parentNode.findChildBy(function(child){
-                                return child.get('id') == imagesTreeStatus.websitePreviewId;
-                            }, null, true);
-
-                            if(previewNode){
-                                me.getSelectionModel().select(previewNode, false);
-                                me.fireEvent('fileUploaded', me, previewNode);
-                            }
-                        }
                     }
 
                 },
@@ -341,7 +315,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                                     website_id: self.websiteId
                                 }
                             });
-                            imagesTreeStatus.setPreviewDirectory(record.get('id'), 'website');
                         }
                         else {
                             return false;
