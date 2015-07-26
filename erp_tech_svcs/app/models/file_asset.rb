@@ -64,7 +64,8 @@ class FileAsset < ActiveRecord::Base
 
   after_create :set_sti
   # must fire after paperclip's after_save :save_attached_files
-  after_save :set_data_file_name, :save_dimensions
+  after_save :set_data_file_name
+
   before_validation(on: :create) do
     self.check_name_uniqueness
   end
@@ -88,6 +89,7 @@ class FileAsset < ActiveRecord::Base
                     :validations => {:extension => lambda { |data, file| validate_extension(data, file) }}
 
   before_post_process :set_content_type
+  before_save :save_dimensions
 
   validates_attachment_presence :data
   validates_attachment_size :data, :less_than => ErpTechSvcs::Config.max_file_size_in_mb.megabytes
@@ -239,13 +241,16 @@ class FileAsset < ActiveRecord::Base
   end
 
   def save_dimensions
-    if type == 'Image'
+    if @type == 'Image'
       begin
-        f = Paperclip::Geometry.from_file(self.path)
-        w = f.width.to_i
-        h = f.height.to_i
-        update_attribute(:width, w) if width != w
-        update_attribute(:height, h) if height != h
+        tempfile = data.queued_for_write[:original]
+        unless tempfile.nil?
+          geometry = Paperclip::Geometry.from_file(tempfile)
+          w = geometry.width.to_i
+          h = geometry.height.to_i
+          update_attribute(:width, w) if width != w
+          update_attribute(:height, h) if height != h
+        end
       rescue => ex
         Rails.logger.error('Could not save width and height of image. Make sure Image Magick and the identify command are accessible')
       end

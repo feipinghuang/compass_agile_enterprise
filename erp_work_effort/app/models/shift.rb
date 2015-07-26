@@ -3,8 +3,6 @@ class Shift < ActiveRecord::Base
 
   belongs_to :party
 
-  is_json :custom_fields
-
   # override getter to format time
   def shift_start
     read_attribute(:shift_start).strftime('%I:%M%p')

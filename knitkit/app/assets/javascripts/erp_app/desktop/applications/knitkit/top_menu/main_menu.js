@@ -240,7 +240,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu = function () {
                                         fieldLabel: 'Name *',
                                         allowBlank: false,
                                         name: 'name',
-                                        //plugins: [new helpQtip("This is required and must be unique. Spaces are OK.")]
+                                        // plugins: [new helpQtip("This is required and must be unique. Spaces are OK.")]
                                     },
                                     {
                                         xtype: 'textfield',
@@ -310,7 +310,20 @@ Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu = function () {
                                         btn.up('window').close();
                                     }
                                 }
-                            ]
+                            ],
+                            listeners: {
+                                'activate' : function(form){
+                                    Ext.Ajax.request({
+                                        url: '/knitkit/erp_app/desktop/site/get_current_host',
+                                        success: function(response){
+                                            var obj = Ext.decode(response.responseText);
+                                            if (obj.success) {
+                                                form.down('[name=host]').setValue(obj.host);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
                         }).show();
                     }
                 },

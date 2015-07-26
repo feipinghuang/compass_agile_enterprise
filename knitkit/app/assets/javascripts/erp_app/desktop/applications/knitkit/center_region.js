@@ -47,8 +47,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
 
     /* sections */
 
-    saveSectionLayout: function (id, comp, content) {
-        jcomp = comp;
+    saveSectionLayout: function (id, codeMirrorComp, content) {
         var self = this;
         this.setWindowStatus('Saving...');
         Ext.Ajax.request({
@@ -71,7 +70,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 else {
                     Ext.Msg.alert('Error', obj.message);
                 }
-                comp.codeMirrorInstance.focus();
+
+                codeMirrorComp.focus();
             },
             failure: function (response) {
                 self.clearWindowStatus();
@@ -90,8 +90,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 layout: 'border',
                 title: sectionName,
                 save: function (comp) {
-                    var content = comp.down('codemirror').getValue();
-                    self.saveSectionLayout(websiteSectionId, comp, content);
+                    var codeMirrorComp = comp.down('codemirror');
+                    var content = codeMirrorComp.getValue();
+                    self.saveSectionLayout(websiteSectionId, codeMirrorComp, content);
                 },
                 closable: true,
                 itemId: itemId,
@@ -101,8 +102,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                         tbarItems: tbarItems,
                         disableSave: true,
                         listeners: {
-                            save: function (comp, content) {
-                                self.saveSectionLayout(websiteSectionId, comp, content);
+                            save: function (codeMirrorComp, content) {
+                                self.saveSectionLayout(websiteSectionId, codeMirrorComp, content);
                             }
                         },
                         xtype: 'codemirror',
@@ -230,7 +231,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 if (!obj.success) {
                     Ext.Msg.alert('Error', obj.message);
                 }
-                comp.codeMirrorInstance.focus();
+
+                comp.focus();
             },
             failure: function (response) {
                 self.clearWindowStatus();
@@ -266,8 +268,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 itemId: itemId,
                 layout: 'fit',
                 save: function (comp) {
-                    var content = comp.down('codemirror').getValue();
-                    self.saveTemplateFile(node.data.id, comp, content);
+                    var codeMirrorComp = comp.down('codemirror');
+                    var content = codeMirrorComp.getValue();
+                    self.saveTemplateFile(node.data.id, codeMirrorComp, content);
                 },
                 items: [
                     {
@@ -275,8 +278,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                         disableSave: true,
                         xtype: 'codemirror',
                         listeners: {
-                            save: function (comp, content) {
-                                self.saveTemplateFile(node.data.id, comp, content);
+                            save: function (codeMirrorComp, content) {
+                                self.saveTemplateFile(node.data.id, codeMirrorComp, content);
                             }
                         },
                         mode: mode,
@@ -477,7 +480,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         var self = this;
         var fileName = node.data.id.split('/').pop().split('.')[0];
         var fileType = node.data.id.split('.').pop();
-        var itemId = fileName + themeId;
+        var itemId = Compass.ErpApp.Utility.Encryption.MD5(node.data.id);
         var item = this.workArea.query('#' + itemId).first();
 
         if (Compass.ErpApp.Utility.isBlank(item)) {
@@ -489,10 +492,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 html: '<img src="' + node.data.url + '" />'
             });
 
-            this.workArea.add(item);
+            self.workArea.add(item);
         }
 
-        this.workArea.setActiveTab(item);
+        self.workArea.setActiveTab(item);
         return false;
     },
 
