@@ -7,6 +7,8 @@ class Configuration < ActiveRecord::Base
 
   validate :cannot_have_two_templates_per_iid
 
+  before_destroy :clear_configuration_item_types
+
   def cannot_have_two_templates_per_iid
     if self.is_template
       unless Configuration.where('id != ?', self.id).where(:is_template => true).where(:internal_identifier => self.internal_identifier).first.nil?
@@ -24,6 +26,7 @@ class Configuration < ActiveRecord::Base
       group_by(&:category)
     end
   end
+
   has_and_belongs_to_many :configuration_item_types, :uniq => true do
     def by_category(category)
       joins(:category_classification).where(:category_classifications => {:category_id => category})
@@ -32,6 +35,10 @@ class Configuration < ActiveRecord::Base
     def grouped_by_category
       group_by(&:category)
     end
+  end
+
+  def clear_configuration_item_types
+    configuration_item_types.clear
   end
 
   alias :items :configuration_items
