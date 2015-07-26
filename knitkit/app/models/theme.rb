@@ -11,7 +11,7 @@ class Theme < ActiveRecord::Base
   end
   @base_layouts_views_path = "#{Knitkit::Engine.root.to_s}/app/views"
   @knitkit_website_stylesheets_path = "#{Knitkit::Engine.root.to_s}/app/assets/stylesheets/knitkit"
-  @knitkit_website_javascripts_path = "#{Knitkit::Engine.root.to_s}/app/assets/public/javascripts/knitkit"
+  @knitkit_website_javascripts_path = "#{Knitkit::Engine.root.to_s}/app/assets/javascripts/knitkit"
   @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/public/images/knitkit"
 
   protected_with_capabilities
@@ -295,27 +295,24 @@ class Theme < ActiveRecord::Base
   def save_theme_file(path, type, options)
     ignored_css = [
         'bootstrap.min.css',
-        'bootstrap-responsive.min.css',
-        'datepicker.css',
         'inline_editing.css',
     ]
 
     ignored_js = [
+        'additional-methods.min',
         'bootstrap.min.js',
-        'bootstrap-datepicker.js',
         'confirm-bootstrap.js',
         'inline_editing.js',
         'jquery.maskedinput.min.js',
-        'Main.js',
-        'View.js'
+        'jquery.validate.min.js'
     ]
 
     ignored_files = (ignored_css | ignored_js).flatten
 
     unless ignored_files.any? { |w| path =~ /#{w}/ }
       contents = IO.read(path)
-      contents.gsub!("<%= static_stylesheet_link_tag 'knitkit/custom.css' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= static_javascript_include_tag 'knitkit/theme.js' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/custom' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= javascript_include_tag 'knitkit/theme' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
 
       path = case type
                when :widgets

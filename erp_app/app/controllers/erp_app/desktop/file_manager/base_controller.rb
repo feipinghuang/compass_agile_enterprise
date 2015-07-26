@@ -135,7 +135,7 @@ module ErpApp
           else
             @file_support.create_file(upload_path, name, contents)
             result[:success] = true
-            result[:node] = @file_support.find_node(File.join(upload_path, name))
+            result[:node] = @file_support.find_node(File.join(upload_path, name), {keep_full_path: true})
           end
 
           result

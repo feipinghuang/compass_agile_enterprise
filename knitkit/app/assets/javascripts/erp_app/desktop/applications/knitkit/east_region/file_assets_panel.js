@@ -243,12 +243,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel", {
                     store.getRootNode().data.text = self.websiteName;
                     self.websiteFileAssetsTreePanel.view.refresh();
                 },
-                'show': function (panel) {
-                    // workaround for extJS rendering bug. tree tries to load faster than extjs can render, wait X ms
-                    setTimeout(function () {
-                        self.reloadWebsiteFileAssetsTreePanel(self.websiteId);
-                    }, 100);
-                },
                 'itemclick': function (view, record, item, index, e) {
                     e.stopEvent();
                     return false;

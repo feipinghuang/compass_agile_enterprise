@@ -174,7 +174,13 @@ module ErpTechSvcs
       end
 
       def find_node(path, options={})
-        parent = {:text => path.split('/').pop, :iconCls => "icon-content", :leaf => false, :id => path, :children => []}
+        parent = {
+            :text => path.split('/').pop,
+            :iconCls => "icon-content",
+            :leaf => false,
+            :id => path,
+            :children => []
+        }
 
         #remove proceeding slash for s3
         path.sub!(%r{^/}, '')
@@ -219,6 +225,9 @@ module ErpTechSvcs
             parent = apply_file_asset_properties(options[:file_asset_holder], parent)
           end
         end
+
+        # add preceding slash back to parent
+        parent[:id] = "/#{parent[:id]}"
 
         parent
       end
