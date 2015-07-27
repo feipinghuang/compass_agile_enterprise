@@ -773,9 +773,10 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newThemeMenuItem = {
 
                                     var obj = Ext.decode(action.response.responseText);
                                     if (obj.success) {
-                                        themesTreePanel.getStore().load({
-                                            node: themesTreePanel.getRootNode()
-                                        });
+                                        var store = themesTreePanel.getStore(),
+                                            rootNode = store.getRootNode();
+
+                                        rootNode.appendChild(obj.node);
                                     }
                                 },
                                 failure: function (form, action) {
@@ -850,10 +851,12 @@ Compass.ErpApp.Desktop.Applications.Knitkit.uploadThemeMenuItem = {
                                     waitMsg: 'Creating theme...',
                                     success: function (form, action) {
                                         var obj = Ext.decode(action.response.responseText);
+
                                         if (obj.success) {
-                                            themesTreePanel.getStore().load({
-                                                node: themesTreePanel.getRootNode()
-                                            });
+                                            var store = themesTreePanel.getStore(),
+                                                rootNode = store.getRootNode();
+
+                                            rootNode.appendChild(obj.node);
                                         }
                                         window.close();
                                     },

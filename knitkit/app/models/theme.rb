@@ -90,9 +90,11 @@ class Theme < ActiveRecord::Base
       theme_name = name_and_id.split('[').first
       theme_id = name_and_id.split('[').last.gsub(']', '')
       return false unless valid_theme?(file)
-      Theme.create(:name => theme_name, :theme_id => theme_id, :website => website).tap do |theme|
+      theme = Theme.create(:name => theme_name, :theme_id => theme_id, :website => website).tap do |theme|
         theme.import(file)
       end
+
+      theme
     end
 
     def make_tmp_dir

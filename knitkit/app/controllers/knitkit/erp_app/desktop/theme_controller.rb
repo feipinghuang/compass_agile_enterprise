@@ -39,7 +39,7 @@ module Knitkit
           begin
             current_user.with_capability('view', 'Theme') do
               unless params[:theme_data].blank?
-                Theme.import(params[:theme_data], @website)
+                theme = Theme.import(params[:theme_data], @website)
               else
                 theme = Theme.create(:website => @website, :name => params[:name], :theme_id => params[:theme_id])
                 theme.version = params[:version]
@@ -49,8 +49,7 @@ module Knitkit
                 theme.save
                 theme.create_theme_files!
               end
-
-              render :inline => {:success => true}.to_json
+              render :inline => {:success => true, :node => build_tree_node(theme, @website)}.to_json
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
             render :json => {:success => false, :message => ex.message}
@@ -314,33 +313,37 @@ module Knitkit
           theme.files.where('name = ? and directory = ?', ::File.basename(path), file_dir).first
         end
 
+        def build_tree_node(theme, website)
+
+          theme_hash = {:text => "#{theme.name}[#{theme.theme_id}]", :handleContextMenu => true,
+                        :siteId => website.id, :isActive => (theme.active == 1), :iconCls => 'icon-content',
+                        :isTheme => true, :id => theme.id, :children => []}
+          if theme.active == 1
+            theme_hash[:iconCls] = 'icon-add'
+          else
+            theme_hash[:iconCls] = 'icon-delete'
+          end
+
+          ['stylesheets', 'javascripts', 'images', 'templates', 'widgets'].each do |resource_folder|
+            theme_hash[:children] << {
+              :themeId => theme.id,
+              :siteId => website.id,
+              :text => resource_folder.capitalize,
+              :iconCls => 'icon-content',
+              :handleContextMenu => (resource_folder == 'widgets'),
+              :id => "#{theme.url}/#{resource_folder}"
+            }
+          end
+          theme_hash
+        end
+
         def setup_tree
           tree = []
 
           if @website
             #handle themes
             @website.themes.each do |theme|
-              theme_hash = {:text => "#{theme.name}[#{theme.theme_id}]", :handleContextMenu => true,
-                            :siteId => @website.id, :isActive => (theme.active == 1), :iconCls => 'icon-content',
-                            :isTheme => true, :id => theme.id, :children => []}
-
-              if theme.active == 1
-                theme_hash[:iconCls] = 'icon-add'
-              else
-                theme_hash[:iconCls] = 'icon-delete'
-              end
-
-              ['stylesheets', 'javascripts', 'images', 'templates', 'widgets'].each do |resource_folder|
-                theme_hash[:children] << {
-                    :themeId => theme.id,
-                    :siteId => @website.id,
-                    :text => resource_folder.capitalize,
-                    :iconCls => 'icon-content',
-                    :handleContextMenu => (resource_folder == 'widgets'),
-                    :id => "#{theme.url}/#{resource_folder}"
-                }
-              end
-
+              theme_hash = build_tree_node(theme, @website)
               tree << theme_hash
             end
           end
