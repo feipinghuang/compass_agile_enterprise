@@ -86,22 +86,18 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             uploadUrl: '/knitkit/erp_app/desktop/image_assets/shared/upload_file',
             module: config.module,
             listeners: {
-                imageuploaded: function (comp) {
-                    if (self.sharedImageAssetsTreePanel.selectedDirectoryNode.isExpanded()) {
-                        Ext.apply(self.sharedImageAssetsTreePanel.extraPostData, {
-                            directory: self.sharedImageAssetsTreePanel.selectedDirectoryNode.data.id
-                        });
+                imageuploaded: function (comp, node) {
+                    var record = self.sharedImageAssetsTreePanel.selectedDirectoryNode;
 
-                        self.sharedImageAssetsTreePanel.getStore().load({
-                            node: self.sharedImageAssetsTreePanel.selectedDirectoryNode,
-                            params: self.sharedImageAssetsTreePanel.extraPostData,
-                            callback: function () {
-                                self.sharedImageAssetsTreePanel.getView().refresh();
-                            }
-                        });
+                    if (!record.isExpanded() && !record.isLoaded()) {
+                        record.expand();
                     }
                     else {
-                        self.sharedImageAssetsTreePanel.selectedDirectoryNode.expand();
+                        record.appendChild(node);
+
+                        if (!record.isExpanded()) {
+                            record.expand();
+                        }
                     }
                 }
             }
@@ -111,22 +107,18 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
             url: '/knitkit/erp_app/desktop/image_assets/website/get_images',
             uploadUrl: '/knitkit/erp_app/desktop/image_assets/website/upload_file',
             listeners: {
-                imageuploaded: function (comp) {
-                    if (self.websiteImageAssetsTreePanel.selectedDirectoryNode.isExpanded()) {
-                        Ext.apply(self.websiteImageAssetsTreePanel.extraPostData, {
-                            directory: self.websiteImageAssetsTreePanel.selectedDirectoryNode.data.id
-                        });
+                imageuploaded: function (comp, node) {
+                    var record = self.websiteImageAssetsTreePanel.selectedDirectoryNode;
 
-                        self.websiteImageAssetsTreePanel.getStore().load({
-                            node: self.websiteImageAssetsTreePanel.selectedDirectoryNode,
-                            params: self.websiteImageAssetsTreePanel.extraPostData,
-                            callback: function () {
-                                self.websiteImageAssetsTreePanel.getView().refresh();
-                            }
-                        });
+                    if (!record.isExpanded() && !record.isLoaded()) {
+                        record.expand();
                     }
                     else {
-                        self.websiteImageAssetsTreePanel.selectedDirectoryNode.expand();
+                        record.appendChild(node);
+
+                        if (!record.isExpanded()) {
+                            record.expand();
+                        }
                     }
                 }
             }

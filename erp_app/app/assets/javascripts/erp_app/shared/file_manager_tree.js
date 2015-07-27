@@ -522,12 +522,21 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                     standardUploadUrl: this.initialConfig['standardUploadUrl'],
                                     extraPostData: self.extraPostData,
                                     listeners: {
-                                        'fileuploaded': function () {
-                                            store.load({
-                                                node: record,
-                                                params: self.extraPostData
-                                            });
-                                            self.fireEvent('fileuploaded', this, record);
+                                        'fileuploaded': function (uploadWindow, response) {
+                                            if(!record.isExpanded() && !record.isLoaded()){
+                                                record.expand();
+                                            }
+                                            else{
+                                                if (response.success) {
+                                                    record.appendChild(response.node);
+
+                                                    if(!record.isExpanded()){
+                                                        record.expand();
+                                                    }
+                                                }
+                                            }
+
+                                            self.fireEvent('fileuploaded', this, record, response);
                                         }
                                     }
                                 });
@@ -561,10 +570,20 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                                 params: self.extraPostData,
                                                 success: function (response) {
                                                     msg.hide();
-                                                    store.load({
-                                                        node: record,
-                                                        params: self.extraPostData
-                                                    });
+
+                                                    if(!record.isExpanded() && !record.isLoaded()){
+                                                        record.expand();
+                                                    }
+                                                    else{
+                                                        var responseObj = Ext.decode(response.responseText);
+                                                        if (responseObj.success) {
+                                                            record.appendChild(responseObj.node);
+
+                                                            if(!record.isExpanded()){
+                                                                record.expand();
+                                                            }
+                                                        }
+                                                    }
                                                 },
                                                 failure: function () {
                                                     Ext.Msg.alert('Status', 'Error creating file.');
@@ -603,10 +622,20 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                                 params: self.extraPostData,
                                                 success: function (response) {
                                                     msg.hide();
-                                                    store.load({
-                                                        node: record,
-                                                        params: self.extraPostData
-                                                    });
+
+                                                    if(!record.isExpanded() && !record.isLoaded()){
+                                                        record.expand();
+                                                    }
+                                                    else{
+                                                        var responseObj = Ext.decode(response.responseText);
+                                                        if (responseObj.success) {
+                                                            record.appendChild(responseObj.node);
+
+                                                            if(!record.isExpanded()){
+                                                                record.expand();
+                                                            }
+                                                        }
+                                                    }
                                                 },
                                                 failure: function () {
                                                     Ext.Msg.alert('Status', 'Error creating folder.');

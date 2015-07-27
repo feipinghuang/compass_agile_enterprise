@@ -117,7 +117,12 @@ module ErpTechSvcs
         file_asset_nodes.each do |child_asset_node|
           node = find_node(File.join(self.root,child_asset_node[:id]))
           unless node.nil?
-            folders = node[:children].select{|item| !item[:leaf]}
+            if node[:leaf]
+              folders = []
+            else
+              folders = node[:children].select{|item| !item[:leaf]}
+            end
+
             child_asset_node[:children] = [] if child_asset_node[:children].nil? && !folders.empty?
             folders.each do |folder|
               folder[:id].gsub!(self.root,'')

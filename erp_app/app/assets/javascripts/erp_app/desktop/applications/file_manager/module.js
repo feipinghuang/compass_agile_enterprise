@@ -43,8 +43,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.FileManager", {
                     frame: true,
                     listeners: {
                         'showImage': function (fileManager, record) {
+                            var itemId = Compass.ErpApp.Utility.Encryption.MD5(record.data.id);
+
                             contentCardPanel.removeAll(true);
                             contentCardPanel.add(Ext.create('Ext.panel.Panel', {
+                                itemId: itemId,
                                 closable: true,
                                 layout: 'fit',
                                 html: '<img src="/erp_app/desktop/file_manager/base/download_file/?path=' + record.data.id + '" />'
@@ -54,10 +57,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.FileManager", {
                         },
                         'contentLoaded': function (fileManager, record, content) {
                             var path = record.data.id,
+                                itemId = Compass.ErpApp.Utility.Encryption.MD5(path),
                                 mode = Compass.ErpApp.Shared.CodeMirror.determineCodeMirrorMode(path);
 
                             contentCardPanel.removeAll(true);
                             contentCardPanel.add({
+                                itemId: itemId,
                                 disableToolbar: !currentUser.hasRole('admin'),
                                 xtype: 'codemirror',
                                 mode: mode,
@@ -87,6 +92,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.FileManager", {
                                 }
                             });
                             contentCardPanel.getLayout().setActiveItem(0);
+                        },
+                        'filedeleted': function (fileManager, record) {
+                            var itemId = itemId = Compass.ErpApp.Utility.Encryption.MD5(record.data.id);
+                            var card = contentCardPanel.down('#' + itemId);
+
+                            if (card) {
+                                card.destroy();
+                            }
                         }
                     }
                 }
