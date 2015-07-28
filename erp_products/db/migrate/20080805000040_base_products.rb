@@ -282,8 +282,6 @@ class BaseProducts < ActiveRecord::Migration
 
         t.timestamps
       end
-
-
     end
 
     # product_feature_applicabilities

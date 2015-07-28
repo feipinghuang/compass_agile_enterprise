@@ -37,12 +37,10 @@ module Knitkit
               end
 
               begin
-                file_asset = if upload_path == 'root_node'
-                               @assets_model.add_file(data, File.join(base_path, name))
-                             else
-                               @assets_model.add_file(data, File.join(@file_support.root, upload_path, name))
-                             end
-                result = {:success => true, :url => file_asset.data.url}
+                path = (upload_path == 'root_node') ? File.join(base_path, name) : File.join(@file_support.root, upload_path, name)
+                @assets_model.add_file(data, path)
+
+                result = {:success => true, :node => @file_support.find_node(path, :file_asset_holder => @assets_model)}
               rescue => ex
                 logger.error ex.message
                 logger.error ex.backtrace.join("\n")

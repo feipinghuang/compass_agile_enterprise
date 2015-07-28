@@ -185,7 +185,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.UserGrid", {
                                 if (button.findParentByType('security_management_userswidget') && !button.findParentByType('security_management_userswidget').assign_to_id) return;
                                 var grid = button.findParentByType('security_management_user_grid');
                                 var value = grid.query('#searchValue').first().getValue();
-                                grid.query('shared_dynamiceditablegrid').first().getStore().load({
+                                grid.getStore().load({
                                     params: {query_filter: value}
                                 });
                             }

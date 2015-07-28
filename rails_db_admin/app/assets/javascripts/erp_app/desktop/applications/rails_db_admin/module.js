@@ -480,8 +480,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
         this.store = Ext.create('Ext.data.ArrayStore', {
             fields: ['display', 'value'],
             data: [
-                ['False', '0'],
-                ['True', '1']
+                ['False', false],
+                ['True', true]
             ]
         });
 

@@ -24,6 +24,11 @@ module Api
                           dba_reln.role_type_id_to = #{RoleType.iid('dba_org').id}
                           )")
 
+        # TODO update for more advance searching
+        if params[:query_filter].present?
+          username = params[:query_filter].strip
+        end
+
         if username.blank?
           total_count = users.uniq.count
           users = users.order("#{sort} #{dir}").offset(start).limit(limit)

@@ -455,5 +455,10 @@ Ext.define("Compass.ErpApp.Shared.CodeMirror", {
 
     insertContent: function (value) {
         this.codeMirrorInstance.replaceRange(value, this.codeMirrorInstance.getCursor());
+    },
+
+    focus: function(){
+        this.callParent();
+        this.codeMirrorInstance.focus();
     }
 });

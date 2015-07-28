@@ -3,7 +3,7 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
     alias: 'widget.compassshared_filemanager',
     extraPostData: {},
     /*
-     addtional config options
+     additional config options
 
      additionalContextMenuItems : any additional context menus you want to add
      allowDownload : if the user can download the file
@@ -33,19 +33,19 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
              */
             'downloadfile',
             /**
-             * @event fileDeleted
+             * @event filedeleted
              * Fired after file is deleted.
              * @param {Compass.ErpApp.Shared.FileManagerTree} fileManagerTree This object
              * @param {Ext.data.model} model that represents tree node
              */
-            'fileDeleted',
+            'filedeleted',
             /**
              * @event fileuploaded
              * Fired after file is uploaded.
              * @param {Compass.ErpApp.Shared.FileManagerTree} fileManagerTree This object
              * @param {Ext.data.model} model that represents tree node
              */
-            'fileUploaded',
+            'fileuploaded',
             /**
              * @event contentLoaded
              * Fired after cotent is loaded from server
@@ -72,6 +72,10 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
              * call through for drop view event.
              */
             'drop_view',
+            /**
+             * @event showImage
+             * fired when item is clicked and is an image
+             */
             'showImage'
         );
     },
@@ -109,6 +113,7 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                     direction: 'ASC'
                 }
             ],
+            autoSync: false,
             folderSort: true,
             proxy: {
                 method: 'GET',
@@ -429,11 +434,9 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                                 var responseObj = Ext.decode(response.responseText);
                                                 msg.hide();
                                                 if (responseObj.success) {
-                                                    self.fireEvent('fileDeleted', this, record);
-                                                    store.load({
-                                                        node: record.parentNode,
-                                                        params: self.extraPostData
-                                                    });
+                                                    self.fireEvent('filedeleted', this, record);
+
+                                                    record.parentNode.removeChild(record);
                                                 }
                                                 else {
                                                     Ext.Msg.alert("Error", responseObj.error);
@@ -519,12 +522,21 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                     standardUploadUrl: this.initialConfig['standardUploadUrl'],
                                     extraPostData: self.extraPostData,
                                     listeners: {
-                                        'fileuploaded': function () {
-                                            store.load({
-                                                node: record,
-                                                params: self.extraPostData
-                                            });
-                                            self.fireEvent('fileUploaded', this, record);
+                                        'fileuploaded': function (uploadWindow, response) {
+                                            if(!record.isExpanded() && !record.isLoaded()){
+                                                record.expand();
+                                            }
+                                            else{
+                                                if (response.success) {
+                                                    record.appendChild(response.node);
+
+                                                    if(!record.isExpanded()){
+                                                        record.expand();
+                                                    }
+                                                }
+                                            }
+
+                                            self.fireEvent('fileuploaded', this, record, response);
                                         }
                                     }
                                 });
@@ -558,10 +570,20 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                                 params: self.extraPostData,
                                                 success: function (response) {
                                                     msg.hide();
-                                                    store.load({
-                                                        node: record,
-                                                        params: self.extraPostData
-                                                    });
+
+                                                    if(!record.isExpanded() && !record.isLoaded()){
+                                                        record.expand();
+                                                    }
+                                                    else{
+                                                        var responseObj = Ext.decode(response.responseText);
+                                                        if (responseObj.success) {
+                                                            record.appendChild(responseObj.node);
+
+                                                            if(!record.isExpanded()){
+                                                                record.expand();
+                                                            }
+                                                        }
+                                                    }
                                                 },
                                                 failure: function () {
                                                     Ext.Msg.alert('Status', 'Error creating file.');
@@ -600,10 +622,20 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                                 params: self.extraPostData,
                                                 success: function (response) {
                                                     msg.hide();
-                                                    store.load({
-                                                        node: record,
-                                                        params: self.extraPostData
-                                                    });
+
+                                                    if(!record.isExpanded() && !record.isLoaded()){
+                                                        record.expand();
+                                                    }
+                                                    else{
+                                                        var responseObj = Ext.decode(response.responseText);
+                                                        if (responseObj.success) {
+                                                            record.appendChild(responseObj.node);
+
+                                                            if(!record.isExpanded()){
+                                                                record.expand();
+                                                            }
+                                                        }
+                                                    }
                                                 },
                                                 failure: function () {
                                                     Ext.Msg.alert('Status', 'Error creating folder.');

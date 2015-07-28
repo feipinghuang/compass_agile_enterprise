@@ -490,6 +490,7 @@ Ext.define ('Ext.ux.panel.UploadPanel',
 			file.server_error = 1;
 			this.failed.push(file);
 		}
+		this.fireEvent('FileUploaded', uploader, response);
 		this.updateStoreFile(file);
 		this.updateProgress(file);
 	}
@@ -566,7 +567,7 @@ Ext.util.Format.fileSize = function(value)
 		return "1 Byte";
 	}
 	return '-';
-}
+};
 
 String.format = function()
 {
@@ -577,4 +578,4 @@ String.format = function()
 		s = s.replace(reg, arguments[i + 1]);
 	}
 	return s;
-}
+};

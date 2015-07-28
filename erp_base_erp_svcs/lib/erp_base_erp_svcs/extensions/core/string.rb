@@ -8,7 +8,7 @@ end
 
 module StringToInternalIdentifier
   def to_iid
-    iid = self.gsub(' ', '_').tr('^A-Za-z0-9_', '').downcase
+    iid = self.squish.gsub(' ', '_').tr('^A-Za-z0-9_', '').downcase
 
     #remove trailing _
     if iid[-1] == '_'

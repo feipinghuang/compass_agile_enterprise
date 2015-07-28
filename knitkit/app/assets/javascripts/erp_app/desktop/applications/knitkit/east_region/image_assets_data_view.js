@@ -3,6 +3,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsDataView", {
     alias: 'widget.knitkit_imageassetsdataview',
     directory: null,
     websiteId: null,
+
+    setPath: function (path) {
+        this.title.update('Path: ' + path);
+    },
+
     constructor: function (config) {
         var self = this;
 
@@ -16,7 +21,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsDataView", {
 
                 Compass.ErpApp.Utility.addEventHandler(viewElement.dom, 'dragover', function (e) {
                     viewElement.setStyle('border', 'solid 1px red');
-                    e.preventDefault()
+                    e.preventDefault();
                 });
                 Compass.ErpApp.Utility.addEventHandler(viewElement.dom, 'dragenter', function () {
                     viewElement.setStyle('border', 'solid 1px red');
@@ -52,10 +57,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsDataView", {
                                     if (resultObj.success) {
                                         store.load({
                                             params: {
+                                                website_id: self.websiteId,
                                                 directory: self.directory
                                             }
                                         });
-                                        self.fireEvent('imageuploaded', self);
+                                        self.fireEvent('imageuploaded', self, resultObj.node);
                                     }
                                     else {
                                         Ext.Msg.alert('Error', 'Could not upload image');
@@ -85,7 +91,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsDataView", {
 
             var contextMenu = Ext.create("Ext.menu.Menu", {
                 items: [
-                   {
+                    {
                         text: 'Insert Image At Cursor',
                         iconCls: 'icon-add',
                         handler: function () {
@@ -106,6 +112,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsDataView", {
             autoDestroy: true,
             style: 'overflow:auto',
             itemSelector: 'div.thumb-wrap',
+            renderTpl: [
+                '<div id="{id}-title">{title}</div>'
+            ],
+            childEls: ["title"],
             store: Ext.create('Ext.data.Store', {
                 proxy: {
                     type: 'ajax',
