@@ -143,6 +143,22 @@ module ErpTechSvcs
         end
       end
 
+      def is_descendant_of?(role_type)
+        role_type = RoleType.iid(role_type) if (role_type.is_a? String)
+        parent = self.parent
+
+        if (role_type.id == self.id)
+          result = true
+        elsif parent.nil?
+          result = false
+        elsif parent.id == role_type.id
+          result = true
+        else
+          result = parent.is_descendant_of? role_type
+        end
+        result
+      end
+
       private
 
       def crawl_up_from(node, to_node = self.class.root)
@@ -150,6 +166,7 @@ module ErpTechSvcs
         # from child node to root
         "#{node.description}///#{crawl_up_from(node.parent, to_node) if node != to_node}"
       end
+
 
     end #DefaultNestedSetMethods
   end #Utils
