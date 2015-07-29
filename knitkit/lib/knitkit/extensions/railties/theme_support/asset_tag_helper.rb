@@ -96,7 +96,89 @@ module ActionView
         tag("img", options)
       end
 
+      # theme_font_include(theme_id, font_file_name, options={})
+      # @param1: theme_id(string)
+      # @param2: font_file_name(string)
+      # @param3: options = {
+      #                       sources: [
+      #                                   {url: 'font1', format: 'format1'},
+      #                                   {url: 'font2', format: 'format2'}
+      #                                ],
+      #                                font_family: 'FontFamilyName',
+      #                                font_style: normal,
+      #                                font_weight: normal,
+      #                                font_stretch: '',
+      #                                unicode_range: '',
+      #                                apply_to: ''           # by default to body
+      #                     }
+      def theme_font_include(theme_id, font_file_name, options={})
+        theme = controller.website.themes.find_by_theme_id(theme_id)
+        return("could not find theme with the id #{theme_id}") unless theme
+
+        theme_font_src_tag(theme, font_file_name, options)
+      end
+
       private
+
+      def theme_font_path(theme, font_file_name)
+        name, directory = name_and_path_from_source(font_file_name, "#{theme.url}/fonts")
+        file = theme.files.where('name = ? and directory = ?', name, directory).first
+        file.nil? ? '' : file.data.url
+      end
+
+      def get_theme_font_urls(path, sources)
+        font_urls = []
+        sources.each do |source|
+          url_str = "url('#{path + source[:url]}') format('#{source[:format]}')"
+          font_urls << url_str
+        end
+        font_urls
+      end
+
+      def get_theme_attributes(path, options)
+        font_options = {}
+        font_options['src'] = get_theme_font_urls(path, options[:sources]).join(',') if options[:sources]
+
+        %w(font-family font-weight font-style font-stretch unicode-range).each do |option_key|
+          key = option_key.split('-').join('_')
+
+          if option_key == 'font_family'
+            font_options[option_key] = "'#{options[key.to_sym]}'"
+          else
+            font_options[option_key] = options[key.to_sym]
+          end if options[key.to_sym].present?
+        end
+
+        font_options
+      end
+
+      def generate_font_css_code(url, options, apply_to)
+        font_code = "@font-face{\n src: url('#{url}'); \n"
+
+        options.each do |key, value|
+          font_code += "#{key}: #{value}; \n"
+        end
+        font_code += '}'
+
+        apply_to ||= 'body'
+        font_code += "\n#{apply_to}{ font-family: #{options['font-family']} !important;}"
+
+        font_code
+      end
+
+      def theme_font_src_tag(theme, font_file_name, options)
+        font_url = theme_font_path(theme, font_file_name)
+        font_code = ""
+
+        if font_url.present?
+          absolute_path = font_url.split(font_file_name).first
+          font_options = get_theme_attributes(absolute_path, options)
+          font_code = generate_font_css_code(font_url, font_options, options[:apply_to])
+        end
+
+        content_tag("style", raw(font_code))
+      end
+
       def theme_compute_public_path(theme, source, dir, ext = nil, include_host = true)
         has_request = controller.respond_to?(:request)
 

@@ -324,7 +324,7 @@ module Knitkit
             theme_hash[:iconCls] = 'icon-delete'
           end
 
-          ['stylesheets', 'javascripts', 'images', 'templates', 'widgets'].each do |resource_folder|
+          ['stylesheets', 'javascripts', 'images', 'templates', 'widgets', 'fonts'].each do |resource_folder|
             theme_hash[:children] << {
               :themeId => theme.id,
               :siteId => website.id,

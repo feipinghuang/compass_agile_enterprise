@@ -4,15 +4,17 @@ require 'fileutils'
 class Theme < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-  THEME_STRUCTURE = ['stylesheets', 'javascripts', 'images', 'templates']
+  THEME_STRUCTURE = ['stylesheets', 'javascripts', 'images', 'templates', 'fonts']
   class << self
     attr_accessor :base_layouts_views_path, :knitkit_website_stylesheets_path,
-                  :knitkit_website_images_path, :knitkit_website_javascripts_path
+                  :knitkit_website_images_path, :knitkit_website_javascripts_path,
+                  :knitkit_website_fonts_path
   end
   @base_layouts_views_path = "#{Knitkit::Engine.root.to_s}/app/views"
   @knitkit_website_stylesheets_path = "#{Knitkit::Engine.root.to_s}/app/assets/stylesheets/knitkit"
   @knitkit_website_javascripts_path = "#{Knitkit::Engine.root.to_s}/app/assets/javascripts/knitkit"
   @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/public/images/knitkit"
+  @knitkit_website_fonts_path = "#{Knitkit::Engine.root.to_s}/app/assets/fonts/knitkit"
 
   protected_with_capabilities
   has_file_assets
@@ -282,6 +284,7 @@ class Theme < ActiveRecord::Base
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_stylesheets_path, :preload => true), :stylesheets, :path_to_replace => Theme.knitkit_website_stylesheets_path)
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_javascripts_path, :preload => true), :javascripts, :path_to_replace => Theme.knitkit_website_javascripts_path)
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_images_path, :preload => true), :images, :path_to_replace => Theme.knitkit_website_images_path)
+    create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_fonts_path, :preload => true), :fonts, :path_to_replace => Theme.knitkit_website_fonts_path)
   end
 
   private
