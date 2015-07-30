@@ -2,7 +2,7 @@ class Website < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   after_destroy :remove_sites_directory, :remove_website_role
-  before_destroy :destroy_sections
+  before_destroy :destroy_sections, :destroy_website_security_role, :destroy_website_party_roles
   after_create :setup_website
 
   protected_with_capabilities
@@ -65,6 +65,14 @@ class Website < ActiveRecord::Base
     end
 
     parents.each { |parent| parent.destroy }
+  end
+
+  def destroy_website_security_role
+    ActiveRecord::Base.connection.execute("delete from parties_security_roles where security_role_id = #{self.role.id}")
+  end
+
+  def destroy_website_party_roles
+    ActiveRecord::Base.connection.execute("delete from website_party_roles where website_id = #{self.id}")
   end
 
   def dba_organization
@@ -467,6 +475,9 @@ class Website < ActiveRecord::Base
 
           if setup_hash[:members]
             #handle members
+            website_role_type_parent = RoleType.find_or_create('website', 'Website')
+            website_member_role = RoleType.find_or_create('member', 'Member', website_role_type_parent)
+
             setup_hash[:members].each do |member|
               user = User.find_by_username(member)
 
@@ -475,8 +486,7 @@ class Website < ActiveRecord::Base
                 user.add_role(website.role)
 
                 # create website_party_role for this user as a member of the site
-                website_role_type_parent = RoleType.find_or_create('website', 'Website')
-                WebsitePartyRole.new(party: user.party, website: website, role_type: RoleType.find_or_create('member', 'Member', website_role_type_parent))
+                WebsitePartyRole.create(party: user.party, website: website, role_type: website_member_role)
 
                 user.save
               end

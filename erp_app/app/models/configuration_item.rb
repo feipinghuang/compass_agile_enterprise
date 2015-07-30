@@ -3,7 +3,13 @@ class ConfigurationItem < ActiveRecord::Base
 
   belongs_to :configuration
   belongs_to :configuration_item_type
+
   has_and_belongs_to_many :configuration_options
+  before_destroy :clear_configuration_options
+
+  def clear_configuration_options
+    configuration_options.clear
+  end
 
   alias :config :configuration
   alias :options :configuration_options
