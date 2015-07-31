@@ -61,7 +61,15 @@ module Api
               user.add_instance_attribute(:login_url, login_url)
               user.add_instance_attribute(:temp_password, params[:password])
 
-              if user.save
+              if params[:auto_activate] == 'yes'
+                user.skip_activation_email = true
+              end
+
+              if user.save!
+                if params[:auto_activate] == 'yes'
+                  user.activate!
+                end
+
                 individual = Individual.create(:gender => params[:gender],
                                                :current_first_name => params[:first_name],
                                                :current_last_name => params[:last_name])
