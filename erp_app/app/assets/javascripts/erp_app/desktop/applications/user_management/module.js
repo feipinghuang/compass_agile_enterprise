@@ -286,18 +286,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                             },
                             items: [
                                 {
-                                    emptyText: 'Select Gender...',
-                                    xtype: 'combo',
-                                    forceSelection: true,
-                                    store: [
-                                        ['m', 'Male'],
-                                        ['f', 'Female']
-                                    ],
+                                    xtype: 'radiogroup',
                                     fieldLabel: 'Gender',
-                                    name: 'gender',
-                                    allowBlank: false,
-                                    triggerAction: 'all'
-
+                                    columns: 2,
+                                    items: [
+                                        {boxLabel: 'Male', name: 'gender', inputValue: 'm', checked: true},
+                                        {boxLabel: 'Female', name: 'gender', inputValue: 'f'}
+                                    ]
                                 },
                                 {
                                     xtype: 'textfield',
@@ -336,6 +331,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                                     inputType: 'password',
                                     allowBlank: false,
                                     name: 'password_confirmation'
+                                },
+                                {
+                                    xtype: 'radiogroup',
+                                    fieldLabel: 'Auto Activate',
+                                    columns: 2,
+                                    items: [
+                                        {boxLabel: 'Yes', name: 'auto_activate', inputValue: 'yes'},
+                                        {boxLabel: 'No', name: 'auto_activate', inputValue: 'no', checked: true}
+                                    ]
                                 }
                             ]
                         },
