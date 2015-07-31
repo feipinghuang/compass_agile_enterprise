@@ -6,7 +6,7 @@ class AddProjectPartyRoleTypes
   end
 
   def self.down
-    project_role_type = RoleType.find_or_create("project_assignee", "Project Assignee", RoleType.iid("application_composer"))
+    project_role_type = RoleType.find_or_create("project_assignee", "Project", RoleType.iid("application_composer"))
     project_role_type.destroy
   end
 
