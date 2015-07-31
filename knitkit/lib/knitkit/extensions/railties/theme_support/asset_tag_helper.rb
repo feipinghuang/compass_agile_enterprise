@@ -109,7 +109,7 @@ module ActionView
       #                                font_weight: normal,
       #                                font_stretch: '',
       #                                unicode_range: '',
-      #                                apply_to: ''           # by default to body
+      #                                apply_to: ''
       #                     }
       def theme_font_include(theme_id, font_file_name, options={})
         theme = controller.website.themes.find_by_theme_id(theme_id)
@@ -160,8 +160,9 @@ module ActionView
         end
         font_code += '}'
 
-        apply_to ||= 'body'
-        font_code += "\n#{apply_to}{ font-family: #{options['font-family']} !important;}"
+        if apply_to.present?
+          font_code += "\n#{apply_to}{ font-family: #{options['font-family']} !important;}"
+        end
 
         font_code
       end
