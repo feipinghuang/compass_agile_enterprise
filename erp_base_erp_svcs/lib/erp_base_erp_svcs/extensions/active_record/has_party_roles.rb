@@ -11,7 +11,7 @@ module ErpBaseErpSvcs
             extend HasPartyRoles::SingletonMethods
             include HasPartyRoles::InstanceMethods
 
-            has_many :entity_party_roles, :as => :entity_record
+            has_many :entity_party_roles, :as => :entity_record, dependent: :destroy
           end
         end
 
