@@ -21,7 +21,7 @@ module ErpTechSvcs
 
             # create method to initialize the json field with an empty hash
             define_method("initialize_#{attr_name}_json") do
-              if self.new_record?
+              if send("#{attr_name}").nil?
                 send("#{attr_name}=", {})
               end
             end

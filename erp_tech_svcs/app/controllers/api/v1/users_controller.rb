@@ -101,8 +101,64 @@ module Api
             end
           end
         rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
-          render :json => {:success => false, :message => ex.message, :user => null}
+          render :json => {:success => false, :message => ex.message, :user => nil}
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors, :user => nil}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {:success => false, :message => 'Error creating user', :user => nil}
         end
+      end
+
+      def update
+        begin
+          ActiveRecord::Base.transaction do
+
+            user = current_user
+            party = user.party
+            business_party = party.business_party
+
+            # update business party information
+            if params[:first_name].present?
+              business_party.first_name = params[:first_name].strip
+            end
+
+            if params[:last_name].present?
+              business_party.last_name = params[:last_name].strip
+            end
+
+            # update password if passed
+            if params[:password].present?
+              user.password = params[:password].strip
+              user.password_confirmation = params[:password].strip
+            end
+
+            user.email = params[:email].strip
+
+            user.save!
+
+            render :json => {:success => true, :message => 'User updated', :user => user.to_data_hash}
+
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors.full_messages, :user => nil}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {:success => false, :message => 'Error updating user', :user => nil}
+        end
+
       end
 
       def reset_password

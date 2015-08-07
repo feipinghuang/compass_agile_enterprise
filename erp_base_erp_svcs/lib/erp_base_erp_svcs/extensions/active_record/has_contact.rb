@@ -16,7 +16,7 @@ module ErpBaseErpSvcs
             after_update :save_contact
             after_destroy :destroy_contact
 
-            has_one :contact, :as => :contact_mechanism
+            has_one :contact, :as => :contact_mechanism, :dependent => :destroy
 
             [:purpose,
              :purposes,
