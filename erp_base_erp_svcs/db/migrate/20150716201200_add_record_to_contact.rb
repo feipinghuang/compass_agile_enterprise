@@ -1,7 +1,7 @@
 class AddRecordToContact < ActiveRecord::Migration
   def up
-    add_column :contacts, :contact_record_type, :string unless column_exists? :contacts, :record_type
-    add_column :contacts, :contact_record_id, :integer unless column_exists? :contacts, :record_type
+    add_column :contacts, :contact_record_type, :string unless column_exists? :contacts, :contact_record_type
+    add_column :contacts, :contact_record_id, :integer unless column_exists? :contacts, :contact_record_id
 
     if column_exists? :contacts, :party_id
       Contact.find_in_batches do |batch|
@@ -18,8 +18,8 @@ class AddRecordToContact < ActiveRecord::Migration
   end
 
   def down
-    remove_column :contacts, :contact_record_type if column_exists? :contacts, :record_type
-    remove_column :contacts, :contact_record_id if column_exists? :contacts, :record_type
+    remove_column :contacts, :contact_record_type if column_exists? :contacts, :contact_record_type
+    remove_column :contacts, :contact_record_id if column_exists? :contacts, :contact_record_id
 
     add_column :contacts, :party_id, :integer unless column_exists? :contacts, :party_id
 
