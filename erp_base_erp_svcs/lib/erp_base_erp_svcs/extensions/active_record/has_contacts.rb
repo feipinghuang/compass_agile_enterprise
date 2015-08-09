@@ -66,36 +66,71 @@ module ErpBaseErpSvcs
             result
           end
 
-          # check if record has contact with purpose
+          # Check if record has contact with purpose
+          #
+          # @param contact_mechanism_klass [Class] the contact mechanism class (Email, PhoneNumber, PostalAddress)
+          #  the passed contact purposes)
+          #
+          # @return result [Boolean] True if record has contact false if not
           def has_contact?(contact_mechanism_klass, contact_purpose)
             !contact_mechanisms_to_hash(contact_mechanism_klass, [contact_purpose]).empty?
           end
 
+          # Converts PhoneNumber contact mechanisms related to this record to an array of hashes
+          # containing the contact records data
+          #
+          # @param contact_purposes [Array] an array of contact purposes to filter by (only return contacts with
+          #  the passed contact purposes)
+          #
+          # @return contact_mechanisms_data [Array] an Array of hashes containing contact data
           def phone_numbers_to_hash(contact_purposes=nil)
             contact_mechanisms_to_hash(PhoneNumber, contact_purposes)
           end
 
+          # Converts EmailAddress contact mechanisms related to this record to an array of hashes
+          # containing the contact records data
+          #
+          # @param contact_purposes [Array] an array of contact purposes to filter by (only return contacts with
+          #  the passed contact purposes)
+          #
+          # @return contact_mechanisms_data [Array] an Array of hashes containing contact data
           def email_addresses_to_hash(contact_purposes=nil)
             contact_mechanisms_to_hash(EmailAddress, contact_purposes)
           end
 
+          # Converts PostalAddress contact mechanisms related to this record to an array of hashes
+          # containing the contact records data
+          #
+          # @param contact_purposes [Array] an array of contact purposes to filter by (only return contacts with
+          #  the passed contact purposes)
+          #
+          # @return contact_mechanisms_data [Array] an Array of hashes containing contact data
           def postal_addresses_to_hash(contact_purposes=nil)
             contact_mechanisms_to_hash(PostalAddress, contact_purposes)
           end
 
+          # Converts contact mechanisms related to this record to an array of hashes
+          # containing the contact records data
+          #
+          # @param contact_mechanism_klass [Class] the contact mechanism class (Email, PhoneNumber, PostalAddress)
+          # @param contact_purposes [Array] an array of contact purposes to filter by (only return contacts with
+          #  the passed contact purposes)
+          #
+          # @return contact_mechanisms_data [Array] an Array of hashes containing contact data
           def contact_mechanisms_to_hash(contact_mechanism_klass, contact_purposes=nil)
             contact_mechanisms_data = []
 
+            # if the passed contact purpose is a string convert to an Array
             if contact_purposes && contact_purposes.is_a?(String)
               contact_purposes = [contact_purposes]
             end
 
             if contact_purposes
               contact_purposes.each do |contact_purpose|
-                contact_mechanism = find_contact_mechanisms_with_purpose(contact_mechanism_klass, contact_purpose)
+                contact_mechanisms = find_contact_mechanisms_with_purpose(contact_mechanism_klass, contact_purpose)
 
-                unless contact_mechanism.empty?
-                  contact_mechanism.collect do |item|
+                unless contact_mechanisms.empty?
+                  contact_mechanisms.collect do |item|
                     data = item.to_data_hash
                     data[:contact_purpose] = contact_purpose
 
