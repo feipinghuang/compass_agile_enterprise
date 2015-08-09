@@ -33,7 +33,7 @@ module ErpTechSvcs
         login = params[:login].strip
         if user = (User.where('username = ? or email = ?', login, login)).first
 
-          user.add_instance_attribute(:reset_password_url, params[:reset_password_url])
+          user.add_instance_attribute(:reset_password_url, (params[:reset_password_url] || '/erp_app/reset_password'))
           user.add_instance_attribute(:domain, params[:domain])
           user.deliver_reset_password_instructions!
           message = "Password has been reset. An email has been sent with further instructions to #{user.email}."

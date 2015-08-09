@@ -15,6 +15,15 @@ class Party < ActiveRecord::Base
   attr_reader :relationships
   attr_writer :create_relationship
 
+  class << self
+
+    def with_dba_organization(dba_org)
+      self.joins("inner join party_relationships on party_relationships.party_id_to = '#{dba_org.id}'
+                  and party_relationships.role_type_id_to = '#{RoleType.iid('dba_org').id}'")
+    end
+
+  end
+
   # helper method to get dba_organization related to this party
   def dba_organization
     find_related_parties_with_role('dba_org').first
