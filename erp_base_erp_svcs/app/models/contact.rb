@@ -4,6 +4,7 @@ class Contact < ActiveRecord::Base
   has_and_belongs_to_many :contact_purposes
   belongs_to :party
   belongs_to :contact_mechanism, :polymorphic => true, :dependent => :destroy
+  belongs_to :contact_record, :polymorphic => true
 
   #rather than carry our own description for the abstract -contact-, we'll
   #delegate that call to the implementer of the -contact_mechanism- interface
