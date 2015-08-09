@@ -109,7 +109,7 @@ module Api
         begin
           user = User.find(params[:id])
 
-          user.add_instance_attribute(:reset_password_url, (params[:reset_password_url] || '/reset-password'))
+          user.add_instance_attribute(:reset_password_url, (params[:reset_password_url] || '/erp_app/reset_password'))
           user.add_instance_attribute(:domain, params[:domain])
           user.deliver_reset_password_instructions!
           message = "Password has been reset. An email has been sent with further instructions to #{user.email}."
