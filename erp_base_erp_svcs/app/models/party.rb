@@ -32,6 +32,11 @@ class Party < ActiveRecord::Base
             .where('email_address = ?', email).readonly(false).first
       end
     end
+
+    def with_dba_organization(dba_org)
+      self.joins("inner join party_relationships on party_relationships.party_id_to = '#{dba_org.id}'
+                  and party_relationships.role_type_id_to = '#{RoleType.iid('dba_org').id}'")
+    end
   end
 
   # helper method to get dba_organization related to this party
