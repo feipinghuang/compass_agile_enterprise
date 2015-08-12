@@ -48,8 +48,8 @@ class WorkEffort < ActiveRecord::Base
       statement = statement.with_status(status) if status
 
       statement.includes(:role_types)
-      .includes(:parties)
-      .where(role_types_tbl[:id].in(party.party_roles.collect(&:role_type_id)).or(parties_tbl[:id].eq(party.id)))
+          .includes(:parties)
+          .where(role_types_tbl[:id].in(party.party_roles.collect(&:role_type_id)).or(parties_tbl[:id].eq(party.id)))
     end
   end
 
@@ -120,7 +120,12 @@ class WorkEffort < ActiveRecord::Base
     self.save
   end
 
+  def to_data_hash
+    to_hash(only: [{id: 'server_id'}, {'leaf?' => 'leaf'}, 'parent_id', 'description', 'started_at', 'finished_at'])
+  end
+
   protected
+
   def time_diff_in_minutes (time_one, time_two)
     (((time_one - time_two).round) / 60)
   end
