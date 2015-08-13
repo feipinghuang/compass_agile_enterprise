@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
       resources :work_efforts, :defaults => { :format => 'json' }
       resources :work_effort_party_assignments, :defaults => { :format => 'json' }
+      resources :work_effort_associations, :defaults => { :format => 'json' }
 
     end
   end

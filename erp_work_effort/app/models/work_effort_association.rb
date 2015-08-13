@@ -13,4 +13,12 @@ class WorkEffortAssociation < ActiveRecord::Base
   belongs_to :from_role, :class_name => "RoleType", :foreign_key => "role_type_id_from"
   belongs_to :to_role, :class_name => "RoleType", :foreign_key => "role_type_id_to"
 
+  def to_data_hash
+    to_hash({
+                only: [{id: :server_id}, :work_effort_id_from, :work_effort_id_to],
+                work_effort_association_type_id: work_effort_association_type.id,
+                work_effort_association_type_external_id: work_effort_association_type.external_identifier
+            })
+  end
+
 end

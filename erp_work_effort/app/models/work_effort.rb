@@ -121,7 +121,21 @@ class WorkEffort < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(only: [{id: 'server_id'}, {'leaf?' => 'leaf'}, 'parent_id', 'description', 'started_at', 'finished_at'])
+    to_hash(only: [
+                {id: :server_id},
+                {leaf?: :leaf},
+                :parent_id,
+                :description,
+                :start_at,
+                :end_at,
+                :percent_done,
+                :duration,
+                :duration_unit,
+                :effort,
+                :effort_unit,
+                :comments
+            ]
+    )
   end
 
   protected

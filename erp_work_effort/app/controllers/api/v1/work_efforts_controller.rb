@@ -101,7 +101,7 @@ module Api
 
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render json: {success: false, message: 'Error creating Work Effort'}
+          render json: {success: false, message: 'Error destroying Work Effort'}
         end
       end
 
@@ -111,12 +111,36 @@ module Api
         work_effort = WorkEffort.new
         work_effort.description = data[:description].strip
 
-        if data[:started_at].present?
-          work_effort.started_at = Date.parse(data[:started_at])
+        if data[:start_at].present?
+          work_effort.start_at = Date.parse(data[:start_at])
         end
 
-        if data[:finished_at].present?
-          work_effort.finished_at = Date.parse(data[:finished_at])
+        if data[:end_at].present?
+          work_effort.end_at = Date.parse(data[:end_at])
+        end
+
+        if data[:percent_done].present?
+          work_effort.percent_done = data[:percent_done]
+        end
+
+        if data[:duration].present?
+          work_effort.duration = data[:duration]
+        end
+
+        if data[:duration_unit].present?
+          work_effort.duration_unit = data[:duration_unit]
+        end
+
+        if data[:effort].present?
+          work_effort.effort = data[:effort]
+        end
+
+        if data[:effort_unit].present?
+          work_effort.effort_unit = data[:effort_unit]
+        end
+
+        if data[:comments].present?
+          work_effort.comments = data[:comments].strip
         end
 
         work_effort.save!
@@ -134,12 +158,36 @@ module Api
         work_effort = WorkEffort.find(data[:server_id])
         work_effort.description = data[:description].strip
 
-        if data[:started_at].present?
-          work_effort.started_at = Date.parse(data[:started_at])
+        if data[:start_at].present?
+          work_effort.start_at = Date.parse(data[:start_at])
         end
 
-        if data[:finished_at].present?
-          work_effort.finished_at = Date.parse(data[:finished_at])
+        if data[:end_at].present?
+          work_effort.end_at = Date.parse(data[:end_at])
+        end
+
+        if data[:percent_done].present?
+          work_effort.percent_done = data[:percent_done]
+        end
+
+        if data[:duration].present?
+          work_effort.duration = data[:duration]
+        end
+
+        if data[:duration_unit].present?
+          work_effort.duration_unit = data[:duration_unit]
+        end
+
+        if data[:effort].present?
+          work_effort.effort = data[:effort]
+        end
+
+        if data[:effort_unit].present?
+          work_effort.effort_unit = data[:effort_unit]
+        end
+
+        if data[:comments].present?
+          work_effort.comments = data[:comments].strip
         end
 
         work_effort.save!
