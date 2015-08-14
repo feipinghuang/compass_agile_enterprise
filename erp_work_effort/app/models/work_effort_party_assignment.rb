@@ -11,7 +11,7 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
   belongs_to  :role_type
 
   def to_data_hash
-    to_hash(only: [{:id => 'server_id'}, :work_effort_id, :party_id], units: 100)
+    to_hash(only: [{:id => 'server_id'}, :work_effort_id, :party_id, :resource_allocation])
   end
 
 end

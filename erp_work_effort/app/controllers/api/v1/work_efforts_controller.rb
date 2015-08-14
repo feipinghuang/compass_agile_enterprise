@@ -4,7 +4,13 @@ module Api
 
       def index
 
-        work_efforts = WorkEffort.where("parent_id is null").order("created_at ASC")
+        work_efforts = WorkEffort.where("parent_id is null")
+
+        if params[:project_id]
+          work_efforts = work_efforts.where('project_id = ?', params[:project_id])
+        end
+
+        work_efforts = work_efforts.order("created_at ASC")
 
         render :json => {success: true, work_efforts: work_efforts.map { |work_effort| work_effort.to_data_hash }}
 
@@ -110,6 +116,12 @@ module Api
       def create_work_effort(data)
         work_effort = WorkEffort.new
         work_effort.description = data[:description].strip
+
+        if params[:project_id].present?
+          if params[:project_id].to_i != 0
+            work_effort.project_id = params[:project_id]
+          end
+        end
 
         if data[:start_at].present?
           work_effort.start_at = Date.parse(data[:start_at])

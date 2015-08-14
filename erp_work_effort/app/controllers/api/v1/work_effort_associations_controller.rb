@@ -3,7 +3,14 @@ module Api
     class WorkEffortAssociationsController < BaseController
 
       def index
-        render :json => {success: true, work_effort_associations: WorkEffortAssociation.all.map { |work_effort| work_effort.to_data_hash }}
+        work_effort_associations = WorkEffortAssociation
+
+        if params[:project_id]
+          work_effort_associations = work_effort_associations.joins('inner join work_efforts on work_efforts.id = work_effort_associations.work_effort_id_to')
+                                         .where('work_efforts.project_id = ?', params[:project_id])
+        end
+
+        render :json => {success: true, work_effort_associations: work_effort_associations.all.map { |work_effort| work_effort.to_data_hash }}
       end
 
       def show

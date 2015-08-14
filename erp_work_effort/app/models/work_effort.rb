@@ -7,6 +7,7 @@ class WorkEffort < ActiveRecord::Base
 
   belongs_to :work_effort_item, :polymorphic => true
 
+  belongs_to :project
   belongs_to :work_effort_type
   belongs_to :work_effort_purpose_type
 

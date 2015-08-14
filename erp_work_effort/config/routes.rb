@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
 
+      resources :projects, :defaults => { :format => 'json' }
       resources :work_efforts, :defaults => { :format => 'json' }
       resources :work_effort_party_assignments, :defaults => { :format => 'json' }
       resources :work_effort_associations, :defaults => { :format => 'json' }

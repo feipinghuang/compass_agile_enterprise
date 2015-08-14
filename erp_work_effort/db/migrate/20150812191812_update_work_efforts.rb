@@ -8,6 +8,9 @@ class UpdateWorkEfforts < ActiveRecord::Migration
     add_column :work_efforts, :duration_unit, :string unless column_exists? :work_efforts, :duration_unit
     add_column :work_efforts, :effort, :integer unless column_exists? :work_efforts, :effort
     add_column :work_efforts, :effort_unit, :string unless column_exists? :work_efforts, :effort_unit
+    add_column :work_efforts, :project_id, :integer unless column_exists? :work_efforts, :project_id
+
+    add_index :work_efforts, :project_id, name: 'work_effort_project_idx'
 
     rename_column :work_efforts, :started_at, :start_at unless column_exists? :work_efforts, :start_at
     rename_column :work_efforts, :finished_at, :end_at unless column_exists? :work_efforts, :end_at
@@ -18,6 +21,9 @@ class UpdateWorkEfforts < ActiveRecord::Migration
     # WorkEffortAssignment
     add_column :work_effort_associations, :lag, :integer unless column_exists? :work_effort_associations, :lag
     add_column :work_effort_associations, :lag_unit, :string unless column_exists? :work_effort_associations, :lag_unit
+
+    # WorkEffortPartyAssignment
+    add_column :work_effort_party_assignments, :resource_allocation, :integer unless column_exists? :work_effort_party_assignments, :resource_allocation
   end
 
   def down
@@ -29,6 +35,7 @@ class UpdateWorkEfforts < ActiveRecord::Migration
     remove_column :work_efforts, :duration_unit if column_exists? :work_efforts, :duration_unit
     remove_column :work_efforts, :effort if column_exists? :work_efforts, :effort
     remove_column :work_efforts, :effort_unit if column_exists? :work_efforts, :effort_unit
+    remove_column :work_efforts, :project_id if column_exists? :work_efforts, :project_id
 
     rename_column :work_efforts, :start_at, :started_at unless column_exists? :work_efforts, :started_at
     rename_column :work_efforts, :end_at, :finished_at unless column_exists? :work_efforts, :finished_at
@@ -39,5 +46,8 @@ class UpdateWorkEfforts < ActiveRecord::Migration
     # WorkEffortAssignment
     remove_column :work_effort_associations, :lag if column_exists? :work_effort_associations, :lag
     remove_column :work_effort_associations, :lag_unit if column_exists? :work_effort_associations, :lag_unit
+
+    # WorkEffortPartyAssignment
+    remove_column :work_effort_party_assignments, :resource_allocation if column_exists? :work_effort_party_assignments, :resource_allocation
   end
 end

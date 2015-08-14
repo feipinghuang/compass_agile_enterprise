@@ -9,15 +9,22 @@ module Api
         dir = sort_hash[:direction] || 'ASC'
         limit = params[:limit] || 25
         start = params[:start] || 0
+        role_types = params[:role_types]
 
-        if query.blank?
-          parties = Party.order("#{sort} #{dir}").offset(start).limit(limit)
-          total_count = parties.count
-        else
-          parties = Party.where('description like ?', "%#{query}%").order("#{sort} #{dir}")
-          total_count = parties.count
-          parties = parties.offset(start).limit(limit)
+        parties = Party
+
+        unless query.blank?
+          parties = parties.where('description like ?', "%#{query}%")
         end
+
+        unless role_types.blank?
+          parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.where(internal_identifier: role_types.split(',')))
+        end
+
+        parties = parties.order("#{sort} #{dir}")
+
+        total_count = parties.count
+        parties = parties.offset(start).limit(limit)
 
         render :json => {total_count: total_count, parties: parties.collect(&:to_data_hash)}
       end
