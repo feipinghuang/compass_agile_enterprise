@@ -158,11 +158,7 @@ module Api
         work_effort.save!
 
         # set dba_org
-        dba_organization = current_user.party.dba_organization
-        role_type = RoleType.find_by_internal_identifier("dba_org")
-        WorkEffortPartyAssignment.create(work_effort: work_effort,
-                                         role_type: role_type,
-                                         party: dba_organization)
+        work_effort.add_party_with_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
 
         if data[:parent_id].present? and data[:parent_id] != 0
           parent = WorkEffort.find(data[:parent_id])

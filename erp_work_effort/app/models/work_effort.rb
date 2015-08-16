@@ -1,9 +1,51 @@
+# create_table "work_efforts", :force => true do |t|
+#   t.integer  "parent_id"
+#   t.integer  "lft"
+#   t.integer  "rgt"
+#   t.integer  "facility_id"
+#   t.integer  "projected_cost_money_id"
+#   t.integer  "actual_cost_money_id"
+#   t.integer  "fixed_asset_id"
+#   t.integer  "work_effort_purpose_type_id"
+#   t.integer  "work_effort_type_id"
+#   t.string   "description"
+#   t.string   "type"
+#   t.datetime "start_at"
+#   t.datetime "end_at"
+#   t.integer  "work_effort_record_id"
+#   t.string   "work_effort_record_type"
+#   t.integer  "work_effort_item_id"
+#   t.string   "work_effort_item_type"
+#   t.datetime "created_at", :null => false
+#   t.datetime "updated_at", :null => false
+#   t.text     "comments"
+#   t.integer  "percent_done"
+#   t.integer  "duration"
+#   t.string   "duration_unit"
+#   t.integer  "effort"
+#   t.string   "effort_unit"
+#   t.datetime "base_line_start_at"
+#   t.datetime "base_line_end_at"
+#   t.integer  "base_line_percent_done"
+#   t.integer  "project_id"
+#   t.text     "custom_fields"
+# end
+#
+# add_index "work_efforts", ["end_at"], :name => "index_work_efforts_on_finished_at"
+# add_index "work_efforts", ["fixed_asset_id"], :name => "index_work_efforts_on_fixed_asset_id"
+# add_index "work_efforts", ["project_id"], :name => "work_effort_project_idx"
+# add_index "work_efforts", ["work_effort_item_type", "work_effort_item_id"], :name => "work_item_idx"
+# add_index "work_efforts", ["work_effort_record_id", "work_effort_record_type"], :name => "work_effort_record_id_type_idx"
+
 class WorkEffort < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   acts_as_nested_set
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   has_tracked_status
+
+  ## How is this Work Effort related to business parties, requestors, workers, approvers
+  has_party_roles
 
   belongs_to :work_effort_item, :polymorphic => true
 
@@ -19,7 +61,7 @@ class WorkEffort < ActiveRecord::Base
   has_and_belongs_to_many :role_types
   alias :role_type_assignments :role_types
 
-  ## How is this Work Effort related to business parties, requestors, workers, approvers
+  ## How is this Work Effort is assigned
   has_many :work_effort_party_assignments, :dependent => :destroy
   has_many :parties, :through => :work_effort_party_assignments
 

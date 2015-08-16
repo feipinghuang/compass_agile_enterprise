@@ -8,9 +8,12 @@ class UpdateWorkEfforts < ActiveRecord::Migration
     add_column :work_efforts, :duration_unit, :string unless column_exists? :work_efforts, :duration_unit
     add_column :work_efforts, :effort, :integer unless column_exists? :work_efforts, :effort
     add_column :work_efforts, :effort_unit, :string unless column_exists? :work_efforts, :effort_unit
+    add_column :work_efforts, :base_line_start_at, :datetime unless column_exists? :work_efforts, :base_line_start_at
+    add_column :work_efforts, :base_line_end_at, :datetime unless column_exists? :work_efforts, :base_line_end_at
+    add_column :work_efforts, :base_line_percent_done, :integer unless column_exists? :work_efforts, :base_line_percent_done
     add_column :work_efforts, :project_id, :integer unless column_exists? :work_efforts, :project_id
 
-    add_index :work_efforts, :project_id, name: 'work_effort_project_idx'
+    add_index :work_efforts, :project_id, name: 'work_effort_project_idx' unless index_exists? :work_efforts, name: 'work_effort_project_idx'
 
     rename_column :work_efforts, :started_at, :start_at unless column_exists? :work_efforts, :start_at
     rename_column :work_efforts, :finished_at, :end_at unless column_exists? :work_efforts, :end_at
@@ -35,6 +38,9 @@ class UpdateWorkEfforts < ActiveRecord::Migration
     remove_column :work_efforts, :duration_unit if column_exists? :work_efforts, :duration_unit
     remove_column :work_efforts, :effort if column_exists? :work_efforts, :effort
     remove_column :work_efforts, :effort_unit if column_exists? :work_efforts, :effort_unit
+    remove_column :work_efforts, :base_line_start_at if column_exists? :work_efforts, :base_line_start_at
+    remove_column :work_efforts, :base_line_end_at if column_exists? :work_efforts, :base_line_end_at
+    remove_column :work_efforts, :base_line_percent_done if column_exists? :work_efforts, :base_line_percent_done
     remove_column :work_efforts, :project_id if column_exists? :work_efforts, :project_id
 
     rename_column :work_efforts, :start_at, :started_at unless column_exists? :work_efforts, :started_at

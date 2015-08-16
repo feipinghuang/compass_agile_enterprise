@@ -7,11 +7,13 @@ Rails.application.routes.draw do
           put :update_roles
         end
       end
-      resources :role_types
-      resources :note_types
-      resources :categories
-      resources :contact_purposes
-      resources :geo_zones
+      resources :tracked_status_types, :defaults => { :format => 'json' }
+      resources :role_types, :defaults => { :format => 'json' }
+      resources :note_types, :defaults => { :format => 'json' }
+      resources :categories, :defaults => { :format => 'json' }
+      resources :contact_purposes, :defaults => { :format => 'json' }
+      resources :geo_zones, :defaults => { :format => 'json' }
+      resources :status_applications, :defaults => { :format => 'json' }
     end
   end
 
