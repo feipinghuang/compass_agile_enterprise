@@ -4,7 +4,7 @@ module Api
 
       def index
         # look up parent by internal identifier
-        if params[:parent]
+        if params[:parent].present?
           parent = nil
           # create parent if it doesn't exist
           # if the parent param is a comma separated string then
@@ -27,7 +27,7 @@ module Api
           end
 
           # if parent id is passed find parent and get its children
-        elsif params[:parent_id]
+        elsif params[:parent_id].present?
           parent = TrackedStatusType.find(params[:parent_id])
 
           respond_to do |format|
@@ -39,7 +39,7 @@ module Api
             end
           end
           # if ids are passed look up on the Tracked Status Types with the ids passed
-        elsif params[:ids]
+        elsif params[:ids].present?
           ids = params[:ids].split(',').compact
 
           tracked_status_types = []
