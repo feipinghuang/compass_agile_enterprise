@@ -24,6 +24,11 @@ module Api
                           dba_reln.role_type_id_to = #{RoleType.iid('dba_org').id}
                           )")
 
+        # TODO update for more advance searching
+        if params[:query_filter].present?
+          username = params[:query_filter].strip
+        end
+
         if username.blank?
           total_count = users.uniq.count
           users = users.order("#{sort} #{dir}").offset(start).limit(limit)
@@ -56,7 +61,15 @@ module Api
               user.add_instance_attribute(:login_url, login_url)
               user.add_instance_attribute(:temp_password, params[:password])
 
-              if user.save
+              if params[:auto_activate] == 'yes'
+                user.skip_activation_email = true
+              end
+
+              if user.save!
+                if params[:auto_activate] == 'yes'
+                  user.activate!
+                end
+
                 individual = Individual.create(:gender => params[:gender],
                                                :current_first_name => params[:first_name],
                                                :current_last_name => params[:last_name])
@@ -88,35 +101,75 @@ module Api
             end
           end
         rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
-          render :json => {:success => false, :message => ex.message, :user => null}
+          render :json => {:success => false, :message => ex.message, :user => nil}
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors, :user => nil}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {:success => false, :message => 'Error creating user', :user => nil}
         end
+      end
+
+      def update
+        begin
+          ActiveRecord::Base.transaction do
+
+            user = current_user
+            party = user.party
+            business_party = party.business_party
+
+            # update business party information
+            if params[:first_name].present?
+              business_party.first_name = params[:first_name].strip
+            end
+
+            if params[:last_name].present?
+              business_party.last_name = params[:last_name].strip
+            end
+
+            # update password if passed
+            if params[:password].present?
+              user.password = params[:password].strip
+              user.password_confirmation = params[:password].strip
+            end
+
+            user.email = params[:email].strip
+
+            user.save!
+
+            render :json => {:success => true, :message => 'User updated', :user => user.to_data_hash}
+
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors.full_messages, :user => nil}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {:success => false, :message => 'Error updating user', :user => nil}
+        end
+
       end
 
       def reset_password
         begin
-          login_url = params[:login_url].blank? ? ErpTechSvcs::Config.login_url : params[:login_url]
-          login = params[:id].strip
-          if user = (User.where('username = ? or email = ?', login, login)).first
+          user = User.find(params[:id])
 
-            # generate new password with only letters
-            charset = %w{ A C D E F G H J K M N P Q R T V W X Y Z }
-            new_password = (0...8).map { charset.to_a[rand(charset.size)] }.join
-
-            user.password_confirmation = new_password
-            if user.change_password!(new_password)
-              user.add_instance_attribute(:login_url, login_url)
-              user.add_instance_attribute(:domain, params[:domain])
-              user.deliver_reset_password_instructions!
-              message = "Password has been reset.  An email has been sent with further instructions to #{user.email}."
-              success = true
-            else
-              message = "Error re-setting password."
-              success = false
-            end
-          else
-            message = "Invalid user name or email address."
-            success = false
-          end
+          user.add_instance_attribute(:reset_password_url, (params[:reset_password_url] || '/erp_app/reset_password'))
+          user.add_instance_attribute(:domain, params[:domain])
+          user.deliver_reset_password_instructions!
+          message = "Password has been reset. An email has been sent with further instructions to #{user.email}."
+          success = true
           render :json => {:success => success, :message => message}
         rescue => ex
           Rails.logger.error ex.message
@@ -124,7 +177,7 @@ module Api
 
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render :json => {:success => false, :message => 'Error sending email.'}
+          render :json => {:success => false, :message => 'Could not reset password'}
         end
       end
 

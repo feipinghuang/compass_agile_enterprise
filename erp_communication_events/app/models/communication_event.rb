@@ -14,7 +14,6 @@ class CommunicationEvent < ActiveRecord::Base
 
   has_and_belongs_to_many :comm_evt_purpose_types, :join_table => 'comm_evt_purposes'
 
-  validates_presence_of :from_role
   validates_presence_of :from_party
 
   # serialize ExtJs attributes

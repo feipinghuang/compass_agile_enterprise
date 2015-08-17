@@ -12,7 +12,7 @@ module ErpTechSvcs
         def to_all_representation(parent=nil, container_arr=[], level=0)
           if parent
             parent.children.each do |node|
-              container_arr << {id: node.id,
+              container_arr << {server_id: node.id,
                                 description: node.to_representation(level),
                                 internal_identifier: node.internal_identifier}
 
@@ -24,7 +24,7 @@ module ErpTechSvcs
           else
             self.roots.each do |root|
               root.children.each do |node|
-                container_arr << {id: node.id,
+                container_arr << {server_id: node.id,
                                   description: node.to_representation(level),
                                   internal_identifier: node.internal_identifier}
 

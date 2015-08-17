@@ -1,3 +1,19 @@
+Rails.application.routes.draw do
+
+  namespace :api do
+    namespace :v1 do
+
+      resources :projects, :defaults => { :format => 'json' }
+      resources :work_efforts, :defaults => { :format => 'json' }
+      resources :work_effort_types, :defaults => { :format => 'json' }
+      resources :work_effort_party_assignments, :defaults => { :format => 'json' }
+      resources :work_effort_associations, :defaults => { :format => 'json' }
+
+    end
+  end
+
+end
+
 ErpWorkEffort::Engine.routes.draw do
 
   namespace :erp_app do
@@ -11,7 +27,6 @@ ErpWorkEffort::Engine.routes.draw do
             get :work_effort_types
             get :task_count
           end
-
 
         end
 

@@ -20,6 +20,7 @@ module ErpBaseErpSvcs
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsFacility
       include ErpBaseErpSvcs::Extensions::ActiveRecord::CanBeGenerated
       include ErpBaseErpSvcs::Extensions::ActiveRecord::HasPartyRoles
+      include ErpBaseErpSvcs::Extensions::ActiveRecord::HasContacts
       extend ErpBaseErpSvcs::Extensions::ActiveRecord::StiInstantiation::ActMacro
     end
 

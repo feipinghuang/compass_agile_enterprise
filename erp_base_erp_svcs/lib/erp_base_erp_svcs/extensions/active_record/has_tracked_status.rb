@@ -44,7 +44,7 @@ module ErpBaseErpSvcs
 
                                           elsif status_type_iids.is_a?(Array)
                                             unless status_type_iids.empty?
-                                              status_ids = order_statuses.children.where(:internal_identifier => status_type_iids).pluck(:id)
+                                              status_ids = TrackedStatusType.where(:internal_identifier => status_type_iids).pluck(:id)
                                             end
                                           end
 
@@ -81,7 +81,7 @@ module ErpBaseErpSvcs
 
                                              elsif status_type_iids.is_a?(Array)
                                                unless status_type_iids.empty?
-                                                 status_ids = order_statuses.children.where(:internal_identifier => status_type_iids).pluck(:id)
+                                                 status_ids = TrackedStatusType.where(:internal_identifier => status_type_iids).pluck(:id)
                                                end
                                              end
 

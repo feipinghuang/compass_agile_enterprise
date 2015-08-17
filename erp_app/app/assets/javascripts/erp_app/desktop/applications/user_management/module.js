@@ -75,15 +75,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
         });
     },
 
-    resetPassword: function (rec) {
+    resetPassword: function (record) {
         var me = this;
         me.setWindowStatus('Resetting password...');
         Ext.Ajax.request({
-            url: '/api/v1/users/reset_password/',
-            params: {
-                login: rec.get('email')
-            },
             method: 'PUT',
+            url: '/api/v1/users/' + record.get('server_id') + '/reset_password',
             success: function (response) {
                 var obj = Ext.decode(response.responseText);
                 if (obj.success) {
@@ -231,7 +228,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                         handler: function (grid, rowIndex, colIndex) {
                             var rec = grid.getStore().getAt(rowIndex);
 
-                            Ext.MessageBox.confirm('Confirm', "Are you sure you want to reset "+ rec.get('username') +"'s password?", function (btn) {
+                            Ext.MessageBox.confirm('Confirm', "Are you sure you want to reset " + rec.get('username') + "'s password?", function (btn) {
                                 if (btn == 'no') {
                                     return false;
                                 }
@@ -248,7 +245,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                         handler: function (grid, rowIndex, colIndex) {
                             var rec = grid.getStore().getAt(rowIndex);
 
-                            Ext.MessageBox.confirm('Confirm', 'Are you sure you want to delete '+ rec.get('username') +'?', function (btn) {
+                            Ext.MessageBox.confirm('Confirm', 'Are you sure you want to delete ' + rec.get('username') + '?', function (btn) {
                                 if (btn == 'no') {
                                     return false;
                                 }
@@ -286,18 +283,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                             },
                             items: [
                                 {
-                                    emptyText: 'Select Gender...',
-                                    xtype: 'combo',
-                                    forceSelection: true,
-                                    store: [
-                                        ['m', 'Male'],
-                                        ['f', 'Female']
-                                    ],
+                                    xtype: 'radiogroup',
                                     fieldLabel: 'Gender',
-                                    name: 'gender',
-                                    allowBlank: false,
-                                    triggerAction: 'all'
-
+                                    columns: 2,
+                                    items: [
+                                        {boxLabel: 'Male', name: 'gender', inputValue: 'm', checked: true},
+                                        {boxLabel: 'Female', name: 'gender', inputValue: 'f'}
+                                    ]
                                 },
                                 {
                                     xtype: 'textfield',
@@ -336,6 +328,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                                     inputType: 'password',
                                     allowBlank: false,
                                     name: 'password_confirmation'
+                                },
+                                {
+                                    xtype: 'radiogroup',
+                                    fieldLabel: 'Auto Activate',
+                                    columns: 2,
+                                    items: [
+                                        {boxLabel: 'Yes', name: 'auto_activate', inputValue: 'yes'},
+                                        {boxLabel: 'No', name: 'auto_activate', inputValue: 'no', checked: true}
+                                    ]
                                 }
                             ]
                         },
