@@ -29,14 +29,15 @@ Ext.define("Compass.ErpApp.Login.Window", {
         if (basicForm.isValid()) {
             basicForm.submit({
                 waitMsg: 'Authenticating User...',
-                params:{
+                params: {
+                    login_to: loginTo,
                     logout_to: '/erp_app/login'
                 },
                 success: function (form, action) {
                     var result = Ext.decode(action.response.responseText);
                     if (result.success) {
                         window.history.forward(1);
-                        window.location = loginTo;
+                        window.location = result.login_to;
                     }
                     else {
                         Ext.Msg.alert("Error", result.errors['reason']);
@@ -59,7 +60,7 @@ Ext.define("Compass.ErpApp.Login.Window", {
         if (extForm.isValid()) {
             extForm.submit({
                 url: '/users/reset_password',
-                params:{
+                params: {
                     reset_password_url: '/erp_app/reset_password'
                 },
                 waitMsg: 'Resetting Password...',
