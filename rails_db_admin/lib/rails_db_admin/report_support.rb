@@ -18,7 +18,7 @@ module RailsDbAdmin
 
         case format
           when :html
-            ActionView::Base.new().render(:inline => report.template, :locals =>
+            ActionView::Base.new(resolver(report)).render(:inline => report.template, :locals =>
                 {:unique_name => iid, :title => report.name, :columns => data[:columns], :rows => data[:rows]}
             )
           when :pdf
@@ -45,6 +45,16 @@ module RailsDbAdmin
       columns, values = self.execute_sql(report.query)
 
       return {:columns => columns, :rows => values}
+    end
+
+    def resolver(report)
+      report_resolver = case Rails.application.config.erp_tech_svcs.file_storage
+                        when :s3
+                          resolver = File.join(report.url, "templates")
+                        when :filesystem
+                          resolver = File.join(report.base_dir, "templates")
+                        end
+      report_resolver
     end
 
 

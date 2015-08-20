@@ -300,14 +300,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
     //************ Reporting ************************************************
 
-    editReport: function (reportObj) {
+    editQuery: function (reportObj) {
         var me = this;
 
         me.container.add({
-            title: reportObj.title,
-            xtype: 'railsdbadmin_reportpanel',
+            xtype: 'railsdbadmin_querypanel',
             module: me,
-            query: reportObj.query,
+            hideSave: true,
+            title: 'Query' + ' - ' + reportObj.title,
+            sqlQuery: reportObj.query,
             reportId: reportObj.id,
             template: reportObj.template,
             internalIdentifier: reportObj.internalIdentifier,
