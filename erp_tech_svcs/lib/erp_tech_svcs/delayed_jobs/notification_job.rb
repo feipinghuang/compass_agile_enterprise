@@ -6,24 +6,24 @@ module ErpTechSvcs
     class NotificationJob
 
       def initialize
-        @logger = Logger.new("log/#{Rails.env}-notifications_job.log", "weekly")
-        @logger.level = Logger::INFO
         @priority = 1
       end
 
       def perform
+        logger = Logger.new(File.join(Rails.root,"log/#{Rails.env}-notifications_job.log"), "weekly")
+        logger.level = Logger::INFO
+
         time = Benchmark.measure do
           begin
-
             Notification.where('current_state = ?', 'pending').each do |notification|
               notification.deliver_notification
             end
 
           rescue Exception => ex
-            @logger.error("#{Time.now}**************************************************")
-            @logger.error("Job Error: #{ex.message}")
-            @logger.error("Trace: #{ex.backtrace.join("\n")}")
-            @logger.error("*************************************************************")
+            logger.error("#{Time.now}**************************************************")
+            logger.error("Job Error: #{ex.message}")
+            logger.error("Trace: #{ex.backtrace.join("\n")}")
+            logger.error("*************************************************************")
 
             # email notification
             ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
