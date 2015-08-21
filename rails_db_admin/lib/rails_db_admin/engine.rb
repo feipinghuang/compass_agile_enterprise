@@ -12,6 +12,12 @@ module RailsDbAdmin
 
     ErpBaseErpSvcs.register_as_compass_ae_engine(config, self)
     ::ErpApp::Widgets::Loader.load_compass_ae_widgets(config, self)
-    
+
+
+    ActiveSupport.on_load(:action_controller) do
+      include RailsDbAdmin::Extensions::ActionController::ReportSupport::ActsAsReportController
+    end
+
+
   end
 end

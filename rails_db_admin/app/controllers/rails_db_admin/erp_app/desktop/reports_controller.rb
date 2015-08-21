@@ -9,7 +9,7 @@ module RailsDbAdmin
           if params[:node] == 'root_node'
             setup_tree
           else
-            node = File.join(Rails.root, params[:node])
+            node = File.join(@file_support.root, params[:node])
             report = get_report(params[:node])
             unless report.nil?
               render :json => @file_support.build_tree(node, :file_asset_holder => report, :preload => true)
