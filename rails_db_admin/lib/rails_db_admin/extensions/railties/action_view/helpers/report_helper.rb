@@ -14,8 +14,8 @@ module RailsDbAdmin
               raw "<a target='_blank' href='#{report_download_url(report_iid, format)}'>#{display}</a>"
             end
 
-            def render_template(template)
-              render :partial => "/#{template}"
+            def render_template(template, locals=nil)
+              render :partial => "/#{template}" , :locals => locals
             end
 
           end #ReportHelper
