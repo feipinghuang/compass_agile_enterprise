@@ -155,6 +155,10 @@ module Api
           work_effort.comments = data[:comments].strip
         end
 
+        if data[:sequence].present?
+          work_effort.sequence = data[:sequence]
+        end
+
         work_effort.save!
 
         # set dba_org
@@ -203,6 +207,10 @@ module Api
 
         if data[:comments].present?
           work_effort.comments = data[:comments].strip
+        end
+
+        if data[:sequence].present?
+          work_effort.sequence = data[:sequence]
         end
 
         work_effort.save!
