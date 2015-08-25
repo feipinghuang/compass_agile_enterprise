@@ -2,7 +2,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
     extend:"Compass.ErpApp.Shared.FileManagerTree",
     alias:'widget.railsdbadmin_reportstreepanel',
 
-    newReport:function () {
+    newReport: function () {
         var me = this;
 
         Ext.create("Ext.window.Window", {
@@ -74,7 +74,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         }).show();
     },
 
-    deleteReport:function (id) {
+    deleteReport: function (id) {
         var me = this;
 
         Ext.MessageBox.confirm('Confirm', 'Are you sure you want to delete this report?', function (btn) {
@@ -104,9 +104,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         });
     },
 
-    editQuery:function (reportId) {
+    editQuery: function (reportId) {
         var me = this;
-
         var waitMsg = Ext.Msg.wait("Loading query...", "Status");
         Ext.Ajax.request({
             url:'/rails_db_admin/erp_app/desktop/reports/edit',
@@ -130,7 +129,33 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         });
     },
 
-    constructor:function (config) {
+    openIframeInTab: function (title, url) {
+        var self = this;
+        var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
+        var itemId = Compass.ErpApp.Utility.Encryption.MD5(url);
+        var item = centerRegion.getComponent(itemId);
+        if (Compass.ErpApp.Utility.isBlank(item)) {
+            var item = Ext.create('Ext.panel.Panel', {
+                iframeId: 'tutorials_iframe',
+                itemId: itemId,
+                closable: true,
+                layout: 'fit',
+                title: title,
+                html: '<iframe id="reports_iframe" height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>'
+            });
+            centerRegion.add(item);
+        }
+        else{
+            Ext.Msg.wait('Updating preview..','Status');
+            window.setTimeout(function(){
+                item.update('<iframe id="reports_iframe" height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>');
+                Ext.Msg.hide();
+            },300)
+        }
+        centerRegion.setActiveTab(item);
+    },
+
+    constructor: function (config) {
         var me = this;
 
         config = Ext.apply({
@@ -142,6 +167,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
             title:'Reports',
             rootText: 'Reports',
             autoScroll:true,
+            allowDownload: true,
             url:'/rails_db_admin/erp_app/desktop/reports/index',
             controllerPath: '/rails_db_admin/erp_app/desktop/reports',
             standardUploadUrl: '/rails_db_admin/erp_app/desktop/reports/upload_file',
@@ -153,75 +179,98 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 'reportIid',
                 'reportId',
                 'isReport',
-                'handleContextMenu'
+                'handleContextMenu',
+                'uniqueName',
+                'reportName'
             ],
             animate:false,
             listeners:{
+                'showImage': function (fileManager, node, themeId) {
+                    var reportId = null;
+                    var reportNode = node;
+                    while (reportId == null && !Compass.ErpApp.Utility.isBlank(reportNode.parentNode)) {
+                        if (reportNode.data.isReport) {
+                            reportId = reportNode.data.id;
+                        }
+                        else {
+                            reportNode = reportNode.parentNode;
+                        }
+                    }
+                    me.initialConfig.module.showImage(node, reportId);
+                },
                 'contentLoaded': function (fileManager, node, content) {
-                    var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion')
-                    var nodeName = node.data.text;
-                    var path = node.data.id
-                    centerRegion.add({
-                        xtype: 'codemirror',
-                        parser: 'rb',
-                        sourceCode: content,
-                        title: nodeName,
-                        closable: true,
-                        itemId: nodeName,
-                        listeners: {
-                                    'save': function (codeMirror, content) {
-                                        var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
-                                        Ext.Ajax.request({
-                                            url: '/rails_db_admin/erp_app/desktop/reports/update_file',
-                                            method: 'POST',
-                                            params: {
-                                                node: path,
-                                                content: content
-                                            },
-                                            success: function (responseObject) {
-                                                waitMsg.close();
-                                                var obj = Ext.decode(responseObject.responseText);
-                                                if (!obj.success) {
+                    var itemId = Compass.ErpApp.Utility.Encryption.MD5(node.data.id);
+                    var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
+                    var item = centerRegion.getComponent(itemId);
+                    var mode = Compass.ErpApp.Shared.CodeMirror.determineCodeMirrorMode(node.data.text);
+                    var title = node.data.text + ' (' + node.parentNode.data.reportName + ')'
+
+                    if (Compass.ErpApp.Utility.isBlank(item)) {
+                        item = Ext.create('Compass.ErpApp.Shared.CodeMirror',{
+                            mode: mode,
+                            sourceCode: content,
+                            title: title,
+                            closable: true,
+                            itemId: itemId,
+                            listeners: {
+                                        'save': function (codeMirror, content) {
+                                            var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
+                                            Ext.Ajax.request({
+                                                url: '/rails_db_admin/erp_app/desktop/reports/update_file',
+                                                method: 'POST',
+                                                params: {
+                                                    node: node.data.id,
+                                                    content: content
+                                                },
+                                                success: function (responseObject) {
+                                                    waitMsg.close();
+                                                    var obj = Ext.decode(responseObject.responseText);
+                                                    if (!obj.success) {
+                                                        Ext.Msg.alert('Status', 'Error saving report');
+                                                    }
+                                                },
+                                                failure: function () {
+                                                    waitMsg.close();
                                                     Ext.Msg.alert('Status', 'Error saving report');
                                                 }
-                                            },
-                                            failure: function () {
-                                                waitMsg.close();
-                                                Ext.Msg.alert('Status', 'Error saving report');
-                                            }
-                                        });
+                                            });
+                                        }
                                     }
-                                }
-                    })
-                    centerRegion.setActiveTab(nodeName);
+                        })
+                        centerRegion.add(item);
+                    }
+                    centerRegion.setActiveTab(item);
                 },
                 'itemclick':function (view, record, item, index, e) {
                     e.stopEvent();
-                    if (record.data.leaf && record.data.text == 'Query') {
+                    var fileType = record.data.id.split('.').pop();
+                    if (Ext.Array.indexOf(['png', 'gif', 'jpg', 'jpeg', 'ico', 'bmp', 'tif', 'tiff'], fileType.toLowerCase()) > -1) {
+                        me.fireEvent('showImage', this, record);
+                    }
+                    else if (record.data.leaf && record.data.text == 'Query') {
                         me.editQuery(record.data.reportId);
                     }
                     else if(record.data.leaf && record.data.text == 'Preview Report'){
-                        var module = compassDesktop.getModule('rails_db_admin-win');
-                        var reportTitle = 'Report' + ' - ' + record.data.reportIid;
-                        module.openIframeInTab(reportTitle , '/reports/display/' + record.data.reportIid);
+                        var reportTitle = 'Preview' + ' (' + record.data.reportName + ')';
+                        me.openIframeInTab(reportTitle , '/reports/display/' + record.data.reportIid);
                     }
                     else if(record.data.leaf){
                         var msg = Ext.Msg.wait("Loading", "Retrieving contents...");
-                            Ext.Ajax.request({
-                                url: '/rails_db_admin/erp_app/desktop/reports/get_contents',
-                                method: 'POST',
-                                params: {
-                                    node: record.data.id
-                                },
-                                success: function (response) {
-                                    msg.hide();
-                                    me.fireEvent('contentLoaded',me, record, response.responseText);
-                                },
-                                failure: function () {
-                                    Ext.Msg.alert('Status', 'Error loading contents');
-                                    msg.hide();
-                                }
-                            });
+                        Ext.Ajax.request({
+                            url: '/rails_db_admin/erp_app/desktop/reports/get_contents',
+                            method: 'POST',
+                            params: {
+                                node: record.data.id
+                            },
+                            success: function (response) {
+                                msg.hide();
+                                me.fireEvent('contentLoaded',me, record, response.responseText);
+                            },
+                            failure: function () {
+                                Ext.Msg.alert('Status', 'Error loading contents');
+                                msg.hide();
+                            }
+                        });
                     }
                 },
                 'handleContextMenu':function (fileManager, node, e) {

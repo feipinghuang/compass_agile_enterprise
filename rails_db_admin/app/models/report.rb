@@ -21,15 +21,19 @@ class Report < ActiveRecord::Base
   end
 
   def root_dir
-    @@root_dir ||= "#{Rails.root}"
+    # @@root_dir ||= "#{Rails.root}"
+     @@root_dir ||= "#{Rails.root}/public"
   end
 
   def base_dir
-    "#{root_dir}/lib/rails_db_admin/reports/#{self.internal_identifier}"
+    # "#{root_dir}/lib/rails_db_admin/reports/#{self.internal_identifier}"
+    "#{root_dir}/compass_ae_reports/#{self.internal_identifier}"
   end
 
   def url
-    "lib/rails_db_admin/reports/#{self.internal_identifier}"
+    # "/lib/rails_db_admin/reports/#{self.internal_identifier}"
+    "/public/compass_ae_reports/#{self.internal_identifier}"
+
   end
 
   def create_report_files!

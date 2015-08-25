@@ -301,20 +301,46 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
     //************ Reporting ************************************************
 
     editQuery: function (reportObj) {
-        var me = this;
+        var self = this;
+        var centerRegion = self.container;
+        var itemId = Compass.ErpApp.Utility.Encryption.MD5(reportObj.id);
+        var item = centerRegion.getComponent(itemId);
 
-        me.container.add({
-            xtype: 'railsdbadmin_querypanel',
-            module: me,
-            hideSave: true,
-            title: 'Query' + ' - ' + reportObj.title,
-            sqlQuery: reportObj.query,
-            reportId: reportObj.id,
-            template: reportObj.template,
-            internalIdentifier: reportObj.internalIdentifier,
-            closable: true
-        });
-        me.container.setActiveTab(me.container.items.length - 1);
+        if (Compass.ErpApp.Utility.isBlank(item)) {
+            item = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
+                module: self,
+                itemId: itemId,
+                hideSave: true,
+                title: 'Query' + ' (' + reportObj.title + ')',
+                sqlQuery: reportObj.query,
+                reportId: reportObj.id,
+                template: reportObj.template,
+                internalIdentifier: reportObj.internalIdentifier,
+                closable: true
+            });
+            centerRegion.add(item);
+        }
+        centerRegion.setActiveTab(item);
+    },
+    showImage: function (node, reportId) {
+        var self = this;
+        var centerRegion = self.container;
+        var itemId = Compass.ErpApp.Utility.Encryption.MD5(node.data.id);
+        var item = centerRegion.getComponent(itemId);
+        var imgSrc = '/download/' + node.data.text + '?path=' + node.data.parentId;
+        var title = node.data.text + ' (' + node.parentNode.data.reportName + ')'
+        if (Compass.ErpApp.Utility.isBlank(item)) {
+            item = Ext.create('Ext.panel.Panel', {
+                closable: true,
+                itemId: itemId,
+                title: title,
+                itemId: itemId,
+                layout: 'fit',
+                html: '<img src="' + imgSrc + '" />'
+            });
+            self.container.add(item);
+        }
+        self.container.setActiveTab(item);
     },
 
     //***********************************************************************
@@ -382,6 +408,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
         var item = Ext.create('Ext.panel.Panel', {
             iframeId: 'tutorials_iframe',
+            itemId: 'preview_report',
             closable: true,
             layout: 'fit',
             title: title,

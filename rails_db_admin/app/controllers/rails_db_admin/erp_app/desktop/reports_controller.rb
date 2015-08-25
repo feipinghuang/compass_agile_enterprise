@@ -120,7 +120,7 @@ module RailsDbAdmin
             @file_support.update_file(path, content)
             nodes =  params[:node].split('/')
             if nodes.last == 'base.html.erb'
-              report = Report.iid(nodes[nodes.index("reports") + 1])
+              report = Report.iid(nodes[nodes.index("compass_ae_reports") + 1])
               report.template = content
               report.save
             end
@@ -263,6 +263,7 @@ module RailsDbAdmin
           Report.all.collect do |report|
             report_hash = {
               :text => report.name,
+              :reportName => report.name,
               :id => report.id,
               :uniqueName => report.internal_identifier,
               :iconCls => 'icon-content',
@@ -274,6 +275,7 @@ module RailsDbAdmin
             ['stylesheets', 'images', 'templates', 'query', 'preview_report'].each do |resource_folder|
               report_hash[:children] << {
                   :reportId => report.id,
+                  :reportName => report.name,
                   :reportIid => report.internal_identifier,
                   :text => resource_folder.titleize,
                   :iconCls => case resource_folder
