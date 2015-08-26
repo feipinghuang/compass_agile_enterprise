@@ -22,11 +22,13 @@ module RailsDbAdmin
             }
 
             format.pdf {
-              html = render(:inline => @report.template, :locals =>
-                  {:unique_name => @report_iid, :title => @report.name, :columns => data[:columns], :rows => data[:rows]}
-              )
-              kit = PDFKit.new(html, :page_size => 'Letter')
-              kit.to_pdf
+              render :pdf => "#{@report.internal_identifier}",
+                :template => 'base.html.erb', :locals =>
+                  {:unique_name => @report_iid, :title => @report.name, :columns => data[:columns], :rows => data[:rows]},
+                :show_as_html => params[:debug].present?,
+                :footer => {
+                            :right => 'Page [page] of [topage]'
+                           }
             }
 
             format.csv {

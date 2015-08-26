@@ -15,21 +15,29 @@ module RailsDbAdmin
             end
 
             def render_template(template, locals=nil)
-              render :partial => "/#{template}" , :locals => locals
+              if request.format.symbol == :html
+                render :partial => "/#{template}" , :locals => locals
+              elsif request.format.symbol == :pdf
+                render :partial => "/#{template}.html.erb" , :locals => locals
+              end
             end
 
             def report_stylesheet_link_tag(report_id, *sources)
               report = Report.iid(report_id)
               return("could not find report with the id #{report_id}") unless report
-
-              options = sources.extract_options!.stringify_keys
-              cache = options.delete("cache")
-              recursive = options.delete("recursive")
-              sources = report_expand_stylesheet_sources(report, sources, recursive).collect do |source|
-                report_stylesheet_tag(report, source, options)
-              end.join("\n")
-              raw sources
-              #end
+              if request.format.symbol == :pdf
+                css_path = report.stylesheet_path(sources)
+                css_text = "<style type='text/css'>#{File.read(css_path)}</style>"
+                css_text.respond_to?(:html_safe) ? css_text.html_safe : css_text
+              else
+                options = sources.extract_options!.stringify_keys
+                cache = options.delete("cache")
+                recursive = options.delete("recursive")
+                sources = report_expand_stylesheet_sources(report, sources, recursive).collect do |source|
+                  report_stylesheet_tag(report, source, options)
+                end.join("\n")
+                raw sources
+              end
             end
 
             def report_stylesheet_path(report, source)
@@ -76,20 +84,25 @@ module RailsDbAdmin
               report = Report.iid(report_id)
               return("could not find report with the id #{report_id}") unless report
 
-              options.symbolize_keys!
-              options[:src] = report_image_path(report, source)
-              options[:alt] ||= File.basename(options[:src], '.*').split('.').first.to_s.capitalize
+              if request.format.symbol == :pdf
+                img_path = report.image_path(source)
+                image_tag "file:///#{img_path}",options
+              else
+                options.symbolize_keys!
+                options[:src] = report_image_path(report, source)
+                options[:alt] ||= File.basename(options[:src], '.*').split('.').first.to_s.capitalize
 
-              if size = options.delete(:size)
-                options[:width], options[:height] = size.split("x") if size =~ %r{^\d+x\d+$}
+                if size = options.delete(:size)
+                  options[:width], options[:height] = size.split("x") if size =~ %r{^\d+x\d+$}
+                end
+
+                if mouseover = options.delete(:mouseover)
+                  options[:onmouseover] = "this.src='#{report_image_path(report, mouseover)}'"
+                  options[:onmouseout] = "this.src='#{report_image_path(report, options[:src])}'"
+                end
+
+                tag("img", options)
               end
-
-              if mouseover = options.delete(:mouseover)
-                options[:onmouseover] = "this.src='#{report_image_path(report, mouseover)}'"
-                options[:onmouseout] = "this.src='#{report_image_path(report, options[:src])}'"
-              end
-
-              tag("img", options)
             end
 
             def report_image_path(report, source)
@@ -100,6 +113,10 @@ module RailsDbAdmin
               file = report.files.where('name = ? and directory = ?', name, directory).first
 
               file.nil? ? '' : file.data.url
+            end
+
+            def bootstrap_load
+              wicked_pdf_stylesheet_link_tag('bootstrap')
             end
 
           end #ReportHelper

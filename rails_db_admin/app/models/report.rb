@@ -36,6 +36,16 @@ class Report < ActiveRecord::Base
 
   end
 
+  def stylesheet_path(source)
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+    File.join(file_support.root, self.url, 'stylesheets', source)
+  end
+
+  def image_path(source)
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+    File.join(file_support.root, self.url, 'images', source)
+  end
+
   def create_report_files!
     file_support = ErpTechSvcs::FileSupport::Base.new
     REPORT_STRUCTURE.each do |structure|
@@ -53,7 +63,9 @@ class Report < ActiveRecord::Base
 
   def set_default_template
     self.template =
-"<h3><%= title %></h3>
+"
+<%= bootstrap_load %>
+<h3><%= title %></h3>
 
 <table>
   <tr>
