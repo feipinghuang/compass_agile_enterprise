@@ -24,7 +24,7 @@ module RoutingFilter
             type = valid_section.type.pluralize.downcase
             path.sub!('/', "/#{$1}#{type}/#{valid_section.id}#{$3}")
           else
-            if !Rails.application.config.knitkit.ignored_prefix_paths.include?(path) and path !~ %r(^/([\w]{2,4}/)?admin) and !paths.empty? and path =~ recognize_pattern(paths)
+            if !Rails.application.config.knitkit.ignored_prefix_paths.include?(path) and path !~ %r(^/([\w]{2,4}/)) and !paths.empty? and path =~ recognize_pattern(paths)
               if section = website_section_by_path(website, $2)
                 type = section.type.pluralize.downcase
                 path.sub! %r(^/([\w]{2,4}/)?(#{paths})(?=/|\.|$)), "/#{$1}#{type}/#{section.id}#{$3}"
@@ -39,7 +39,7 @@ module RoutingFilter
     def around_generate(params, &block)
       yield.tap do |path|
         result = result.first if result.is_a?(Array)
-        if result !~ %r(^/([\w]{2,4}/)?admin) and result =~ generate_pattern
+        if result !~ %r(^/([\w]{2,4}/)) and result =~ generate_pattern
           section = WebsiteSection.find $2.to_i
           result.sub! "#{$1}/#{$2}", "#{section.path[1..section.path.length]}#{$3}"
         end
