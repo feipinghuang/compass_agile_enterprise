@@ -24,7 +24,7 @@ module Api
         # scope by dba organization
         parties = parties.with_dba_organization(current_user.party.dba_organization)
 
-        parties = parties.order("#{sort} #{dir}")
+        parties = parties.uniq.order("#{sort} #{dir}")
 
         total_count = parties.count
         parties = parties.offset(start).limit(limit)

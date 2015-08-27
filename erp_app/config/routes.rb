@@ -33,7 +33,8 @@ ErpApp::Engine.routes.draw do
   #############################
 
   namespace :organizer do
-    match '(/:action)' => "base"
+
+    match '/' => "base#index"
 
     match '/application_management/:action(/:id)' => "application_management"
 
