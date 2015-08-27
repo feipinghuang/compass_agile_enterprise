@@ -7,10 +7,15 @@ class ContactPurpose < ActiveRecord::Base
   has_and_belongs_to_many :contacts
 
   def to_data_hash
-    {
-        id: id,
-        description: description,
-        internal_identifier: internal_identifier
-    }
+    to_hash(
+        only: [
+            :id,
+            :description,
+            :internal_identifier,
+            :created_at,
+            :updated_at
+        ],
+        leaf: leaf?
+    )
   end
 end

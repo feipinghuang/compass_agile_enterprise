@@ -1,0 +1,20 @@
+Ext.define("Compass.ErpApp.Organizer.Applications.<%= class_name %>.Application", {
+    extend: "Ext.tab.Panel",
+    alias: 'widget.<%= file_name %>application',
+    id: '<%= file_name %>',
+    statics: {
+        menuItems: [
+            {
+                title: '<%= class_name %>',
+                itemId: '<%= file_name %>',
+                imgSrc: '<%= menu_item_url %>'
+            }
+        ],
+        tabs:[
+            {
+                xtype: 'panel',
+                title: 'My tab'
+            }
+        ]
+    }
+});

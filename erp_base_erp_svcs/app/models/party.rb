@@ -133,33 +133,35 @@ class Party < ActiveRecord::Base
     "#{description}"
   end
 
-  # method to convert party data to hash
+  # convert party record to hash of data
+  #
   def to_data_hash
-    hash = {
-        server_id: id,
-        description: description,
-        created_at: created_at,
-        updated_at: updated_at,
-        business_party_type: business_party.class.name
-    }
+    data = to_hash(only: [
+                       :id,
+                       :description,
+                       :created_at,
+                       :updated_at
+                   ],
+                   business_party_type: business_party.class.name
+    )
 
     # get business party data
     if business_party
       if business_party.is_a?(Individual)
-        hash.merge!({
+        data.merge!({
                         first_name: business_party.current_first_name,
                         last_name: business_party.current_last_name,
                         middle_name: business_party.current_middle_name,
                         gender: business_party.gender
                     })
       else
-        hash.merge!({
+        data.merge!({
                         tax_id_number: business_party.tax_id_number
                     })
       end
     end
 
-    hash
+    data
   end
 
 end

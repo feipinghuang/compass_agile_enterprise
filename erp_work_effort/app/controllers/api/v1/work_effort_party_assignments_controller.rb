@@ -5,8 +5,8 @@ module Api
       def index
         work_effort_party_assignments = WorkEffortPartyAssignment
 
-        if params[:project_id]
-          work_effort_party_assignments = work_effort_party_assignments.joins(:work_effort).where('work_efforts.project_id = ?', params[:project_id])
+        if params['project.id']
+          work_effort_party_assignments = work_effort_party_assignments.joins(:work_effort).where('work_efforts.project_id = ?', params['project.id'])
         end
 
         render :json => {
@@ -22,8 +22,8 @@ module Api
           ActiveRecord::Base.connection.transaction do
 
             work_effort_party_assignment = WorkEffortPartyAssignment.new
-            work_effort_party_assignment.party_id = params[:party_id]
-            work_effort_party_assignment.work_effort_id = params[:work_effort_id]
+            work_effort_party_assignment.party_id = params['party.id']
+            work_effort_party_assignment.work_effort_id = params['work_effort.id']
             work_effort_party_assignment.role_type = RoleType.iid('work_resource')
             work_effort_party_assignment.resource_allocation = params[:resource_allocation]
 
@@ -51,8 +51,8 @@ module Api
           ActiveRecord::Base.connection.transaction do
 
             work_effort_party_assignment = WorkEffortPartyAssignment.find(params[:id])
-            work_effort_party_assignment.party_id = params[:party_id]
-            work_effort_party_assignment.work_effort_id = params[:work_effort_id]
+            work_effort_party_assignment.party_id = params['party.id']
+            work_effort_party_assignment.work_effort_id = params['work_effort.id']
             work_effort_party_assignment.role_type = RoleType.iid('work_resource')
             work_effort_party_assignment.resource_allocation = params[:resource_allocation]
 

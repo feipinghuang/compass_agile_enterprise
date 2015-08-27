@@ -28,12 +28,14 @@
 class WorkEffortPartyAssignment < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-  belongs_to  :work_effort
-  belongs_to  :party
-  belongs_to  :role_type
+  belongs_to :work_effort
+  belongs_to :party
+  belongs_to :role_type
 
   def to_data_hash
-    to_hash(only: [{:id => 'server_id'}, :work_effort_id, :party_id, :resource_allocation])
+    to_hash(only: [:id, :resource_allocation],
+            work_effort: try(:work_effort).try(:to_data_hash),
+            party: try(:party).try(:to_data_hash))
   end
 
 end

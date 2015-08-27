@@ -5,9 +5,9 @@ module Api
       def index
         work_effort_associations = WorkEffortAssociation
 
-        if params[:project_id]
+        if params['project.id']
           work_effort_associations = work_effort_associations.joins('inner join work_efforts on work_efforts.id = work_effort_associations.work_effort_id_to')
-                                         .where('work_efforts.project_id = ?', params[:project_id])
+                                         .where('work_efforts.project_id = ?', params['project.id'])
         end
 
         render :json => {success: true, work_effort_associations: work_effort_associations.all.map { |work_effort| work_effort.to_data_hash }}

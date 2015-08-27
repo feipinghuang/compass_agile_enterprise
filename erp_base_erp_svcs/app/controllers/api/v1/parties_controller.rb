@@ -18,7 +18,7 @@ module Api
         end
 
         unless role_types.blank?
-          parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.where(internal_identifier: role_types.split(',')))
+          parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.find_child_role_types(role_types.split(',')))
         end
 
         parties = parties.order("#{sort} #{dir}")

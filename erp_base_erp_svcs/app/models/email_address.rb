@@ -11,7 +11,7 @@ class EmailAddress < ActiveRecord::Base
   has_contact
 
   validates_format_of :email_address, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\z/, :message => "Must be a valid email address"
- 
+
   def summary_line
     "#{description} : #{email_address}"
   end
@@ -25,12 +25,12 @@ class EmailAddress < ActiveRecord::Base
   end
 
   def to_data_hash
-    {
-        email_address: email_address,
-        description: description,
-        created_at: created_at,
-        updated_at: updated_at
-    }
+    to_hash(only: [
+                :email_address,
+                :description,
+                :created_at,
+                :updated_at
+            ])
   end
 
 end
