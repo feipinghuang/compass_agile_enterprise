@@ -7,6 +7,11 @@ module Api
 
         if params['project.id']
           work_effort_party_assignments = work_effort_party_assignments.joins(:work_effort).where('work_efforts.project_id = ?', params['project.id'])
+        else
+          # scope by dba organization
+          work_effort_party_assignments = work_effort_party_assignments.joins('inner join work_efforts on work_efforts.id = work_effort_party_assignments.work_effort_id')
+                                              .joins("inner join entity_party_roles on entity_party_roles.entity_record_type = 'WorkEffort' and entity_party_roles.entity_record_id = work_efforts.id")
+                                              .where('entity_party_roles.party_id = ? and entity_party_roles.role_type_id = ?', current_user.party.dba_organization.id, RoleType.iid('dba_org').id)
         end
 
         render :json => {

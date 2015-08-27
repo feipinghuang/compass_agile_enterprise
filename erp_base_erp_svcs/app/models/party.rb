@@ -18,7 +18,7 @@ class Party < ActiveRecord::Base
   class << self
 
     def with_dba_organization(dba_org)
-      self.joins("inner join party_relationships on party_relationships.party_id_to = '#{dba_org.id}'
+      joins("inner join party_relationships on party_relationships.party_id_to = '#{dba_org.id}'
                   and party_relationships.role_type_id_to = '#{RoleType.iid('dba_org').id}'")
     end
 

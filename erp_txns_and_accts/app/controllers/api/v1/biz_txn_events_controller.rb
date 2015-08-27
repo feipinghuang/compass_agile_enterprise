@@ -1,6 +1,6 @@
 module Api
   module V1
-    class BizTxnEvents < BaseController
+    class BizTxnEventsController < BaseController
 
       def index
         query = params[:query]
@@ -20,6 +20,9 @@ module Api
         unless biz_txn_types.blank?
           biz_txn_events = biz_txn_events.where('biz_txn_type_id' => BizTxnType.where(internal_identifier: biz_txn_types.split(',')))
         end
+
+        # scope by dba_organization
+        biz_txn_events = biz_txn_events.with_dba_organization(current_user.party.dba_organization)
 
         biz_txn_events = biz_txn_events.order("#{sort} #{dir}")
 

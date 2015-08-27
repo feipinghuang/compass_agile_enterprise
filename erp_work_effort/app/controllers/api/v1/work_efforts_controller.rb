@@ -8,6 +8,9 @@ module Api
 
         if params['project.id']
           work_efforts = work_efforts.where('project_id = ?', params['project.id'])
+        else
+          # scope by dba organization
+          work_efforts = work_efforts.with_party_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
         end
 
         work_efforts = work_efforts.order("created_at ASC")

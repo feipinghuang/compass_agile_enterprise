@@ -42,6 +42,17 @@ class BizTxnEvent < ActiveRecord::Base
   alias :account= :biz_txn_acct_root=
   alias :descriptions :biz_txn_event_descs
 
+  class << self
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] party to scope by
+    def with_dba_organization(dba_organization)
+      joins("inner join biz_txn_party_roles on biz_txn_party_roles.biz_txn_event_id = biz_txn_events.id
+             and biz_txn_party_roles.party_id = '#{dba_organization.id}'
+             and biz_txn_party_roles.biz_txn_party_role_type_id = '#{BizTxnPartyRoleType.iid('dba_org').id}'")
+    end
+  end
+
   def destroy_biz_txn_relationships
     BizTxnRelationship.where("txn_event_id_from = ? or txn_event_id_to = ?", self.id, self.id).destroy_all
   end

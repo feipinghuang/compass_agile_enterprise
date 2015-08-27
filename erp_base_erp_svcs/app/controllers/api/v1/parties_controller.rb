@@ -21,6 +21,9 @@ module Api
           parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.find_child_role_types(role_types.split(',')))
         end
 
+        # scope by dba organization
+        parties = parties.with_dba_organization(current_user.party.dba_organization)
+
         parties = parties.order("#{sort} #{dir}")
 
         total_count = parties.count
