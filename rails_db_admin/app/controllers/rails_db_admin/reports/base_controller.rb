@@ -24,8 +24,9 @@ module RailsDbAdmin
             format.pdf {
               render :pdf => "#{@report.internal_identifier}",
                 :template => 'base.html.erb', :locals =>
-                  {:unique_name => @report_iid, :title => @report.name, :columns => data[:columns], :rows => data[:rows]},
+                    {:unique_name => @report_iid, :title => @report.name, :columns => data[:columns], :rows => data[:rows]},
                 :show_as_html => params[:debug].present?,
+                :margin => {:top => 0,:bottom => 15, :left => 10,:right => 10},
                 :footer => {
                             :right => 'Page [page] of [topage]'
                            }

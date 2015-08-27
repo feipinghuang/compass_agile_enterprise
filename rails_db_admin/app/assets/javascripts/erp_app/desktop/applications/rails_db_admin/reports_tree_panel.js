@@ -74,6 +74,70 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         }).show();
     },
 
+    uploadReport: function(){
+        var me = this;
+        Ext.create("Ext.window.Window", {
+            modal: true,
+            title: 'New Report',
+            buttonAlign: 'center',
+            items: {
+                xtype: 'form',
+                timeout: 300,
+                frame: false,
+                bodyStyle: 'padding:5px 5px 0',
+                fileUpload: true,
+                url: '/rails_db_admin/erp_app/desktop/reports/create',
+                items: [
+                    {
+                        xtype: 'fileuploadfield',
+                        width: '350px',
+                        fieldLabel: 'Upload Report',
+                        buttonText: 'Upload',
+                        buttonOnly: false,
+                        allowBlank: true,
+                        name: 'report_data'
+                    }
+                ]
+            },
+            buttons: [
+                {
+                    text: 'Submit',
+                    listeners: {
+                        'click': function (button) {
+                            var window = this.up('window'),
+                                form = window.query('form')[0].getForm();
+
+                            if (form.isValid()) {
+                                form.submit({
+                                    timeout: 300000,
+                                    waitMsg: 'Creating report...',
+                                    success: function (form, action) {
+                                        var obj = Ext.decode(action.response.responseText);
+                                        if (obj.success) {
+                                            window.me = me;
+                                            me.getStore().load();
+                                        }
+                                        window.close();
+                                    },
+                                    failure: function (form, action) {
+                                        Ext.Msg.alert("Error", "Error creating theme");
+                                    }
+                                });
+                            }
+                        }
+                    }
+                },
+                {
+                    text: 'Close',
+                    handler: function (btn) {
+                        btn.up('window').close();
+                    }
+                }
+            ]
+        }).show();
+
+    },
+
     deleteReport: function (id) {
         var me = this;
 
@@ -82,12 +146,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 return false;
             }
             else if (btn === 'yes') {
+                var waitMsg = Ext.Msg.wait("Deleting report...", "Status");
                 Ext.Ajax.request({
                     url:'/rails_db_admin/erp_app/desktop/reports/delete',
                     params:{
                         id:id
                     },
                     success:function (responseObject) {
+                        waitMsg.close();
                         var obj = Ext.decode(responseObject.responseText);
                         if (obj.success) {
                             me.getStore().load();
@@ -97,6 +163,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         }
                     },
                     failure:function () {
+                        waitMsg.close();
                         Ext.Msg.alert('Status', 'Error deleting report');
                     }
                 });
@@ -276,12 +343,22 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 'handleContextMenu':function (fileManager, node, e) {
                     var items = [];
                     if (node.isRoot()) {
-                        items.push({
+                        items.push(
+                        {
                             text: "New Report",
                             iconCls: 'icon-settings',
                             listeners:{
                                 'click':function () {
                                     me.newReport();
+                                }
+                            }
+                        },
+                        {
+                            text: "Upload",
+                            iconCls: 'icon-theme-upload',
+                            listeners:{
+                                'click':function () {
+                                    me.uploadReport();
                                 }
                             }
                         });

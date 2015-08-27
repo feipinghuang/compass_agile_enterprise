@@ -20,14 +20,19 @@ module RailsDbAdmin
         end
 
         def create
-          name = params[:name]
-          internal_identifier = params[:internal_identifier]
-
-          report = Report.new(:name => name, :internal_identifier => internal_identifier)
-          if report.save
-            render :json => {:success => true}
+          unless params[:report_data].blank?
+            Report.import(params[:report_data])
+            render :inline => {:success => true}.to_json
           else
-            render :json => {:success => false, :msg => 'Error creating report'}
+            name = params[:name]
+            internal_identifier = params[:internal_identifier]
+
+            report = Report.new(:name => name, :internal_identifier => internal_identifier)
+            if report.save
+              render :json => {:success => true}
+            else
+              render :json => {:success => false, :msg => 'Error creating report'}
+            end
           end
         end
 
