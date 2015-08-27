@@ -114,7 +114,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                     success: function (form, action) {
                                         var obj = Ext.decode(action.response.responseText);
                                         if (obj.success) {
-                                            window.me = me;
                                             me.getStore().load();
                                         }
                                         window.close();
