@@ -221,6 +221,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         centerRegion.setActiveTab(item);
     },
 
+    exportReport: function (reportId) {
+        var self = this;
+        var waitMsg = Ext.Msg.wait("Exporting Report...", "Status");
+        window.open('/rails_db_admin/erp_app/desktop/reports/export?id=' + reportId, '_blank');
+        waitMsg.hide();
+    },
+
     constructor: function (config) {
         var me = this;
 
@@ -383,6 +390,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                         Ext.Msg.alert('Details', 'Title: '+node.data.text +
                                             '<br /> Unique Name: '+node.data.uniqueName
                                         );
+                                    }
+                                }
+                            },
+                            {
+                                text: 'Export',
+                                iconCls: 'icon-document_out',
+                                listeners: {
+                                    'click': function () {
+                                        me.exportReport(node.data.id);
                                     }
                                 }
                             }

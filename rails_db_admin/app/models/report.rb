@@ -12,7 +12,7 @@ class Report < ActiveRecord::Base
 
   has_file_assets
 
-  REPORT_STRUCTURE = ['templates', 'stylesheets', 'images']
+  REPORT_STRUCTURE = ['stylesheets', 'javascripts', 'images', 'templates']
 
   class << self
     def iid(internal_identifier)
@@ -25,6 +25,12 @@ class Report < ActiveRecord::Base
         return false unless valid_report?(file)
         report = Report.create(:name => name, :internal_identifier => name.underscore)
         report.import(file)
+      end
+    end
+
+    def make_tmp_dir
+      Pathname.new(Rails.root.to_s + "/tmp/reports/tmp_#{Time.now.to_i.to_s}/").tap do |dir|
+        FileUtils.mkdir_p(dir) unless dir.exist?
       end
     end
 
@@ -91,6 +97,24 @@ class Report < ActiveRecord::Base
 
   end
 
+  def export
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+    tmp_dir = Report.make_tmp_dir
+    (tmp_dir + "#{name}.zip").tap do |file_name|
+      file_name.unlink if file_name.exist?
+      Zip::ZipFile.open(file_name.to_s, Zip::ZipFile::CREATE) do |zip|
+        files.each { |file|
+          contents = file_support.get_contents(File.join(file_support.root, file.directory, file.name))
+          relative_path = file.directory.sub("#{url}", '')
+          path = FileUtils.mkdir_p(File.join(tmp_dir, relative_path))
+          full_path = File.join(path, file.name)
+          File.open(full_path, 'wb+') { |f| f.puts(contents) }
+          zip.add(File.join(relative_path[1..relative_path.length], file.name), full_path) if ::File.exists?(full_path)
+        }
+      end
+    end
+  end
+
   def stylesheet_path(source)
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
     File.join(file_support.root, self.url, 'stylesheets', source)
@@ -104,6 +128,11 @@ class Report < ActiveRecord::Base
   def template_path(source)
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
     File.join(file_support.root, self.url, 'templates', source)
+  end
+
+  def javascript_path(source)
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+    File.join(file_support.root, self.url, 'javascripts', source)
   end
 
   def create_report_files!
@@ -142,6 +171,7 @@ class Report < ActiveRecord::Base
 </table>
 
 <%= report_download_link(unique_name, :csv, 'Download CSV') %> |
-<%= report_download_link(unique_name, :pdf, 'Download PDF') %>"
+<%= report_download_link(unique_name, :pdf, 'Download PDF') %>
+<%= jquery_load %>"
   end
 end

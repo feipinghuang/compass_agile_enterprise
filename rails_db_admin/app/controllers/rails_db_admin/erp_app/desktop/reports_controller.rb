@@ -92,6 +92,12 @@ module RailsDbAdmin
           end
         end
 
+        def export
+          report = Report.find(params[:id])
+          zip_path = report.export
+          send_file(zip_path.to_s, :stream => false) rescue raise "Error sending #{zip_path} file"
+        end
+
         def create_file
           begin
             path = File.join(@file_support.root, params[:path])
@@ -277,7 +283,7 @@ module RailsDbAdmin
               :children => []
             }
 
-            ['stylesheets', 'images', 'templates', 'query', 'preview_report'].each do |resource_folder|
+            ['stylesheets', 'images', 'templates','javascripts','query', 'preview_report'].each do |resource_folder|
               report_hash[:children] << {
                   :reportId => report.id,
                   :reportName => report.name,

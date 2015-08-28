@@ -40,10 +40,38 @@ module RailsDbAdmin
               end
             end
 
+            def report_javascript_include_tag(report_id, *sources)
+              report = Report.iid(report_id)
+              return("could not find report with the id #{report_id}") unless report
+              if request.format.symbol == :pdf
+                js_path = report.javascript_path(sources)
+                js_text = "<script>#{File.read(js_path)}</script>"
+                js_text.respond_to?(:html_safe) ? js_text.html_safe : js_text
+              else
+                options = sources.extract_options!.stringify_keys
+                cache = options.delete("cache")
+                recursive = options.delete("recursive")
+                sources = report_expand_javascript_sources(report, sources, recursive).collect do |source|
+                  report_javascript_src_tag(report, source, options)
+                end.join("\n")
+                raw sources
+              end
+            end
+
             def report_stylesheet_path(report, source)
               report = Report.iid(report) unless report.is_a?(Report)
 
               name, directory = name_and_path_from_source(source, "#{report.url}/stylesheets")
+
+              file = report.files.where('name = ? and directory = ?', name, directory).first
+
+              file.nil? ? '' : file.data.url
+            end
+
+            def report_javascript_path(report, source)
+              report = Report.iid(report) unless report.is_a?(Report)
+
+              name, directory = name_and_path_from_source(source, "#{report.url}/javascripts")
 
               file = report.files.where('name = ? and directory = ?', name, directory).first
 
@@ -74,10 +102,23 @@ module RailsDbAdmin
               end
             end
 
+            def report_expand_javascript_sources(report, sources, recursive = false)
+              if sources.include?(:all)
+                collect_asset_files(report.base_dir + '/javascripts', ('**' if recursive), '*.js').uniq
+              else
+                sources.flatten
+              end
+            end
+
             def report_stylesheet_tag(report, source, options)
               options = {"rel" => "stylesheet", "type" => Mime::CSS, "media" => "screen",
                          "href" => html_escape(report_stylesheet_path(report, source))}.merge(options)
               tag("link", options, false, false)
+            end
+
+            def report_javascript_src_tag(report, source, options)
+              options = {"type" => Mime::JS, "src" => report_javascript_path(report, source)}.merge(options)
+              content_tag("script", "", options)
             end
 
             def report_image_tag(report_id, source, options = {})
@@ -117,6 +158,10 @@ module RailsDbAdmin
 
             def bootstrap_load
               wicked_pdf_stylesheet_link_tag('bootstrap')
+            end
+
+            def jquery_load
+              javascript_include_tag "http://code.jquery.com/jquery-1.10.0.min.js"
             end
 
           end #ReportHelper
