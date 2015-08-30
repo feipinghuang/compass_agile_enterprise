@@ -4,18 +4,26 @@ module Api
 
       def index
 
-        work_efforts = WorkEffort.where("parent_id is null")
+        work_efforts = WorkEffort.where("work_efforts.parent_id is null")
 
-        if params['project.id']
+        # if project is passed filter by project
+        if params['project.id'].present?
           work_efforts = work_efforts.where('project_id = ?', params['project.id'])
-        else
-          # scope by dba organization
-          work_efforts = work_efforts.with_party_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
         end
+
+        # if status is passed scope by status
+        if params['status'].present?
+          work_efforts = work_efforts.with_current_status(params[:status].split(','))
+        end
+
+        # scope by dba organization
+        work_efforts = work_efforts.with_party_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
 
         work_efforts = work_efforts.order("created_at ASC")
 
-        render :json => {success: true, work_efforts: work_efforts.map { |work_effort| work_effort.to_data_hash }}
+        render :json => {success: true,
+                         total: work_efforts.count,
+                         work_efforts: work_efforts.map { |work_effort| work_effort.to_data_hash }}
 
       end
 

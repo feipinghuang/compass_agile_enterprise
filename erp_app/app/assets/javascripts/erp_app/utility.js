@@ -257,13 +257,13 @@ Compass.ErpApp.Utility.handleFormFailure = function (action) {
     if (window['Ext']) {
         switch (action.failureType) {
             case Ext.form.action.Action.CLIENT_INVALID:
-                Ext.Msg.alert('Failure', 'Form fields may not be submitted with invalid values');
+                Ext.Msg.error('Failure', 'Form fields may not be submitted with invalid values');
                 break;
             case Ext.form.action.Action.CONNECT_FAILURE:
-                Ext.Msg.alert('Failure', 'Ajax communication failed');
+                Ext.Msg.error('Failure', 'Ajax communication failed');
                 break;
             case Ext.form.action.Action.SERVER_INVALID:
-                Ext.Msg.alert('Failure', (action.result.msg || action.result.message));
+                Ext.Msg.error('Failure', (action.result.msg || action.result.message));
         }
     }
 };

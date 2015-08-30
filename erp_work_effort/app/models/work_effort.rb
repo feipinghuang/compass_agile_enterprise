@@ -1,3 +1,4 @@
+#### Table Definition ###########################
 # create_table "work_efforts", :force => true do |t|
 #   t.integer  "parent_id"
 #   t.integer  "lft"
@@ -31,11 +32,12 @@
 #   t.text     "custom_fields"
 # end
 #
-# add_index "work_efforts", ["end_at"], :name => "index_work_efforts_on_finished_at"
+# add_index "work_efforts", ["end_at"], :name => "index_work_efforts_on_end_at"
 # add_index "work_efforts", ["fixed_asset_id"], :name => "index_work_efforts_on_fixed_asset_id"
 # add_index "work_efforts", ["project_id"], :name => "work_effort_project_idx"
 # add_index "work_efforts", ["work_effort_item_type", "work_effort_item_id"], :name => "work_item_idx"
 # add_index "work_efforts", ["work_effort_record_id", "work_effort_record_type"], :name => "work_effort_record_id_type_idx"
+#################################################
 
 class WorkEffort < ActiveRecord::Base
   attr_protected :created_at, :updated_at
@@ -73,6 +75,10 @@ class WorkEffort < ActiveRecord::Base
   has_many :work_effort_fixed_asset_assignments, :dependent => :destroy
   has_many :fixed_assets, :through => :work_effort_fixed_asset_assignments
 
+  ## What BizTxnEvents have been related to this WorkEffort
+  has_many :work_effort_biz_txn_events, :dependent => :destroy
+  has_many :biz_txn_events, :through => :work_effort_biz_txn_events
+
   ## Allow for polymorphic subtypes of this class
   belongs_to :work_effort_record, :polymorphic => true
 
@@ -81,6 +87,12 @@ class WorkEffort < ActiveRecord::Base
   belongs_to :facility
 
   class << self
+
+    # scope WorkEfforts by passed party and optional status
+    #
+    # @param party [Party] party to scope by
+    # @param status [String] status to scope by
+    # @return [ActiveRecord::Relation] relation scoped by party and optionally status
     def work_efforts_for_party(party, status=nil)
       role_types_tbl = RoleType.arel_table
       parties_tbl = Party.arel_table
@@ -96,6 +108,10 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
+  # override for comparison of a work_effort
+  #
+  # @param an_other [WorkEffort] other work_effort
+  # @return [Integer] order
   def <=>(an_other)
     case an_other.current_status
       when 'pending'
@@ -107,36 +123,54 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
+  # get assigned parties by role type
+  #
+  # @param role_type [String] role type internal identifier, defaults to worker
+  # @return [Array] descriptions of role types comma separated
   def assigned_parties(role_type='worker')
     self.work_effort_party_assignments.where('role_type_id = ?', RoleType.iid(role_type)).collect do |item|
       item.party.description
     end.join(',')
   end
 
+  # get all the assigned roles
+  #
+  # @return [Array] descriptions of role types comma separated
   def assigned_roles
     self.role_types.collect(&:description).join(',')
   end
 
+  # get the current status of this work_effort
+  #
+  # @return [String] status
   def status
-    # get status via has_tracked_status
     current_status
   end
 
   # return true if this effort has been started, false otherwise
+  #
+  # @return [Boolean] true if started
   def started?
     current_status.nil? ? false : true
   end
 
   # return true if this effort has been completed, false otherwise
+  #
+  # @return [Boolean] true if completed
   def completed?
     finished_at.nil? ? false : true
   end
 
+  # return true if this effort has been completed, false otherwise
+  #
+  # @return [Boolean]
   def finished?
     completed?
   end
 
-  #start work effort with initial_status (string)
+  # start work effort with initial_status (string)
+  #
+  # @param initial_status [String] status to start at
   def start(initial_status='')
     effort = self
     unless self.descendants.flatten!.nil?
@@ -153,16 +187,24 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
+  # set status to complete
+  #
   def finish
     complete
   end
 
+  # completes work effort by setting finished at to Time.now and calculates
+  # actual_completion_time in minutes
+  #
   def complete
     self.finished_at = Time.now
     self.actual_completion_time = time_diff_in_minutes(self.finished_at.to_time, self.started_at.to_time)
     self.save
   end
 
+  # converts this record a hash data representation
+  #
+  # @return [Hash] data of record
   def to_data_hash
     to_hash(only: [
                 :id,
@@ -185,6 +227,11 @@ class WorkEffort < ActiveRecord::Base
 
   protected
 
+  # determine difference in minutes between two times
+  #
+  # @param time_one [Time] first time
+  # @param time_two [Time] second time
+  # @return [Integer] time difference in minutes
   def time_diff_in_minutes (time_one, time_two)
     (((time_one - time_two).round) / 60)
   end
