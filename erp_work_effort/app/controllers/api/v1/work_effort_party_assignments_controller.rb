@@ -5,8 +5,8 @@ module Api
       def index
         work_effort_party_assignments = WorkEffortPartyAssignment
 
-        if params['project.id']
-          work_effort_party_assignments = work_effort_party_assignments.joins(:work_effort).where('work_efforts.project_id = ?', params['project.id'])
+        if params[:project_id]
+          work_effort_party_assignments = work_effort_party_assignments.joins(:work_effort).where('work_efforts.project_id = ?', params[:project_id])
         else
           # scope by dba organization
           work_effort_party_assignments = work_effort_party_assignments.joins('inner join work_efforts on work_efforts.id = work_effort_party_assignments.work_effort_id')

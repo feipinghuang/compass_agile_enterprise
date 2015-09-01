@@ -7,8 +7,8 @@ module Api
         work_efforts = WorkEffort.where("work_efforts.parent_id is null")
 
         # if project is passed filter by project
-        if params['project.id'].present?
-          work_efforts = work_efforts.where('project_id = ?', params['project.id'])
+        if params[:project_id]
+          work_efforts = work_efforts.where('project_id = ?', params[:project_id])
         end
 
         # if status is passed scope by status
@@ -19,7 +19,7 @@ module Api
         # scope by dba organization
         work_efforts = work_efforts.with_party_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
 
-        work_efforts = work_efforts.order("created_at ASC")
+        work_efforts = work_efforts.order("sequence, created_at ASC")
 
         render :json => {success: true,
                          total: work_efforts.count,
@@ -128,9 +128,9 @@ module Api
         work_effort = WorkEffort.new
         work_effort.description = data[:description].strip
 
-        if params['project.id'].present?
-          if params['project.id'].to_i != 0
-            work_effort.project_id = params['project.id']
+        if params[:project_id].present?
+          if params[:project_id].to_i != 0
+            work_effort.project_id = params[:project_id]
           end
         end
 

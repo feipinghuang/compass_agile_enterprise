@@ -5,9 +5,9 @@ module Api
       def index
         work_effort_associations = WorkEffortAssociation
 
-        if params['project.id']
+        if params[:project_id]
           work_effort_associations = work_effort_associations.joins('inner join work_efforts on work_efforts.id = work_effort_associations.work_effort_id_to')
-                                         .where('work_efforts.project_id = ?', params['project.id'])
+                                         .where('work_efforts.project_id = ?', params[:project_id])
         else
           # scope by dba organization
           work_effort_associations = work_effort_associations.joins('inner join work_efforts on work_efforts.id = work_effort_associations.work_effort_id_to')
