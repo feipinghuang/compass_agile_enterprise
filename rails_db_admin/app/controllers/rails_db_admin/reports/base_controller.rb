@@ -12,15 +12,9 @@ module RailsDbAdmin
           render :no_report, :layout => false
         else
           data = get_report_data
-<<<<<<< HEAD
-@row = data[:rows].first
-          respond_to do |format|
-
-=======
 
           respond_to do |format|
 
->>>>>>> 4dc10f7af2d0fa899bcad24d3dd05713cc9e6e48
             format.html {
               render(:inline => @report.template, :locals =>
                   {:unique_name => @report_iid, :title => @report.name, :columns => data[:columns], :rows => data[:rows]}
