@@ -157,7 +157,7 @@ module RailsDbAdmin
             end
 
             def bootstrap_load
-              wicked_pdf_stylesheet_link_tag('bootstrap')
+              #wicked_pdf_stylesheet_link_tag('bootstrap')
             end
 
             def jquery_load

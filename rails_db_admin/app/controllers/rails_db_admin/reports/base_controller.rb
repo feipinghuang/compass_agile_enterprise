@@ -12,7 +12,7 @@ module RailsDbAdmin
           render :no_report, :layout => false
         else
           data = get_report_data
-
+@row = data[:rows].first
           respond_to do |format|
 
             format.html {
