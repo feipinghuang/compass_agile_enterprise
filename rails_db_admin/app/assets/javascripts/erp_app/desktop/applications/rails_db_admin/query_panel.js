@@ -93,6 +93,34 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                         }
                     });
                 }
+            },
+            {
+                text: 'Save Query',
+                iconCls: 'icon-save',
+                handler: function (btn) {
+                    var textarea = self.query('.codemirror')[0];
+                    var sql = textarea.getValue();
+
+                    var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
+                    Ext.Ajax.request({
+                        url: '/rails_db_admin/erp_app/desktop/reports/save_query',
+                        params: {
+                            id: self.initialConfig.reportId,
+                            query: sql
+                        },
+                        success: function (responseObject) {
+                            waitMsg.close();
+                            var obj = Ext.decode(responseObject.responseText);
+                            if (!obj.success) {
+                                Ext.Msg.alert('Status', 'Error saving report');
+                            }
+                        },
+                        failure: function () {
+                            waitMsg.close();
+                            Ext.Msg.alert('Status', 'Error saving report');
+                        }
+                    });
+                }
             }
         ];
 
@@ -214,7 +242,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
 
     constructor: function (config) {
         config = Ext.applyIf({
-            title: 'Query',
             layout: 'border',
             border: false
         }, config);
