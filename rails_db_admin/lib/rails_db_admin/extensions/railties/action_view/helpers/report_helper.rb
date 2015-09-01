@@ -157,7 +157,7 @@ module RailsDbAdmin
             end
 
             def bootstrap_load
-              wicked_pdf_stylesheet_link_tag('bootstrap')
+              stylesheet_link_tag "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
             end
 
             def jquery_load
