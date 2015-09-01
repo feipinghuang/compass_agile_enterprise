@@ -654,6 +654,26 @@ Function.prototype.bindToEventHandler = function bindToEventHandler() {
     }
 };
 
+Function.prototype.inject = function(scope, args, scopeArgs) {
+
+    var code = '';
+
+    // Every scopeArgs entry will be added to this code
+    for (var name in scopeArgs) {
+        code += 'var ' + name + ' = scopeArgs["' + name + '"];';
+    }
+
+    // eval the code, so these variables are available in this scope
+    eval(code);
+
+    if (!this.__source__) this.__source__ = String(this);
+
+    eval('var fnc = ' + this.__source__);
+
+    // Apply the function source
+    return fnc.apply(scope, args);
+};
+
 var stringToObject = function (str) {
     var arr = str.split(".");
 
