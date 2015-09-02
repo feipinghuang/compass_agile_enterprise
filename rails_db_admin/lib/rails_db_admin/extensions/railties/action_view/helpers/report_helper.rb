@@ -16,9 +16,9 @@ module RailsDbAdmin
 
             def render_template(template, locals=nil)
               if request.format.symbol == :html
-                render :partial => "/#{template}" , :locals => locals
+                locals.nil? ? (render :partial => "/#{template}") : (render :partial => "/#{template}",:locals => locals[:locals])
               elsif request.format.symbol == :pdf
-                render :partial => "/#{template}.html.erb" , :locals => locals
+                locals.nil? ? (render :partial => "/#{template}.html.erb") : (render :partial => "/#{template}.html.erb" , :locals => locals[:locals])
               end
             end
 
