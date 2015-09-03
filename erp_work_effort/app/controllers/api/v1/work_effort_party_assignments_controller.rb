@@ -3,19 +3,32 @@ module Api
     class WorkEffortPartyAssignmentsController < BaseController
 
       def index
+        limit = params[:limit] || 25
+        start = params[:start] || 0
+
         work_effort_party_assignments = WorkEffortPartyAssignment
 
+        # scope by project
         if params[:project_id]
-          work_effort_party_assignments = work_effort_party_assignments.joins(:work_effort).where('work_efforts.project_id = ?', params[:project_id])
-        else
-          # scope by dba organization
-          work_effort_party_assignments = work_effort_party_assignments.joins('inner join work_efforts on work_efforts.id = work_effort_party_assignments.work_effort_id')
-                                              .joins("inner join entity_party_roles on entity_party_roles.entity_record_type = 'WorkEffort' and entity_party_roles.entity_record_id = work_efforts.id")
-                                              .where('entity_party_roles.party_id = ? and entity_party_roles.role_type_id = ?', current_user.party.dba_organization.id, RoleType.iid('dba_org').id)
+          work_effort_party_assignments = work_effort_party_assignments.scope_by_project(params[:project_id])
         end
+
+        # scope by work_effort
+        if params[:work_effort_id]
+          work_effort_party_assignments = work_effort_party_assignments.scope_by_work_effort(params[:work_effort_id])
+        end
+
+        # scope by dba organization
+        work_effort_party_assignments = work_effort_party_assignments.scope_by_dba_organization(current_user.party.dba_organization)
+
+        work_effort_party_assignments = work_effort_party_assignments.uniq
+
+        total_count = work_effort_party_assignments.count
+        work_effort_party_assignments = work_effort_party_assignments.offset(start).limit(limit)
 
         render :json => {
                    success: true,
+                   total_count: total_count,
                    work_effort_party_assignments: work_effort_party_assignments.all.collect do |work_effort_party_assignment|
                      work_effort_party_assignment.to_data_hash
                    end

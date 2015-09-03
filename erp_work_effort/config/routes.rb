@@ -10,7 +10,11 @@ Rails.application.routes.draw do
         resources :work_effort_associations, :defaults => { :format => 'json' }
       end
 
-      resources :work_efforts, :defaults => { :format => 'json' }
+      # work efforts and its nested resources
+      resources :work_efforts, :defaults => { :format => 'json' } do
+        resources :work_effort_party_assignments, :defaults => { :format => 'json' }
+      end
+
       resources :work_effort_party_assignments, :defaults => { :format => 'json' }
       resources :work_effort_associations, :defaults => { :format => 'json' }
 
@@ -19,27 +23,5 @@ Rails.application.routes.draw do
 
     end
   end
-
-end
-
-ErpWorkEffort::Engine.routes.draw do
-
-  namespace :erp_app do
-    namespace :organizer do
-      namespace :tasks do
-
-        resources :work_efforts do
-
-          collection do
-            get :role_types
-            get :work_effort_types
-            get :task_count
-          end
-
-        end
-
-      end #tasks
-    end #organizer
-  end #erp_app
 
 end

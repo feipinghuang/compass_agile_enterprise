@@ -44,16 +44,24 @@ class BizTxnEvent < ActiveRecord::Base
   alias :descriptions :biz_txn_event_descs
 
   class << self
+    #
+    # scoping helpers
+    #
+
     # scope by dba organization
     #
-    # @param dba_organization [Party] party to scope by
-    def with_dba_organization(dba_organization)
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
       dba_org_role_type = BizTxnPartyRoleType.find_or_create('dba_org', 'DBA Organization')
 
-      joins("inner join biz_txn_party_roles on biz_txn_party_roles.biz_txn_event_id = biz_txn_events.id
-             and biz_txn_party_roles.party_id = '#{dba_organization.id}'
-             and biz_txn_party_roles.biz_txn_party_role_type_id = '#{dba_org_role_type.id}'")
+      joins("inner join biz_txn_party_roles on biz_txn_party_roles.biz_txn_event_id = biz_txn_events.id")
+          .where('biz_txn_party_roles.party_id' => dba_organization)
+          .where('biz_txn_party_roles.biz_txn_party_role_type_id' => dba_org_role_type)
     end
+
+    alias scope_by_dba scope_by_dba_organization
   end
 
   def destroy_biz_txn_relationships

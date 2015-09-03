@@ -25,10 +25,18 @@ module IsInteger
   end
 end
 
+module RandomString
+  def random(size=25)
+    charset = %w{A C D E F G H J K M N P Q R T V W X Y Z}
+    (0...size).map{ charset.to_a[rand(charset.size)] }.join
+  end
+end
+
 class String;
   include StringToBoolean
   include StringToInternalIdentifier
   include IsInteger
+  extend RandomString
 end
 
 module BooleanToBoolean

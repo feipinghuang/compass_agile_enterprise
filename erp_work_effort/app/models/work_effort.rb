@@ -88,23 +88,68 @@ class WorkEffort < ActiveRecord::Base
 
   class << self
 
-    # scope WorkEfforts by passed party and optional status
     #
-    # @param party [Party] party to scope by
-    # @param status [String] status to scope by
-    # @return [ActiveRecord::Relation] relation scoped by party and optionally status
-    def work_efforts_for_party(party, status=nil)
-      role_types_tbl = RoleType.arel_table
-      parties_tbl = Party.arel_table
+    # scoping helpers
+    #
 
-      statement = self
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      scope_by_party(dba_organization, {role_types: [RoleType.iid('dba_org')]})
+    end
 
-      # apply status if passed
-      statement = statement.with_status(status) if status
+    alias scope_by_dba scope_by_dba_organization
 
-      statement.includes(:role_types)
-          .includes(:parties)
-          .where(role_types_tbl[:id].in(party.party_roles.collect(&:role_type_id)).or(parties_tbl[:id].eq(party.id)))
+    # scope by project
+    #
+    # @param project [Integer | Project | Array] either a id of Project record, a Project record, an array of Project records
+    # or an array of Project ids
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_project(project)
+      where(project_id: project)
+    end
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      table_alias = String.random
+
+      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = work_efforts.id")
+                      .where("#{table_alias}.party_id" => party).uniq
+
+      if options[:role_types]
+        statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
+      end
+
+      statement
+    end
+
+    # scope by work efforts assigned to the passed user
+    #
+    # @param user [User] user to look for assignments
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_user(user, options={})
+      statement = joins("join work_effort_party_assignments wepa on wepa.work_effort_id = work_efforts.id and wepa.party_id = #{user.party.id}")
+
+
+      if options[:role_types]
+        statement = statement.where("wepa.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
+      end
+
+      statement
     end
   end
 

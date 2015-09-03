@@ -6,18 +6,27 @@ module Api
 
         work_efforts = WorkEffort.where("work_efforts.parent_id is null")
 
-        # if project is passed filter by project
-        if params[:project_id]
-          work_efforts = work_efforts.where('project_id = ?', params[:project_id])
+        # if project is passed scope by project
+        if params[:project_id].present?
+          work_efforts = work_efforts.scope_by_project(params[:project_id])
         end
 
         # if status is passed scope by status
-        if params['status'].present?
+        if params[:status].present?
           work_efforts = work_efforts.with_current_status(params[:status].split(','))
         end
 
+        # if parties is passed scope by parties
+        if params[:parties].present?
+          data = JSON.parse(params[:parties])
+          party_ids = data['party_ids']
+          role_types = data['role_types']
+
+          work_efforts = work_efforts.scope_by_party(party_ids.split(','), {role_types: RoleType.where('internal_identifier' => role_types.split(','))})
+        end
+
         # scope by dba organization
-        work_efforts = work_efforts.with_party_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
+        work_efforts = work_efforts.scope_by_dba_organization(current_user.party.dba_organization)
 
         work_efforts = work_efforts.order("sequence, created_at ASC")
 

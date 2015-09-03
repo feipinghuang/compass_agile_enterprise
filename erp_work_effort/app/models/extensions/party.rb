@@ -14,7 +14,8 @@ Party.class_eval do
   class << self
     # scope by project
     #
-    # @param project [Project | Array] either a Project record or an array of Project records
+    # @param project [Integer | Project | Array] either a id of Project record, a Project record, an array of Project records
+    # or an array of Project ids
     # @param options [Hash] options to apply to this scope
     # @option options [Array] :role_types role types to include in the scope
     #
