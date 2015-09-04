@@ -121,7 +121,7 @@ Party.class_eval do
                                              self.id,
                                              role_type.id).first
         if relationship
-          relationship.project = project
+          relationship.entity_record = project
           relationship.save!
         else
           create_project_relationship(project, options)
