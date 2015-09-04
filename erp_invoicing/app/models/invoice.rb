@@ -173,7 +173,7 @@ class Invoice < ActiveRecord::Base
     def find_or_create_shipping_product_type
       product_type = ProductType.find_by_internal_identifier('shipping')
       unless product_type
-        product_type = ProductType.create(internal_identifier: 'shipping', description: 'Shipping', available_on_web: false, shipping_cost: 0, taxable: true)
+        product_type = ProductType.create(internal_identifier: 'shipping', description: 'Shipping', available_on_web: false, taxable: true)
         product_type.pricing_plans.new(money_amount: 0, is_simple_amount: true)
         product_type.save
       end
