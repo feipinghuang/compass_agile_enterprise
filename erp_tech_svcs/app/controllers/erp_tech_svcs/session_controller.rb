@@ -23,9 +23,12 @@ module ErpTechSvcs
       logged_out_user_id = current_user.id if current_user
       logout_to = session[:logout_to]
 
+      # clear return_to_url
+      session[:return_to_url] = nil
+
       logout
 
-      #log when someone logs out
+      # log when someone logs out
       ErpTechSvcs::ErpTechSvcsAuditLog.successful_logout(logged_out_user_id) if logged_out_user_id
 
       if logout_to
