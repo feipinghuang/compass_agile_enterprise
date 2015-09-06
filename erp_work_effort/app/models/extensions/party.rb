@@ -118,11 +118,11 @@ Party.class_eval do
       options[:role_types].each do |role_type|
 
         relationship = EntityPartyRole.where("entity_record_type = 'Project'
-                                              and party_id = ? and role_type_id = ?",
-                                             self.id,
+                                              and entity_record_id = ? and role_type_id = ?",
+                                             project.id,
                                              role_type.id).first
         if relationship
-          relationship.project = project
+          relationship.party = party
           relationship.save!
         else
           create_project_relationship(project, options)
