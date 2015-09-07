@@ -8,7 +8,11 @@ class TrackedStatusType < ActiveRecord::Base
   has_many :status_applications
 
   def to_data_hash
-    to_hash(only: [{id: :server_id}, :description, :internal_identifier])
+    to_hash(only: [:id,
+                   :description,
+                   :internal_identifier,
+                   :created_at,
+                   :updated_at])
   end
 
 end

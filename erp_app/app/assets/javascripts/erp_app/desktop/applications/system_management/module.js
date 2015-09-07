@@ -42,8 +42,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SystemManagement", {
                                 title: 'ERP Types',
                                 rootVisible: true,
                                 store: Ext.create('SystemManagementTypeTreeNodeStore'),
-                                viewConfig:{
-                                    markDirty:false
+                                viewConfig: {
+                                    markDirty: false
                                 },
                                 listeners: {
                                     'itemcontextmenu': function (view, record, item, index, e) {
@@ -75,7 +75,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SystemManagement", {
                                                                     listeners: {
                                                                         saved: function (form, nodeData) {
                                                                             newNode = Ext.create('SystemManagementTypeTreeNode', {
-                                                                                serverId: nodeData.server_id,
+                                                                                serverId: nodeData.id,
                                                                                 text: nodeData.description,
                                                                                 internalIdentifier: nodeData.internal_identifier,
                                                                                 klass: nodeData.klass
@@ -102,7 +102,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SystemManagement", {
                                                                     listeners: {
                                                                         saved: function (form, nodeData) {
                                                                             newNode = Ext.create('SystemManagementTypeTreeNode', {
-                                                                                serverId: nodeData.server_id,
+                                                                                serverId: nodeData.id,
                                                                                 text: nodeData.description,
                                                                                 internalIdentifier: nodeData.internal_identifier,
                                                                                 klass: nodeData.klass

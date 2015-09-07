@@ -21,7 +21,7 @@ class StatusApplication < ActiveRecord::Base
   belongs_to :party
 
   def to_data_hash
-    to_hash only: [{id: :server_id},
+    to_hash only: [:id,
                    :created_at,
                    :updated_at],
             description: tracked_status_type.description,

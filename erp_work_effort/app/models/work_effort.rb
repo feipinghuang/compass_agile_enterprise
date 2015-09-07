@@ -165,7 +165,7 @@ class WorkEffort < ActiveRecord::Base
 
   def to_data_hash
     to_hash(only: [
-                {id: :server_id},
+                :id,
                 {leaf?: :leaf},
                 :parent_id,
                 :description,
@@ -176,7 +176,9 @@ class WorkEffort < ActiveRecord::Base
                 :duration_unit,
                 :effort,
                 :effort_unit,
-                :comments
+                :comments,
+                :created_at,
+                :updated_at
             ]
     )
   end

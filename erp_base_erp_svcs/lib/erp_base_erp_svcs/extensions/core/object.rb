@@ -4,7 +4,12 @@ Object.instance_eval do
     (klasses | klasses.collect do |klass| klass.all_subclasses end).flatten.uniq
   end
 
+  # Check if a class exists
+  #
+  # @param class_name [String] name of class to check
   def class_exists?(class_name)
+    class_name.to_s.constantize
+    # try to constantize twice which will cause false positives for Rails Models to fail
     class_name.to_s.constantize
     true
   rescue NameError

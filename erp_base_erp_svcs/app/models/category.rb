@@ -14,14 +14,16 @@ class Category < ActiveRecord::Base
   end
 
   def to_data_hash
-    {
-        server_id: id,
-        leaf: children.empty?,
-        description: description,
-        internal_identifier: internal_identifier,
-        created_at: created_at,
-        updated_at: updated_at
-    }
+    to_hash(
+        only: [
+            :id,
+            :description,
+            :internal_identifier,
+            :created_at,
+            :updated_at
+        ],
+        leaf: leaf?
+    )
   end
 
 end

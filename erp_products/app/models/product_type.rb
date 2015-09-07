@@ -81,16 +81,15 @@ class ProductType < ActiveRecord::Base
   end
 
   def to_data_hash
-    {
-        :id => self.id,
-        :description => self.description,
-        :sku => self.sku,
-        :unit_of_measurement_id => self.unit_of_measurement_id,
-        :unit_of_measurement_description => (self.unit_of_measurement.description rescue nil),
-        :comment => self.comment,
-        :created_at => self.created_at,
-        :updated_at => self.updated_at
-    }
+    data = to_hash(only: [
+                       :id,
+                       :description,
+                       :sku,
+                       :comment,
+                       :created_at,
+                       :updated_at
+                   ],
+                   unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash))
   end
 
   def to_display_hash

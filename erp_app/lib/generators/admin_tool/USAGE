@@ -1,9 +1,8 @@
 Description:
-  Used to create stubs for creating a new Desktop application within 
-  the Compass AE framework
+  Used to create stubs for a new Admin Tool within the Compass AE framework
 
 Example:
-    rails g desktop_application [application_name] [description] [icon-cls]
+    rails g admin_tool [name] [description] [icon-cls]
 
     This will create:
         1. A controller
@@ -13,7 +12,7 @@ Example:
            public/stylesheets/erp_app/desktop/applications/[YOUR APP NAME]
            public/images/erp_app/desktop/applications/[YOUR APP NAME]
 
-        3. A Javascript template for a desktop application
+        3. A Javascript template
         4. A data migration
         5. Append to the routes file
         

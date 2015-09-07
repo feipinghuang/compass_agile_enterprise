@@ -6,7 +6,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.UsersPanel", 
     setUser: function (record) {
         var me = this;
 
-        var assign_to_id = record.get('server_id');
+        var assign_to_id = record.get('id');
         var assign_to_username = record.get('username');
 
         var southPanel = Ext.getCmp('security_management_south_region');

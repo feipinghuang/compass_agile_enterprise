@@ -55,7 +55,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
         var me = this;
         me.setWindowStatus('Deleting user...');
         Ext.Ajax.request({
-            url: '/api/v1/users/' + rec.get("server_id"),
+            url: '/api/v1/users/' + rec.get("id"),
             method: 'DELETE',
             success: function (response) {
                 var obj = Ext.decode(response.responseText);
@@ -80,7 +80,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
         me.setWindowStatus('Resetting password...');
         Ext.Ajax.request({
             method: 'PUT',
-            url: '/api/v1/users/' + record.get('server_id') + '/reset_password',
+            url: '/api/v1/users/' + record.get('id') + '/reset_password',
             success: function (response) {
                 var obj = Ext.decode(response.responseText);
                 if (obj.success) {
@@ -100,7 +100,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
     },
 
     viewUser: function (user) {
-        var userId = user.get('server_id');
+        var userId = user.get('id');
         var me = this;
 
         me.tabPanel.removeAll();
@@ -160,12 +160,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
             remoteSort: true,
             fields: [
                 {
-                    name: 'server_id',
-                    type: 'int'
+                    name: 'id',
+                    type: 'integer'
                 },
                 {
                     name: 'party_id',
-                    mapping: 'party.server_id',
+                    mapping: 'party.id',
                     type: 'int'
                 },
                 {

@@ -1,0 +1,21 @@
+class Create<%=class_name %>Application
+  def self.up
+    app = Application.create(
+      :description => '<%= description %>',
+      :internal_identifier => '<%= file_name %>',
+      :can_delete => false,
+      :allow_business_modules => false
+    )
+
+    admin_user = User.find_by_username('admin')
+    if admin_user
+      admin_user.applications << app
+      admin_user.save
+    end
+
+  end
+
+  def self.down
+    Application.iid('<%= file_name %>').destroy
+  end
+end

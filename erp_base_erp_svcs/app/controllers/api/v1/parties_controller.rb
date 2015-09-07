@@ -18,10 +18,13 @@ module Api
         end
 
         unless role_types.blank?
-          parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.where(internal_identifier: role_types.split(',')))
+          parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.find_child_role_types(role_types.split(',')))
         end
 
-        parties = parties.order("#{sort} #{dir}")
+        # scope by dba organization
+        parties = parties.with_dba_organization(current_user.party.dba_organization)
+
+        parties = parties.uniq.order("#{sort} #{dir}")
 
         total_count = parties.count
         parties = parties.offset(start).limit(limit)

@@ -12,7 +12,7 @@ class Project < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(only: [{id: :server_id}, :description])
+    to_hash(only: [:id, :description, :created_at, :updated_at])
   end
 
 end

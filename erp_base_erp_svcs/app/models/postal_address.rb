@@ -42,18 +42,19 @@ class PostalAddress < ActiveRecord::Base
   end
 
   def to_data_hash
-    {
-        name: self.try(:contact).try(:party).try(:description),
-        address_line_1: address_line_1,
-        address_line_2: address_line_2,
-        city: city,
-        state: state,
-        zip: zip,
-        country: country,
-        description: description,
-        created_at: created_at,
-        updated_at: updated_at
-    }
+    to_hash(only: [
+                :address_line_1,
+                :address_line_2,
+                :city,
+                :state,
+                :zip,
+                :country,
+                :description,
+                :created_at,
+                :updated_at
+            ],
+            name: self.try(:contact).try(:party).try(:description)
+    )
   end
 
 end

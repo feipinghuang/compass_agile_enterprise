@@ -7,11 +7,11 @@ class User < ActiveRecord::Base
   belongs_to :party
 
   attr_accessible :email, :password, :password_confirmation
-  
+
   authenticates_with_sorcery!
-  
+
   attr_protected :created_at, :updated_at
-  
+
   has_capability_accessors
 
   #password validations
@@ -26,8 +26,9 @@ class User < ActiveRecord::Base
   validates :username, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false}
 
   validate :email_cannot_match_username_of_other_user
+
   def email_cannot_match_username_of_other_user
-    unless User.where(:username => self.email).where('id != ?',self.id).first.nil?
+    unless User.where(:username => self.email).where('id != ?', self.id).first.nil?
       errors.add(:email, "In use by another user")
     end
   end
@@ -49,7 +50,7 @@ class User < ActiveRecord::Base
     @instance_attrs.nil? ? {} : @instance_attrs
   end
 
-  def add_instance_attribute(k,v)
+  def add_instance_attribute(k, v)
     @instance_attrs = {} if @instance_attrs.nil?
     @instance_attrs[k] = v
   end
@@ -68,7 +69,7 @@ class User < ActiveRecord::Base
     result = false
     passed_roles.flatten!
     passed_roles.each do |role|
-      role_iid = role.is_a?(SecurityRole) ?  role.internal_identifier : role.to_s
+      role_iid = role.is_a?(SecurityRole) ? role.internal_identifier : role.to_s
       all_uniq_roles.each do |this_role|
         result = true if (this_role.internal_identifier == role_iid)
         break if result
@@ -81,26 +82,31 @@ class User < ActiveRecord::Base
   def add_role(role)
     party.add_role(role)
   end
+
   alias :add_security_role :add_role
 
   def add_roles(*passed_roles)
     party.add_roles(*passed_roles)
   end
+
   alias :add_security_roles :add_roles
 
   def remove_roles(*passed_roles)
     party.remove_roles(*passed_roles)
   end
+
   alias :remove_security_roles :remove_roles
 
   def remove_role(role)
     party.remove_role(role)
   end
+
   alias :remove_security_role :remove_role
 
   def remove_all_roles
     party.remove_all_roles
   end
+
   alias :remove_all_security_roles :remove_all_roles
 
   # user lives on FROM side of relationship
@@ -132,14 +138,14 @@ class User < ActiveRecord::Base
   # roles assigned to the groups this user belongs to
   def group_roles
     SecurityRole.joins(:parties).
-      where(:parties => {:business_party_type => 'Group'}).
-      where("parties.business_party_id IN (#{groups.select('groups.id').to_sql})")
+        where(:parties => {:business_party_type => 'Group'}).
+        where("parties.business_party_id IN (#{groups.select('groups.id').to_sql})")
   end
 
   # composite roles for this user
   def all_roles
     SecurityRole.joins(:parties).joins("LEFT JOIN users ON parties.id=users.party_id").
-      where("(parties.business_party_type='Group' AND 
+        where("(parties.business_party_type='Group' AND
               parties.business_party_id IN (#{groups.select('groups.id').to_sql})) OR 
              (users.id=#{self.id})")
   end
@@ -150,19 +156,19 @@ class User < ActiveRecord::Base
 
   def group_capabilities
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-          where(:capability_accessors => { :capability_accessor_record_type => "Group" }).
-          where("capability_accessor_record_id IN (#{groups.select('groups.id').to_sql})")
+        where(:capability_accessors => {:capability_accessor_record_type => "Group"}).
+        where("capability_accessor_record_id IN (#{groups.select('groups.id').to_sql})")
   end
 
   def role_capabilities
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-          where(:capability_accessors => { :capability_accessor_record_type => "SecurityRole" }).
-          where("capability_accessor_record_id IN (#{all_roles.select('security_roles.id').to_sql})")
+        where(:capability_accessors => {:capability_accessor_record_type => "SecurityRole"}).
+        where("capability_accessor_record_id IN (#{all_roles.select('security_roles.id').to_sql})")
   end
 
   def all_capabilities
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-          where("(capability_accessors.capability_accessor_record_type = 'Group' AND
+        where("(capability_accessors.capability_accessor_record_type = 'Group' AND
                   capability_accessor_record_id IN (#{groups.select('groups.id').to_sql})) OR
                  (capability_accessors.capability_accessor_record_type = 'SecurityRole' AND
                   capability_accessor_record_id IN (#{all_roles.select('security_roles.id').to_sql})) OR
@@ -194,33 +200,30 @@ class User < ActiveRecord::Base
   end
 
   def class_capabilities_to_hash
-    all_uniq_class_capabilities.map {|capability| 
-      { :capability_type_iid => capability.capability_type.internal_identifier, 
-        :capability_resource_type => capability.capability_resource_type 
+    all_uniq_class_capabilities.map { |capability|
+      {:capability_type_iid => capability.capability_type.internal_identifier,
+       :capability_resource_type => capability.capability_resource_type
       }
     }.compact
   end
 
   def to_data_hash
-    data = {
-        :auth_token => self.auth_token,
-        :display_name => self.party.description,
-        :server_id => self.id,
-        :username => self.username,
-        :email => self.email,
-        :activation_state => self.activation_state,
-        :last_login_at => self.last_login_at,
-        :last_activity_at => self.last_activity_at,
-        :failed_logins_count => self.failed_logins_count,
-        :created_at => self.created_at,
-        :updated_at => self.updated_at,
-        :is_admin => self.party.has_security_role?('admin'),
-        # related resources
-        :party => {
-            server_id: self.party.id,
-            description: self.party.description
-        }
-    }
+    data = to_hash(only: [
+                       :auth_token,
+                       :id,
+                       :username,
+                       :email,
+                       :activation_state,
+                       :last_login_at,
+                       :last_activity_at,
+                       :failed_logins_count,
+                       :created_at,
+                       :updated_at
+                   ],
+                   display_name: party.description,
+                   is_admin: party.has_security_role?('admin'),
+                   party: party.to_data_hash
+    )
 
     # add first name and last name if this party is an Individual
     if self.party.business_party.is_a?(Individual)
