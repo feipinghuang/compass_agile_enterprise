@@ -49,7 +49,7 @@ class SecurityRole < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(:only => [:description, :internal_identifier])
+    to_hash(:only => [:description, :internal_identifier, :created_at, :updated_at])
   end
 
 end

@@ -15,9 +15,8 @@ class WorkEffortAssociation < ActiveRecord::Base
 
   def to_data_hash
     to_hash({
-                only: [{id: :server_id}, :work_effort_id_from, :work_effort_id_to],
-                work_effort_association_type_id: work_effort_association_type.id,
-                work_effort_association_type_external_id: work_effort_association_type.external_identifier
+                only: [:id, :work_effort_id_from, :work_effort_id_to, :created_at, :updated_at],
+                work_effort_association_type: try(:work_effort_association_type).try(:to_data_hash)
             })
   end
 

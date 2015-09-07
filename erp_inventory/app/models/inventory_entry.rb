@@ -1,11 +1,11 @@
 class InventoryEntry < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-	belongs_to  :inventory_entry_record, :polymorphic => true
-	belongs_to  :product_type
-	has_one     :classification, :as => :classification, :class_name => 'CategoryClassification'
-	has_many    :prod_instance_inv_entries
-	has_many    :product_instances, :through => :prod_instance_inv_entries do
+  belongs_to :inventory_entry_record, :polymorphic => true
+  belongs_to :product_type
+  has_one :classification, :as => :classification, :class_name => 'CategoryClassification'
+  has_many :prod_instance_inv_entries
+  has_many :product_instances, :through => :prod_instance_inv_entries do
     def available
       includes([:prod_availability_status_type]).where('prod_availability_status_types.internal_identifier = ?', 'available')
     end
@@ -16,7 +16,7 @@ class InventoryEntry < ActiveRecord::Base
   end
   has_many :inventory_entry_locations
   has_many :facilities, :through => :inventory_entry_locations
-  belongs_to  :unit_of_measurement
+  belongs_to :unit_of_measurement
 
   alias_method :storage_facilities, :facilities
 
@@ -45,21 +45,30 @@ class InventoryEntry < ActiveRecord::Base
   end
 
   def to_data_hash
-    {
-        :id => self.id,
-        :description => self.description,
-        :number_available => self.number_available,
-        :number_in_stock => self.number_in_stock,
-        :sku => self.get_sku,
-        :unit_of_measurement_id => (self.get_uom.id rescue nil),
-        :unit_of_measurement_description => (self.get_uom.description rescue nil),
-        :inventory_storage_facility_id => (self.current_storage_facility.id rescue nil),
-        :inventory_storage_facility_description => (self.current_storage_facility.description rescue nil),
-        :created_at => self.created_at,
-        :updated_at => self.updated_at,
-        :product_type_id =>self.product_type_id,
-        :product_type_description => (self.product_type_description rescue nil)
-    }
+    data = to_hash(only: [
+                       :id,
+                       :description,
+                       :number_available,
+                       :number_in_stock,
+                       :created_at,
+                       :updated_at
+                   ],
+                   sku: get_sku,
+                   product_type: try(:product_type).try(:to_data_hash))
+
+    if get_uom
+      data[:unit_of_measurement] = get_uom.to_data_hash
+    else
+      data[:unit_of_measurement] = nil
+    end
+
+    if current_storage_facility
+      data[:inventory_storage_facility] = current_storage_facility.to_data_hash
+    else
+      data[:inventory_storage_facility] = nil
+    end
+
+    data
   end
 
   def to_label

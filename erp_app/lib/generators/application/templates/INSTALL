@@ -1,0 +1,23 @@
+Description:
+  Used to create stubs for a new Application within the Compass AE framework
+
+Example:
+    rails g application [name] [description] [menu_icon_url]
+
+    This will create:
+        1. A controller
+        2. Public folder structures
+
+           public/javascripts/erp_app/organizer/applications/[YOUR APP NAME]
+           public/stylesheets/erp_app/organizer/applications/[YOUR APP NAME]
+           public/images/erp_app/organizer/applications/[YOUR APP NAME]
+
+        3. A Javascript template for a application
+        4. A data migration
+        5. Append to the routes file
+        
+        Run the migration with 
+        
+        rake db:migrate_data
+
+        and start adding functionality

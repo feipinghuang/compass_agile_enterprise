@@ -112,13 +112,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.UserGrid", {
             remoteSort: true,
             fields: [
                 {
-                    name: 'server_id',
-                    type: 'int'
+                    name: 'id',
+                    type: 'integer'
                 },
                 {
                     name: 'party_id',
-                    mapping: 'party.server_id',
-                    type: 'int'
+                    mapping: 'party.id',
+                    type: 'integer'
                 },
                 {
                     name: 'party_description',

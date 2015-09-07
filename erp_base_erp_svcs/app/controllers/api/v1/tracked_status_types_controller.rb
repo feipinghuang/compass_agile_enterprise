@@ -55,7 +55,7 @@ module Api
             respond_to do |format|
               format.tree do
                 data = tracked_status_type.to_hash({
-                                             only: [{server_id: :id}, :parent_id, :internal_identifier],
+                                             only: [:id, :parent_id, :internal_identifier],
                                              leaf: tracked_status_type.leaf?,
                                              text: tracked_status_type.to_label,
                                              children: []
@@ -63,7 +63,7 @@ module Api
 
                 parent = nil
                 tracked_status_types.each do |tracked_status_type_hash|
-                  if tracked_status_type_hash[:server_id] == data[:parent_id]
+                  if tracked_status_type_hash[:id] == data[:parent_id]
                     parent = tracked_status_type_hash
                   end
                 end
