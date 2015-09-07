@@ -276,13 +276,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
                     var item = centerRegion.getComponent(itemId);
                     var mode = Compass.ErpApp.Shared.CodeMirror.determineCodeMirrorMode(node.data.text);
-                    var title = node.data.text + ' (' + node.parentNode.data.reportName + ')'
+                    window.node = node;
 
                     if (Compass.ErpApp.Utility.isBlank(item)) {
                         item = Ext.create('Compass.ErpApp.Shared.CodeMirror',{
                             mode: mode,
                             sourceCode: content,
-                            title: title,
+                            title: node.data.text,
                             closable: true,
                             itemId: itemId,
                             listeners: {

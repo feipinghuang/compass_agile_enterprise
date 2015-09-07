@@ -12,19 +12,32 @@ module RailsDbAdmin
           render :no_report, :layout => false
         else
           data = get_report_data
+          @custom_data = data[:rows].last['custom_fields'] ? JSON.parse(data[:rows].last['custom_fields']) : {}
 
           respond_to do |format|
 
             format.html {
               render(:inline => @report.template, :locals =>
-                  {:unique_name => @report_iid, :title => @report.name, :columns => data[:columns], :rows => data[:rows]}
+                {
+                 :unique_name => @report_iid,
+                 :title => @report.name,
+                 :columns => data[:columns],
+                 :rows => data[:rows],
+                 :custom_data => @custom_data
+                }
               )
             }
 
             format.pdf {
               render :pdf => "#{@report.internal_identifier}",
                 :template => 'base.html.erb', :locals =>
-                    {:unique_name => @report_iid, :title => @report.name, :columns => data[:columns], :rows => data[:rows]},
+                    {
+                     :unique_name => @report_iid,
+                     :title => @report.name,
+                     :columns => data[:columns],
+                     :rows => data[:rows],
+                     :custom_data => @custom_data
+                    },
                 :show_as_html => params[:debug].present?,
                 :margin => {:top => 0,:bottom => 15, :left => 10,:right => 10},
                 :footer => {
