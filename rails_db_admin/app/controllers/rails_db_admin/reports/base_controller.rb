@@ -17,32 +17,34 @@ module RailsDbAdmin
           respond_to do |format|
 
             format.html {
-              render(:inline => @report.template, :locals =>
-                {
-                 :unique_name => @report_iid,
-                 :title => @report.name,
-                 :columns => data[:columns],
-                 :rows => data[:rows],
-                 :custom_data => @custom_data
-                }
+              render(inline: @report.template,
+                     locals:
+                         {
+                             unique_name: @report_iid,
+                             title: @report.name,
+                             columns: data[:columns],
+                             rows: data[:rows],
+                             custom_data: @custom_data
+                         }
               )
             }
 
             format.pdf {
               render :pdf => "#{@report.internal_identifier}",
-                :template => 'base.html.erb', :locals =>
-                    {
-                     :unique_name => @report_iid,
-                     :title => @report.name,
-                     :columns => data[:columns],
-                     :rows => data[:rows],
-                     :custom_data => @custom_data
-                    },
-                :show_as_html => params[:debug].present?,
-                :margin => {:top => 0,:bottom => 15, :left => 10,:right => 10},
-                :footer => {
-                            :right => 'Page [page] of [topage]'
-                           }
+                     :template => 'base.html.erb',
+                     locals:
+                         {
+                             unique_name: @report_iid,
+                             title: @report.name,
+                             columns: data[:columns],
+                             rows: data[:rows],
+                             custom_data: @custom_data
+                         },
+                     :show_as_html => params[:debug].present?,
+                     :margin => {:top => 0, :bottom => 15, :left => 10, :right => 10},
+                     :footer => {
+                         :right => 'Page [page] of [topage]'
+                     }
             }
 
             format.csv {
@@ -60,7 +62,7 @@ module RailsDbAdmin
 
       def get_report_data
         columns, values = @query_support.execute_sql(@report.query)
-        return {:columns => columns, :rows => values}
+        {:columns => columns, :rows => values}
       end
 
       def set_report
