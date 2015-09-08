@@ -177,6 +177,7 @@ class WorkEffort < ActiveRecord::Base
                 :effort,
                 :effort_unit,
                 :comments,
+                :sequence,
                 :created_at,
                 :updated_at
             ]
