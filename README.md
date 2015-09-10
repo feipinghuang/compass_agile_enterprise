@@ -21,5 +21,5 @@ You can also create a Compass AE application with our github source via this com
 this will clone our repository into a folder named compass_agile_enterprise within your lib folder of the rails application
 
 ##License
-CompassERP’s foundation modules and base applications are released under a GPL license. CompassERP development is supported by [TrueNorth Technology Solutions](http://www.tntech.biz/home), which offers vertical solutions based on this framework, support and consulting services around the technology.
+CompassERP’s foundation modules and base applications are released under a GPL license. CompassERP development is supported by [TrueNorth Technology Solutions](http://www.truenorthtechnology.com), which offers vertical solutions based on this framework, support and consulting services around the technology.
 
