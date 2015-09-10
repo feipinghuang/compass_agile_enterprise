@@ -13,7 +13,7 @@ class WorkEffortAssociationType < ActiveRecord::Base
   has_many :work_effort_associations
 
   def to_data_hash
-    to_hash only: [:id, :description, :internal_identifier, :created_at, :updated_at]
+    to_hash only: [:id, :description, :internal_identifier, :external_identifier, :created_at, :updated_at]
   end
 
 end
