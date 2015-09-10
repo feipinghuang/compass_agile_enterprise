@@ -29,8 +29,8 @@ class UpdateTimeEntries < ActiveRecord::Migration
       create_table :time_entries do |t|
         t.datetime :from_datetime
         t.datetime :thru_datetime
-        t.decimal :regular_hours
-        t.decimal :overtime_hours
+        t.integer :regular_hours_in_seconds
+        t.integer :overtime_hours_in_seconds
         t.text :comment
         t.references :timesheet
         t.references :work_effort
@@ -59,7 +59,7 @@ class UpdateTimeEntries < ActiveRecord::Migration
   end
 
   def down
-    [:pay_periods, :timesheets, :time_entriesm, :timesheet_party_roles].each do |table|
+    [:pay_periods, :timesheets, :time_entries, :timesheet_party_roles].each do |table|
       if table_exists? table
         drop_table table
       end

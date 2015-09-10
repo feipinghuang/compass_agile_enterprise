@@ -6,6 +6,8 @@ Party.class_eval do
   has_many :wc_codes, dependent: :destroy
   has_many :shifts, dependent: :destroy
   has_many :resumes
+  has_many :timesheet_party_roles
+  has_many :timesheets, through: :timesheet_party_roles
 
   #
   # scoping helpers

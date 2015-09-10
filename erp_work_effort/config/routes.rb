@@ -21,6 +21,7 @@ Rails.application.routes.draw do
       # types
       resources :work_effort_types, :defaults => { :format => 'json' }
 
+      resources :time_entries, :defaults => { :format => 'json' }
     end
   end
 
