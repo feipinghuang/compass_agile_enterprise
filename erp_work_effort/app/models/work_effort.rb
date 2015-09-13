@@ -86,6 +86,8 @@ class WorkEffort < ActiveRecord::Base
   belongs_to :actual_cost, :class_name => 'Money', :foreign_key => 'actual_cost_money_id'
   belongs_to :facility
 
+  has_many :time_entries
+
   class << self
 
     #

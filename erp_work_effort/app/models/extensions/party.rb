@@ -8,6 +8,11 @@ Party.class_eval do
   has_many :resumes
   has_many :timesheet_party_roles
   has_many :timesheets, through: :timesheet_party_roles
+  has_many :time_entries, through: :timesheets do
+    def open
+      where('thru_datetime is null')
+    end
+  end
 
   #
   # scoping helpers

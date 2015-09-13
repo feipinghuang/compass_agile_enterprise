@@ -2,39 +2,49 @@ module Api
   module V1
     class TimeEntriesController < BaseController
 
-      def index
-        render :json => {success: true, work_effort_types: WorkEffortType.all.map { |type| type.to_data_hash }}
-      end
-
       def create
         begin
           ActiveRecord::Base.connection.transaction do
+            party = current_user.party
 
-            start_at = Time.parse(params[:start_at])
-            end_at = Time.parse(params[:end_at])
+            time_entry = TimeEntry.new
 
-            time_entry = TimeEntry.create(
-                from_datetime: start_at,
-                thru_datetime: end_at
-            )
-
-            if params[:work_effort_id]
-              work_effort = WorkEffort.find(params[:work_effort_id])
-
-              time_entry.work_effort = work_effort
+            if params[:from_datetime]
+              time_entry.from_datetime = Time.strptime(params[:from_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
             end
 
-            time_entry.calculate_regular_hours_in_seconds!
+            if params[:thru_datetime]
+              time_entry.from_datetime = Time.strptime(params[:thru_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+            end
 
-            time_sheet = current_user.party.timesheets.current!(current_user.party, RoleType.iid('work_resource'))
+            if params[:comment]
+              time_entry.comment = params[:comment].strip
+            end
 
-            time_sheet.time_entries << time_entry
+            if params[:regular_hours_in_seconds]
+              time_entry.regular_hours_in_seconds = params[:regular_hours_in_seconds].to_i
+            end
+
+            if params[:overtime_hours_in_seconds]
+              time_entry.overtime_hours_in_seconds = params[:regular_hours_in_seconds].to_i
+            end
+
+            if params[:work_effort_id]
+              time_entry.work_effort = params[:work_effort_id]
+            end
+
+            # if a timesheet id is passed assoicate to that timesheet if not associate to
+            # the current user's timesheet
+            if params[:timesheet_id]
+              time_entry.timesheet_id = params[:timesheet_id]
+            else
+              time_sheet = party.timesheets.current!(current_user.party, RoleType.iid('work_resource'))
+              time_entry.timesheet_id = time_sheet.id
+            end
 
             render json: {
                        success: true,
                        time_entry: time_entry.to_data_hash,
-                       day_total_formatted: time_sheet.day_total_formatted(Date.today),
-                       week_total_formatted: time_sheet.total_formatted
                    }
 
           end
@@ -52,10 +62,263 @@ module Api
         end
       end
 
-      def show
-        work_effort_type = WorkEffortType.find(params[:id])
+      def update
+        begin
+          ActiveRecord::Base.connection.transaction do
 
-        render :json => {success: true, work_effort_type: [work_effort_type.to_data_hash]}
+            time_entry = TimeEntry.find(params[:id])
+
+            if params[:from_datetime]
+              time_entry.from_datetime = Time.strptime(params[:from_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+            end
+
+            if params[:thru_datetime]
+              time_entry.from_datetime = Time.strptime(params[:thru_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+            end
+
+            if params[:comment]
+              time_entry.comment = params[:comment].strip
+            end
+
+            if params[:regular_hours_in_seconds]
+              time_entry.regular_hours_in_seconds = params[:regular_hours_in_seconds].to_i
+            end
+
+            if params[:overtime_hours_in_seconds]
+              time_entry.overtime_hours_in_seconds = params[:regular_hours_in_seconds].to_i
+            end
+
+            render json: {
+                       success: time_entry.save!,
+                       time_entry: time_entry.to_data_hash,
+                   }
+
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render json: {success: false, message: 'Error updating Time Entry'}
+        end
+      end
+
+      def show
+        time_entry = TimeEntry.find(params[:id])
+
+        render :json => {success: true, time_entry: time_entry.to_data_hash}
+      end
+
+      # start TimeEntry by setting the from_datetime but not the thru_datetime
+      # if there is already an open time_entry do not let another one be started
+      # It is assumed that a TimeEntry is always logged against a work effort so
+      # a WorkEffort id should be passed.
+      #
+      def start
+        begin
+          ActiveRecord::Base.connection.transaction do
+
+            party = current_user.party
+            work_effort = WorkEffort.find(params[:work_effort_id])
+
+            # check for an open TimeEntry
+            open_time_entry = party.time_entries.open.first
+
+            if open_time_entry
+              render json: {
+                         success: false,
+                         message: 'There is currently an open Time Entry please stop it before starting another',
+                     }
+            else
+              time_entry = TimeEntry.create(
+                  from_datetime: Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc,
+                  comment: params[:comment].strip
+              )
+
+              time_entry.work_effort = work_effort
+
+              # associate to a timesheet
+              time_sheet = party.timesheets.current!(party, RoleType.iid('work_resource'))
+              time_sheet.time_entries << time_entry
+
+              render json: {
+                         success: true,
+                         time_entry: time_entry.to_data_hash,
+                     }
+            end
+
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render json: {success: false, message: 'Error starting Time Entry'}
+        end
+      end
+
+      # stop TimeEntry by setting the thru_datetime and calculating the hours in seconds
+      # it returns the TimeEntry record as well as formatted totals for the day and week
+      #
+      def stop
+        begin
+          ActiveRecord::Base.connection.transaction do
+
+            party = current_user.party
+            work_effort = WorkEffort.find(params[:work_effort_id])
+            time_entry = TimeEntry.find(params[:id])
+
+            time_entry.thru_datetime = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+            time_entry.comment = params[:comment].strip
+
+            time_entry.calculate_regular_hours_in_seconds!
+
+            result = {
+                success: true,
+                time_entry: time_entry.to_data_hash,
+            }
+
+            time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
+
+
+            result[:day_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
+                                                                                             party,
+                                                                                             {
+                                                                                                 start: time_helper.beginning_of_day,
+                                                                                                 end: time_helper.end_of_day
+                                                                                             })
+            result[:week_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
+                                                                                              party,
+                                                                                              {
+                                                                                                  start: time_helper.beginning_of_week,
+                                                                                                  end: time_helper.end_of_week
+                                                                                              })
+
+            render json: result
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render json: {success: false, message: 'Error stopping Time Entry'}
+        end
+      end
+
+      # if a work effort id is passed get the last open time_entry for that work_effort
+      # for the current user if there are no open time entries then return only the totals
+      #
+      def open
+        if params[:work_effort_id]
+          work_effort = WorkEffort.find(params[:work_effort_id])
+          party = current_user.party
+
+          open_time_entry = work_effort.time_entries.scope_by_party(current_user.party).open.first
+          time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
+
+          render :json => {success: true,
+                           time_entry: open_time_entry.nil? ? nil : open_time_entry.to_data_hash,
+                           day_total_formatted: TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
+                                                                                                  party,
+                                                                                                  {
+                                                                                                      start: time_helper.beginning_of_day,
+                                                                                                      end: time_helper.end_of_day
+                                                                                                  }),
+                           week_total_formatted: TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
+                                                                                                   party,
+                                                                                                   {
+                                                                                                       start: time_helper.beginning_of_week,
+                                                                                                       end: time_helper.end_of_week
+                                                                                                   })
+                 }
+        else
+          render :json => {success: true, time_entries: TimeEntry.open.collect { |time_entry| time_entry.to_data_hash }}
+        end
+      end
+
+      # returns totals for time entries.  If a work effort id is passed it will get totals for the
+      # passed work effort.  If no work effort id is passed it will get totals for the current user
+      # passed on their timesheet
+      #
+      def totals
+        result = {
+            success: true,
+            day_total_seconds: 0,
+            week_total_seconds: 0,
+            day_total_formatted: '00:00:00',
+            week_total_formatted: '00:00:00'
+        }
+
+        party = current_user.party
+
+        time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
+
+        if params[:work_effort_id]
+          work_effort = WorkEffort.find(params[:work_effort_id])
+
+          result[:day_total_seconds] = TimeEntry.total_seconds_by_work_effort_by_party(work_effort,
+                                                                                       party,
+                                                                                       {
+                                                                                           start: time_helper.beginning_of_day,
+                                                                                           end: time_helper.end_of_day
+                                                                                       })
+          result[:week_total_seconds] = TimeEntry.total_seconds_by_work_effort_by_party(work_effort,
+                                                                                        party,
+                                                                                        {
+                                                                                            start: time_helper.beginning_of_week,
+                                                                                            end: time_helper.end_of_week
+                                                                                        })
+          result[:day_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
+                                                                                           party,
+                                                                                           {
+                                                                                               start: time_helper.beginning_of_day,
+                                                                                               end: time_helper.end_of_day
+                                                                                           })
+          result[:week_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
+                                                                                            party,
+                                                                                            {
+                                                                                                start: time_helper.beginning_of_week,
+                                                                                                end: time_helper.end_of_week
+                                                                                            })
+
+          TimeEntry.where(work_effort_id: params[:work_effort_id])
+        else
+          timesheet = current_user.party.timesheets.current!
+
+          result[:day_total_seconds] = timesheet.day_total_in_seconds({
+                                                                          start: time_helper.beginning_of_day,
+                                                                          end: time_helper.end_of_day
+                                                                      })
+          result[:week_total_seconds] = timesheet.week_total_in_seconds({
+                                                                            start: time_helper.beginning_of_week,
+                                                                            end: time_helper.end_of_week
+                                                                        })
+          result[:day_total_formatted] = timesheet.day_total_formatted({
+                                                                           start: time_helper.beginning_of_day,
+                                                                           end: time_helper.end_of_day
+                                                                       })
+          result[:week_total_formatted] = timesheet.week_total_formatted({
+                                                                             start: time_helper.beginning_of_week,
+                                                                             end: time_helper.end_of_week
+                                                                         })
+        end
+
+        render json: result
       end
 
     end # WorkEffortTypeController

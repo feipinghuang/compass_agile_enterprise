@@ -14,7 +14,7 @@ module Api
         parties = Party
 
         unless query.blank?
-          parties = parties.where('description like ?', "%#{query}%")
+          parties = parties.where('parties.description like ?', "%#{query}%")
         end
 
         unless role_types.blank?

@@ -132,47 +132,39 @@ class Timesheet < ActiveRecord::Base
 
   # get total seconds for given date
   #
-  # @param date [Date] date to get total hours for
+  # @param opts [Hash] opts to calculate the total with
+  # @option opts [Date] :start start date range
+  # @option opts [Date] :end end date range
   # @return [Decimal] total seconds
-  def day_total_in_seconds(date)
-    hours = BigDecimal.new(0)
+  def total_in_seconds(opts)
+    seconds = 0
     time_entry_arel_tbl = TimeEntry.arel_table
 
-    self.time_entries.where(time_entry_arel_tbl[:from_datetime].gteq(date))
-        .where(time_entry_arel_tbl[:from_datetime].lteq((date + 1.day))).each do |time_entry|
-      hours += ((time_entry.regular_hours_in_seconds || 0) + (time_entry.overtime_hours_in_seconds || 0))
+    statement = self.time_entries
+
+    if opts[:start]
+      statement = statement.where(time_entry_arel_tbl[:from_datetime].gteq(opts[:start]))
     end
 
-    hours
-  end
-
-  # get total for a given day formatted as HH:MM:SS
-  #
-  # @param date [Date] date to get total hours for
-  # @return [String] HH:MM:SS
-  def day_total_formatted(date)
-    Time.at(day_total_in_seconds(date)).utc.strftime("%H:%M:%S")
-  end
-
-  # get total seconds for timesheet
-  #
-  # @return [Decimal] total seconds
-  def total_in_seconds
-    hours = BigDecimal.new(0)
-
-    self.time_entries.each do |time_entry|
-      hours += ((time_entry.regular_hours_in_seconds || 0) + (time_entry.overtime_hours_in_seconds || 0))
+    if opts[:end]
+      statement = statement.where(time_entry_arel_tbl[:from_datetime].lteq(opts[:end]))
     end
 
-    hours
+    statement.each do |time_entry|
+      seconds += ((time_entry.regular_hours_in_seconds || 0) + (time_entry.overtime_hours_in_seconds || 0))
+    end
+
+    seconds
   end
 
-  # get total formatted as HH:MM:SS
+  # get total seconds for a given day formatted as HH:MM:SS
   #
-  # @param date [Date] date to get total hours for
+  # @param opts [Hash] opts to calculate the total with
+  # @option opts [Date] :start start date range
+  # @option opts [Date] :end end date range
   # @return [String] HH:MM:SS
-  def total_formatted
-    Time.at(total_in_seconds).utc.strftime("%H:%M:%S")
+  def total_formatted(opts)
+    Time.at(total_in_seconds(opts)).utc.strftime("%H:%M:%S")
   end
 
 end
