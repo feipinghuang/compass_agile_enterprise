@@ -143,7 +143,7 @@ module Api
               time_entry.work_effort = work_effort
 
               # associate to a timesheet
-              time_sheet = party.timesheets.current!(party, RoleType.iid('work_resource'))
+              time_sheet = party.timesheets.current!(RoleType.iid('work_resource'))
               time_sheet.time_entries << time_entry
 
               render json: {
@@ -173,7 +173,6 @@ module Api
       def stop
         begin
           ActiveRecord::Base.connection.transaction do
-
             party = current_user.party
             work_effort = WorkEffort.find(params[:work_effort_id])
             time_entry = TimeEntry.find(params[:id])
@@ -190,19 +189,16 @@ module Api
 
             time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
 
-
-            result[:day_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
-                                                                                             party,
-                                                                                             {
-                                                                                                 start: time_helper.beginning_of_day,
-                                                                                                 end: time_helper.end_of_day
-                                                                                             })
-            result[:week_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
-                                                                                              party,
-                                                                                              {
-                                                                                                  start: time_helper.beginning_of_week,
-                                                                                                  end: time_helper.end_of_week
-                                                                                              })
+            result[:day_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
+                                                                     party: party,
+                                                                     start: time_helper.beginning_of_day,
+                                                                     end: time_helper.end_of_day
+            )
+            result[:week_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
+                                                                      party: party,
+                                                                      start: time_helper.beginning_of_week,
+                                                                      end: time_helper.end_of_week
+            )
 
             render json: result
           end
@@ -233,18 +229,14 @@ module Api
 
           render :json => {success: true,
                            time_entry: open_time_entry.nil? ? nil : open_time_entry.to_data_hash,
-                           day_total_formatted: TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
-                                                                                                  party,
-                                                                                                  {
-                                                                                                      start: time_helper.beginning_of_day,
-                                                                                                      end: time_helper.end_of_day
-                                                                                                  }),
-                           week_total_formatted: TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
-                                                                                                   party,
-                                                                                                   {
-                                                                                                       start: time_helper.beginning_of_week,
-                                                                                                       end: time_helper.end_of_week
-                                                                                                   })
+                           day_total_formatted: TimeEntry.total_formatted(work_effort: work_effort,
+                                                                          party: party,
+                                                                          start: time_helper.beginning_of_day,
+                                                                          end: time_helper.end_of_day),
+                           week_total_formatted: TimeEntry.total_formatted(work_effort: work_effort,
+                                                                           party: party,
+                                                                           start: time_helper.beginning_of_week,
+                                                                           end: time_helper.end_of_week)
                  }
         else
           render :json => {success: true, time_entries: TimeEntry.open.collect { |time_entry| time_entry.to_data_hash }}
@@ -264,59 +256,39 @@ module Api
             week_total_formatted: '00:00:00'
         }
 
-        party = current_user.party
-
+        work_effort = nil
+        party = nil
         time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
+
 
         if params[:work_effort_id]
           work_effort = WorkEffort.find(params[:work_effort_id])
-
-          result[:day_total_seconds] = TimeEntry.total_seconds_by_work_effort_by_party(work_effort,
-                                                                                       party,
-                                                                                       {
-                                                                                           start: time_helper.beginning_of_day,
-                                                                                           end: time_helper.end_of_day
-                                                                                       })
-          result[:week_total_seconds] = TimeEntry.total_seconds_by_work_effort_by_party(work_effort,
-                                                                                        party,
-                                                                                        {
-                                                                                            start: time_helper.beginning_of_week,
-                                                                                            end: time_helper.end_of_week
-                                                                                        })
-          result[:day_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
-                                                                                           party,
-                                                                                           {
-                                                                                               start: time_helper.beginning_of_day,
-                                                                                               end: time_helper.end_of_day
-                                                                                           })
-          result[:week_total_formatted] = TimeEntry.total_formatted_by_work_effort_by_party(work_effort,
-                                                                                            party,
-                                                                                            {
-                                                                                                start: time_helper.beginning_of_week,
-                                                                                                end: time_helper.end_of_week
-                                                                                            })
-
-          TimeEntry.where(work_effort_id: params[:work_effort_id])
-        else
-          timesheet = current_user.party.timesheets.current!
-
-          result[:day_total_seconds] = timesheet.day_total_in_seconds({
-                                                                          start: time_helper.beginning_of_day,
-                                                                          end: time_helper.end_of_day
-                                                                      })
-          result[:week_total_seconds] = timesheet.week_total_in_seconds({
-                                                                            start: time_helper.beginning_of_week,
-                                                                            end: time_helper.end_of_week
-                                                                        })
-          result[:day_total_formatted] = timesheet.day_total_formatted({
-                                                                           start: time_helper.beginning_of_day,
-                                                                           end: time_helper.end_of_day
-                                                                       })
-          result[:week_total_formatted] = timesheet.week_total_formatted({
-                                                                             start: time_helper.beginning_of_week,
-                                                                             end: time_helper.end_of_week
-                                                                         })
         end
+
+        if params[:party_id]
+          party = Party.find(params[:party_id])
+        end
+
+        result[:day_total_seconds] = TimeEntry.total_seconds(work_effort: work_effort,
+                                                             party: party,
+                                                             start: time_helper.beginning_of_day,
+                                                             end: time_helper.end_of_day
+        )
+        result[:week_total_seconds] = TimeEntry.total_seconds(work_effort: work_effort,
+                                                              party: party,
+                                                              start: time_helper.beginning_of_week,
+                                                              end: time_helper.end_of_week
+        )
+        result[:day_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
+                                                                 party: party,
+                                                                 start: time_helper.beginning_of_day,
+                                                                 end: time_helper.end_of_day
+        )
+        result[:week_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
+                                                                  party: party,
+                                                                  start: time_helper.beginning_of_week,
+                                                                  end: time_helper.end_of_week
+        )
 
         render json: result
       end

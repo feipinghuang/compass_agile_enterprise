@@ -41,21 +41,27 @@ class TimeEntry < ActiveRecord::Base
       joins(:timesheet => :timesheet_party_roles).where('timesheet_party_roles.party_id' => party)
     end
 
-    # total seconds by work_effort and party
+    # total seconds by work_effort
     #
-    # @param work_effort [WorkEffort] work_effort to get total hours for
-    # @param party [Party] party to get total hours for
     # @param opts [Hash] opts to calculate the total with
+    # @option opts [WorkEffort] :work_effort WorkEffort to get total hours for
+    # @option opts [Party] :party Party to get total hours for
     # @option opts [Date] :start start date range
     # @option opts [Date] :end end date range
     #
     # @return [Integer] total seconds
-    def total_seconds_by_work_effort_by_party(work_effort, party, opts={})
+    def total_seconds(opts)
       seconds = 0
 
       time_entry_arel_tbl = self.arel_table
 
-      statement = self.scope_by_party(party).scope_by_work_effort(work_effort)
+      if opts[:work_effort]
+        statement = self.scope_by_work_effort(opts[:work_effort])
+      end
+
+      if opts[:party]
+        statement = self.scope_by_party(opts[:party])
+      end
 
       if opts[:start]
         statement = statement.where(time_entry_arel_tbl[:from_datetime].gteq(opts[:start]))
@@ -72,19 +78,18 @@ class TimeEntry < ActiveRecord::Base
       seconds
     end
 
-    # total seconds by work_effort and party formatted as HH:MM:SS
+    # total seconds by work_effort formatted as HH:MM:SS
     #
-    # @param work_effort [WorkEffort] work_effort to get total hours for
-    # @param party [Party] party to get total hours for
     # @param opts [Hash] opts to calculate the total with
+    # @option opts [WorkEffort] :work_effort WorkEffort to get total hours for
+    # @option opts [Party] :party Party to get total hours for
     # @option opts [Date] :start start date range
     # @option opts [Date] :end end date range
     #
     # @return [String] HH:MM:SS
-    def total_formatted_by_work_effort_by_party(work_effort, party, opts={})
-      Time.at(total_seconds_by_work_effort_by_party(work_effort, party, opts)).utc.strftime("%H:%M:%S")
+    def total_formatted(opts)
+      Time.at(total_seconds(opts)).utc.strftime("%H:%M:%S")
     end
-
   end
 
   def calculate_regular_hours_in_seconds!

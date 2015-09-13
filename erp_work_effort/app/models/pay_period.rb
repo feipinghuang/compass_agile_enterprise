@@ -27,10 +27,10 @@ class PayPeriod < ActiveRecord::Base
         today = Time.now.strftime("%A")
         if today == 'Saturday'
           from_date = Chronic.parse('last Sunday')
-          thru_date = today
+          thru_date = Time.now
         elsif today == 'Sunday'
           thru_date = Chronic.parse('next Saturday')
-          from_date = today
+          from_date = Time.now
         else
           thru_date = Chronic.parse('next Saturday')
           from_date = Chronic.parse('last Sunday')

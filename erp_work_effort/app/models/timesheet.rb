@@ -16,8 +16,8 @@ class Timesheet < ActiveRecord::Base
 
   has_file_assets
 
-  has_many :timesheet_party_roles
-  has_many :time_entries
+  has_many :timesheet_party_roles, dependent: :destroy
+  has_many :time_entries, dependent: :destroy
   belongs_to :pay_period
 
   scope :for_user, lambda { |user| where(["party_id = ?", user.party_id]) }
@@ -130,13 +130,27 @@ class Timesheet < ActiveRecord::Base
     )
   end
 
+  # finds party with passed role to this timesheet
+  #
+  # @param role_type [RoleType] role type to use in the association
+  # @return [TimeSheetPartyRole] newly created relationship
+  def find_party_by_role(role_type)
+    timesheet_party_role = self.timesheet_party_roles.where('role_type_id' => role_type).first
+
+    if timesheet_party_role
+      timesheet_party_role.party
+    else
+      nil
+    end
+  end
+
   # get total seconds for given date
   #
   # @param opts [Hash] opts to calculate the total with
   # @option opts [Date] :start start date range
   # @option opts [Date] :end end date range
   # @return [Decimal] total seconds
-  def total_in_seconds(opts)
+  def total_seconds(opts)
     seconds = 0
     time_entry_arel_tbl = TimeEntry.arel_table
 
@@ -164,7 +178,7 @@ class Timesheet < ActiveRecord::Base
   # @option opts [Date] :end end date range
   # @return [String] HH:MM:SS
   def total_formatted(opts)
-    Time.at(total_in_seconds(opts)).utc.strftime("%H:%M:%S")
+    Time.at(total_seconds(opts)).utc.strftime("%H:%M:%S")
   end
 
 end
