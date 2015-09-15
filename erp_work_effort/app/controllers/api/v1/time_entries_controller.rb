@@ -123,35 +123,34 @@ module Api
         begin
           ActiveRecord::Base.connection.transaction do
 
+            time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
             party = current_user.party
             work_effort = WorkEffort.find(params[:work_effort_id])
 
             # check for an open TimeEntry
             open_time_entry = party.time_entries.open.first
 
+            # if there is an open TimeEntry stop it and start a new one
             if open_time_entry
-              render json: {
-                         success: false,
-                         message: 'There is currently an open Time Entry please stop it before starting another',
-                     }
-            else
-              time_entry = TimeEntry.create(
-                  from_datetime: Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc,
-                  comment: params[:comment].strip
-              )
+              open_time_entry.thru_datetime = time_helper.in_client_time(Time.now)
 
-              time_entry.work_effort = work_effort
-
-              # associate to a timesheet
-              time_sheet = party.timesheets.current!(RoleType.iid('work_resource'))
-              time_sheet.time_entries << time_entry
-
-              render json: {
-                         success: true,
-                         time_entry: time_entry.to_data_hash,
-                     }
+              open_time_entry.calculate_regular_hours_in_seconds!
             end
 
+            time_entry = TimeEntry.create(
+                from_datetime: Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+            )
+
+            time_entry.work_effort = work_effort
+
+            # associate to a timesheet
+            time_sheet = party.timesheets.current!(RoleType.iid('work_resource'))
+            time_sheet.time_entries << time_entry
+
+            render json: {
+                       success: true,
+                       time_entry: time_entry.to_data_hash,
+                   }
           end
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors
