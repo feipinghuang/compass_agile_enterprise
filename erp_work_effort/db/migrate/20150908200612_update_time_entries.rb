@@ -34,6 +34,7 @@ class UpdateTimeEntries < ActiveRecord::Migration
         t.text :comment
         t.references :timesheet
         t.references :work_effort
+        t.boolean :manual_entry
 
         t.timestamps
       end

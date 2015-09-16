@@ -18,6 +18,10 @@ Party.class_eval do
     def open
       where('thru_datetime is null')
     end
+
+    def scope_by_work_effort(work_effort)
+      where('work_effort_id' => work_effort.id)
+    end
   end
 
   #

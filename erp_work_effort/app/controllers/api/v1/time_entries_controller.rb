@@ -7,7 +7,9 @@ module Api
           ActiveRecord::Base.connection.transaction do
             party = current_user.party
 
-            time_entry = TimeEntry.new
+            time_entry = TimeEntry.new(
+                manual_entry: true
+            )
 
             if params[:from_datetime]
               time_entry.from_datetime = Time.strptime(params[:from_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
@@ -87,6 +89,9 @@ module Api
             if params[:overtime_hours_in_seconds]
               time_entry.overtime_hours_in_seconds = params[:regular_hours_in_seconds].to_i
             end
+
+            # update to manual entry
+            time_entry.manual_entry = true
 
             render json: {
                        success: time_entry.save!,
