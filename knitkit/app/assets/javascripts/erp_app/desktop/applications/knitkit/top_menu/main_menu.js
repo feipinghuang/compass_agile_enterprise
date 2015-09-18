@@ -832,7 +832,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.uploadThemeMenuItem = {
                         fieldLabel: 'Upload Theme',
                         buttonText: 'Upload',
                         buttonOnly: false,
-                        allowBlank: true,
+                        allowBlank: false,
                         name: 'theme_data'
                     }
                 ]
@@ -864,6 +864,9 @@ Compass.ErpApp.Desktop.Applications.Knitkit.uploadThemeMenuItem = {
                                         Ext.Msg.alert("Error", "Error creating theme");
                                     }
                                 });
+                            }
+                            else {
+                                Ext.Msg.alert("Warning", "Please select a Theme file to upload");
                             }
                         }
                     }
