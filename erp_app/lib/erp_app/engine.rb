@@ -73,6 +73,7 @@ module ErpApp
       #
       # include organizer applications
       #
+
       organizer_js_path = File.join("app", "assets", "javascripts", "erp_app", "organizer", "applications")
       organizer_css_path = File.join("app", "assets", "stylesheets", "erp_app", "organizer", "applications")
 
@@ -99,6 +100,26 @@ module ErpApp
         next if dir == '.' or dir == '..'
         Rails.application.config.assets.precompile << File.join("erp_app", "organizer", "applications", dir, 'app.css')
       end if File.exists?(Rails.root.join(organizer_css_path))
+
+      #
+      # include widgets
+      #
+
+      # include widget javascript assets
+      Dir.foreach(Rails.root.join("app", "assets", "javascripts", "widgets")) do |dir|
+        next if dir == '.' or dir == '..'
+        Dir.foreach(Rails.root.join("app", "assets", "javascripts", "widgets", dir)) do |file|
+          Rails.application.config.assets.precompile << File.join("widgets", dir, file)
+        end
+      end if File.exists?(Rails.root.join("app", "assets", "javascripts", "widgets"))
+
+      # include widget stylesheet assets
+      Dir.foreach(Rails.root.join("app", "assets", "stylesheets", "widgets")) do |dir|
+        next if dir == '.' or dir == '..'
+        Dir.foreach(Rails.root.join("app", "assets", "stylesheets", "widgets", dir)) do |file|
+          Rails.application.config.assets.precompile << File.join("widgets", dir, file)
+        end
+      end if File.exists?(Rails.root.join("app", "assets", "stylesheets", "widgets"))
     end
 
     ActiveSupport.on_load(:active_record) do
