@@ -116,7 +116,7 @@ module ErpApp
       def merge_params
         stored_widget_params = session[:widgets][self.uuid]
         unless stored_widget_params.nil?
-          self.params.merge!(stored_widget_params)
+          self.params.merge! stored_widget_params.merge self.params
         end
       end
 

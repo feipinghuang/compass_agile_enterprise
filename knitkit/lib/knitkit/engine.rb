@@ -14,6 +14,22 @@ module Knitkit
     end
 
     initializer :assets do |config|
+      # include widget javascript assets
+      Dir.foreach(root.join("app", "assets", "javascripts", "widgets")) do |dir|
+        next if dir == '.' or dir == '..'
+        Dir.foreach(root.join("app", "assets", "javascripts", "widgets", dir)) do |file|
+          Rails.application.config.assets.precompile << File.join("widgets", dir, file)
+        end
+      end if File.exists?(root.join("app", "assets", "stylesheets", "widgets"))
+
+      # include widget stylesheet assets
+      Dir.foreach(root.join("app", "assets", "stylesheets", "widgets")) do |dir|
+        next if dir == '.' or dir == '..'
+        Dir.foreach(root.join("app", "assets", "stylesheets", "widgets", dir)) do |file|
+          Rails.application.config.assets.precompile << File.join("widgets", dir, file)
+        end
+      end if File.exists?(root.join("app", "assets", "stylesheets", "widgets"))
+
       Rails.application.config.assets.paths << root.join("app", "assets", "images")
       Rails.application.config.assets.precompile += %w{ knitkit-web.css knitkit/custom.css knitkit-web.js knitkit/theme.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/knitkit/app.js }

@@ -53,13 +53,17 @@ module ErpTechSvcs
       end
 
       def build_file_assets_tree_for_model(model, starting_path)
-        files = model.files
+        files = model.files.where('directory like ?', starting_path + '%')
 
         node_tree = [{:text => root, :leaf => false, :id => root, :children => []}]
         
         paths = files.collect{|file| File.join(file.directory,file.name)}
 
-        node_tree.first[:children] << {:id => starting_path, :text => starting_path.split('/').last, :children => []} if paths.select{|path| path.split('/')[1] == starting_path.split('/')[1]}.empty?
+        node_tree.first[:children] << {:id => starting_path,
+                                       :text => starting_path.split('/').last,
+                                       leaf: true,
+                                       iconCls: 'icon-document',
+                                       :children => []} if paths.select{|path| path.split('/')[1] == starting_path.split('/')[1]}.empty?
         
         nesting_depth = paths.collect{|item| item.split('/').count}.max
         unless nesting_depth.nil?
