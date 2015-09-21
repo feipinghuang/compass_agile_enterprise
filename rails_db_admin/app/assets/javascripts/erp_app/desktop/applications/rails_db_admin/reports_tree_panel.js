@@ -9,6 +9,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
             title:'New Report',
             plain:true,
             buttonAlign:'center',
+            defaultFocus: '#title',
             items:Ext.create('Ext.FormPanel', {
                 labelWidth:110,
                 frame:false,
@@ -22,7 +23,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         xtype:'textfield',
                         fieldLabel:'Title',
                         allowBlank:false,
-                        name:'name'
+                        name:'name',
+                        id: 'title'
                     },
                     {
                         xtype:'textfield',
