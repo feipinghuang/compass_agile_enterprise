@@ -133,7 +133,7 @@ class Timesheet < ActiveRecord::Base
   # finds party with passed role to this timesheet
   #
   # @param role_type [RoleType] role type to use in the association
-  # @return [TimeSheetPartyRole] newly created relationship
+  # @return [Party] Party associated to this timesheet
   def find_party_by_role(role_type)
     timesheet_party_role = self.timesheet_party_roles.where('role_type_id' => role_type).first
 
@@ -178,7 +178,17 @@ class Timesheet < ActiveRecord::Base
   # @option opts [Date] :end end date range
   # @return [String] HH:MM:SS
   def total_formatted(opts)
-    Time.at(total_seconds(opts)).utc.strftime("%H:%M:%S")
+    _total_seconds = total_seconds(opts)
+
+    if _total_seconds.nil? or _total_seconds == 0
+      '00:00:00'
+    else
+      seconds =_total_seconds % 60
+      minutes = (_total_seconds / 60) % 60
+      hours = _total_seconds / (60 * 60)
+
+      format("%02d:%02d:%02d", hours, minutes, seconds)
+    end
   end
 
 end

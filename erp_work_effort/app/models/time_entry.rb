@@ -78,6 +78,26 @@ class TimeEntry < ActiveRecord::Base
       seconds
     end
 
+    # total hours as decimal round to the nearest 15th
+    #
+    # @param opts [Hash] opts to calculate the total with
+    # @option opts [WorkEffort] :work_effort WorkEffort to get total hours for
+    # @option opts [Party] :party Party to get total hours for
+    # @option opts [Date] :start start date range
+    # @option opts [Date] :end end date range
+    #
+    # @return [BigDecimal] hours
+    def total_hours(opts)
+      _total_seconds = total_seconds(opts)
+
+      if _total_seconds.nil? or _total_seconds == 0
+        0
+      else
+        # get hours by dividing seconds by 3600 then get fractional minutes
+        ((_total_seconds / 3600).floor + (((_total_seconds % 3600) / 60)) / 100.0)
+      end
+    end
+
     # total seconds by work_effort formatted as HH:MM:SS
     #
     # @param opts [Hash] opts to calculate the total with
@@ -88,7 +108,17 @@ class TimeEntry < ActiveRecord::Base
     #
     # @return [String] HH:MM:SS
     def total_formatted(opts)
-      Time.at(total_seconds(opts)).utc.strftime("%H:%M:%S")
+      _total_seconds = total_seconds(opts)
+
+      if _total_seconds.nil? or _total_seconds == 0
+        '00:00:00'
+      else
+        seconds =_total_seconds % 60
+        minutes = (_total_seconds / 60) % 60
+        hours = _total_seconds / (60 * 60)
+
+        format("%02d:%02d:%02d", hours, minutes, seconds)
+      end
     end
   end
 
@@ -129,14 +159,52 @@ class TimeEntry < ActiveRecord::Base
   #
   # @return [String] HH:MM:SS
   def regular_hours_formatted
-    Time.at((self.regular_hours_in_seconds || 0)).utc.strftime("%H:%M:%S")
+    if self.regular_hours_in_seconds.nil? or self.regular_hours_in_seconds == 0
+      '00:00:00'
+    else
+      seconds = self.regular_hours_in_seconds % 60
+      minutes = (self.regular_hours_in_seconds / 60) % 60
+      hours = self.regular_hours_in_seconds / (60 * 60)
+
+      format("%02d:%02d:%02d", hours, minutes, seconds)
+    end
   end
 
   # overtime hours formatted as HH:MM:SS
   #
   # @return [String] HH:MM:SS
   def overtime_hours_formatted
-    Time.at((self.overtime_hours_in_seconds || 0)).utc.strftime("%H:%M:%S")
+    if self.overtime_hours_in_seconds.nil? or self.overtime_hours_in_seconds == 0
+      '00:00:00'
+    else
+      seconds = self.overtime_hours_in_seconds % 60
+      minutes = (self.overtime_hours_in_seconds / 60) % 60
+      hours = self.overtime_hours_in_seconds / (60 * 60)
+
+      format("%02d:%02d:%02d", hours, minutes, seconds)
+    end
+  end
+
+  # get fractional hours for this TimeEntry
+  #
+  # @return [BigDecimal] hours
+  def hours
+    _total_seconds = (self.regular_hours_in_seconds || 0) + (self.overtime_hours_in_seconds || 0)
+
+    if _total_seconds.nil? or _total_seconds == 0
+      0
+    else
+      # get hours by dividing seconds by 3600 then get fractional minutes
+      ((_total_seconds / 3600).floor + (((_total_seconds % 3600) / 60)) / 100.0)
+    end
+  end
+
+  # finds party with passed role to this TimeEntry
+  #
+  # @param role_type [RoleType] role type to use in the association
+  # @return [Party] party
+  def find_party_by_role(role_type)
+    self.timesheet.find_party_by_role(role_type)
   end
 
   def to_data_hash
