@@ -8,10 +8,17 @@ module RailsDbAdmin
       Rails.application.config.assets.paths << root.join("app", "assets", "images")
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/rails_db_admin/app.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/rails_db_admin/app.css }
+      Rails.application.config.assets.precompile += ['bootstrap.css']
     end
 
     ErpBaseErpSvcs.register_as_compass_ae_engine(config, self)
     ::ErpApp::Widgets::Loader.load_compass_ae_widgets(config, self)
-    
+
+
+    ActiveSupport.on_load(:action_controller) do
+      include RailsDbAdmin::Extensions::ActionController::ReportSupport::ActsAsReportController
+    end
+
+
   end
 end
