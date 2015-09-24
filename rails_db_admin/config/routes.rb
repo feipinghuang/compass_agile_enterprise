@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  match '/reports/display/:iid(.:format)' => "rails_db_admin/reports/base#index"
+  match '/reports/display/:iid(.:format)' => "rails_db_admin/reports/base#show"
 end
 
 RailsDbAdmin::Engine.routes.draw do

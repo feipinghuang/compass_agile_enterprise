@@ -15,7 +15,6 @@
 //= require ./queries_tree_menu
 //= require ./query_panel
 //= require ./readonly_table_data_grid
-//= require ./report_panel
 //= require ./reports_tree_panel
 //= require ./splash_screen
 //= require ./tables_tree_menu
