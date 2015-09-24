@@ -53,14 +53,16 @@ class TimeEntry < ActiveRecord::Base
     def total_seconds(opts)
       seconds = 0
 
+      statement = self
+
       time_entry_arel_tbl = self.arel_table
 
       if opts[:work_effort]
-        statement = self.scope_by_work_effort(opts[:work_effort])
+        statement = statement.scope_by_work_effort(opts[:work_effort])
       end
 
       if opts[:party]
-        statement = self.scope_by_party(opts[:party])
+        statement = statement.scope_by_party(opts[:party])
       end
 
       if opts[:start]

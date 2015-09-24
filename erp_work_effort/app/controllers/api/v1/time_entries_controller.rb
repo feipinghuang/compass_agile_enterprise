@@ -257,7 +257,8 @@ module Api
             day_total_seconds: 0,
             week_total_seconds: 0,
             day_total_formatted: '00:00:00',
-            week_total_formatted: '00:00:00'
+            week_total_formatted: '00:00:00',
+            total_formatted: '00:00:00'
         }
 
         work_effort = nil
@@ -283,6 +284,9 @@ module Api
                                                               start: time_helper.beginning_of_week,
                                                               end: time_helper.end_of_week
         )
+        result[:total_seconds] = TimeEntry.total_seconds(work_effort: work_effort,
+                                                         party: party
+        )
         result[:day_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
                                                                  party: party,
                                                                  start: time_helper.beginning_of_day,
@@ -292,6 +296,9 @@ module Api
                                                                   party: party,
                                                                   start: time_helper.beginning_of_week,
                                                                   end: time_helper.end_of_week
+        )
+        result[:total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
+                                                             party: party
         )
 
         render json: result
