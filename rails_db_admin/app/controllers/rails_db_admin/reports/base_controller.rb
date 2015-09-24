@@ -12,7 +12,11 @@ module RailsDbAdmin
           render :no_report, :layout => false
         else
           data = get_report_data
-          @custom_data = data[:rows].last['custom_fields'] ? JSON.parse(data[:rows].last['custom_fields']) : {}
+          if data[:rows].count > 0
+            @custom_data = data[:rows].last['custom_fields'] ? JSON.parse(data[:rows].last['custom_fields']) : {}
+          else
+            @custom_data = {}
+          end
 
           respond_to do |format|
 

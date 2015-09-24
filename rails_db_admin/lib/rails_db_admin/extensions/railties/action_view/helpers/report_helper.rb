@@ -1,3 +1,5 @@
+require 'base64'
+
 module RailsDbAdmin
   module Extensions
     module Railties
@@ -26,8 +28,10 @@ module RailsDbAdmin
               report = Report.iid(report_id)
               return("could not find report with the id #{report_id}") unless report
               if request.format.symbol == :pdf
+                file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+
                 css_path = report.stylesheet_path(sources)
-                css_text = "<style type='text/css'>#{File.read(css_path)}</style>"
+                css_text = "<style type='text/css'>#{file_support.get_contents(css_path)}</style>"
                 css_text.respond_to?(:html_safe) ? css_text.html_safe : css_text
               else
                 options = sources.extract_options!.stringify_keys
@@ -44,8 +48,10 @@ module RailsDbAdmin
               report = Report.iid(report_id)
               return("could not find report with the id #{report_id}") unless report
               if request.format.symbol == :pdf
+                file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+
                 js_path = report.javascript_path(sources)
-                js_text = "<script>#{File.read(js_path)}</script>"
+                js_text = "<script>#{file_support.get_contents(js_path)}</script>"
                 js_text.respond_to?(:html_safe) ? js_text.html_safe : js_text
               else
                 options = sources.extract_options!.stringify_keys
@@ -127,7 +133,10 @@ module RailsDbAdmin
 
               if request.format.symbol == :pdf
                 img_path = report.image_path(source)
-                image_tag "file:///#{img_path}",options
+
+                file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+
+                image_tag "data:image/png;base64,#{Base64.encode64(file_support.get_contents(img_path))}"
               else
                 options.symbolize_keys!
                 options[:src] = report_image_path(report, source)

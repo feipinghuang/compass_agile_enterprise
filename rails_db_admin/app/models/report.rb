@@ -47,18 +47,13 @@ class Report < ActiveRecord::Base
     end
   end
 
-  def root_dir
-     @@root_dir ||= "#{Rails.root}/public"
-  end
-
   def base_dir
-    "#{root_dir}/compass_ae_reports/#{self.internal_identifier}"
+    "#{Rails.root}/public/compass_ae_reports/#{self.internal_identifier}"
   end
 
   def url
     "/public/compass_ae_reports/#{self.internal_identifier}"
   end
-
 
   def import(file)
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
@@ -136,13 +131,7 @@ class Report < ActiveRecord::Base
   end
 
   def create_report_files!
-    file_support = ErpTechSvcs::FileSupport::Base.new
-    REPORT_STRUCTURE.each do |structure|
-      Pathname.new(File.join("#{base_dir}/#{structure}")).tap do |dir|
-        self.add_file(self.template,File.join(dir,"base.html.erb")) if structure == 'templates'
-        FileUtils.mkdir_p(dir) unless dir.exist?
-      end
-    end
+    self.add_file(self.template, File.join(self.url, 'templates', "base.html.erb"))
   end
 
   def delete_report_files!
@@ -152,7 +141,7 @@ class Report < ActiveRecord::Base
 
   def set_default_template
     self.template =
-"<%= bootstrap_load %>
+        "<%= bootstrap_load %>
 <h3><%= title %></h3>
 
 <table>
