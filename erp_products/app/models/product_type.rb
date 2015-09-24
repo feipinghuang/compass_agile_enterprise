@@ -51,6 +51,52 @@ class ProductType < ActiveRecord::Base
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
 
+  class << self
+    #
+    # scoping helpers
+    #
+
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      scope_by_party(dba_organization, {role_types: [RoleType.iid('dba_org')]})
+    end
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      statement = joins(:product_type_pty_roles).where("product_type_pty_roles.party_id" => party).uniq
+
+      if options[:role_types]
+        statement = statement.where("product_type_pty_roles.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
+      end
+
+      statement
+    end
+  end
+
+  # add party with passed role to this ProductType
+  #
+  # @param party [Party] party to add
+  # @param role_type [RoleType] role type to use in the association
+  # @return [ProductTypePtyRole] newly created relationship
+  def add_party_with_role(party, role_type)
+    ProductTypePtyRole.create(
+        product_type: self,
+        party: party,
+        role_type: role_type
+    )
+  end
+
   def taxable?
     self.taxable
   end
