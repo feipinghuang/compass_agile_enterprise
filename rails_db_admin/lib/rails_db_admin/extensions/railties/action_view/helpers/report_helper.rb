@@ -170,11 +170,11 @@ module RailsDbAdmin
             end
 
             def bootstrap_load
-              stylesheet_link_tag "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
+              stylesheet_link_tag "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
             end
 
             def jquery_load
-              javascript_include_tag "http://code.jquery.com/jquery-1.10.0.min.js"
+              javascript_include_tag "https://code.jquery.com/jquery-1.10.0.min.js"
             end
 
           end #ReportHelper
