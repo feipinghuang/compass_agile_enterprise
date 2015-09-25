@@ -52,12 +52,14 @@ module RailsDbAdmin
             }
 
             format.csv {
-              CSV.generate do |csv|
+              csv_data = CSV.generate do |csv|
                 csv << data[:columns]
                 data[:rows].each do |row|
                   csv << row.values
                 end
               end
+
+              send_data csv_data
             }
 
           end
