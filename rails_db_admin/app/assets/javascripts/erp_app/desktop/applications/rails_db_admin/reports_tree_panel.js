@@ -139,6 +139,97 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
 
     },
 
+    editReportMetaData: function(node){
+        var me = this;
+        Ext.create("Ext.window.Window", {
+            title:'Edit Report Print Settings',
+            plain:true,
+            buttonAlign:'center',
+            items: Ext.create('Ext.FormPanel', {
+                labelWidth:110,
+                frame:false,
+                bodyStyle:'padding:5px 5px 0',
+                url:'/rails_db_admin/erp_app/desktop/reports/update',
+                defaults:{
+                    width:225
+                },
+                items: [
+                    {
+                        xtype: 'combo',
+                        fieldLabel: 'Page Size',
+                        name: 'page_size',
+                        displayField: 'pageSize',
+                        valueField: 'size',
+                        store: {
+                            fields: ['pageSize','size'],
+                            data: [
+                                {pageSize: 'A4', size: 'A4'},
+                                {pageSize: 'A3', size: 'A3'},
+                                {pageSize: 'A2', size: 'A2'},
+                                {pageSize: 'A1', size: 'A1'},
+                                {pageSize: 'A0', size: 'A0'}
+                            ]
+                        },
+                        listeners: {
+                            afterrender: function(combo, eOpts){
+                                var store = combo.getStore(),
+                                    pageSize = node.data.reportMetaData.print_page_size || 'A4';
+                                    
+                                combo.setValue(pageSize);
+                            }
+                        }
+                    }
+
+                ],
+                buttons:[
+                    {
+                        text:'Submit',
+                        listeners:{
+                            'click':function (button) {
+                                var window = button.up('window');
+                                var formPanel = window.down('form');
+                                formPanel.getForm().submit({
+                                    waitMsg:'Updating Report...',
+                                    params: {
+                                        id: node.data.id
+                                    },
+                                    success:function (form, action) {
+                                        var obj = Ext.decode(action.response.responseText);
+                                        if (obj.success) {
+                                            button.up('window').close();
+                                            me.getStore().load();
+                                        }
+                                        else {
+                                            Ext.Msg.alert("Error", obj.msg);
+                                        }
+                                    },
+                                    failure:function (form, action) {
+                                        var obj = Ext.decode(action.response.responseText);
+                                        if (obj.msg) {
+                                            Ext.Msg.alert("Error", obj.msg);
+                                        }
+                                        else {
+                                            Ext.Msg.alert("Error", "Error updating report.");
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    {
+                        text:'Close',
+                        handler:function (btn) {
+                            btn.up('window').close();
+                        }
+                    }
+                ]
+                
+            })
+        }).show();
+            
+
+    },
+
     deleteReport: function (id) {
         var me = this;
 
@@ -256,7 +347,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 'isReport',
                 'handleContextMenu',
                 'uniqueName',
-                'reportName'
+                'reportName',
+                {name: 'reportMetaData', type: 'object'}
             ],
             animate:false,
             listeners:{
@@ -373,6 +465,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     }
                     else if(node.data.isReport){
                         items.push(
+                            {
+                                text:"Report Print Settings",
+                                iconCls:'icon-edit',
+                                listeners:{
+                                    scope:node,
+                                    'click':function () {
+                                        me.editReportMetaData(node);
+                                    }
+                                }
+                                
+                            },
                             {
                                 text:"Delete Report",
                                 iconCls:'icon-delete',

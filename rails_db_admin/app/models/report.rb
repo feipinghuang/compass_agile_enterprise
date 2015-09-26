@@ -11,6 +11,8 @@ class Report < ActiveRecord::Base
   before_destroy :delete_report_files!
 
   has_file_assets
+  
+  is_json :meta_data
 
   REPORT_STRUCTURE = ['stylesheets', 'javascripts', 'images', 'templates']
 

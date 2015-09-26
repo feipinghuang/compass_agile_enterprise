@@ -4,7 +4,7 @@ module RailsDbAdmin
       class ReportsController < QueriesController
 
         before_filter :set_file_support
-
+        
         def index
           if params[:node] == 'root_node'
             setup_tree
@@ -20,13 +20,12 @@ module RailsDbAdmin
         end
 
         def create
-          unless params[:report_data].blank?
+          if params[:report_data].present?
             Report.import(params[:report_data])
             render :inline => {:success => true}.to_json
           else
             name = params[:name]
             internal_identifier = params[:internal_identifier]
-
             report = Report.new(:name => name, :internal_identifier => internal_identifier)
             if report.save
               render :json => {:success => true}
@@ -48,6 +47,19 @@ module RailsDbAdmin
             }
           else
             render :json => {:success => false}
+          end
+        end
+
+        def update
+          id = params[:id]
+          page_size = params[:page_size]
+          report = Report.find(id)
+
+          if report
+            report.meta_data['print_page_size'] = page_size
+            render :json => {success: report.save}
+          else
+            render :json => {success: false}
           end
         end
 
@@ -280,7 +292,8 @@ module RailsDbAdmin
               :iconCls => 'icon-content',
               :isReport => true,
               :handleContextMenu => true,
-              :children => []
+              :children => [],
+              :reportMetaData => report.meta_data || {}
             }
 
             ['stylesheets', 'images', 'templates','javascripts','query', 'preview_report'].each do |resource_folder|
