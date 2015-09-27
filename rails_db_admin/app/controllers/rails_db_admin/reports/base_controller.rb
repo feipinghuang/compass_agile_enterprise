@@ -45,19 +45,22 @@ module RailsDbAdmin
                              custom_data: @custom_data
                          },
                      :show_as_html => params[:debug].present?,
+                     :page_size => @report.meta_data['print_page_size'] || 'A4',
                      :margin => {:top => 0, :bottom => 15, :left => 10, :right => 10},
                      :footer => {
-                         :right => 'Page [page] of [topage]'
+                       :right => 'Page [page] of [topage]'
                      }
             }
 
             format.csv {
-              CSV.generate do |csv|
+              csv_data = CSV.generate do |csv|
                 csv << data[:columns]
                 data[:rows].each do |row|
                   csv << row.values
                 end
               end
+
+              send_data csv_data
             }
 
           end

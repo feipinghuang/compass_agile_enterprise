@@ -29,10 +29,12 @@ module RailsDbAdmin
               return("could not find report with the id #{report_id}") unless report
               if request.format.symbol == :pdf
                 file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
-
-                css_path = report.stylesheet_path(sources)
-                css_text = "<style type='text/css'>#{file_support.get_contents(css_path)}</style>"
-                css_text.respond_to?(:html_safe) ? css_text.html_safe : css_text
+                css = sources.collect do |source|
+                  css_path = report.stylesheet_path(source)
+                  css_text = "<style type='text/css'>#{file_support.get_contents(css_path).first}</style>"
+                  css_text.respond_to?(:html_safe) ? css_text.html_safe : css_text
+                end.join("\n")
+                raw css
               else
                 options = sources.extract_options!.stringify_keys
                 cache = options.delete("cache")
@@ -49,10 +51,12 @@ module RailsDbAdmin
               return("could not find report with the id #{report_id}") unless report
               if request.format.symbol == :pdf
                 file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
-
-                js_path = report.javascript_path(sources)
-                js_text = "<script>#{file_support.get_contents(js_path)}</script>"
-                js_text.respond_to?(:html_safe) ? js_text.html_safe : js_text
+                js = sources.collect do |source|
+                  js_path = report.javascript_path(source)
+                  js_text = "<script>#{file_support.get_contents(js_path).first}</script>"
+                  js_text.respond_to?(:html_safe) ? js_text.html_safe : js_text
+                end.join("\n")
+                raw js
               else
                 options = sources.extract_options!.stringify_keys
                 cache = options.delete("cache")
@@ -166,11 +170,11 @@ module RailsDbAdmin
             end
 
             def bootstrap_load
-              stylesheet_link_tag "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
+              stylesheet_link_tag "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
             end
 
             def jquery_load
-              javascript_include_tag "http://code.jquery.com/jquery-1.10.0.min.js"
+              javascript_include_tag "https://code.jquery.com/jquery-1.10.0.min.js"
             end
 
           end #ReportHelper
