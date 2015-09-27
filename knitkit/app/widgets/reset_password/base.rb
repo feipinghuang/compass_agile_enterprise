@@ -22,7 +22,7 @@ module Widgets
       end
 
       def update_password
-        @login_url = params[:login_url] || '/login'
+        @login_url = params[:login_url].blank? ? '/login' : params[:login_url]
         @token = params[:token].present? ? params[:token].strip : nil
         @user = User.load_from_reset_password_token(@token)
 
