@@ -14,7 +14,8 @@ module Api
         parties = Party
 
         unless query.blank?
-          parties = parties.where('parties.description like ?', "%#{query}%")
+          parties_tbl = Party.arel_table
+          parties = parties.where(parties_tbl[:description].matches(query + '%'))
         end
 
         unless role_types.blank?
