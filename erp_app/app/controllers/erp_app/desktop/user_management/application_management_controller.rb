@@ -8,21 +8,25 @@ module ErpApp
           desktop_applications = params[:desktop_applications].present?
 
           user = User.find(user_id)
+          party = user.party
 
           if desktop_applications
+            accessible_applications = Application.tools.scope_by_dba(party.dba_organization)
+
             current_applications = user.desktop_applications
             available_applications = if current_applications.empty?
-                                       Application.desktop_applications.all
+                                       accessible_applications
                                      else
-                                       Application.desktop_applications.where("id not in (#{current_applications.collect(&:id).join(',')})")
+                                       accessible_applications.where("applications.id not in (#{current_applications.collect(&:id).join(',')})")
                                      end
-
           else
+            accessible_applications = Application.apps.scope_by_dba(party.dba_organization)
+
             current_applications = user.apps
             available_applications = if current_applications.empty?
-                                       Application.apps.all
+                                       accessible_applications
                                      else
-                                       Application.apps.where("id not in (#{current_applications.collect(&:id).join(',')})")
+                                       accessible_applications.where("applications.id not in (#{current_applications.collect(&:id).join(',')})")
                                      end
           end
 
@@ -76,7 +80,7 @@ module ErpApp
           render :json => {:success => true, :message => 'Application(s) Saved'}
         end
 
-      end
-    end
-  end
-end
+      end # ApplicationManagementController
+    end # UserManagement
+  end # Desktop
+end # ErpApp
