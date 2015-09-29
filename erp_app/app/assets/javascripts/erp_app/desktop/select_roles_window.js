@@ -17,13 +17,6 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
     url: null,
 
     /*
-     * @param enableSecurity
-     * Boolean
-     * Describes whether security is enabled
-     */
-    enableSecurity: true,
-
-    /*
      * @param availableRoles
      * Array
      * Array of available roles
@@ -76,21 +69,18 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
     },
 
     constructor: function (config) {
-        var enableSecurity = config['enableSecurity'],
-            currentSecurity = config['currentSecurity'] || [],
+        var currentSecurity = config['currentSecurity'] || [],
             capabilities = config['capabilities'] || [],
             availableRoles = config['availableRoles'],
             baseParams = config['baseParams'] || {},
             url = config['url'],
             checkBoxes = [],
-            securityConfigPanel = null,
             panel = [];
 
         Ext.each(availableRoles, function (role) {
             checkBoxes.push({
                 name: role['internal_identifier'],
-                boxLabel: role['description'],
-                disabled: !enableSecurity
+                boxLabel: role['description']
             })
         });
 
@@ -116,12 +106,25 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                         {
                             xtype: 'fieldset',
                             autoScroll: true,
-                            title: 'Select Roles',
+                            checkboxToggle: true,
+                            collapsed: true,
+                            title: 'Enable Security',
                             defaultType: 'checkbox',
-                            items: checkBoxes
+                            items: checkBoxes,
+                            listeners:{
+                                collapse: function(fieldset){
+                                    Ext.each(fieldset.query('checkbox'), function(checkbox){
+                                        checkbox.setValue(false);
+                                    });
+                                }
+                            }
                         }
                     ]
                 });
+
+                if (!Ext.isEmpty(currentSecurity[capability])) {
+                    form.down('fieldset').toggle();
+                }
 
                 // check current selected roles
                 form.getForm().getFields().each(function (field) {
@@ -163,36 +166,6 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
             });
         }
 
-        securityConfigPanel = Ext.create('widget.panel', {
-            itemId: 'securityConfigPanel',
-            items: [
-                {
-                    xtype: 'checkbox',
-                    itemId: 'enableSecurity',
-                    boxLabel: 'Enable Security',
-                    style: 'margin:5px 0px 5px 60px;',
-                    checked: enableSecurity,
-                    listeners: {
-                        change: function (checkBox) {
-                            var win = checkBox.up('selectroleswindow');
-                            var securityPanel = win.down('#securityPanel');
-                            checkboxes = securityPanel.query('checkbox');
-                            if (checkBox.getValue() == true) {
-                                Ext.each(checkboxes, function (checkbox) {
-                                    checkbox.enable();
-                                });
-                            } else {
-                                Ext.each(checkboxes, function (checkbox) {
-                                    checkbox.setValue(false);
-                                    checkbox.disable();
-                                });
-                            }
-                        }
-                    }
-                }
-            ]
-        });
-
         config = Ext.apply({
             layout: 'vbox',
             modal: true,
@@ -202,7 +175,7 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
             height: 600,
             buttonAlign: 'center',
             plain: true,
-            items: securityConfigPanel == null ? panel : [securityConfigPanel, panel],
+            items: panel,
             buttons: [
                 {
                     text: 'Submit',
@@ -212,7 +185,6 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                             var win = button.up('selectroleswindow');
                             var securityPanel = win.down('#securityPanel');
                             var security = null;
-                            var enableSecurity = win.down('#enableSecurity').getValue();
 
                             if (capabilities.length > 0) {
                                 security = {};
@@ -221,7 +193,7 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                                     security[capability] = [];
 
                                     securityPanel.down('#' + capability).getForm().getFields().each(function (field) {
-                                        if (field.getValue()) {
+                                        if (field.getValue() && field.cls != 'x-fieldset-header-checkbox') {
                                             security[capability].push(field.getName());
                                         }
                                     });
@@ -238,7 +210,6 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                             }
 
                             var jsonData = Ext.apply({
-                                enable_security: enableSecurity,
                                 security: security
                             }, baseParams);
 
@@ -252,11 +223,11 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                                     waitMsg.close();
                                     var responseObj = Ext.decode(response.responseText);
 
-                                    if(responseObj.success){
+                                    if (responseObj.success) {
                                         win.fireEvent('success', win, responseObj);
                                         win.close();
                                     }
-                                    else{
+                                    else {
                                         win.fireEvent('failure', win, responseObj);
                                     }
 
