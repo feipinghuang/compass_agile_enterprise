@@ -121,7 +121,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                         window.close();
                                     },
                                     failure: function (form, action) {
-                                        Ext.Msg.alert("Error", "Error creating theme");
+                                        Ext.Msg.alert("Error", "Error creating report");
                                     }
                                 });
                             }
@@ -178,8 +178,32 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                 combo.setValue(pageSize);
                             }
                         }
+                    },
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'Top Margin',
+                        name: 'margin_top',
+                        value: node.data.reportMetaData.print_margin_top || '10'
+                    },
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'Right Margin',
+                        name: 'margin_right',
+                        value: node.data.reportMetaData.print_margin_right || '10'
+                        
+                    },
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'Bottom Margin',
+                        name: 'margin_bottom',
+                        value: node.data.reportMetaData.print_margin_bottom || '10'
+                    },
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'Left Margin',
+                        name: 'margin_left',
+                        value: node.data.reportMetaData.print_margin_left || '10'
                     }
-
                 ],
                 buttons:[
                     {

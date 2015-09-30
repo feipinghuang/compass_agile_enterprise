@@ -34,24 +34,32 @@ module RailsDbAdmin
             }
 
             format.pdf {
+              
               render :pdf => "#{@report.internal_identifier}",
                      :template => 'base.html.erb',
-                     locals:
-                         {
-                             unique_name: @report_iid,
-                             title: @report.name,
-                             columns: data[:columns],
-                             rows: data[:rows],
-                             custom_data: @custom_data
-                         },
+                     :locals =>
+                     {
+                       unique_name: @report_iid,
+                       title: @report.name,
+                       columns: data[:columns],
+                       rows: data[:rows],
+                       custom_data: @custom_data
+                     },
                      :show_as_html => params[:debug].present?,
                      :page_size => @report.meta_data['print_page_size'] || 'A4',
-                     :margin => {:top => 0, :bottom => 15, :left => 10, :right => 10},
+                     :margin => {
+                       :top => (@report.meta_data['print_margin_top'].blank?? 10 : @report.meta_data['print_margin_top'].to_i),
+                       :bottom => (@report.meta_data['print_margin_bottom'].blank?? 10 : @report.meta_data['print_margin_bottom'].to_i),
+                       :left => (@report.meta_data['print_margin_left'].blank?? 10 : @report.meta_data['print_margin_left'].to_i),
+                       :right => (@report.meta_data['print_margin_right'].blank?? 10 : @report.meta_data['print_margin_right'].to_i),
+                       
+                     },
                      :footer => {
                        :right => 'Page [page] of [topage]'
                      }
+              
             }
-
+            
             format.csv {
               csv_data = CSV.generate do |csv|
                 csv << data[:columns]

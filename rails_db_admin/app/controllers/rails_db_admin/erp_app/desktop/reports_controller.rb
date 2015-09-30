@@ -52,11 +52,15 @@ module RailsDbAdmin
 
         def update
           id = params[:id]
-          page_size = params[:page_size]
           report = Report.find(id)
 
           if report
-            report.meta_data['print_page_size'] = page_size
+            report.meta_data['print_page_size'] = params[:page_size].strip
+            report.meta_data['print_margin_top'] = params[:margin_top].strip
+            report.meta_data['print_margin_right'] = params[:margin_right].strip
+            report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip
+            report.meta_data['print_margin_left'] = params[:margin_left].strip
+            
             render :json => {success: report.save}
           else
             render :json => {success: false}

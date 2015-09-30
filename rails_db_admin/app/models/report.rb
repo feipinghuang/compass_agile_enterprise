@@ -25,8 +25,10 @@ class Report < ActiveRecord::Base
       ActiveRecord::Base.transaction do
         name = file.original_filename.to_s.gsub(/(^.*(\\|\/))|(\.zip$)/, '')
         return false unless valid_report?(file)
+        Report.skip_callback(:create, :after, :create_report_files!)
         report = Report.create(:name => name, :internal_identifier => name.underscore)
         report.import(file)
+        Report.set_callback(:create, :after, :create_report_files!)
       end
     end
 
@@ -73,7 +75,23 @@ class Report < ActiveRecord::Base
           entry.get_input_stream { |io| data = io.read }
           self.template = data
           self.save
-          file_support.update_file(self.template_path('base.html.erb'), data)
+          self.add_file(self.template, File.join(self.url, 'templates', "base.html.erb"))
+        elsif entry.name.split('/').last == 'meta_data.yml'
+          data = ''
+          entry.get_input_stream { |io| data = io.read }
+          data = StringIO.new(data) if data.present?
+          report_meta_data = YAML.load(data)
+          self.meta_data['print_page_size'] = report_meta_data['print_page_size'] if report_meta_data['print_page_size']
+          self.meta_data['print_margin_top'] = report_meta_data['print_margin_top'] if report_meta_data['print_margin_top']
+          self.meta_data['print_margin_right'] = report_meta_data['print_margin_right'] if report_meta_data['print_margin_right']
+          self.meta_data['print_margin_bottom'] = report_meta_data['print_margin_bottom'] if report_meta_data['print_margin_bottom']
+          self.meta_data['print_margin_left'] = report_meta_data['print_margin_left'] if report_meta_data['print_margin_left']
+          self.save
+        elsif entry.name.split('/').last == 'query.sql'
+          data = ''
+          entry.get_input_stream { |io| data = io.read }
+          self.query = data
+          self.save          
         else
           if entry.file?
             name = entry.name.sub(/__MACOSX\//, '')
@@ -100,14 +118,19 @@ class Report < ActiveRecord::Base
     (tmp_dir + "#{name}.zip").tap do |file_name|
       file_name.unlink if file_name.exist?
       Zip::ZipFile.open(file_name.to_s, Zip::ZipFile::CREATE) do |zip|
-        files.each { |file|
+        files.each do |file|
           contents = file_support.get_contents(File.join(file_support.root, file.directory, file.name))
           relative_path = file.directory.sub("#{url}", '')
           path = FileUtils.mkdir_p(File.join(tmp_dir, relative_path))
           full_path = File.join(path, file.name)
           File.open(full_path, 'wb+') { |f| f.puts(contents) }
           zip.add(File.join(relative_path[1..relative_path.length], file.name), full_path) if ::File.exists?(full_path)
-        }
+        end
+        ::File.open(tmp_dir + 'query.sql', 'wb+') { |f| f.puts(query) }
+        zip.add('query.sql', tmp_dir + 'query.sql')
+        ::File.open(tmp_dir + 'meta_data.yml', 'wb+') { |f| f.puts(meta_data.to_yaml) }
+        zip.add('meta_data.yml', tmp_dir + 'meta_data.yml')
+
       end
     end
   end
@@ -131,9 +154,10 @@ class Report < ActiveRecord::Base
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
     File.join(file_support.root, self.url, 'javascripts', source)
   end
-
+  
   def create_report_files!
     self.add_file(self.template, File.join(self.url, 'templates', "base.html.erb"))
+    self.add_file(self.default_stylesheet,File.join(self.url, 'stylesheets', "#{self.internal_identifier}.css") )
   end
 
   def delete_report_files!
@@ -143,26 +167,65 @@ class Report < ActiveRecord::Base
 
   def set_default_template
     self.template =
-        "<%= bootstrap_load %>
-<h3><%= title %></h3>
-
+      "<%= bootstrap_load %>
+  <%= report_stylesheet_link_tag '#{self.internal_identifier}','#{self.internal_identifier}.css' %>
+<% unless request.format.symbol == :pdf %>
+  <%= report_download_link(unique_name, :csv, 'Download CSV') %> |
+  <%= report_download_link(unique_name, :pdf, 'Download PDF') %>
+<% end %>
+<h3> <%= title %> </h3>
 <table>
-  <tr>
-  <% columns.each do |column| %>
-    <th><%= column %></th>
-  <% end %>
-  </tr>
+  <thead>
+    <tr>
+    <% columns.each do |column| %>
+      <th> <%= column %> </th>
+    <% end %>
+    </tr>
+  </thead>
   <% rows.each do |row| %>
     <tr>
-    <% row.values.each do |value| %>
-	 <td><%= value %></td>
-    <% end %>
+      <% row.values.each do |value| %>
+            <td> <%= value %> </td>
+      <% end %>
     </tr>
   <% end %>
 </table>
-
-<%= report_download_link(unique_name, :csv, 'Download CSV') %> |
-<%= report_download_link(unique_name, :pdf, 'Download PDF') %>
 <%= jquery_load %>"
   end
+
+  def default_stylesheet
+    "table{
+  width: 100%;
+}
+
+table tr{
+  page-break-inside: avoid !important;
+}
+
+table th{
+  border: 1px solid black;
+  border-collapse:collapse;
+  font-size: 12px;
+  vertical-align:center;
+  text-align: center;
+  background-color: black;
+  color: white;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 15px;
+  padding-right: 15px;
+
+}
+
+table td{
+  border: 1px solid black;
+  border-collapse:collapse;
+  font-size: 10px;
+  vertical-align:top;
+  padding-top: 2px;
+  padding-left: 15px;
+  padding-right: 15px;
+}"
+  end
+
 end
