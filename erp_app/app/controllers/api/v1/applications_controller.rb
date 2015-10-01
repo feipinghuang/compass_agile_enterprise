@@ -11,14 +11,17 @@ module Api
           applications = Application.scope_by_dba(params[:dba_organization_id])
         end
 
-        # scope by type if passed
-        if params[:type].present?
-          if params[:type] == 'tool'
-            applications = applications.tools
+        # scope by types if passed
+        if params[:types].present?
+          types = params[:types].split(',')
 
-          elsif params[:type] == 'app'
-            applications = applications.apps
-
+          # if types length is 1 then we only want tools or apps
+          if types.length == 1
+            if types.first == 'tool'
+              applications = applications.tools
+            elsif types.first == 'app'
+              applications = applications.apps
+            end
           end
         end
 
