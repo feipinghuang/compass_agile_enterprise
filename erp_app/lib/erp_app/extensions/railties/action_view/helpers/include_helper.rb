@@ -22,16 +22,17 @@ module ErpApp
               # only setup user if a current_user is logged in
               if current_user
                 current_user = {
-                    :username => user.username,
-                    :lastloginAt => user.last_login_at,
-                    :lastActivityAt => user.last_activity_at,
-                    :failedLoginCount => user.failed_logins_count,
-                    :email => user.email,
-                    :roles => user.all_roles.collect { |role| role.internal_identifier },
-                    :capabilities => user.class_capabilities_to_hash,
-                    :id => user.id,
-                    :partyId => user.party.id,
-                    :description => user.party.to_s
+                    username: user.username,
+                    lastloginAt: user.last_login_at,
+                    lastActivityAt: user.last_activity_at,
+                    failedLoginCount: user.failed_logins_count,
+                    email: user.email,
+                    roles: user.all_roles.collect { |role| role.internal_identifier },
+                    capabilities: user.class_capabilities_to_hash,
+                    id: user.id,
+                    partyId: user.party.id,
+                    dbaOrganizationId: user.party.dba_organization.id,
+                    description: user.party.to_s
                 }
                 js_string = javascript_include_tag('erp_app/authentication/compass_user.js')
                 js_string << (raw "<script type='text/javascript'>var currentUser = new ErpApp.CompassAccessNegotiator.CompassUser(#{current_user.to_json});</script>")
@@ -78,7 +79,7 @@ module ErpApp
 
                       # add the root apps shared assets if they exist
                       if File.exists? File.join(Rails.root, 'app/assets/javascripts/erp_app/shared/app.js')
-                        sources +=  javascript_include_tag('erp_app/shared/app.js')
+                        sources += javascript_include_tag('erp_app/shared/app.js')
                       end
 
                       sources

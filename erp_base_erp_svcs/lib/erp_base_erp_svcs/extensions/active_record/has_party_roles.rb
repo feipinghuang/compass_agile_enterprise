@@ -34,6 +34,17 @@ module ErpBaseErpSvcs
                                    entity_record: self)
           end
 
+          def remove_party_with_role(party, role_type)
+            entity_party_role = EntityPartyRole.where(party_id: party,
+                                                      role_type_id: role_type,
+                                                      entity_record_id: self.id,
+                                                      entity_record_type: self.class.name).first
+
+            if entity_party_role
+              entity_party_role.destroy
+            end
+          end
+
           def find_parties_by_role(role_type)
             if role_type.is_a?(String)
               role_type = RoleType.iid(role_type)

@@ -7,6 +7,8 @@ class Party < ActiveRecord::Base
   has_many :created_notes, :class_name => 'Note', :foreign_key => 'created_by_id'
   belongs_to :business_party, :polymorphic => true
 
+  has_many :entity_party_roles, dependent: :destroy
+
   has_many :party_roles, :dependent => :destroy #role_types
   has_many :role_types, :through => :party_roles
 

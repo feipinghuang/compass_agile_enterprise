@@ -33,7 +33,7 @@ class Application < ActiveRecord::Base
       iid_test = iid
       iid_counter = 1
       while iid_exists
-        if Application.where(:internal_identifier => iid_test).first
+        if Application.where(internal_identifier: iid_test).first
           iid_test = "#{iid}_#{iid_counter}"
           iid_counter += 1
         else
@@ -71,7 +71,8 @@ class Application < ActiveRecord::Base
     def scope_by_party(party, options={})
       table_alias = String.random
 
-      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = applications.id")
+      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = applications.id
+                         and \"#{table_alias}\".entity_record_type = 'Application'")
                       .where("#{table_alias}.party_id" => party).uniq
 
       if options[:role_types]

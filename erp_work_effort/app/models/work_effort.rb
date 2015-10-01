@@ -130,7 +130,8 @@ class WorkEffort < ActiveRecord::Base
     def scope_by_party(party, options={})
       table_alias = String.random
 
-      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = work_efforts.id")
+      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = work_efforts.id
+                         and \"#{table_alias}\".entity_record_type = 'WorkEffort'")
                       .where("#{table_alias}.party_id" => party).uniq
 
       if options[:role_types]
