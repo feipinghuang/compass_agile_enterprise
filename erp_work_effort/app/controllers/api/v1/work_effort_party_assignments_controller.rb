@@ -2,6 +2,26 @@ module Api
   module V1
     class WorkEffortPartyAssignmentsController < BaseController
 
+=begin
+
+ @api {get} /api/v1/work_effort_party_assignments Index
+ @apiVersion 1.0.0
+ @apiName GetWorkEffortPartyAssignments
+ @apiGroup WorkEffortPartyAssignment
+
+ @apiParam {Number} [project_id] Project ID to scope by
+ @apiParam {Number} [work_effort_id] WorkEffort ID to scope by
+
+ @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess {Number} total_count Total count of records
+ @apiSuccess {Array} work_effort_party_assignments List of WorkEffortPartyAssignments
+ @apiSuccess {Number} work_effort_party_assignments.id Id of WorkEffortPartyAssignment
+ @apiSuccess {Decimal} work_effort_party_assignments.resource_allocation Allocation of resource
+ @apiSuccess {Object} work_effort_party_assignments.work_effort WorkEffort allocated for
+ @apiSuccess {Object} work_effort_party_assignments.party Party allocated
+
+=end
+
       def index
         limit = params[:limit] || 25
         start = params[:start] || 0
@@ -35,13 +55,33 @@ module Api
                }
       end
 
+=begin
+
+ @api {post} /api/v1/work_effort_party_assignments Create
+ @apiVersion 1.0.0
+ @apiName CreateWorkEffortPartyAssignments
+ @apiGroup WorkEffortPartyAssignment
+
+ @apiParam {Number} party_id ID of Party
+ @apiParam {Number} work_effort_id ID of WorkEffort
+ @apiParam {Decimal} resource_allocation Allocation percentage
+
+ @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess {Array} work_effort_party_assignment WorkEffortPartyAssignment
+ @apiSuccess {Number} work_effort_party_assignment.id Id of WorkEffortPartyAssignment
+ @apiSuccess {Decimal} work_effort_party_assignment.resource_allocation Allocation of resource
+ @apiSuccess {Object} work_effort_party_assignment.work_effort WorkEffort allocated for
+ @apiSuccess {Object} work_effort_party_assignment.party Party allocated
+
+=end
+
       def create
         begin
           ActiveRecord::Base.connection.transaction do
 
             work_effort_party_assignment = WorkEffortPartyAssignment.new
-            work_effort_party_assignment.party_id = params['party.id']
-            work_effort_party_assignment.work_effort_id = params['work_effort.id']
+            work_effort_party_assignment.party_id = params['party.id'] || params[:party_id]
+            work_effort_party_assignment.work_effort_id = params['work_effort.id'] || params[:work_effort_id]
             work_effort_party_assignment.role_type = RoleType.iid('work_resource')
             work_effort_party_assignment.resource_allocation = params[:resource_allocation]
             work_effort_party_assignment.save!
@@ -77,14 +117,34 @@ module Api
         end
       end
 
+=begin
+
+ @api {put} /api/v1/work_effort_party_assignments/:id Update
+ @apiVersion 1.0.0
+ @apiName UpdateWorkEffortPartyAssignments
+ @apiGroup WorkEffortPartyAssignment
+
+ @apiParam {Number} party_id ID of Party
+ @apiParam {Number} work_effort_id ID of WorkEffort
+ @apiParam {Decimal} resource_allocation Allocation percentage
+
+ @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess {Array} work_effort_party_assignment WorkEffortPartyAssignment
+ @apiSuccess {Number} work_effort_party_assignment.id Id of WorkEffortPartyAssignment
+ @apiSuccess {Decimal} work_effort_party_assignment.resource_allocation Allocation of resource
+ @apiSuccess {Object} work_effort_party_assignment.work_effort WorkEffort allocated for
+ @apiSuccess {Object} work_effort_party_assignment.party Party allocated
+
+=end
+
       def update
 
         begin
           ActiveRecord::Base.connection.transaction do
 
             work_effort_party_assignment = WorkEffortPartyAssignment.find(params[:id])
-            work_effort_party_assignment.party_id = params['party.id']
-            work_effort_party_assignment.work_effort_id = params['work_effort.id']
+            work_effort_party_assignment.party_id = params['party.id'] || params[:party_id]
+            work_effort_party_assignment.work_effort_id = params['work_effort.id'] || params[:work_effort_id]
             work_effort_party_assignment.role_type = RoleType.iid('work_resource')
             work_effort_party_assignment.resource_allocation = params[:resource_allocation]
 
@@ -106,6 +166,17 @@ module Api
         end
 
       end
+
+=begin
+
+ @api {delete} /api/v1/work_effort_party_assignments/:id Delete
+ @apiVersion 1.0.0
+ @apiName DeleteWorkEffortPartyAssignments
+ @apiGroup WorkEffortPartyAssignment
+
+ @apiSuccess {Boolean} success True if the request was successful
+
+=end
 
       def destroy
 

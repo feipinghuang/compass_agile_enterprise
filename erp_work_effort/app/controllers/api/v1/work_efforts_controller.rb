@@ -2,6 +2,37 @@ module Api
   module V1
     class WorkEffortsController < BaseController
 
+=begin
+
+ @api {get} /api/v1/work_efforts Index
+ @apiVersion 1.0.0
+ @apiName GetWorkEfforts
+ @apiGroup WorkEffort
+
+ @apiParam {Number} [project_id] Project ID to scope by
+ @apiParam {String} [status] Comma separated list of TrackedStatusType internal identifiers to scope by
+ @apiParam {String} [parties] JSON encoded object containing comma separated separated party ids and role types to scope by
+
+ @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess {Array} work_efforts List of WorkEfforts
+ @apiSuccess {Number} work_efforts.id Id of WorkEffort
+ @apiSuccess {Boolean} work_efforts.leaf true If this WorkEffort is a leaf
+ @apiSuccess {Number} work_efforts.parent_id Parent ID of WorkEffort
+ @apiSuccess {String} work_efforts.description Description of WorkEffort
+ @apiSuccess {DateTime} work_efforts.start_at Start At of WorkEffort
+ @apiSuccess {DateTime} work_efforts.end_at End At of WorkEffort
+ @apiSuccess {Decimal} work_efforts.percent_done Percent done of WorkEffort
+ @apiSuccess {Number} work_efforts.duration Duration of WorkEffort
+ @apiSuccess {String} work_efforts.duration_unit Duration Unit of WorkEffort
+ @apiSuccess {Number} work_efforts.effort Effort of WorkEffort
+ @apiSuccess {String} work_efforts.effort_unit Effort Unit of WorkEffort
+ @apiSuccess {String} work_efforts.comments Comments on WorkEffort
+ @apiSuccess {Number} work_efforts.sequence Sequence of WorkEffort
+ @apiSuccess {DateTime} work_efforts.created_at When the WorkEffort was created
+ @apiSuccess {DateTime} work_efforts.updated_at When the WorkEffort was updated
+
+=end
+
       def index
 
         work_efforts = WorkEffort.where("work_efforts.parent_id is null")
@@ -36,6 +67,33 @@ module Api
 
       end
 
+=begin
+
+ @api {get} /api/v1/work_efforts/:id Show
+ @apiVersion 1.0.0
+ @apiName GetWorkEffort
+ @apiGroup WorkEffort
+
+ @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess {Object} work_effort Work Effort record
+ @apiSuccess {Number} work_effort.id Id of WorkEffort
+ @apiSuccess {Boolean} work_effort.leaf true If this WorkEffort is a leaf
+ @apiSuccess {Number} work_effort.parent_id Parent ID of WorkEffort
+ @apiSuccess {String} work_effort.description Description of WorkEffort
+ @apiSuccess {DateTime} work_effort.start_at Start At of WorkEffort
+ @apiSuccess {DateTime} work_effort.end_at End At of WorkEffort
+ @apiSuccess {Decimal} work_effort.percent_done Percent done of WorkEffort
+ @apiSuccess {Number} work_effort.duration Duration of WorkEffort
+ @apiSuccess {String} work_effort.duration_unit Duration Unit of WorkEffort
+ @apiSuccess {Number} work_effort.effort Effort of WorkEffort
+ @apiSuccess {String} work_effort.effort_unit Effort Unit of WorkEffort
+ @apiSuccess {String} work_effort.comments Comments on WorkEffort
+ @apiSuccess {Number} work_effort.sequence Sequence of WorkEffort
+ @apiSuccess {DateTime} work_effort.created_at When the WorkEffort was created
+ @apiSuccess {DateTime} work_effort.updated_at When the WorkEffort was updated
+
+=end
+
       def show
         work_effort = WorkEffort.find(params[:id])
 
@@ -51,6 +109,47 @@ module Api
           end
         end
       end
+
+=begin
+
+  @api {post} /api/v1/work_efforts Create
+  @apiVersion 1.0.0
+  @apiName CreateWorkEffort
+  @apiGroup WorkEffort
+
+  @apiParam {Number} [project_id] ID of Project to create WorkEfforts under
+  @apiParam {Array} work_efforts Array of WorkEfforts to update
+  @apiParam {String} work_efforts.description Description of WorkEffort
+  @apiParam {DateTime} [work_efforts.start_at] Start At of WorkEffort
+  @apiParam {DateTime} [work_efforts.end_at] End At of WorkEffort
+  @apiParam {Decimal} [work_efforts.percent_done] Percent done of WorkEffort
+  @apiParam {Number} [work_efforts.duration] Duration of WorkEffort
+  @apiParam {String} [work_efforts.duration_unit] Duration Unit of WorkEffort
+  @apiParam {Number} [work_efforts.effort] Effort of WorkEffort
+  @apiParam {String} [work_efforts.effort_unit] Effort Unit of WorkEffort
+  @apiParam {String} [work_efforts.comments] Comments on WorkEffort
+  @apiParam {Number} [work_efforts.sequence] Sequence of WorkEffort
+  @apiParam {Number} [work_efforts.parent_id ID] of Parent WorkEffort to put the newly created WorkEfforts under
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} work_efforts Array of created WorkEfforts
+  @apiSuccess {Number} work_efforts.id Id of WorkEffort
+  @apiSuccess {Boolean} work_efforts.leaf true If this WorkEffort is a leaf
+  @apiSuccess {Number} work_efforts.parent_id Parent ID of WorkEffort
+  @apiSuccess {String} work_efforts.description Description of WorkEffort
+  @apiSuccess {DateTime} work_efforts.start_at Start At of WorkEffort
+  @apiSuccess {DateTime} work_efforts.end_at End At of WorkEffort
+  @apiSuccess {Decimal} work_efforts.percent_done Percent done of WorkEffort
+  @apiSuccess {Number} work_efforts.duration Duration of WorkEffort
+  @apiSuccess {String} work_efforts.duration_unit Duration Unit of WorkEffort
+  @apiSuccess {Number} work_efforts.effort Effort of WorkEffort
+  @apiSuccess {String} work_efforts.effort_unit Effort Unit of WorkEffort
+  @apiSuccess {String} work_efforts.comments Comments on WorkEffort
+  @apiSuccess {Number} work_efforts.sequence Sequence of WorkEffort
+  @apiSuccess {DateTime} work_efforts.created_at When the WorkEffort was created
+  @apiSuccess {DateTime} work_efforts.updated_at When the WorkEffort was updated
+
+=end
 
       def create
         begin
@@ -82,6 +181,47 @@ module Api
         end
       end
 
+=begin
+
+  @api {put} /api/v1/work_efforts/:id Update
+  @apiVersion 1.0.0
+  @apiName UpdateWorkEffort
+  @apiGroup WorkEffort
+
+  @apiParam {Number} [project_id] ID of Project to put WorkEfforts under
+  @apiParam {Array} work_efforts Array of WorkEfforts to create
+  @apiParam {String} [work_efforts.description] Description of WorkEffort
+  @apiParam {DateTime} [work_efforts.start_at] Start At of WorkEffort
+  @apiParam {DateTime} [work_efforts.end_at] End At of WorkEffort
+  @apiParam {Decimal} [work_efforts.percent_done] Percent done of WorkEffort
+  @apiParam {Number} [work_efforts.duration] Duration of WorkEffort
+  @apiParam {String} [work_efforts.duration_unit] Duration Unit of WorkEffort
+  @apiParam {Number} [work_efforts.effort] Effort of WorkEffort
+  @apiParam {String} [work_efforts.effort_unit] Effort Unit of WorkEffort
+  @apiParam {String} [work_efforts.comments] Comments on WorkEffort
+  @apiParam {Number} [work_efforts.sequence] Sequence of WorkEffort
+  @apiParam {Number} [work_efforts.parent_id ID] of Parent WorkEffort to put the updated WorkEfforts under
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} work_efforts Array of created WorkEfforts
+  @apiSuccess {Number} work_efforts.id Id of WorkEffort
+  @apiSuccess {Boolean} work_efforts.leaf true If this WorkEffort is a leaf
+  @apiSuccess {Number} work_efforts.parent_id Parent ID of WorkEffort
+  @apiSuccess {String} work_efforts.description Description of WorkEffort
+  @apiSuccess {DateTime} work_efforts.start_at Start At of WorkEffort
+  @apiSuccess {DateTime} work_efforts.end_at End At of WorkEffort
+  @apiSuccess {Decimal} work_efforts.percent_done Percent done of WorkEffort
+  @apiSuccess {Number} work_efforts.duration Duration of WorkEffort
+  @apiSuccess {String} work_efforts.duration_unit Duration Unit of WorkEffort
+  @apiSuccess {Number} work_efforts.effort Effort of WorkEffort
+  @apiSuccess {String} work_efforts.effort_unit Effort Unit of WorkEffort
+  @apiSuccess {String} work_efforts.comments Comments on WorkEffort
+  @apiSuccess {Number} work_efforts.sequence Sequence of WorkEffort
+  @apiSuccess {DateTime} work_efforts.created_at When the WorkEffort was created
+  @apiSuccess {DateTime} work_efforts.updated_at When the WorkEffort was updated
+
+=end
+
       def update
         begin
           ActiveRecord::Base.connection.transaction do
@@ -111,6 +251,17 @@ module Api
           render json: {success: false, message: 'Error updating Work Effort'}
         end
       end
+
+=begin
+
+  @api {delete} /api/v1/work_efforts/:id Delete
+  @apiVersion 1.0.0
+  @apiName DeleteWorkEffort
+  @apiGroup WorkEffort
+
+  @apiSuccess {Boolean} success True if the request was successful
+
+=end
 
       def destroy
         work_effort = WorkEffort.find(params[:id])
