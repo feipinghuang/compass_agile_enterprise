@@ -29,6 +29,7 @@ ErpApp.CompassAccessNegotiator.CompassUser = function (user) {
     this.email = user.email;
     this.description = user.description;
     this.partyId = user.partyId;
+    this.dbaOrganizationId = user.dbaOrganizationId;
 
     /**
      * Checks to see if the passed roles exists in this.roles

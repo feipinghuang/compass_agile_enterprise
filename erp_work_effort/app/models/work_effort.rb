@@ -65,7 +65,11 @@ class WorkEffort < ActiveRecord::Base
 
   ## How is this Work Effort is assigned
   has_many :work_effort_party_assignments, :dependent => :destroy
-  has_many :parties, :through => :work_effort_party_assignments
+  has_many :parties, :through => :work_effort_party_assignments do
+    def work_resources
+      where('work_effort_party_assignments.role_type_id' => RoleType.iid('work_resource'))
+    end
+  end
 
   ## What Inventory Items are used in the execution of this Work Effort
   has_many :work_effort_inventory_assignments, :dependent => :destroy
@@ -85,6 +89,8 @@ class WorkEffort < ActiveRecord::Base
   belongs_to :projected_cost, :class_name => 'Money', :foreign_key => 'projected_cost_money_id'
   belongs_to :actual_cost, :class_name => 'Money', :foreign_key => 'actual_cost_money_id'
   belongs_to :facility
+
+  has_many :time_entries
 
   class << self
 
@@ -124,7 +130,8 @@ class WorkEffort < ActiveRecord::Base
     def scope_by_party(party, options={})
       table_alias = String.random
 
-      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = work_efforts.id")
+      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = work_efforts.id
+                         and \"#{table_alias}\".entity_record_type = 'WorkEffort'")
                       .where("#{table_alias}.party_id" => party).uniq
 
       if options[:role_types]
@@ -245,6 +252,17 @@ class WorkEffort < ActiveRecord::Base
     self.finished_at = Time.now
     self.actual_completion_time = time_diff_in_minutes(self.finished_at.to_time, self.started_at.to_time)
     self.save
+  end
+
+  # get total hours for this WorkEffort by TimeEntries
+  #
+  def total_hours_in_seconds
+    time_entries.sum(:regular_hours_in_seconds)
+  end
+
+  # get total hours for this WorkEffort by TimeEntries
+  def total_hours
+    time_entries.all.sum{|time_entry| time_entry.hours }
   end
 
   # converts this record a hash data representation

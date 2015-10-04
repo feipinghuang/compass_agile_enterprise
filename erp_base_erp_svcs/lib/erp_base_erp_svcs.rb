@@ -3,6 +3,7 @@ require "erp_base_erp_svcs/extensions"
 require "erp_base_erp_svcs/ar_fixtures"
 require "erp_base_erp_svcs/config"
 require "erp_base_erp_svcs/non_escape_json_string"
+require "erp_base_erp_svcs/time_zone_helper"
 
 module ErpBaseErpSvcs
   class << self

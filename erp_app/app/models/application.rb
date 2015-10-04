@@ -33,7 +33,7 @@ class Application < ActiveRecord::Base
       iid_test = iid
       iid_counter = 1
       while iid_exists
-        if Application.where(:internal_identifier => iid_test).first
+        if Application.where(internal_identifier: iid_test).first
           iid_test = "#{iid}_#{iid_counter}"
           iid_counter += 1
         else
@@ -49,12 +49,37 @@ class Application < ActiveRecord::Base
       where('type is null')
     end
 
-    def associated_to_party(party, role_type)
-      entity_party_roles_tbl = EntityPartyRole.arel_table
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      scope_by_party(dba_organization, {role_types: [RoleType.iid('dba_org')]})
+    end
 
-      joins("left outer join entity_party_roles on entity_party_roles.entity_record_type = 'Application'
-             and entity_party_roles.entity_record_id = applications.id")
-          .where(entity_party_roles_tbl[:party_id].eq(party.id).and(entity_party_roles_tbl[:role_type_id].eq(role_type.id)))
+    alias scope_by_dba scope_by_dba_organization
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      table_alias = String.random
+
+      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = applications.id
+                         and \"#{table_alias}\".entity_record_type = 'Application'")
+                      .where("#{table_alias}.party_id" => party).uniq
+
+      if options[:role_types]
+        statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
+      end
+
+      statement
     end
 
     def allows_business_modules
@@ -64,6 +89,7 @@ class Application < ActiveRecord::Base
     def desktop_applications
       where('type = ?', 'DesktopApplication')
     end
+    alias tools desktop_applications
   end
 
   def to_data_hash

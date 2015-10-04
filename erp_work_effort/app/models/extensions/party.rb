@@ -6,6 +6,23 @@ Party.class_eval do
   has_many :wc_codes, dependent: :destroy
   has_many :shifts, dependent: :destroy
   has_many :resumes
+  has_many :timesheet_party_roles, dependent: :destroy
+  has_many :timesheets, through: :timesheet_party_roles do
+    def current!(role_type)
+      party = proxy_association.owner
+
+      Timesheet.current!(party, role_type)
+    end
+  end
+  has_many :time_entries, through: :timesheets do
+    def open
+      where('thru_datetime is null')
+    end
+
+    def scope_by_work_effort(work_effort)
+      where('work_effort_id' => work_effort.id)
+    end
+  end
 
   #
   # scoping helpers

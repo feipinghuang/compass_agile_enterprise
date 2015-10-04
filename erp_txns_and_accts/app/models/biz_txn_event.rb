@@ -43,6 +43,8 @@ class BizTxnEvent < ActiveRecord::Base
   alias :account= :biz_txn_acct_root=
   alias :descriptions :biz_txn_event_descs
 
+  has_tracked_status
+
   class << self
     #
     # scoping helpers

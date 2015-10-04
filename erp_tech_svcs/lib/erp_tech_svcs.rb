@@ -5,7 +5,7 @@ require 'delayed_job'
 require 'delayed_job_active_record'
 require 'mail_alternatives_with_attachments'
 require 'sorcery'
-require 'pdfkit'
+require 'wicked_pdf'
 require 'aws-sdk'
 require 'nested-hstore'
 require "erp_tech_svcs/version"

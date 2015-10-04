@@ -48,7 +48,7 @@ ActionView::Base.class_eval do
     end
     
     def add_authenticity_token_to_extjs
-      raw "<script type='text/javascript'>Ext.ns('Compass.ErpApp'); Ext.Ajax.extraParams = { authenticity_token: '#{form_authenticity_token}' }; Compass.ErpApp.AuthentictyToken = '#{form_authenticity_token}';</script>"
+      raw "<script type='text/javascript'>Ext.ns('Compass.ErpApp'); Ext.Ajax.extraParams = { client_utc_offset: new Date().getTimezoneOffset(),authenticity_token: '#{form_authenticity_token}' }; Compass.ErpApp.AuthentictyToken = '#{form_authenticity_token}';</script>"
     end
     
     def create_authenticity_token_sencha_touch_field

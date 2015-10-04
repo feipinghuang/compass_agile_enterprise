@@ -84,7 +84,6 @@ class Invoice < ActiveRecord::Base
         invoice.message = options[:message]
         invoice.invoice_date = options[:invoice_date]
         invoice.due_date = options[:due_date]
-        invoice.due_date = options[:due_date]
 
         invoice.save
 
