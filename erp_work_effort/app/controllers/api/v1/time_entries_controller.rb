@@ -2,6 +2,34 @@ module Api
   module V1
     class TimeEntriesController < BaseController
 
+=begin
+
+  @api {post} /api/v1/time_entries Create
+  @apiVersion 1.0.0
+  @apiName CreateTimeEntry
+  @apiGroup TimeEntry
+
+  @apiParam {Number} regular_hours_in_seconds Regular hours in seconds for this TimeEntry
+  @apiParam {Number} [overtime_hours_in_seconds] Overtime hours in seconds for this TimeEntry
+  @apiParam {DateTime} [from_datetime] From DateTime for this TimeEntry
+  @apiParam {DateTime} [thru_datetime] Thru DateTime for this TimeEntry
+  @apiParam {String} [comment] Comment for this Time Entry
+  @apiParam {Number} [work_effort_id] ID of WorkEffort for this TimeEntry
+  @apiParam {Number} [timesheet_id] ID of Timesheet to associate this TimeEntry to
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} time_entry TimeEntry
+  @apiSuccess {Number} time_entry.id Id of TimeEntry
+  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
+  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
+  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+
+=end
+
       def create
         begin
           ActiveRecord::Base.connection.transaction do
@@ -35,7 +63,7 @@ module Api
               time_entry.work_effort = params[:work_effort_id]
             end
 
-            # if a timesheet id is passed assoicate to that timesheet if not associate to
+            # if a timesheet id is passed associate to that timesheet if not associate to
             # the current user's timesheet
             if params[:timesheet_id]
               time_entry.timesheet_id = params[:timesheet_id]
@@ -63,6 +91,32 @@ module Api
           render json: {success: false, message: 'Error creating Time Entry'}
         end
       end
+
+=begin
+
+  @api {post} /api/v1/time_entries/:id Update
+  @apiVersion 1.0.0
+  @apiName UpdateTimeEntry
+  @apiGroup TimeEntry
+
+  @apiParam {Number} [regular_hours_in_seconds] Regular hours in seconds for this TimeEntry
+  @apiParam {Number} [overtime_hours_in_seconds] Overtime hours in seconds for this TimeEntry
+  @apiParam {DateTime} [from_datetime] From DateTime for this TimeEntry
+  @apiParam {DateTime} [thru_datetime] Thru DateTime for this TimeEntry
+  @apiParam {String} [comment] Comment for this Time Entry
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} time_entry TimeEntry
+  @apiSuccess {Number} time_entry.id Id of TimeEntry
+  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
+  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
+  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+
+=end
 
       def update
         begin
@@ -113,17 +167,60 @@ module Api
         end
       end
 
+=begin
+
+  @api {post} /api/v1/time_entries/:id Show
+  @apiVersion 1.0.0
+  @apiName ShowTimeEntry
+  @apiGroup TimeEntry
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} time_entry TimeEntry
+  @apiSuccess {Number} time_entry.id Id of TimeEntry
+  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
+  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
+  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+
+=end
+
       def show
         time_entry = TimeEntry.find(params[:id])
 
         render :json => {success: true, time_entry: time_entry.to_data_hash}
       end
 
-      # start TimeEntry by setting the from_datetime but not the thru_datetime
-      # if there is already an open time_entry do not let another one be started
-      # It is assumed that a TimeEntry is always logged against a work effort so
-      # a WorkEffort id should be passed.
-      #
+=begin
+
+  @api {post} /api/v1/time_entries Start
+  @apiVersion 1.0.0
+  @apiName StartTimeEntry
+  @apiGroup TimeEntry
+
+  @apiDescription Starts TimeEntry by setting the from_datetime to the current time.
+  if there is already an open time_entry set its thru_datetime to the current time and
+  create a new Time Entry.  It is assumed that a TimeEntry is always logged against a WorkEffort so
+  a WorkEffort ID should be passed.
+
+  @apiParam {Number} work_effort_id ID of WorkEffort to start the TimeEntry for
+  @apiParam {String} [comment] Comment for this Time Entry
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} time_entry TimeEntry
+  @apiSuccess {Number} time_entry.id Id of TimeEntry
+  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
+  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
+  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+
+=end
+
       def start
         begin
           ActiveRecord::Base.connection.transaction do
@@ -143,7 +240,8 @@ module Api
             end
 
             time_entry = TimeEntry.create(
-                from_datetime: Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+                from_datetime: Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc,
+                comment: params[:comment].blank? ? nil : params[:comment].stripparams[:comment].strip
             )
 
             time_entry.work_effort = work_effort
@@ -171,18 +269,45 @@ module Api
         end
       end
 
-      # stop TimeEntry by setting the thru_datetime and calculating the hours in seconds
-      # it returns the TimeEntry record as well as formatted totals for the day and week
-      #
+=begin
+
+  @api {put} /api/v1/time_entries/:id/stop Stop
+  @apiVersion 1.0.0
+  @apiName StopTimeEntry
+  @apiGroup TimeEntry
+
+  @apiDescription Stop TimeEntry by setting the thru_datetime and calculating the hours in seconds
+  it returns the TimeEntry record as well as formatted totals for the day and week
+
+  @apiParam {Number} work_effort_id ID of WorkEffort that this TimeEntry is associated to
+  @apiParam {DateTime} end_date When this TimeEntry Stopped
+  @apiParam {String} [comment] Comment for this Time Entry
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} time_entry TimeEntry
+  @apiSuccess {Number} time_entry.id Id of TimeEntry
+  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
+  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
+  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+  @apiSuccess {String} day_total_formatted Formatted day total as 00:00:00
+  @apiSuccess {String} week_total_formatted Formatted week total as 00:00:00
+
+=end
+
       def stop
         begin
           ActiveRecord::Base.connection.transaction do
             party = current_user.party
-            work_effort = WorkEffort.find(params[:work_effort_id])
+
             time_entry = TimeEntry.find(params[:id])
+            work_effort = WorkEffort.find(params[:work_effort_id])
 
             time_entry.thru_datetime = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
-            time_entry.comment = params[:comment].strip
+            time_entry.comment = params[:comment].blank? ? nil : params[:comment].strip
 
             time_entry.calculate_regular_hours_in_seconds!
 
@@ -220,9 +345,32 @@ module Api
         end
       end
 
-      # if a work effort id is passed get the last open time_entry for that work_effort
-      # for the current user if there are no open time entries then return only the totals
-      #
+=begin
+
+  @api {get} /api/v1/time_entries/open Open
+  @apiVersion 1.0.0
+  @apiName OpenTimeEntry
+  @apiGroup TimeEntry
+
+  @apiDescription If a work effort id is passed get the last open time_entry for that work_effort
+  for the current user if there are no open time entries then return only the totals
+
+  @apiParam {Number} client_utc_offset Offset of Client
+  @apiParam {Number} [work_effort_id] ID of WorkEffort
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} time_entries Array of open TimeEntries
+  @apiSuccess {Number} time_entries.id Id of TimeEntry
+  @apiSuccess {String} time_entries.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess {String} time_entries.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess {String} time_entries.comment Comment for this TimeEntry
+  @apiSuccess {DateTime} time_entries.from_datetime From DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entries.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess {DateTime} time_entries.created_at When the TimeEntry was created
+  @apiSuccess {DateTime} time_entries.updated_at When the TimeEntry was updated
+
+=end
+
       def open
         if params[:work_effort_id]
           work_effort = WorkEffort.find(params[:work_effort_id])
@@ -247,10 +395,30 @@ module Api
         end
       end
 
-      # returns totals for time entries.  If a work effort id is passed it will get totals for the
-      # passed work effort.  If no work effort id is passed it will get totals for the current user
-      # passed on their timesheet
-      #
+=begin
+
+  @api {get} /api/v1/time_entries/totals Totals
+  @apiVersion 1.0.0
+  @apiName TotalsTimeEntry
+  @apiGroup TimeEntry
+
+  @apiDescription Returns totals for time entries.  If a work effort id is passed it will get totals for the
+  passed work effort.  If no work effort id is passed it will get totals for the current user
+  passed on their timesheet
+
+  @apiParam {Number} client_utc_offset Offset of Client
+  @apiParam {Number} [work_effort_id] ID of WorkEffort
+  @apiParam {Number} [party_id] ID of Party
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Number} day_total_seconds Day total in seconds
+  @apiSuccess {Number} week_total_seconds Week total in seconds
+  @apiSuccess {String} day_total_formatted Day total formatted as 00:00:00
+  @apiSuccess {String} week_total_formatted Week total formatted as 00:00:00
+  @apiSuccess {String} total_formatted Total formatted as 00:00:00
+
+=end
+
       def totals
         result = {
             success: true,
