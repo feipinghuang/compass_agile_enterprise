@@ -146,7 +146,7 @@ class WorkEffort < ActiveRecord::Base
 
     if current_status.nil?
       effort.current_status = initial_status
-      effort.started_at = DateTime.now
+      effort.start_at = DateTime.now
       effort.save
     else
       raise 'Effort Already Started'
@@ -158,8 +158,8 @@ class WorkEffort < ActiveRecord::Base
   end
 
   def complete
-    self.finished_at = Time.now
-    self.actual_completion_time = time_diff_in_minutes(self.finished_at.to_time, self.started_at.to_time)
+    self.end_at = Time.now
+    self.actual_completion_time = time_diff_in_minutes(self.end_at.to_time, self.start_at.to_time)
     self.save
   end
 
