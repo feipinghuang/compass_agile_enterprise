@@ -302,8 +302,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
     editQuery: function (reportObj) {
         var self = this;
-        var centerRegion = self.container;
-        var itemId = Compass.ErpApp.Utility.Encryption.MD5(reportObj.id);
+        var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
+        var itemId = Compass.ErpApp.Utility.Encryption.MD5(reportObj.internalIdentifier);
         var item = centerRegion.getComponent(itemId);
 
         if (Compass.ErpApp.Utility.isBlank(item)) {
@@ -368,20 +368,24 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
             success: function (responseObject) {
                 var response = Ext.decode(responseObject.responseText);
                 var query = response.query;
-
                 var queryPanel = null;
 
                 if (response.success) {
+                    var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
+                    var itemId = Compass.ErpApp.Utility.Encryption.MD5(queryName);
+                    var item = centerRegion.getComponent(itemId);
                     self.clearWindowStatus();
-
-                    queryPanel = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
-                        module: self,
-                        closable: true,
-                        sqlQuery: query
-                    });
-
-                    self.container.add(queryPanel);
-                    self.container.setActiveTab(self.container.items.length - 1);
+                    if (Compass.ErpApp.Utility.isBlank(item)) {
+                        var item = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
+                            module: self,
+                            closable: true,
+                            sqlQuery: query,
+                            title: queryName,
+                            itemId: itemId
+                        });
+                        centerRegion.add(item);
+                    }
+                    centerRegion.setActiveTab(item);
                 }
                 else {
                     Ext.Msg.alert('Error', response.exception);

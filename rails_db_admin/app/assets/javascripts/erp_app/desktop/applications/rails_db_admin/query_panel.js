@@ -101,25 +101,48 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                     var textarea = self.query('.codemirror')[0];
                     var sql = textarea.getValue();
 
-                    var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
-                    Ext.Ajax.request({
-                        url: '/rails_db_admin/erp_app/desktop/reports/save_query',
-                        params: {
-                            id: self.initialConfig.reportId,
-                            query: sql
-                        },
-                        success: function (responseObject) {
-                            waitMsg.close();
-                            var obj = Ext.decode(responseObject.responseText);
-                            if (!obj.success) {
+                    if(self.initialConfig.reportId){
+                        var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
+                        Ext.Ajax.request({
+                            url: '/rails_db_admin/erp_app/desktop/reports/save_query',
+                            params: {
+                                id: self.initialConfig.reportId,
+                                query: sql
+                            },
+                            success: function (responseObject) {
+                                waitMsg.close();
+                                var obj = Ext.decode(responseObject.responseText);
+                                if (!obj.success) {
+                                    Ext.Msg.alert('Status', 'Error saving report');
+                                }
+                            },
+                            failure: function () {
+                                waitMsg.close();
                                 Ext.Msg.alert('Status', 'Error saving report');
                             }
-                        },
-                        failure: function () {
-                            waitMsg.close();
-                            Ext.Msg.alert('Status', 'Error saving report');
-                        }
-                    });
+                        });
+                    }
+                    else{
+                        var waitMsg = Ext.Msg.wait("Saving Query...", "Status");
+                        Ext.Ajax.request({
+                            url: '/rails_db_admin/erp_app/desktop/queries/save_query',
+                            params: {
+                                query: sql,
+                                query_name: self.initialConfig.title
+                            },
+                            success: function (responseObject) {
+                                waitMsg.close();
+                                var obj = Ext.decode(responseObject.responseText);
+                                if (!obj.success) {
+                                    Ext.Msg.alert('Status', 'Error saving report');
+                                }
+                            },
+                            failure: function () {
+                                waitMsg.close();
+                                Ext.Msg.alert('Status', 'Error saving report');
+                            }
+                        });
+                    }
                 }
             }
         ];
@@ -243,8 +266,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
     constructor: function (config) {
         config = Ext.applyIf({
             layout: 'border',
-            border: false
+            border: false,
+            closable: true
         }, config);
+        if (config.title == null){
+            config = Ext.applyIf({
+                title: 'New Query'
+            }, config);
+        }
         this.callParent([config]);
     }
 });
