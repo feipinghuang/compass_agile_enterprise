@@ -128,6 +128,7 @@ Party.class_eval do
   #
   # @return [Party] self
   def update_project_relationship(project, options)
+    binding.pry
     # make sure role_types is passed
     raise StandardError('Party to Project relationships require a role_types option') if options[:role_types].blank?
 
@@ -139,7 +140,7 @@ Party.class_eval do
                                              project.id,
                                              role_type.id).first
         if relationship
-          relationship.party = party
+          relationship.party = self
           relationship.save!
         else
           create_project_relationship(project, options)
