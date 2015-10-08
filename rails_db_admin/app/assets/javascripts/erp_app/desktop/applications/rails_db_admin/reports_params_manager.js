@@ -120,7 +120,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                 {
                     header: 'Name',
                     dataIndex: 'name',
-                    editor: 'textfield'
+                    editor: {
+                        xtype: 'textfield',
+                        allowBlank: false,
+                        regex: /^(?!.*\s).*$/,
+                        regexText: 'Spaces not allowed'
+                    }
                 },
                 {
                     header: 'Type',
@@ -195,6 +200,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                     xtype: 'textfield',
                     fieldLabel: 'Name',
                     itemId: 'paramName',
+                    regex: /^(?!.*\s).*$/,
+                    regexText: 'Spaces not allowed',
                     name: 'report_params["name"]',
                     allowBlank: false
                 },
