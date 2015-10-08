@@ -6,7 +6,7 @@ module RailsDbAdmin
       module ActionView
         module Helpers
           module ReportHelper
-
+            
             def report_download_url(report_iid, format)
               raw "/reports/display/#{report_iid}.#{format}"
             end

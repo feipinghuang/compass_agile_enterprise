@@ -9,6 +9,8 @@ module RailsDbAdmin
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/rails_db_admin/app.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/rails_db_admin/app.css }
       Rails.application.config.assets.precompile += ['bootstrap.css']
+
+      ErpApp::Config.shared_js_assets += %w{ erp_app/shared/rails_db_admin_shared.js }
     end
 
     ErpBaseErpSvcs.register_as_compass_ae_engine(config, self)

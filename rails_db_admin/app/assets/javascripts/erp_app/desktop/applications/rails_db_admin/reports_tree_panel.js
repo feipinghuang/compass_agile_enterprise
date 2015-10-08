@@ -174,7 +174,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                             afterrender: function(combo, eOpts){
                                 var store = combo.getStore(),
                                     pageSize = node.data.reportMetaData.print_page_size || 'A4';
-                                    
+                                
                                 combo.setValue(pageSize);
                             }
                         }
@@ -250,7 +250,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 
             })
         }).show();
-            
+        
 
     },
 
@@ -404,29 +404,29 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                             closable: true,
                             itemId: itemId,
                             listeners: {
-                                        'save': function (codeMirror, content) {
-                                            var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
-                                            Ext.Ajax.request({
-                                                url: '/rails_db_admin/erp_app/desktop/reports/update_file',
-                                                method: 'POST',
-                                                params: {
-                                                    node: node.data.id,
-                                                    content: content
-                                                },
-                                                success: function (responseObject) {
-                                                    waitMsg.close();
-                                                    var obj = Ext.decode(responseObject.responseText);
-                                                    if (!obj.success) {
-                                                        Ext.Msg.alert('Status', 'Error saving report');
-                                                    }
-                                                },
-                                                failure: function () {
-                                                    waitMsg.close();
-                                                    Ext.Msg.alert('Status', 'Error saving report');
-                                                }
-                                            });
+                                'save': function (codeMirror, content) {
+                                    var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
+                                    Ext.Ajax.request({
+                                        url: '/rails_db_admin/erp_app/desktop/reports/update_file',
+                                        method: 'POST',
+                                        params: {
+                                            node: node.data.id,
+                                            content: content
+                                        },
+                                        success: function (responseObject) {
+                                            waitMsg.close();
+                                            var obj = Ext.decode(responseObject.responseText);
+                                            if (!obj.success) {
+                                                Ext.Msg.alert('Status', 'Error saving report');
+                                            }
+                                        },
+                                        failure: function () {
+                                            waitMsg.close();
+                                            Ext.Msg.alert('Status', 'Error saving report');
                                         }
-                                    }
+                                    });
+                                }
+                            }
                         })
                         centerRegion.add(item);
                     }
@@ -468,24 +468,24 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     var items = [];
                     if (node.isRoot()) {
                         items.push(
-                        {
-                            text: "New Report",
-                            iconCls: 'icon-settings',
-                            listeners:{
-                                'click':function () {
-                                    me.newReport();
+                            {
+                                text: "New Report",
+                                iconCls: 'icon-settings',
+                                listeners:{
+                                    'click':function () {
+                                        me.newReport();
+                                    }
                                 }
-                            }
-                        },
-                        {
-                            text: "Upload",
-                            iconCls: 'icon-theme-upload',
-                            listeners:{
-                                'click':function () {
-                                    me.uploadReport();
+                            },
+                            {
+                                text: "Upload",
+                                iconCls: 'icon-theme-upload',
+                                listeners:{
+                                    'click':function () {
+                                        me.uploadReport();
+                                    }
                                 }
-                            }
-                        });
+                            });
                     }
                     else if(node.data.isReport){
                         items.push(
@@ -517,8 +517,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                     scope:node,
                                     'click':function () {
                                         Ext.Msg.alert('Details', 'Title: '+node.data.text +
-                                            '<br /> Unique Name: '+node.data.uniqueName
-                                        );
+                                                      '<br /> Unique Name: '+node.data.uniqueName
+                                                     );
                                     }
                                 }
                             },

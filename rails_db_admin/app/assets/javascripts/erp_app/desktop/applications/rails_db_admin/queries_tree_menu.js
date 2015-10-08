@@ -61,13 +61,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueriesMenuTreePane
             contextMenu = new Ext.menu.Menu({
               items:[
               {
-                text:"New Query",
-                iconCls:'icon-sql',
-                listeners:{
-                  'click':function(){
-                    self.initialConfig.module.addNewQueryTab();
+                  text:"New Query",
+                  iconCls:'icon-sql',
+                  listeners:{
+                      'click':function(){
+                          self.initialConfig.module.addNewQueryTab();
+                      }
                   }
-                }
               }
               ]
             });
