@@ -128,7 +128,6 @@ Party.class_eval do
   #
   # @return [Party] self
   def update_project_relationship(project, options)
-    binding.pry
     # make sure role_types is passed
     raise StandardError('Party to Project relationships require a role_types option') if options[:role_types].blank?
 
