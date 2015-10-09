@@ -159,7 +159,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
         if(this.initialConfig['isReportQuery']){
             tbarItems.push({
                 text: 'Preview Report',
-                iconCls: 'icon-pdf',
+                iconCls: 'icon-content',
                 handler: function(){
                     var reportParamsPanel = self.down('reportparamspanel'),
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),

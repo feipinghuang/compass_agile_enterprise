@@ -448,7 +448,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                         var reportParamsMgrPanel = self.eastRegion.down('railsdbadminreportsparamsmanager');
                         var isActivatingReportPanel =
                                 oldPanel &&
-                                oldPanel.isXType('railsdbadmin_querypanel') &&
                                 newPanel.isXType('railsdbadmin_querypanel') &&
                                 newPanel.isReportQuery;
                         // the panel to be activated is the report panel show the query params panel in the east region else hide the east region
