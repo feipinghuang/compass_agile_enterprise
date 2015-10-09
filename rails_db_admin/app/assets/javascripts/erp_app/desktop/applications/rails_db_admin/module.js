@@ -313,6 +313,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 isReportQuery: true,
                 hideSave: true,
                 title: 'Query' + ' (' + reportObj.title + ')',
+                reportName: reportObj.title,
                 sqlQuery: reportObj.query,
                 reportId: reportObj.id,
                 template: reportObj.template,

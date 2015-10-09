@@ -310,7 +310,7 @@ module RailsDbAdmin
               :reportMetaData => report.meta_data || {}
             }
 
-            ['stylesheets', 'images', 'templates','javascripts','query', 'preview_report'].each do |resource_folder|
+            ['stylesheets', 'images', 'templates','javascripts','query'].each do |resource_folder|
               report_hash[:children] << {
                   :reportId => report.id,
                   :reportName => report.name,
@@ -319,13 +319,11 @@ module RailsDbAdmin
                   :iconCls => case resource_folder
                               when 'query'
                                 'icon-query'
-                              when 'preview_report'
-                                'icon-pdf'
                               else
                                 'icon-content'
                               end,
                   :id => "#{report.url}/#{resource_folder}",
-                  :leaf => (resource_folder == 'query') || (resource_folder == 'preview_report'),
+                  :leaf => (resource_folder == 'query'),
                   :handleContextMenu => (resource_folder == 'query') || (resource_folder == 'preview_report')
               }
               tree << report_hash

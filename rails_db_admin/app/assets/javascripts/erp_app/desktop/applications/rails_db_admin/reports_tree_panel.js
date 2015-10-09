@@ -312,31 +312,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         });
     },
 
-    openIframeInTab: function (title, url) {
-        var self = this;
-        var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
-        var itemId = Compass.ErpApp.Utility.Encryption.MD5(url);
-        var item = centerRegion.getComponent(itemId);
-        if (Compass.ErpApp.Utility.isBlank(item)) {
-            var item = Ext.create('Ext.panel.Panel', {
-                iframeId: 'tutorials_iframe',
-                itemId: itemId,
-                closable: true,
-                layout: 'fit',
-                title: title,
-                html: '<iframe id="reports_iframe" height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>'
-            });
-            centerRegion.add(item);
-        }
-        else{
-            Ext.Msg.wait('Updating preview..','Status');
-            window.setTimeout(function(){
-                item.update('<iframe id="reports_iframe" height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>');
-                Ext.Msg.hide();
-            },300)
-        }
-        centerRegion.setActiveTab(item);
-    },
 
     exportReport: function (reportId) {
         var self = this;
@@ -394,7 +369,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
                     var item = centerRegion.getComponent(itemId);
                     var mode = Compass.ErpApp.Shared.CodeMirror.determineCodeMirrorMode(node.data.text);
-                    window.node = node;
 
                     if (Compass.ErpApp.Utility.isBlank(item)) {
                         item = Ext.create('Compass.ErpApp.Shared.CodeMirror',{
@@ -440,10 +414,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     }
                     else if (record.data.leaf && record.data.text == 'Query') {
                         me.editQuery(record.data.reportId);
-                    }
-                    else if(record.data.leaf && record.data.text == 'Preview Report'){
-                        var reportTitle = 'Preview' + ' (' + record.data.reportName + ')';
-                        me.openIframeInTab(reportTitle , '/reports/display/' + record.data.reportIid);
                     }
                     else if(record.data.leaf){
                         var msg = Ext.Msg.wait("Loading", "Retrieving contents...");

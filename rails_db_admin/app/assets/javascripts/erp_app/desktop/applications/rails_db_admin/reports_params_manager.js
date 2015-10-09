@@ -123,8 +123,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                     editor: {
                         xtype: 'textfield',
                         allowBlank: false,
-                        regex: /^(?!.*\s).*$/,
-                        regexText: 'Spaces not allowed'
+                        regex: /^[a-z_][a-zA-Z_0-9]*$/,
+                        regexText: 'Invalid param'
                     }
                 },
                 {
@@ -200,8 +200,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                     xtype: 'textfield',
                     fieldLabel: 'Name',
                     itemId: 'paramName',
-                    regex: /^(?!.*\s).*$/,
-                    regexText: 'Spaces not allowed',
+                    regex: /^[a-z_][a-zA-Z_0-9]*$/,
+                    regexText: 'Invalid Param',
                     name: 'report_params["name"]',
                     allowBlank: false
                 },
