@@ -49,7 +49,7 @@ module RailsDbAdmin
                        columns: data[:columns],
                        rows: data[:rows],
                        custom_data: @custom_data
-                     }.merge(@parsed_report_params),
+                     },
                      :show_as_html => params[:debug].present?,
                      :page_size => @report.meta_data['print_page_size'] || 'A4',
                      :margin => {
@@ -82,7 +82,7 @@ module RailsDbAdmin
 
       def get_report_data
         report_params = params[:report_params]
-        @parsed_report_params = if report_params
+        parsed_report_params = if report_params
                                  JSON.parse(report_params).symbolize_keys
                                else
                                  nil
@@ -90,7 +90,7 @@ module RailsDbAdmin
         
         query = RailsDbAdmin::ErbStringParser.render(
           @report.query,
-          locals: @parsed_report_params
+          locals: parsed_report_params
         )
 
         columns, values, error = @query_support.execute_sql(query)
