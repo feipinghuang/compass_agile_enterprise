@@ -144,11 +144,11 @@ module Api
         end
 
         if data[:start_at].present?
-          work_effort.start_at = Date.parse(data[:start_at])
+          work_effort.start_at = Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
         end
 
         if data[:end_at].present?
-          work_effort.end_at = Date.parse(data[:end_at])
+          work_effort.end_at = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
         end
 
         if data[:percent_done].present?
@@ -195,14 +195,17 @@ module Api
 
       def update_work_effort(data)
         work_effort = WorkEffort.find(data[:id])
-        work_effort.description = data[:description].strip
+
+        if data[:description].present?
+          work_effort.description = data[:description].strip
+        end
 
         if data[:start_at].present?
-          work_effort.start_at = Date.parse(data[:start_at])
+          work_effort.start_at = Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
         end
 
         if data[:end_at].present?
-          work_effort.end_at = Date.parse(data[:end_at])
+          work_effort.end_at = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
         end
 
         if data[:percent_done].present?

@@ -265,7 +265,6 @@ module Api
         party = nil
         time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
 
-
         if params[:work_effort_id]
           work_effort = WorkEffort.find(params[:work_effort_id])
         end
