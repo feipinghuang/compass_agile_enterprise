@@ -139,7 +139,7 @@ Party.class_eval do
                                              project.id,
                                              role_type.id).first
         if relationship
-          relationship.party = party
+          relationship.party = self
           relationship.save!
         else
           create_project_relationship(project, options)
