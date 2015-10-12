@@ -5,7 +5,7 @@ class Report < ActiveRecord::Base
   validates :name, :internal_identifier, :uniqueness => true
 
   before_create :set_default_template
-
+  
   after_create :create_report_files!
 
   before_destroy :delete_report_files!
@@ -171,10 +171,6 @@ class Report < ActiveRecord::Base
     self.template =
       "<%= bootstrap_load %>
   <%= report_stylesheet_link_tag '#{self.internal_identifier}','#{self.internal_identifier}.css' %>
-<% unless request.format.symbol == :pdf %>
-  <%= report_download_link(unique_name, :csv, 'Download CSV') %> |
-  <%= report_download_link(unique_name, :pdf, 'Download PDF') %>
-<% end %>
 <h3> <%= title %> </h3>
 <table>
   <thead>

@@ -41,12 +41,19 @@ module RailsDbAdmin
           report = Report.find(id)
 
           if report
-            render :json => {:success => true, :report =>
-                {:title => report.name, :id => report.id, :query => report.query,
-                 :internalIdentifier => report.internal_identifier, :template => report.template}
-            }
+            render :json => {
+                     success: true,
+                     report: {
+                       title: report.name,
+                       id: report.id,
+                       query: report.query,
+                       internalIdentifier: report.internal_identifier,
+                       template: report.template,
+                       params: report.meta_data['params'] || []
+                     }
+                   }
           else
-            render :json => {:success => false}
+            render :json => {success: false}
           end
         end
 
@@ -55,11 +62,14 @@ module RailsDbAdmin
           report = Report.find(id)
 
           if report
-            report.meta_data['print_page_size'] = params[:page_size].strip
-            report.meta_data['print_margin_top'] = params[:margin_top].strip
-            report.meta_data['print_margin_right'] = params[:margin_right].strip
-            report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip
-            report.meta_data['print_margin_left'] = params[:margin_left].strip
+            report.meta_data['print_page_size'] = params[:page_size].strip if params[:page_size] 
+            report.meta_data['print_margin_top'] = params[:margin_top].strip if params[:margin_top]
+            report.meta_data['print_margin_right'] = params[:margin_right].strip if params[:margin_right]
+            report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip if params[:margin_bottom]
+            report.meta_data['print_margin_left'] = params[:margin_left].strip if params[:margin_left]
+
+            report_params = params[:report_params]
+            report.meta_data['params'] = report_params || []
             
             render :json => {success: report.save}
           else
@@ -300,7 +310,7 @@ module RailsDbAdmin
               :reportMetaData => report.meta_data || {}
             }
 
-            ['stylesheets', 'images', 'templates','javascripts','query', 'preview_report'].each do |resource_folder|
+            ['stylesheets', 'images', 'templates','javascripts','query'].each do |resource_folder|
               report_hash[:children] << {
                   :reportId => report.id,
                   :reportName => report.name,
@@ -309,13 +319,11 @@ module RailsDbAdmin
                   :iconCls => case resource_folder
                               when 'query'
                                 'icon-query'
-                              when 'preview_report'
-                                'icon-pdf'
                               else
                                 'icon-content'
                               end,
                   :id => "#{report.url}/#{resource_folder}",
-                  :leaf => (resource_folder == 'query') || (resource_folder == 'preview_report'),
+                  :leaf => (resource_folder == 'query'),
                   :handleContextMenu => (resource_folder == 'query') || (resource_folder == 'preview_report')
               }
               tree << report_hash

@@ -10,12 +10,4 @@
 // WARNING: THE FIRST BLANK LINE MARKS THE END OF WHAT'S TO BE PROCESSED, ANY BLANK LINE SHOULD
 // GO AFTER THE REQUIRES BELOW.
 //
-//= require ./module
-//= require ./database_combo
-//= require ./queries_tree_menu
-//= require ./query_panel
-//= require ./readonly_table_data_grid
-//= require ./reports_tree_panel
-//= require ./reports_params_manager
-//= require ./splash_screen
-//= require ./tables_tree_menu
+//= require_tree .
