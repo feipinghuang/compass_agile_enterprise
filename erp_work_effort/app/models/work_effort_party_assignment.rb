@@ -46,7 +46,7 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
     def scope_by_dba_organization(dba_organization)
       joins(:work_effort)
           .joins("inner join entity_party_roles on entity_party_roles.entity_record_type = 'WorkEffort' and entity_party_roles.entity_record_id = work_efforts.id")
-          .where('entity_party_roles.party_id = ?', dba_organization)
+          .where('entity_party_roles.party_id' => dba_organization)
           .where('entity_party_roles.role_type_id = ?', RoleType.iid('dba_org').id)
     end
 
