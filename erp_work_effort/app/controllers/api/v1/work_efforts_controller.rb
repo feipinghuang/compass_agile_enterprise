@@ -201,11 +201,11 @@ module Api
         end
 
         if data[:start_at].present?
-          work_effort.start_at = Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+          work_effort.start_at = Time.parse(params[:start_at])
         end
 
         if data[:end_at].present?
-          work_effort.end_at = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+          work_effort.end_at = Time.parse(params[:end_at])
         end
 
         if data[:percent_done].present?
