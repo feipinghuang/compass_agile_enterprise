@@ -76,6 +76,13 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 
         return paramsObj;
         
+    },
+
+    clearReportParams: function(){
+        var me = this;
+        Ext.each(me.query('field'),function(field){
+            field.setValue('');
+        });
     }
 
 });
