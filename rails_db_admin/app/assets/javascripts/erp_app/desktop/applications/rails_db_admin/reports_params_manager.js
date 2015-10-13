@@ -30,7 +30,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                             // save report params
                             Ext.Ajax.request({
                                 url: '/rails_db_admin/erp_app/desktop/reports/update',
-                                type: 'GET',
+                                method: 'POST',
                                 params: {
                                     id: me.reportId
                                 },
@@ -123,8 +123,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                     editor: {
                         xtype: 'textfield',
                         allowBlank: false,
-                        regex: /^[a-z_][a-zA-Z_0-9]*$/,
-                        regexText: 'Invalid param'
+                        regex: /^(?!.*\s).*$/,
+                        regexText: 'Spaces not allowed'
                     }
                 },
                 {
@@ -200,8 +200,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                     xtype: 'textfield',
                     fieldLabel: 'Name',
                     itemId: 'paramName',
-                    regex: /^[a-z_][a-zA-Z_0-9]*$/,
-                    regexText: 'Invalid Param',
+                    regex: /^(?!.*\s).*$/,
+                    regexText: 'Spaces not allowed',
                     name: 'report_params["name"]',
                     allowBlank: false
                 },

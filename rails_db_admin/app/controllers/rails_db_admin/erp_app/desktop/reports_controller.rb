@@ -68,8 +68,11 @@ module RailsDbAdmin
             report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip if params[:margin_bottom]
             report.meta_data['print_margin_left'] = params[:margin_left].strip if params[:margin_left]
 
+
             report_params = params[:report_params]
-            report.meta_data['params'] = report_params || []
+            if report_params
+              report.meta_data['params'] = report_params
+            end
             
             render :json => {success: report.save}
           else
