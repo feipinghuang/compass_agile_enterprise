@@ -39,7 +39,7 @@ module ErpApp
                 options_array << option
               end
             end
-            configuration.update_configuration_item(ConfigurationItemType.find_by_internal_identifier(k), options) unless (k.to_s == 'action' or k.to_s == 'controller' or k.to_s == 'id' or k.to_s == 'authenticity_token')
+            configuration.update_configuration_item(ConfigurationItemType.find_by_internal_identifier(k), options) unless (k.to_s == 'action' or k.to_s == 'controller' or k.to_s == 'id' or k.to_s == 'authenticity_token' or k.to_s == 'client_utc_offset')
           end
 
           render :json => {:success => true, :configurationItems => configuration.items.collect(&:to_js_hash)}
