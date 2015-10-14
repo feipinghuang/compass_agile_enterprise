@@ -6,7 +6,7 @@ module RailsDbAdmin
       module ActionView
         module Helpers
           module ReportHelper
-
+            
             def report_download_url(report_iid, format)
               raw "/reports/display/#{report_iid}.#{format}"
             end
@@ -140,7 +140,7 @@ module RailsDbAdmin
 
                 file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
 
-                image_tag "data:image/png;base64,#{Base64.encode64(file_support.get_contents(img_path))}"
+                image_tag "data:image/png;base64,#{Base64.encode64(file_support.get_contents(img_path).first)}"
               else
                 options.symbolize_keys!
                 options[:src] = report_image_path(report, source)

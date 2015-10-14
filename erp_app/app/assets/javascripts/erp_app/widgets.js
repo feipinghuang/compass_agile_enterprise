@@ -17,7 +17,7 @@ Compass.ErpApp.Utility.createNamespace("Compass.ErpApp.Widgets");
 Compass.ErpApp.Widgets = {
     setup: function (uuid, name, action, params, addToLoaded) {
         var widgetParams = {
-            widget_params: $.param(params),
+            widget_params: JSON.stringify(params),
             authenticity_token: Compass.ErpApp.AuthentictyToken
         };
 

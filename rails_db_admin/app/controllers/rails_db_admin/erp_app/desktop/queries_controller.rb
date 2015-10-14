@@ -100,6 +100,11 @@ module RailsDbAdmin
           sql = sql.rstrip
           cursor_pos = params[:cursor_pos].to_i
 
+          # if we have report params process them
+          if params[:report_params]
+            sql = RailsDbAdmin::ErbStringParser.render(sql, locals: params[:report_params])
+          end
+          
           #append a semicolon as the last character if the
           #user forgot
           if !sql.end_with?(";")

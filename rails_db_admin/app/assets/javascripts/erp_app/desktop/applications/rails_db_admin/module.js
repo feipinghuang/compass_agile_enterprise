@@ -302,25 +302,34 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
     editQuery: function (reportObj) {
         var self = this;
-        var centerRegion = self.container;
-        var itemId = Compass.ErpApp.Utility.Encryption.MD5(reportObj.id);
+        var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
+        var itemId = Compass.ErpApp.Utility.Encryption.MD5(reportObj.internalIdentifier);
         var item = centerRegion.getComponent(itemId);
 
         if (Compass.ErpApp.Utility.isBlank(item)) {
             item = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
                 module: self,
                 itemId: itemId,
+                isReportQuery: true,
                 hideSave: true,
                 title: 'Query' + ' (' + reportObj.title + ')',
+                reportName: reportObj.title,
                 sqlQuery: reportObj.query,
                 reportId: reportObj.id,
                 template: reportObj.template,
                 internalIdentifier: reportObj.internalIdentifier,
+                reportParams: reportObj.params,
                 closable: true
             });
             centerRegion.add(item);
         }
         centerRegion.setActiveTab(item);
+
+        // show report params manager
+        this.eastRegion.show();
+        var reportParamsMgrPanel = this.eastRegion.down('railsdbadminreportsparamsmanager');
+        reportParamsMgrPanel.setReportData(reportObj.id, reportObj.params);
+        
     },
     showImage: function (node, reportId) {
         var self = this;
@@ -368,20 +377,24 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
             success: function (responseObject) {
                 var response = Ext.decode(responseObject.responseText);
                 var query = response.query;
-
                 var queryPanel = null;
 
                 if (response.success) {
+                    var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
+                    var itemId = Compass.ErpApp.Utility.Encryption.MD5(queryName);
+                    var item = centerRegion.getComponent(itemId);
                     self.clearWindowStatus();
-
-                    queryPanel = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
-                        module: self,
-                        closable: true,
-                        sqlQuery: query
-                    });
-
-                    self.container.add(queryPanel);
-                    self.container.setActiveTab(self.container.items.length - 1);
+                    if (Compass.ErpApp.Utility.isBlank(item)) {
+                        var item = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
+                            module: self,
+                            closable: true,
+                            sqlQuery: query,
+                            title: queryName,
+                            itemId: itemId
+                        });
+                        centerRegion.add(item);
+                    }
+                    centerRegion.setActiveTab(item);
                 }
                 else {
                     Ext.Msg.alert('Error', response.exception);
@@ -429,7 +442,26 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 region: 'center',
                 margins: '0 0 0 0',
                 border: false,
-                minsize: 300
+                minsize: 300,
+                listeners: {
+                    beforetabchange: function(tabPanel, newPanel, oldPanel, eOpts){
+                        var reportParamsMgrPanel = self.eastRegion.down('railsdbadminreportsparamsmanager');
+                        var isActivatingReportPanel =
+                                oldPanel &&
+                                newPanel.isXType('railsdbadmin_querypanel') &&
+                                newPanel.isReportQuery;
+                        // the panel to be activated is the report panel show the query params panel in the east region else hide the east region
+                        if(isActivatingReportPanel){
+                            reportParamsMgrPanel.setReportData(
+                                newPanel.reportId,
+                                newPanel.reportParams
+                            );
+                            self.eastRegion.show();
+                        }else{
+                            self.eastRegion.hide();
+                        }
+                    }
+                }
             });
 
             this.accordion = Ext.create('Ext.panel.Panel', {
@@ -473,6 +505,26 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 ]
             });
 
+            this.eastRegion = Ext.create('Ext.panel.Panel', {
+                ui: 'rounded-panel',
+                region: 'east',
+                margins: '0 0 0 0',
+                cmargins: '0 0 0 0',
+                width: 300,
+                collapsible: true,
+                header: false,
+                split: true,
+                layout: 'accordion',
+                hidden: true,
+                items: [
+                    {
+                        xtype: 'railsdbadminreportsparamsmanager'
+                        
+                    }
+                ]
+            });
+
+                
             win = desktop.createWindow({
                 id: 'rails_db_admin',
                 title: 'RailsDBAdmin',
@@ -484,7 +536,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 animCollapse: false,
                 constrainHeader: true,
                 layout: 'border',
-                items: [this.accordion, this.container]
+                items: [
+                    this.accordion,
+                    this.container,
+                    this.eastRegion
+                ]
             });
 
             win.addListener('render', function (win) {

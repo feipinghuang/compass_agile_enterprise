@@ -710,4 +710,29 @@ var stringToFunction = function (str) {
     return fn;
 };
 
+// Date extensions
 
+// returns a date string acceptable with postgres
+Date.prototype.toPgDateString = function() {
+    function zeroPad(d) {
+        return ("0" + d).slice(-2);
+    };
+
+    var parsed = new Date(this);
+
+    
+    return (
+        [
+            parsed.getUTCFullYear(),
+            (parsed.getUTCMonth() + 1),
+            parsed.getUTCDate()
+        ].join('-')
+            + ' '
+            +
+            [
+                zeroPad(parsed.getUTCHours()),
+                zeroPad(parsed.getUTCMinutes()),
+                zeroPad(parsed.getUTCSeconds())
+            ].join(':')
+    );
+}

@@ -5,52 +5,48 @@ module ErpBaseErpSvcs
       class Client
 
         def initialize(client_utc_offset)
-          @time_zone = get_time_zone(client_utc_offset)
+          @offset_in_hours = get_offset_in_hours(client_utc_offset)
         end
 
         def in_client_time(time)
-          time.in_time_zone(@time_zone)
+          time + @offset_in_hours.hours
         end
 
         def beginning_of_day
-          ::Time.now.in_time_zone(@time_zone).beginning_of_day
+          (::Time.now  + @offset_in_hours.hours).beginning_of_day
         end
 
         def end_of_day
-          ::Time.now.in_time_zone(@time_zone).end_of_day
+          (::Time.now  + @offset_in_hours.hours).end_of_day
         end
 
         def beginning_of_week
-          ::Time.now.in_time_zone(@time_zone).beginning_of_week
+          (::Time.now  + @offset_in_hours.hours).beginning_of_week
         end
 
         def end_of_week
-          ::Time.now.in_time_zone(@time_zone).end_of_week
+          (::Time.now  + @offset_in_hours.hours).end_of_week
         end
 
         protected
 
-        def get_time_zone(client_utc_offset=nil)
+        def get_offset_in_hours(client_utc_offset=nil)
           if client_utc_offset.nil?
-            Rails.configuration.time_zone
+            zone = Rails.configuration.time_zone
+
+            zone.utc_offset / 60 / 100
           else
             client_utc_offset = client_utc_offset.to_i
             hours = client_utc_offset / 60
 
-            if hours < 10
-              client_utc_offset = "0#{hours}"
-            else
-              client_utc_offset = hours
-            end
-
             if hours < 0
-              client_utc_offset = "+#{client_utc_offset}"
+              hours = "+#{hours}"
 
             else
-              client_utc_offset = "-#{client_utc_offset}"
+              hours = "-#{hours}"
             end
 
-            ActiveSupport::TimeZone[client_utc_offset.to_i]
+            hours.to_i
           end
         end
 

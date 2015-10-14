@@ -5,13 +5,13 @@ class Report < ActiveRecord::Base
   validates :name, :internal_identifier, :uniqueness => true
 
   before_create :set_default_template
-
+  
   after_create :create_report_files!
 
   before_destroy :delete_report_files!
 
   has_file_assets
-  
+
   is_json :meta_data
 
   REPORT_STRUCTURE = ['stylesheets', 'javascripts', 'images', 'templates']
@@ -23,10 +23,12 @@ class Report < ActiveRecord::Base
 
     def import(file)
       ActiveRecord::Base.transaction do
-        name = file.original_filename.to_s.gsub(/(^.*(\\|\/))|(\.zip$)/, '')
+        name_and_iid = file.original_filename.to_s.gsub(/(^.*(\\|\/))|(\.zip$)/, '')
+        report_name = name_and_iid.split('[').first
+        report_iid = name_and_iid.split('[').last.gsub(']', '')
         return false unless valid_report?(file)
         Report.skip_callback(:create, :after, :create_report_files!)
-        report = Report.create(:name => name, :internal_identifier => name.underscore)
+        report = Report.create(:name => report_name, :internal_identifier => report_iid)
         report.import(file)
         Report.set_callback(:create, :after, :create_report_files!)
       end
@@ -91,7 +93,7 @@ class Report < ActiveRecord::Base
           data = ''
           entry.get_input_stream { |io| data = io.read }
           self.query = data
-          self.save          
+          self.save
         else
           if entry.file?
             name = entry.name.sub(/__MACOSX\//, '')
@@ -115,7 +117,7 @@ class Report < ActiveRecord::Base
   def export
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
     tmp_dir = Report.make_tmp_dir
-    (tmp_dir + "#{name}.zip").tap do |file_name|
+    (tmp_dir + "#{name}[#{internal_identifier}].zip").tap do |file_name|
       file_name.unlink if file_name.exist?
       Zip::ZipFile.open(file_name.to_s, Zip::ZipFile::CREATE) do |zip|
         files.each do |file|
@@ -154,7 +156,7 @@ class Report < ActiveRecord::Base
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
     File.join(file_support.root, self.url, 'javascripts', source)
   end
-  
+
   def create_report_files!
     self.add_file(self.template, File.join(self.url, 'templates', "base.html.erb"))
     self.add_file(self.default_stylesheet,File.join(self.url, 'stylesheets', "#{self.internal_identifier}.css") )
@@ -169,10 +171,6 @@ class Report < ActiveRecord::Base
     self.template =
       "<%= bootstrap_load %>
   <%= report_stylesheet_link_tag '#{self.internal_identifier}','#{self.internal_identifier}.css' %>
-<% unless request.format.symbol == :pdf %>
-  <%= report_download_link(unique_name, :csv, 'Download CSV') %> |
-  <%= report_download_link(unique_name, :pdf, 'Download PDF') %>
-<% end %>
 <h3> <%= title %> </h3>
 <table>
   <thead>

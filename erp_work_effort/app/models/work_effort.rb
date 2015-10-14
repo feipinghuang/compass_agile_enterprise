@@ -220,6 +220,10 @@ class WorkEffort < ActiveRecord::Base
     completed?
   end
 
+  def status_description
+    current_status.to_s.titleize
+  end
+
   # start work effort with initial_status (string)
   #
   # @param initial_status [String] status to start at
@@ -232,7 +236,7 @@ class WorkEffort < ActiveRecord::Base
 
     if current_status.nil?
       effort.current_status = initial_status
-      effort.started_at = DateTime.now
+      effort.start_at = DateTime.now
       effort.save
     else
       raise 'Effort Already Started'
@@ -249,8 +253,8 @@ class WorkEffort < ActiveRecord::Base
   # actual_completion_time in minutes
   #
   def complete
-    self.finished_at = Time.now
-    self.actual_completion_time = time_diff_in_minutes(self.finished_at.to_time, self.started_at.to_time)
+    self.end_at = Time.now
+    self.actual_completion_time = time_diff_in_minutes(self.end_at.to_time, self.start_at.to_time)
     self.save
   end
 
@@ -284,7 +288,8 @@ class WorkEffort < ActiveRecord::Base
                 :comments,
                 :sequence,
                 :created_at,
-                :updated_at
+                :updated_at,
+                :status_description
             ]
     )
   end
