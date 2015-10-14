@@ -179,6 +179,10 @@ module Api
           work_effort.sequence = data[:sequence]
         end
 
+        if data[:status_description].present?
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ','_')])
+        end
+
         work_effort.save!
 
         # set dba_org
@@ -231,6 +235,10 @@ module Api
 
         if data[:sequence].present?
           work_effort.sequence = data[:sequence]
+        end
+
+        if data[:status_description].present?
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ','_')])
         end
 
         work_effort.save!

@@ -220,6 +220,10 @@ class WorkEffort < ActiveRecord::Base
     completed?
   end
 
+  def status_description
+    current_status.to_s.titleize
+  end
+
   # start work effort with initial_status (string)
   #
   # @param initial_status [String] status to start at
@@ -284,7 +288,8 @@ class WorkEffort < ActiveRecord::Base
                 :comments,
                 :sequence,
                 :created_at,
-                :updated_at
+                :updated_at,
+                :status_description
             ]
     )
   end
