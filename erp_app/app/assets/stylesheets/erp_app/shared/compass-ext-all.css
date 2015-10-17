@@ -412,6 +412,11 @@
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/hide/hide_16x16.png', sizingMethod='crop');
 }
 
+.icon-unhide {
+    background-image: url(/assets/icons/unhide/unhide_16x16.png) !important;
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/unhide/unhide_16x16.png', sizingMethod='crop');
+}
+
 .icon-documents {
     background-image: url(/assets/icons/documents/documents_16x16.png) !important;
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/documents/documents_16x16.png', sizingMethod='crop');
