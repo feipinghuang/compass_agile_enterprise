@@ -3,8 +3,15 @@ module Api
     class ProjectsController < BaseController
 
       def index
-        # scope by dba organization
-        projects = Project.with_party_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
+        # check if we are scoping by current user
+        if params[:scope_by_user].present? and params[:scope_by_user].to_bool
+          party = current_user.party
+          projects = Project.scope_by_party(party,
+                                            {role_types: RoleType.find_child_role_types(party.party_roles.collect { |party_role| party_role.role_type })})
+        else
+          # scope by dba organization
+          projects = Project.scope_by_dba_organization(current_user.party.dba_organization)
+        end
 
         render :json => {success: true, projects: projects.all.map { |project| project.to_data_hash }}
       end
