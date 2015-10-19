@@ -12,6 +12,8 @@ class Report < ActiveRecord::Base
 
   has_file_assets
 
+  has_party_roles
+
   is_json :meta_data
 
   REPORT_STRUCTURE = ['stylesheets', 'javascripts', 'images', 'templates']

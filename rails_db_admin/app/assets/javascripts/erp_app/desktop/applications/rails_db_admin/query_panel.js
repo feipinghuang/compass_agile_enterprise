@@ -165,7 +165,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
                         
                         reportTitle = "Preview" + " (" + self.reportName + ")";
-                    console.log(reportParamsWithValues);
                     self.openIframeInTab(reportTitle , '/reports/display/' + self.internalIdentifier + '?report_params=' + reportParamsWithValues);
 
                 }
