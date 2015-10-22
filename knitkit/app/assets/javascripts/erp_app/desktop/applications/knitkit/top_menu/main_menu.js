@@ -12,6 +12,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.editWebsiteMenuItem = function (disa
                 title: 'Update Website',
                 plain: true,
                 buttonAlign: 'center',
+                defaultFocus: 'name',
                 items: Ext.create("Ext.form.Panel", {
                     labelWidth: 110,
                     frame: false,
@@ -26,6 +27,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.editWebsiteMenuItem = function (disa
                             fieldLabel: 'Name',
                             allowBlank: false,
                             name: 'name',
+                            itemId: 'name',
                             value: knitkitModule.currentWebsite.name
                         },
                         {
@@ -226,6 +228,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu = function () {
                             title: 'New Website',
                             buttonAlign: 'center',
                             width: 360,
+                            defaultFocus: 'name',
                             items: Ext.create('widget.form', {
                                 labelWidth: 110,
                                 frame: false,
@@ -240,6 +243,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu = function () {
                                         fieldLabel: 'Name *',
                                         allowBlank: false,
                                         name: 'name',
+                                        itemId: 'name'
                                         // plugins: [new helpQtip("This is required and must be unique. Spaces are OK.")]
                                     },
                                     {
@@ -535,6 +539,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newSectionMenuItem = {
                     layout: 'fit',
                     title: 'New Section',
                     buttonAlign: 'center',
+                    defaultFocus: 'title',
                     items: Ext.create("Ext.form.Panel", {
                         labelWidth: 110,
                         frame: false,
@@ -548,7 +553,8 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newSectionMenuItem = {
                                 xtype: 'textfield',
                                 fieldLabel: 'Title',
                                 allowBlank: false,
-                                name: 'title'
+                                name: 'title',
+                                itemId: 'title'
                             },
                             {
                                 xtype: 'textfield',
@@ -700,6 +706,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newThemeMenuItem = {
             width: 360,
             plain: true,
             buttonAlign: 'center',
+            defaultFocus: 'name',
             items: Ext.create('widget.form', {
                 labelWidth: 110,
                 frame: false,
@@ -719,7 +726,8 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newThemeMenuItem = {
                         xtype: 'textfield',
                         fieldLabel: 'Name *',
                         allowBlank: false,
-                        name: 'name'
+                        name: 'name',
+                        itemId: 'name'
                     },
                     {
                         xtype: 'textfield',
@@ -911,6 +919,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newNavigationMenuItem = {
                 modal: true,
                 title: 'New Menu',
                 buttonAlign: 'center',
+                defaultFocus: 'name',
                 items: Ext.create("Ext.form.Panel", {
                     labelWidth: 50,
                     frame: false,
@@ -925,7 +934,8 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newNavigationMenuItem = {
                             fieldLabel: 'Menu name: ',
                             width: 320,
                             allowBlank: false,
-                            name: 'name'
+                            name: 'name',
+                            itemId: 'name'
                         },
                         {
                             xtype: 'hidden',
@@ -1010,6 +1020,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem = {
             modal: true,
             title: 'Add Host',
             buttonAlign: 'center',
+            defaultFocus: 'host',
             items: Ext.create("Ext.form.Panel", {
                 labelWidth: 50,
                 frame: false,
@@ -1023,6 +1034,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem = {
                         xtype: 'textfield',
                         fieldLabel: 'Host',
                         name: 'host',
+                        itemId: 'host',
                         allowBlank: false
                     },
                     {
