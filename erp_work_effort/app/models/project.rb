@@ -19,12 +19,32 @@ class Project < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_dba_organization(dba_organization)
-      joins("inner join entity_party_roles on entity_party_roles.entity_record_type = 'Project' and entity_party_roles.entity_record_id = projects.id")
-          .where('entity_party_roles.party_id' => dba_organization)
-          .where('entity_party_roles.role_type_id = ?', RoleType.iid('dba_org').id)
+      scope_by_party(dba_organization, RoleType.iid('dba_org'))
     end
 
     alias scope_by_dba scope_by_dba_organization
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      table_alias = String.random
+
+      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = projects.id
+                         and \"#{table_alias}\".entity_record_type = 'Project'")
+                      .where("#{table_alias}.party_id" => party).uniq
+
+      if options[:role_types]
+        statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
+      end
+
+      statement
+    end
   end
 
   def to_label
