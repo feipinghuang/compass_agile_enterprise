@@ -63,6 +63,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.GroupsPanel",
                             title: 'New Group',
                             plain: true,
                             buttonAlign: 'center',
+                            defaultFocus: 'description',
                             items: Ext.create('Ext.form.Panel', {
                                 labelWidth: 110,
                                 frame: false,
@@ -77,6 +78,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.GroupsPanel",
                                         fieldLabel: 'Group Name',
                                         allowBlank: false,
                                         name: 'description',
+                                        itemId: 'description',
                                         listeners: {
                                             afterrender: function (field) {
                                                 field.focus(false, 200);
@@ -148,6 +150,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.GroupsPanel",
                             title: 'Edit Group',
                             plain: true,
                             buttonAlign: 'center',
+                            defaultFocus: 'description',
                             items: Ext.create('Ext.form.Panel', {
                                 labelWidth: 110,
                                 frame: false,
@@ -162,6 +165,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.GroupsPanel",
                                         fieldLabel: 'Group Name',
                                         allowBlank: false,
                                         name: 'description',
+                                        itemId: 'description',
                                         value: selection.get('description'),
                                         listeners: {
                                             afterrender: function (field) {

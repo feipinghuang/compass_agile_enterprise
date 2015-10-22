@@ -9,7 +9,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
             title:'New Report',
             plain:true,
             buttonAlign:'center',
-            defaultFocus: '#title',
+            defaultFocus: 'title',
             items:Ext.create('Ext.FormPanel', {
                 labelWidth:110,
                 frame:false,
@@ -24,7 +24,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         fieldLabel:'Title',
                         allowBlank:false,
                         name:'name',
-                        id: 'title'
+                        itemId: 'title'
                     },
                     {
                         xtype:'textfield',
@@ -174,7 +174,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                             afterrender: function(combo, eOpts){
                                 var store = combo.getStore(),
                                     pageSize = node.data.reportMetaData.print_page_size || 'A4';
-                                
+
                                 combo.setValue(pageSize);
                             }
                         }
@@ -190,7 +190,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         fieldLabel: 'Right Margin',
                         name: 'margin_right',
                         value: node.data.reportMetaData.print_margin_right || '10'
-                        
+
                     },
                     {
                         xtype: 'textfield',
@@ -247,10 +247,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         }
                     }
                 ]
-                
+
             })
         }).show();
-        
+
 
     },
 
@@ -468,7 +468,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                         me.editReportMetaData(node);
                                     }
                                 }
-                                
+
                             },
                             {
                                 text:"Delete Report",

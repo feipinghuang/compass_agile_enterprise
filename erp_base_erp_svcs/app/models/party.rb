@@ -25,6 +25,13 @@ class Party < ActiveRecord::Base
              and party_relationships.party_id_from = parties.id")
     end
 
+    # Scopes parties by passed role types
+    #
+    # @param [Array, RoleType] Array of RoleTypes to scope by
+    def with_role_types(role_types)
+      joins('inner join party_roles on party_roles.party_id = parties.id').where('party_roles.role_type_id' =>  role_types)
+    end
+
   end
 
   # helper method to get dba_organization related to this party
