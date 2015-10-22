@@ -4,8 +4,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
     reportId: null,
     reportParams: null,
     title: 'Report Params',
+    autoScroll: true,
 
-    initComponent: function(){
+    initComponent: function () {
         var me = this;
         me.dockedItems = [
             {
@@ -16,11 +17,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                         xtype: 'button',
                         text: 'Save',
                         iconCls: 'icon-save',
-                        handler: function(btn){
+                        handler: function (btn) {
                             var grid = btn.up('railsdbadminreportsparamsmanager').down('grid'),
                                 store = grid.getStore(),
-                                reportParams = Ext.Array.map(store.data.items, function(item){
+                                reportParams = Ext.Array.map(store.data.items, function (item) {
                                     return {
+                                        display_name: item.get('display_name'),
                                         name: item.get('name'),
                                         type: item.get('type')
                                     };
@@ -37,9 +39,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                                 jsonData: {
                                     report_params: reportParams
                                 },
-                                success: function(response){
+                                success: function (response) {
                                     var responseObj = Ext.decode(response.responseText);
-                                    if(responseObj.success){
+                                    if (responseObj.success) {
                                         myMask.hide();
                                         var centerRegion = btn.up('window').down('#centerRegion'),
                                             queryPanel = centerRegion.getActiveTab();
@@ -48,25 +50,25 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                                         queryPanel.insert(
                                             0,
                                             {
-                                            
+
                                                 xtype: 'reportparamspanel',
                                                 region: 'north',
                                                 params: reportParams
                                             }
                                         );
-                                        
-                                        
-                                    }else{
+
+
+                                    } else {
                                         myMask.hide();
                                         Ext.msg.alert('Error', 'Error saving report params');
 
                                     }
                                 },
-                                failure: function(){
+                                failure: function () {
                                     myMask.hide();
                                     Ext.msg.alert('Error', 'Error saving report params');
                                 }
-                                
+
                             });
                         }
                     }
@@ -76,17 +78,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 
         me.reportTypeStore = Ext.create('Ext.data.Store', {
             fields: ['type'],
-            data : [
+            data: [
                 {type: 'text'},
-                {type: 'date'},
+                {type: 'date'}
             ]
-        });        
+        });
 
         me.callParent();
     },
 
     //sets the report params panels data,
-    setReportData: function(reportId, reportParams){
+    setReportData: function (reportId, reportParams) {
         var me = this;
         me.clearReport();
         me.reportId = reportId;
@@ -100,25 +102,34 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                 xtype: 'button',
                 text: 'Add Param',
                 margin: '10 0 10 0',
-                handler: function(btn){
+                handler: function (btn) {
                     var panel = btn.up('railsdbadminreportsparamsmanager'),
                         addParamPanel = panel.down('#addReportParam'),
                         grid = panel.down('grid');
                     addParamPanel.show();
-                    
                 }
             }
         );
         me.updateLayout();
     },
 
-    buildReportData: function(){
-        var me = this;        
+    buildReportData: function () {
+        var me = this;
 
-        var paramsGrid = Ext.create('Ext.grid.Panel', {
+        return Ext.create('Ext.grid.Panel', {
             columns: [
                 {
+                    header: 'Display Name',
+                    flex: 1,
+                    dataIndex: 'display_name',
+                    editor: {
+                        xtype: 'textfield',
+                        allowBlank: false
+                    }
+                },
+                {
                     header: 'Name',
+                    flex: 1,
                     dataIndex: 'name',
                     editor: {
                         xtype: 'textfield',
@@ -129,6 +140,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                 },
                 {
                     header: 'Type',
+                    width: 50,
                     dataIndex: 'type',
                     editor: {
                         xtype: 'combobox',
@@ -145,11 +157,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                         {
                             icon: '/assets/icons/delete/delete_16x16.png',
                             tooltip: 'Delete',
-                            handler: function(grid, rowIndex, colIndex){
+                            handler: function (grid, rowIndex, colIndex) {
                                 var record = grid.getStore().getAt(rowIndex);
                                 grid.getStore().remove(record);
-                                
-                                
                             }
                         }
                     ]
@@ -160,31 +170,27 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                 Ext.create('Ext.grid.plugin.RowEditing', {
                     clicksToEdit: 1,
                     listeners: {
-                        edit: function(editor, context, eOpts){
+                        edit: function (editor, context, eOpts) {
                             context.record.commit();
                         }
                     }
                 })
             ],
             store: {
-                fields: ['name', 'type'],
+                fields: ['name', 'type', 'display_name'],
                 data: me.reportParams
             }
-
         });
-
-        return paramsGrid;
     },
 
-    clearReport: function(){
+    clearReport: function () {
         var me = this;
         me.removeAll();
         me.reportId = null;
         me.reportParams = null;
     },
-    
 
-    buildAddReportParam: function(param){
+    buildAddReportParam: function (param) {
         var me = this;
         return {
             xtype: 'panel',
@@ -196,6 +202,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                 type: 'vbox'
             },
             items: [
+                {
+                    xtype: 'textfield',
+                    fieldLabel: 'Display Name',
+                    itemId: 'paramDisplayName',
+                    name: 'report_params["display_name"]',
+                    allowBlank: false
+                },
                 {
                     xtype: 'textfield',
                     fieldLabel: 'Name',
@@ -221,31 +234,34 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                 {
                     text: 'Add',
                     formBind: true,
-                    handler: function(btn){
+                    handler: function (btn) {
                         // add entry to grid
                         var panel = btn.up('railsdbadminreportsparamsmanager'),
                             grid = panel.down('grid'),
+                            paramDisplayNameField = panel.down('#paramDisplayName'),
                             paramNameField = panel.down('#paramName'),
                             paramTypeField = panel.down('#paramType');
+
                         grid.getStore().add({
+                            display_name: paramDisplayNameField.getValue(),
                             name: paramNameField.getValue(),
                             type: paramTypeField.getValue()
                         });
 
                         paramNameField.setValue('');
                         paramTypeField.setValue('');
-                        
+                        paramDisplayNameField.setValue('');
+
                         btn.up('#addReportParam').hide();
                     }
                 },
                 {
                     text: 'Cancel',
-                    handler: function(btn){
+                    handler: function (btn) {
                         btn.up('#addReportParam').hide();
                     }
                 }
             ]
         };
-        
     }
 });
