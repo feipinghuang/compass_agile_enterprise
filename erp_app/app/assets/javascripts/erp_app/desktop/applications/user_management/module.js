@@ -272,6 +272,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                         title: 'New User',
                         plain: true,
                         buttonAlign: 'center',
+                        defaultFocus: 'first_name',
                         items: {
                             xtype: 'form',
                             frame: false,
@@ -295,6 +296,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                                     xtype: 'textfield',
                                     fieldLabel: 'First Name',
                                     allowBlank: false,
+                                    itemId: 'first_name',
                                     name: 'first_name'
                                 },
                                 {

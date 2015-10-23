@@ -109,9 +109,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 handler: function (btn) {
                     var textarea = self.query('.codemirror')[0];
                     var sql = textarea.getValue();
+                    var waitMsg;
 
                     if(self.initialConfig.reportId){
-                        var waitMsg = Ext.Msg.wait("Saving Report...", "Status");
+                        waitMsg = Ext.Msg.wait("Saving Report...", "Status");
                         Ext.Ajax.request({
                             url: '/rails_db_admin/erp_app/desktop/reports/save_query',
                             params: {
@@ -132,7 +133,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                         });
                     }
                     else{
-                        var waitMsg = Ext.Msg.wait("Saving Query...", "Status");
+                        waitMsg = Ext.Msg.wait("Saving Query...", "Status");
                         Ext.Ajax.request({
                             url: '/rails_db_admin/erp_app/desktop/queries/save_query',
                             params: {
@@ -165,7 +166,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
                         
                         reportTitle = "Preview" + " (" + self.reportName + ")";
-                    console.log(reportParamsWithValues);
                     self.openIframeInTab(reportTitle , '/reports/display/' + self.internalIdentifier + '?report_params=' + reportParamsWithValues);
 
                 }
@@ -190,11 +190,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
                         url = '/reports/display/' + self.internalIdentifier + '.pdf?report_params=' + reportParamsWithValues;
                     window.open(url, '_blank');
-                    
                 }
             });
-
-            
         }
         
         if (!this.initialConfig['hideSave']) {
@@ -361,7 +358,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
             },300);
         }
         centerRegion.setActiveTab(item);
-    },
+    }
 
-    
 });

@@ -12,6 +12,7 @@ module ErpBaseErpSvcs
             include HasPartyRoles::InstanceMethods
 
             has_many :entity_party_roles, :as => :entity_record, dependent: :destroy
+            has_many :role_types, :through => :entity_party_roles
           end
         end
 
@@ -23,7 +24,7 @@ module ErpBaseErpSvcs
 
           def with_party_role(party, role_type)
             joins(:entity_party_roles).where('entity_party_roles.role_type_id = ?', role_type.id)
-                .where('entity_party_roles.party_id = ?', party.id)
+              .where('entity_party_roles.party_id = ?', party.id)
           end
         end
 

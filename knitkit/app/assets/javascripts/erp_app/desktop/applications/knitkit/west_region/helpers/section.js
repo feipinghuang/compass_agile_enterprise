@@ -14,7 +14,8 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function (self, 
                         xtype: 'textfield',
                         fieldLabel: 'Title',
                         allowBlank: false,
-                        name: 'title'
+                        name: 'title',
+                        itemId: 'title'
                     },
                     {
                         xtype: 'radiogroup',
@@ -63,6 +64,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function (self, 
                     title: 'Create New Article',
                     plain: true,
                     buttonAlign: 'center',
+                    defaultFocus: 'title',
                     items: {
                         xtype: 'form',
                         labelWidth: 110,
@@ -331,6 +333,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function (self, 
                         title: 'New Section',
                         plain: true,
                         buttonAlign: 'center',
+                        defaultFocus: 'title',
                         items: {
                             xtype: 'form',
                             labelWidth: 110,
@@ -345,7 +348,8 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function (self, 
                                     xtype: 'textfield',
                                     fieldLabel: 'Title',
                                     allowBlank: false,
-                                    name: 'title'
+                                    name: 'title',
+                                    itemId: 'title'
                                 },
                                 {
                                     xtype: 'textfield',
