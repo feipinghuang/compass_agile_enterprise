@@ -102,6 +102,9 @@ module RailsDbAdmin
 
           # if we have report params process them
           if params[:report_params]
+            # add current_user to locals
+            params[:report_params][:current_user] = current_user
+
             sql = RailsDbAdmin::ErbStringParser.render(sql, locals: params[:report_params])
           end
           

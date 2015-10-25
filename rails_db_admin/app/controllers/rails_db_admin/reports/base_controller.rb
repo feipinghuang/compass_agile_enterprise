@@ -87,7 +87,10 @@ module RailsDbAdmin
                                else
                                  nil
                                end
-        
+
+        # add current_user to locals
+        parsed_report_params[:current_user] = current_user
+
         query = RailsDbAdmin::ErbStringParser.render(
           @report.query,
           locals: parsed_report_params
