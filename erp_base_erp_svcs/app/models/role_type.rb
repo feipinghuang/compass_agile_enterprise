@@ -13,7 +13,7 @@ class RoleType < ActiveRecord::Base
   # finds all child role types for given role types.
   #
   # @param role_types [Array] role type internal identifiers or records
-  # @returns [Array]  role types based and any of their children in a flat array
+  # @returns [Array] role types based and any of their children in a flat array
   def self.find_child_role_types(role_types)
     all_role_types = []
 

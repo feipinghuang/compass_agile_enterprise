@@ -15,10 +15,17 @@ Party.class_eval do
     end
   end
   has_many :time_entries, through: :timesheets do
+    # Get TimeEntries where thru_datetime is null
+    #
+    # @return [ActiveRecord::Relation]
     def open
       where('thru_datetime is null')
     end
 
+    # Scope TimeEntries by a WorkEffort
+    #
+    # @param work_effort [WorkEffort] WorkEffort to scope by
+    # @return [ActiveRecord::Relation]
     def scope_by_work_effort(work_effort)
       where('work_effort_id' => work_effort.id)
     end
@@ -157,4 +164,17 @@ Party.class_eval do
   # end relationship helpers
   #
 
+  # Returns an open TimeEntry for this party if there is one, nil if not
+  #
+  # @return [TimeEntry] TimeEntry if present nil if not
+  def open_time_entry
+    party.time_entries.open.first
+  end
+
+  # Returns True if there is an open TimeEntry, false if there is not
+  #
+  # @return [Boolean] True if there is an open TimeEntry, false if there is not
+  def has_open_time_entry?
+    open_time_entry.nil?
+  end
 end

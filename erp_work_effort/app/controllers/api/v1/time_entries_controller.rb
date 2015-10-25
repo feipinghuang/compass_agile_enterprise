@@ -133,7 +133,7 @@ module Api
             work_effort = WorkEffort.find(params[:work_effort_id])
 
             # check for an open TimeEntry
-            open_time_entry = party.time_entries.open.first
+            open_time_entry = party.open_time_entry
 
             # if there is an open TimeEntry stop it and start a new one
             if open_time_entry
