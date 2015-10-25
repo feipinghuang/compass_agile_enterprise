@@ -175,12 +175,24 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  # get assigned parties by role type
+  # Get assigned parties by role type
   #
-  # @param role_type [String] role type internal identifier, defaults to worker
-  # @return [Array] descriptions of role types comma separated
-  def assigned_parties(role_type='worker')
-    self.work_effort_party_assignments.where('role_type_id = ?', RoleType.iid(role_type)).collect do |item|
+  # @param role_types [Array] (['work_resource']) Array of role types to scope by
+  # @return [Array] Assigned Parties
+  def assigned_parties(role_types=['work_resource'])
+    role_types = RoleType.find_child_role_types(role_types)
+
+    Party.joins(:work_effort_party_assignments)
+        .where(work_effort_party_assignments: {role_type_id: role_types})
+        .where(work_effort_party_assignments: {party_id: self.id})
+  end
+
+  # Get comma sepeated description of all Parties assigned
+  #
+  # @param role_types [Array] (['work_resource']) Array of role types to scope by
+  # @return [Array] descriptions of Parties comma separated
+  def description_of_assigned_parties(role_types=['work_resource'])
+    assigned_parties(role_types).collect do |item|
       item.party.description
     end.join(',')
   end
@@ -266,7 +278,7 @@ class WorkEffort < ActiveRecord::Base
 
   # get total hours for this WorkEffort by TimeEntries
   def total_hours
-    time_entries.all.sum{|time_entry| time_entry.hours }
+    time_entries.all.sum { |time_entry| time_entry.hours }
   end
 
   # converts this record a hash data representation

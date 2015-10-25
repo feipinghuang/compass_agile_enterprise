@@ -6,6 +6,7 @@ Party.class_eval do
   has_many :wc_codes, dependent: :destroy
   has_many :shifts, dependent: :destroy
   has_many :resumes
+  has_many :work_effort_party_assignments, :dependent => :destroy
   has_many :timesheet_party_roles, dependent: :destroy
   has_many :timesheets, through: :timesheet_party_roles do
     def current!(role_type)
@@ -164,17 +165,29 @@ Party.class_eval do
   # end relationship helpers
   #
 
+  # Get array of assigned WorkEfforts
+  #
+  # @param role_types [Array] (['work_resource']) Array of role types to scope by
+  # @return [Array] Assigned WorkEfforts
+  def assigned_work_efforts(role_types=['work_resource'])
+    role_types = RoleType.find_child_role_types(role_types)
+
+    WorkEffort.joins(:work_effort_party_assignments)
+        .where(work_effort_party_assignments: {role_type_id: role_types})
+        .where(work_effort_party_assignments: {party_id: self.id})
+  end
+
   # Returns an open TimeEntry for this party if there is one, nil if not
   #
   # @return [TimeEntry] TimeEntry if present nil if not
   def open_time_entry
-    party.time_entries.open.first
+    self.time_entries.open.first
   end
 
   # Returns True if there is an open TimeEntry, false if there is not
   #
   # @return [Boolean] True if there is an open TimeEntry, false if there is not
   def has_open_time_entry?
-    open_time_entry.nil?
+    !open_time_entry.nil?
   end
 end
