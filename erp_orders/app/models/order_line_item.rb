@@ -138,7 +138,11 @@ class OrderLineItem < ActiveRecord::Base
 
   # description of line_item_record
   def to_s
-    line_item_record.description
+    if line_item_record
+      line_item_record.description
+    else
+      nil
+    end
   end
 
   # determine the record this OrderLineItem pertains to
