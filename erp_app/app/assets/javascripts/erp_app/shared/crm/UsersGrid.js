@@ -91,6 +91,12 @@ Ext.define("Compass.ErpApp.Shared.Crm.UsersGrid", {
      * @cfg {String} deleteUrl
      * Url to call to delete user
      */
+    url: '/erp_app/organizer/crm/users',
+
+    /**
+     * @cfg {String} deleteUrl
+     * Url to call to delete user
+     */
     deleteUrl: '/erp_app/organizer/crm/users/',
 
     /**
@@ -213,7 +219,7 @@ Ext.define("Compass.ErpApp.Shared.Crm.UsersGrid", {
             remoteSort: true,
             proxy: {
                 type: 'ajax',
-                url: '/erp_app/organizer/crm/users',
+                url: me.url,
                 extraParams: {
                     party_roles: me.partyRoles,
                     to_role: me.toRole,
