@@ -10,17 +10,16 @@ module RailsDbAdmin
 
     def execute_sql(sql)
       begin
-        rows = @connection.select_all(sql)
+        pg_result = @connection.execute(sql)
       rescue => ex
         return nil, nil, ex.message
       end
 
       values = []
-      columns = []
+      columns = pg_result.fields
 
-      unless rows.nil? || rows.empty?
-        columns = rows[0].keys
-        rows.each do |row|
+      unless pg_result.nil? || pg_result.count > 0
+        pg_result.each do |row|
           values << row
         end
       end
