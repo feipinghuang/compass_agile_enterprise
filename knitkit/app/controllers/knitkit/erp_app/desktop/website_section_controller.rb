@@ -124,7 +124,7 @@ module Knitkit
 
         def update_security
           if current_user.has_capability?('secure', 'WebsiteSection') or current_user.has_capability?('unsecure', 'WebsiteSection')
-            roles = params[:security]
+            roles = JSON.parse(params[:security])
 
             if roles.blank? || roles.empty?
               @website_section.remove_capability(:view)

@@ -126,9 +126,13 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                     form.down('fieldset').toggle();
                 }
 
+                if(currentSecurity[capability]){
+                    form.down('fieldset').checkboxCmp.setValue(true);
+                }
+
                 // check current selected roles
                 form.getForm().getFields().each(function (field) {
-                    if (currentSecurity[capability].contains(field.getName())) {
+                    if (currentSecurity[capability] && currentSecurity[capability].contains(field.getName())) {
                         field.setValue(true);
                     }
                 });
@@ -190,13 +194,15 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                                 security = {};
 
                                 Ext.each(capabilities, function (capability) {
-                                    security[capability] = [];
+                                    if(securityPanel.down('#' + capability).down('fieldset').checkboxCmp.getValue()){
+                                        security[capability] = [];
 
-                                    securityPanel.down('#' + capability).getForm().getFields().each(function (field) {
-                                        if (field.getValue() && field.cls != 'x-fieldset-header-checkbox') {
-                                            security[capability].push(field.getName());
-                                        }
-                                    });
+                                        securityPanel.down('#' + capability).getForm().getFields().each(function (field) {
+                                            if (field.getValue() && field.cls != 'x-fieldset-header-checkbox') {
+                                                security[capability].push(field.getName());
+                                            }
+                                        });
+                                    }
                                 });
                             }
                             else {
@@ -209,8 +215,8 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                                 });
                             }
 
-                            var jsonData = Ext.apply({
-                                security: security
+                            var params = Ext.apply({
+                                security: Ext.encode(security)
                             }, baseParams);
 
                             var waitMsg = Ext.Msg.wait('Please Wait...', 'Saving');
@@ -218,7 +224,7 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
                             Ext.Ajax.request({
                                 method: 'PUT',
                                 url: url,
-                                jsonData: jsonData,
+                                params: params,
                                 success: function (response) {
                                     waitMsg.close();
                                     var responseObj = Ext.decode(response.responseText);
