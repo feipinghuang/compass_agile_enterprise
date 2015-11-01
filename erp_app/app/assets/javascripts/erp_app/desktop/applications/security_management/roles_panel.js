@@ -167,7 +167,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.RolesPanel", 
                                                 },
                                                 failure: function (form, action) {
                                                     var obj = Ext.decode(action.response.responseText);
-                                                    
+
                                                     if (obj !== null) {
                                                         Ext.Msg.alert("Error", obj.message);
                                                     }
@@ -206,6 +206,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.RolesPanel", 
                             title: 'Edit Role',
                             plain: true,
                             buttonAlign: 'center',
+                            defaultFocus: 'role_name',
                             items: Ext.create('Ext.form.Panel', {
                                 labelWidth: 110,
                                 frame: false,
@@ -220,6 +221,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.RolesPanel", 
                                         fieldLabel: 'Role Name',
                                         allowBlank: false,
                                         name: 'description',
+                                        itemId: 'role_name',
                                         value: selection.get('description'),
                                         listeners: {
                                             afterrender: function (field) {

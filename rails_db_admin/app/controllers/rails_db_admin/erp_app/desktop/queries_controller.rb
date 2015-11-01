@@ -5,7 +5,7 @@ module RailsDbAdmin
 
         def save_query
           query = params[:query]
-          query_name  = params[:query_name]
+          query_name = params[:query_name]
 
           @query_support.save_query(query, query_name)
 
@@ -25,7 +25,7 @@ module RailsDbAdmin
         end
 
         def delete_query
-          query_name  = params[:query_name]
+          query_name = params[:query_name]
           @query_support.delete_query(query_name)
 
           render :json => {:success => true}
@@ -51,16 +51,12 @@ module RailsDbAdmin
         end
 
         def open_and_execute_query
-          result = {}
           query_name = params[:query_name]
 
           query = @query_support.get_query(query_name)
           columns, values, exception = @query_support.execute_sql(query)
 
-          if columns.blank? || values.blank?
-            result = {:success => false, :query => query,
-              :exception => "Empty result set"}
-          elsif exception.nil?
+          if exception.nil?
 
             columns_array = columns.collect do |column|
               RailsDbAdmin::Extjs::JsonColumnBuilder.build_readonly_column(column)
@@ -71,11 +67,11 @@ module RailsDbAdmin
             end
 
             result = {:success => true, :query => query,
-              :columns => columns_array,
-              :fields => fields_array, :data => values}
+                      :columns => columns_array,
+                      :fields => fields_array, :data => values}
           else
             result = {:success => false, :query => query,
-              :exception => exception.gsub("\n", " ")}
+                      :exception => exception.gsub("\n", " ")}
           end
 
           render :json => result
@@ -88,10 +84,10 @@ module RailsDbAdmin
           columns = @database_connection_class.connection.columns(table)
 
           render :json => {:success => true,
-            :sql => sql,
-            :columns => RailsDbAdmin::Extjs::JsonColumnBuilder.build_grid_columns(columns),
-            :fields => RailsDbAdmin::Extjs::JsonColumnBuilder.build_store_fields(columns),
-            :data => results}
+                           :sql => sql,
+                           :columns => RailsDbAdmin::Extjs::JsonColumnBuilder.build_grid_columns(columns),
+                           :fields => RailsDbAdmin::Extjs::JsonColumnBuilder.build_store_fields(columns),
+                           :data => results}
         end
 
         def execute_query
@@ -102,9 +98,12 @@ module RailsDbAdmin
 
           # if we have report params process them
           if params[:report_params]
+            # add current_user to locals
+            params[:report_params][:current_user] = current_user
+
             sql = RailsDbAdmin::ErbStringParser.render(sql, locals: params[:report_params])
           end
-          
+
           #append a semicolon as the last character if the
           #user forgot
           if !sql.end_with?(";")
@@ -119,7 +118,7 @@ module RailsDbAdmin
           #was nothing selected by the user
           if (selection == nil || selection == "")
             last_stmt_end = 0
-            sql_arr.each_with_index do |val,idx|
+            sql_arr.each_with_index do |val, idx|
               if val.match(';')
                 sql_stmt_arry << {:begin => (sql_stmt_arry.length > 0) ? last_stmt_end +1 : 0, :end => idx}
                 last_stmt_end = idx
@@ -131,20 +130,20 @@ module RailsDbAdmin
             #at the beginning of the text area
             if cursor_pos <= sql_stmt_arry[0].fetch(:begin)
               sql_str = sql_arr.values_at(sql_stmt_arry[0].fetch(:begin)..
-                sql_stmt_arry[0].fetch(:end)).join(" ")
+                                              sql_stmt_arry[0].fetch(:end)).join(" ")
               #run the last query if we're in whitespace at the end of the
               #textarea
             elsif cursor_pos > sql_stmt_arry[last_sql_stmt].fetch(:begin)
               sql_str = sql_arr.values_at(
-                sql_stmt_arry[last_sql_stmt].fetch(:begin)..
-                sql_stmt_arry[last_sql_stmt].fetch(:end)).join(" ")
+                  sql_stmt_arry[last_sql_stmt].fetch(:begin)..
+                      sql_stmt_arry[last_sql_stmt].fetch(:end)).join(" ")
               #run query based on cursor position
             else
               sql_stmt_arry.each do |sql_stmt|
                 if cursor_pos >= sql_stmt.fetch(:begin) &&
                     cursor_pos <= sql_stmt.fetch(:end)
                   sql_str = sql_arr.values_at(sql_stmt.fetch(:begin)..
-                    sql_stmt.fetch(:end)).join(" ")
+                                                  sql_stmt.fetch(:end)).join(" ")
                 end
               end
             end
@@ -155,10 +154,9 @@ module RailsDbAdmin
           columns, values, exception = @query_support.execute_sql(sql_str)
 
           if !exception.nil?
-            result = {:success => false, :exception => exception.gsub("\n"," ")}
-          elsif columns.empty? || values.empty?
-            result = {:success => false, :exception => "Empty result set"}
-          else exception.nil?
+            result = {:success => false, :exception => exception.gsub("\n", " ")}
+          else
+            exception.nil?
             columns_array = columns.collect do |column|
               RailsDbAdmin::Extjs::JsonColumnBuilder.build_readonly_column(column)
             end
@@ -168,8 +166,8 @@ module RailsDbAdmin
             end
 
             result = {:success => true, :sql => sql,
-              :columns => columns_array,
-              :fields => fields_array, :data => values}
+                      :columns => columns_array,
+                      :fields => fields_array, :data => values}
           end
           render :json => result
         end

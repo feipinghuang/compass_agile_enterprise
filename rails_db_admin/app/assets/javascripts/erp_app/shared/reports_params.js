@@ -27,7 +27,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                     container.items.push({
                         xtype: 'textfield',
                         labelWidth: 80,
-                        fieldLabel: param.name,
+                        fieldLabel: param.display_name,
                         style: {
                             marginRight: '20px'  
                         },
@@ -42,7 +42,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             marginRight: '20px'  
                         },
                         format: 'm/d/Y',
-                        fieldLabel: param.name,
+                        fieldLabel: param.display_name,
                         name: param.name,
                         value: new Date()
                     });
@@ -56,6 +56,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         me.callParent();
         
     },
+
     getReportParams: function(){
         var me = this,
             paramsObj = {};

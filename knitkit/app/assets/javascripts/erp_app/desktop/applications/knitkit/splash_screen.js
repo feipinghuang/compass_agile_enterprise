@@ -53,6 +53,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SplashScreen", {
                                             title: 'New Website',
                                             buttonAlign: 'center',
                                             width: 360,
+                                            defaultFocus: 'name',
                                             items: Ext.create('widget.form', {
                                                 labelWidth: 110,
                                                 frame: false,
@@ -66,7 +67,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SplashScreen", {
                                                         xtype: 'textfield',
                                                         fieldLabel: 'Name *',
                                                         allowBlank: false,
-                                                        name: 'name'
+                                                        name: 'name',
+                                                        itemId: 'name'
                                                     },
                                                     {
                                                         xtype: 'textfield',

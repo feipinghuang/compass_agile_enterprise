@@ -9,6 +9,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addHostOptions = function (self, ite
                         title: 'Update Host',
                         modal: true,
                         buttonAlign: 'center',
+                        defaultFocus: 'host',
                         items: Ext.create("Ext.form.Panel", {
                             labelWidth: 50,
                             frame: false,
@@ -23,6 +24,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addHostOptions = function (self, ite
                                     fieldLabel: 'Host',
                                     id: 'knitkitUpdateWebsiteHostHost',
                                     name: 'host',
+                                    itemId: 'host',
                                     value: record.data.host,
                                     allowBlank: false
                                 }

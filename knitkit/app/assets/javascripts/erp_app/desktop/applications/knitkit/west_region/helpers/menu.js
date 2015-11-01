@@ -12,6 +12,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addMenuOptions = function (self, ite
                         title: 'New Menu Item',
                         modal: true,
                         buttonAlign: 'center',
+                        defaultFocus: 'title',
                         items: Ext.create('Ext.form.Panel', {
                             labelWidth: 50,
                             frame: false,
@@ -25,6 +26,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addMenuOptions = function (self, ite
                                     xtype: 'textfield',
                                     fieldLabel: 'Title',
                                     width: 320,
+                                    itemId: 'title',
                                     allowBlank: false,
                                     name: 'title'
                                 },

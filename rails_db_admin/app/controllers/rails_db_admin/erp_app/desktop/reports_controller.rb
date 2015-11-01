@@ -49,7 +49,8 @@ module RailsDbAdmin
                        query: report.query,
                        internalIdentifier: report.internal_identifier,
                        template: report.template,
-                       params: report.meta_data['params'] || []
+                       params: report.meta_data['params'] || [],
+                       roles: report.role_types.pluck(:internal_identifier).join(',')
                      }
                    }
           else
@@ -68,10 +69,24 @@ module RailsDbAdmin
             report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip if params[:margin_bottom]
             report.meta_data['print_margin_left'] = params[:margin_left].strip if params[:margin_left]
 
+            if params[:report_params].present?
+              report.meta_data['params'] = params[:report_params]
+            end
 
-            report_params = params[:report_params]
-            if report_params
-              report.meta_data['params'] = report_params
+            report_roles = params[:report_roles]
+            if report_roles
+              available_role_types = report.role_types.pluck(:internal_identifier)
+              # delete all roles associated with the report
+              report.entity_party_roles.destroy_all
+
+              # assign report roles
+              report_roles.split(',').each do |role_type|
+                report.add_party_with_role(
+                  current_user.party,
+                  RoleType.iid(role_type)
+                ) unless available_role_types.include?(role_type.to_sym)
+              end
+
             end
             
             render :json => {success: report.save}

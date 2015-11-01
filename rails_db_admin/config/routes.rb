@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   match '/reports/display/:iid(.:format)' => "rails_db_admin/reports/base#show"
+  match '/reports/email/:iid' => "rails_db_admin/reports/base#email"
 end
 
 RailsDbAdmin::Engine.routes.draw do
