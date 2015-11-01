@@ -10,6 +10,10 @@ class CandidateSubmission < ActiveRecord::Base
 
   #must be after is_json
 
+  def order_txn
+    self.order_line_item.order_txn
+  end
+
   # helper method to get dba_organization related to this candidate_submission's
   # order line item
   def dba_organization
