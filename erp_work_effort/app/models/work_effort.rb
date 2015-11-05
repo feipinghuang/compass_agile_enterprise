@@ -160,6 +160,10 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
+  def dba_organization
+    find_party_with_role(RoleType.dba_org)
+  end
+
   # override for comparison of a work_effort
   #
   # @param an_other [WorkEffort] other work_effort
