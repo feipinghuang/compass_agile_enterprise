@@ -42,6 +42,18 @@ module ErpBaseErpSvcs
 
         module InstanceMethods
 
+          def postal_addresses
+            find_all_contacts_by_contact_mechanism(PostalAddress)
+          end
+
+          def emails
+            find_all_contacts_by_contact_mechanism(EmailAddress)
+          end
+
+          def phone_numbers
+            find_all_contacts_by_contact_mechanism(PhoneNumber)
+          end
+
           def has_phone_number?(phone_number)
             result = nil
             self.contacts.each do |c|

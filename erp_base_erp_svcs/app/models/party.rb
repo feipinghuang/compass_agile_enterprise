@@ -27,7 +27,7 @@ class Party < ActiveRecord::Base
 
     # Scopes parties by passed role types
     #
-    # @param [Array, RoleType] Array of RoleTypes to scope by
+    # @param role_types [Array, RoleType] Array of RoleTypes to scope by
     def with_role_types(role_types)
       joins('inner join party_roles on party_roles.party_id = parties.id').where('party_roles.role_type_id' =>  role_types)
     end
