@@ -20,7 +20,7 @@ Party.class_eval do
     #
     # @return [ActiveRecord::Relation]
     def open
-      where('thru_datetime is null')
+      where(TimeEntry.arel_table[:from_datetime].not_eq(nil)).where(thru_datetime: nil).where(manual_entry: false)
     end
 
     # Scope TimeEntries by a WorkEffort
