@@ -16,7 +16,7 @@ Party.class_eval do
   end
   has_many :time_entries, through: :timesheets do
     def open
-      where('thru_datetime is null')
+      where(TimeEntry.arel_table[:from_datetime].not_eq(nil)).where(thru_datetime: nil).where(manual_entry: false)
     end
 
     def scope_by_work_effort(work_effort)
