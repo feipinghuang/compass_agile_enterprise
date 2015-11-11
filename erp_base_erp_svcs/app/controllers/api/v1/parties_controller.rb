@@ -23,7 +23,14 @@ module Api
         end
 
         # scope by dba organization
-        parties = parties.with_dba_organization(current_user.party.dba_organization)
+        if params[:include_descendants].present? and params[:include_descendants].to_bool
+          dba_organization = [current_user.party.dba_organization]
+          dba_organization.concat(current_user.party.dba_organization.child_dba_organizations)
+
+          parties.scope_by_dba_organization(dba_organization)
+        else
+          parties = parties.scope_by_dba_organization(current_user.party.dba_organization)
+        end
 
         parties = parties.uniq.order("#{sort} #{dir}")
 
