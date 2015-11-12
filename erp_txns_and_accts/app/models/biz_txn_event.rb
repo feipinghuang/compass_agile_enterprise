@@ -66,6 +66,21 @@ class BizTxnEvent < ActiveRecord::Base
     alias scope_by_dba scope_by_dba_organization
   end
 
+  # Get the dba_organization related to this BizTxnEvent
+  #
+  # @return [Party] returns a Party if the dba organization was found
+  def dba_organization
+    dba_org_role_type = BizTxnPartyRoleType.find_or_create('dba_org', 'DBA Organization')
+
+    biz_txn_party_role = biz_txn_party_roles.where('biz_txn_party_roles.biz_txn_party_role_type_id' => dba_org_role_type).first
+
+    if biz_txn_party_role
+      biz_txn_party_role.party
+    end
+  end
+
+  alias dba_org dba_organization
+
   def destroy_biz_txn_relationships
     BizTxnRelationship.where("txn_event_id_from = ? or txn_event_id_to = ?", self.id, self.id).destroy_all
   end
