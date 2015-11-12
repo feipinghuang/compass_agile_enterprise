@@ -20,7 +20,7 @@ Ext.define('TreeReader', {
     }
 });
 
-Ext.define('Compass.ErpApp.Shared.RoleTypeSelectionModel', {
+Ext.define('Compass.ErpApp.Shared.TypeSelectionModel', {
     extend: 'Ext.data.Model',
     fields: [
         // ExtJs node fields
@@ -33,26 +33,51 @@ Ext.define('Compass.ErpApp.Shared.RoleTypeSelectionModel', {
     ]
 });
 
-Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
+Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
     extend: "Ext.tree.Panel",
-    alias: 'widget.roletypeselectiontree',
+    alias: 'widget.typeselectiontree',
 
-    title: 'Select Roles',
+    title: 'Select Types',
     height: 200,
     maxHeight: 200,
     width: '100%',
     autoScroll: true,
     rootVisible: false,
-    availableRoleTypes: [],
-    selectedRoleTypes: [],
     cascadeSelectionUp: false,
     cascadeSelectionDown: false,
-
-    // true to all users to create a role type
     canCreate: false,
 
-    // default parent role type if no parent is selected
-    defaultParentRoleType: null,
+    createNewText: 'Create New',
+
+    /**
+     * @cfg {Array} availableTypes
+     * Array of types that can be selected
+     */
+    availableTypes: [],
+
+    /**
+     * @cfg {Array} selectedTypes
+     * Array of currently selected types
+     */
+    selectedTypes: [],
+
+    /**
+     * @cfg {String} typesUrl
+     * Url to load types from.
+     */
+    typesUrl: null,
+
+    /**
+     * @cfg {String} typesRoot
+     * Root attribute for types returned from the server.
+     */
+    typesRoot: null,
+
+    /**
+     * @cfg {Boolean} defaultParentType
+     * default parent type if no parent is selected
+     */
+    defaultParentType: null,
 
     listeners: {
         'checkchange': function (node, checked) {
@@ -102,7 +127,7 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
         var me = this;
 
         me.store = Ext.create('Ext.data.TreeStore', {
-            model: 'Compass.ErpApp.Shared.RoleTypeSelectionModel',
+            model: 'Compass.ErpApp.Shared.TypeSelectionModel',
             folderSort: true,
             sorters: [
                 {
@@ -112,7 +137,7 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
             ]
         });
 
-        me.store.setRootNode({text: '', children: me.availableRoleTypes});
+        me.store.setRootNode({text: '', children: me.availableTypes});
 
         if (me.canCreate) {
             me.dockedItems = [
@@ -121,10 +146,10 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
                     items: [
                         {
                             xtype: 'button',
-                            text: 'Create New Role',
+                            text: me.createNewText,
                             iconCls: 'icon-add',
                             handler: function () {
-                                me.showCreateRoleType();
+                                me.showCreateType();
                             }
                         }
                     ]
@@ -136,16 +161,16 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
 
         me.collapseAll();
 
-        if (me.selectedRoleTypes) {
-            me.setSelectedRoleTypes(me.selectedRoleTypes);
+        if (me.selectedTypes) {
+            me.setSelectedTypes(me.selectedTypes);
         }
     },
 
-    showCreateRoleType: function () {
+    showCreateType: function () {
         var me = this;
 
         var window = Ext.widget('window', {
-            title: 'Create Role Type',
+            title: me.createNewText,
             modal: true,
             layout: 'fit',
             plain: true,
@@ -153,7 +178,7 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
             items: [
                 {
                     xtype: 'form',
-                    url: '/api/v1/role_types',
+                    url: me.typesUrl,
                     defaults: {
                         width: 375,
                         xtype: 'textfield'
@@ -163,20 +188,20 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
                         {
                             xtype: 'combo',
                             name: 'parent',
-                            itemId: 'parentRoleType',
+                            itemId: 'parentType',
                             emptyText: 'No Parent',
                             width: 320,
-                            loadingText: 'Retrieving Role Types...',
+                            loadingText: 'Retrieving Types...',
                             store: Ext.create("Ext.data.Store", {
                                 proxy: {
                                     type: 'ajax',
-                                    url: '/api/v1/role_types.json',
+                                    url: me.typesUrl,
                                     reader: {
                                         type: 'json',
-                                        root: 'role_types'
+                                        root: me.typesRoot
                                     },
                                     extraParams: {
-                                        parent: me.defaultParentRoleType
+                                        parent: me.defaultParentType
                                     }
                                 },
                                 fields: [
@@ -192,7 +217,7 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
                             forceSelection: true,
                             allowBlank: true,
                             editable: false,
-                            fieldLabel: 'Parent Role',
+                            fieldLabel: 'Parent',
                             mode: 'remote',
                             displayField: 'description',
                             valueField: 'internal_identifier',
@@ -203,7 +228,7 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
                                     el: {
                                         delegate: '.my-boundlist-item-menu',
                                         click: function () {
-                                            window.down('#parentRoleType').clearValue();
+                                            window.down('#parentType').clearValue();
                                         }
                                     }
                                 }
@@ -228,9 +253,9 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
                             if (formPanel.isValid()) {
                                 formPanel.getForm().submit({
                                     timeout: 30000,
-                                    waitMsg: 'Creating role type...',
+                                    waitMsg: 'Creating type...',
                                     params: {
-                                        default_parent: me.defaultParentRoleType
+                                        default_parent: me.defaultParentType
                                     },
                                     success: function (form, action) {
                                         var responseObj = Ext.decode(action.response.responseText);
@@ -249,8 +274,8 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
 
                                             parentNode.set('leaf', false);
                                             parentNode.appendChild({
-                                                text: responseObj.role_type.description,
-                                                internalIdentifier: responseObj.role_type.internal_identifier,
+                                                text: responseObj.type.description,
+                                                internalIdentifier: responseObj.type.internal_identifier,
                                                 checked: false,
                                                 leaf: true,
                                                 children: []
@@ -281,9 +306,9 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
         window.show();
     },
 
-    getSelectedRoleTypes: function () {
+    getSelectedTypes: function () {
         var me = this;
-        var roleTypes = [];
+        var types = [];
 
         me.getRootNode().cascadeBy(function (node) {
             if (me.cascadeSelectionUp) {
@@ -294,31 +319,31 @@ Ext.define("Compass.ErpApp.Shared.RoleTypeSelectionTree", {
                     }
                 });
                 if (node.get('checked') && !childChecked) {
-                    roleTypes.push(node.get('internalIdentifier'));
+                    types.push(node.get('internalIdentifier'));
                 }
             }
             else {
                 if (node.get('checked')) {
-                    roleTypes.push(node.get('internalIdentifier'));
+                    types.push(node.get('internalIdentifier'));
                 }
             }
         });
-        return Ext.Array.clean(roleTypes);
+        return Ext.Array.clean(types);
     },
 
-    setAvailableRoleTypes: function (roleTypes) {
+    setAvailableTypes: function (types) {
         var me = this;
 
-        me.store.setRootNode({text: '', children: roleTypes});
+        me.store.setRootNode({text: '', children: types});
     },
 
-    setSelectedRoleTypes: function (roleTypes) {
+    setSelectedTypes: function (types) {
         var me = this;
 
-        roleTypes = Ext.Array.clean(roleTypes.split(','));
+        types = Ext.Array.clean(types.split(','));
 
         me.getRootNode().cascadeBy(function (node) {
-            if (Ext.Array.contains(roleTypes, node.get('internalIdentifier'))) {
+            if (Ext.Array.contains(types, node.get('internalIdentifier'))) {
                 node.set('checked', true);
                 var parentNode = node.parentNode;
 

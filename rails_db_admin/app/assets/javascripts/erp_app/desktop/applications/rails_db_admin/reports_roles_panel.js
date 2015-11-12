@@ -11,7 +11,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
             iconCls: 'icon-save',
             handler: function(btn){
                 var panel = btn.up('railsdbadminreportsrolespanel'),
-                    reportRoles = panel.down('roletypeselectiontree').getSelectedRoleTypes(),
+                    reportRoles = panel.down('typeselectiontree').getSelectedTypes(),
                     waitMsg = Ext.Msg.wait("Loading roles...");
                 
                 Ext.Ajax.request({
@@ -54,12 +54,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
         me.removeAll();
         me.reportId = reportId;
         me.add({
-            xtype: 'roletypeselectiontree',
+            xtype: 'typeselectiontree',
+            title: 'Select Roles',
+            typesUrl: '/api/v1/role_types.tree',
+            typeRoot: 'role_types',
             canCreate: true,
             cascadeSelectionDown: true,
-            defaultParentRoleType: 'report'
+            defaultParentType: 'report'
         });
-        var roleTypesTree = me.down('roletypeselectiontree'),
+        var roleTypesTree = me.down('typeselectiontree'),
             availableRoleTypes = [],
             waitMsg = Ext.Msg.wait("Loading roles...");
 
@@ -86,11 +89,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
                 waitMsg.close();
                 Ext.msg.alert('Error', 'Error loading roles');
             }
-            
-            
-
         });
     }
-
-    
 });
