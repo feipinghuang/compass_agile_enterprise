@@ -56,10 +56,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
         me.add({
             xtype: 'typeselectiontree',
             title: 'Select Roles',
-            typesUrl: '/api/v1/role_types.tree',
-            typeRoot: 'role_types',
+            typesUrl: '/api/v1/role_types',
+            typesRoot: 'role_types',
             canCreate: true,
             cascadeSelectionDown: true,
+            availableTypes: [],
             defaultParentType: 'report'
         });
         var roleTypesTree = me.down('typeselectiontree'),

@@ -38,14 +38,17 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
     alias: 'widget.typeselectiontree',
 
     title: 'Select Types',
+    width: '100%',
     height: 200,
     maxHeight: 200,
-    width: '100%',
-    autoScroll: true,
     rootVisible: false,
     cascadeSelectionUp: false,
     cascadeSelectionDown: false,
     canCreate: false,
+    autoScroll: true,
+    mixins: {
+        field: 'Ext.form.field.Field'
+    },
 
     createNewText: 'Create New',
 
@@ -53,7 +56,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
      * @cfg {Array} availableTypes
      * Array of types that can be selected
      */
-    availableTypes: [],
+    availableTypes: null,
 
     /**
      * @cfg {Array} selectedTypes
@@ -79,9 +82,32 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
      */
     defaultParentType: null,
 
+    /**
+     * @cfg {String} disabledNodeMessage
+     * Message to display when a disabled type is clicked
+     */
+    disabledNodeMessage: 'This item can not be unselected',
+
+    /**
+     * @cfg {Array} selectableTypes
+     * Array of selectable types, if it is null then all types are selectable
+     */
+    selectableTypes: null,
+
     listeners: {
+        'beforecellclick': function (grid) {
+            grid.ownerCt.suspendLayouts();
+        },
         'checkchange': function (node, checked) {
             var me = this;
+
+            if(me.selectableTypes && !Ext.Array.contains(me.selectableTypes.split(','), node.get('internalIdentifier'))){
+                Ext.Msg.warning('Warning', me.disabledNodeMessage);
+
+                node.set('checked', !checked);
+
+                return false;
+            }
 
             if (me.cascadeSelectionUp) {
                 var rootNode = me.getRootNode();
@@ -120,24 +146,50 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
                     });
                 }
             }
+
+            node.getOwnerTree().resumeLayouts();
         }
     },
 
     initComponent: function () {
         var me = this;
 
-        me.store = Ext.create('Ext.data.TreeStore', {
-            model: 'Compass.ErpApp.Shared.TypeSelectionModel',
-            folderSort: true,
-            sorters: [
-                {
-                    property: 'text',
-                    direction: 'ASC'
-                }
-            ]
-        });
+        if (me.availableTypes) {
+            me.store = Ext.create('Ext.data.TreeStore', {
+                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
+                folderSort: true,
+                sorters: [
+                    {
+                        property: 'text',
+                        direction: 'ASC'
+                    }
+                ]
+            });
 
-        me.store.setRootNode({text: '', children: me.availableTypes});
+            me.store.setRootNode({text: '', children: me.availableTypes});
+        }
+        else {
+            me.store = Ext.create('Ext.data.TreeStore', {
+                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
+                folderSort: true,
+                proxy: {
+                    type: 'ajax',
+                    url: me.typesUrl + '.tree',
+                    reader: {
+                        type: 'treereader',
+                        root: me.typesRoot
+                    }
+                },
+                sorters: [
+                    {
+                        property: 'text',
+                        direction: 'ASC'
+                    }
+                ]
+            });
+
+            me.store.load();
+        }
 
         if (me.canCreate) {
             me.dockedItems = [
@@ -195,7 +247,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
                             store: Ext.create("Ext.data.Store", {
                                 proxy: {
                                     type: 'ajax',
-                                    url: me.typesUrl,
+                                    url: me.typesUrl + '.json',
                                     reader: {
                                         type: 'json',
                                         root: me.typesRoot
@@ -274,8 +326,8 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 
                                             parentNode.set('leaf', false);
                                             parentNode.appendChild({
-                                                text: responseObj.type.description,
-                                                internalIdentifier: responseObj.type.internal_identifier,
+                                                text: responseObj[me.typesRoot.singularize()].description,
+                                                internalIdentifier: responseObj[me.typesRoot.singularize()].internal_identifier,
                                                 checked: false,
                                                 leaf: true,
                                                 children: []
@@ -362,5 +414,49 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
                 }
             }
         });
+    },
+
+    setSelectableTypes: function(types){
+        var me = this;
+
+        me.selectableTypes = types;
+    },
+
+    /*
+     * Field methods
+     */
+
+    getValue: function () {
+        var me = this;
+
+        return me.getSelectedTypes().join(',');
+    },
+
+    setValue: function (value) {
+        var me = this;
+
+        if (value) {
+            me.setSelectedTypes(value);
+        }
+    },
+
+    getSubmitData: function () {
+        var me = this,
+            data = null;
+        if (!me.disabled && me.submitValue) {
+            data = {};
+            data[me.getName()] = me.getValue();
+        }
+        return data;
+    },
+
+    validate: function () {
+        if (this.initialConfig.allowBlank !== true && Ext.isEmpty(this.getSelectedTypes())) {
+            Ext.Msg.warning('Warning', 'At least one type must be selected');
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 });
