@@ -39,12 +39,11 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 
     title: 'Select Types',
     width: '100%',
-    height: '100%',
+    minHeight: 200,
     rootVisible: false,
     cascadeSelectionUp: false,
     cascadeSelectionDown: false,
     canCreate: false,
-    autoScroll: true,
     mixins: {
         field: 'Ext.form.field.Field'
     },
