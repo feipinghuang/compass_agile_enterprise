@@ -39,8 +39,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 
     title: 'Select Types',
     width: '100%',
-    height: 200,
-    maxHeight: 200,
+    height: '100%',
     rootVisible: false,
     cascadeSelectionUp: false,
     cascadeSelectionDown: false,
@@ -89,10 +88,10 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
     disabledNodeMessage: 'This item can not be unselected',
 
     /**
-     * @cfg {Array} selectableTypes
-     * Array of selectable types, if it is null then all types are selectable
+     * @cfg {Array} unSelectableTypes
+     * Array of types that can not be selected
      */
-    selectableTypes: null,
+    unSelectableTypes: null,
 
     listeners: {
         'beforecellclick': function (grid) {
@@ -101,7 +100,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
         'checkchange': function (node, checked) {
             var me = this;
 
-            if(me.selectableTypes && !Ext.Array.contains(me.selectableTypes.split(','), node.get('internalIdentifier'))){
+            if(me.unSelectableTypes && Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))){
                 Ext.Msg.warning('Warning', me.disabledNodeMessage);
 
                 node.set('checked', !checked);
@@ -416,10 +415,10 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
         });
     },
 
-    setSelectableTypes: function(types){
+    setUnSelectableTypes: function(types){
         var me = this;
 
-        me.selectableTypes = types;
+        me.unSelectableTypes = types;
     },
 
     /*
