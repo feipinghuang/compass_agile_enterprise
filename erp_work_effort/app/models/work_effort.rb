@@ -94,6 +94,53 @@ class WorkEffort < ActiveRecord::Base
 
   class << self
 
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement)
+      work_efforts_tbl = WorkEffort.arel_table
+
+      # filter by WorkEffortType
+      unless filters[:work_effort_type_iids].blank?
+        statement = statement.where(work_effort_type_id: WorkEffortType.where(internal_identifier: filters[:work_effort_type_iids]))
+      end
+
+      # filter by Status
+      unless filters[:status].blank?
+        tracked_status_iids = TrackedStatusType.where(id: filters[:status].split(',')).pluck(:internal_identifier)
+
+        statement = statement.with_current_status(tracked_status_iids)
+      end
+
+      # filter by start_at
+      unless filters[:start_date].blank?
+        statement = statement.where(work_efforts_tbl[:start_at].gteq(Date.parse(filters[:start_date])))
+      end
+
+      # filter by end_at
+      unless filters[:end_date].blank?
+        statement = statement.where(work_efforts_tbl[:end_at].lteq(Date.parse(filters[:end_date])))
+      end
+
+      # filter by assigned to
+      unless filters[:assigned_to_ids].blank?
+        work_effort_party_assignments_tbl = WorkEffortPartyAssignment.arel_table
+
+        statement = statement.joins(:work_effort_party_assignments)
+                        .where(work_effort_party_assignments_tbl[:role_type_id].in(RoleType.find_child_role_types([RoleType.work_resource]).collect(&:id)))
+                        .where(work_effort_party_assignments_tbl[:party_id].in(filters[:assigned_to_ids]))
+      end
+
+      # filter by project
+      unless filters[:project_ids].blank?
+        statement = statement.where(work_efforts_tbl[:project_id].in(filters[:project_ids]))
+      end
+
+      statement
+    end
+
     #
     # scoping helpers
     #
