@@ -11,7 +11,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
     initComponent: function(){
         var me = this;
         me.items = [];
-        
+
         me.params.eachSlice(me.slice, function(slice){
             var container = {
                 xtype: 'container',
@@ -29,7 +29,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         labelWidth: 80,
                         fieldLabel: param.display_name,
                         style: {
-                            marginRight: '20px'  
+                            marginRight: '20px'
                         },
                         name: param.name
                     });
@@ -39,22 +39,21 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         xtype: 'datefield',
                         labelWidth: 80,
                         style: {
-                            marginRight: '20px'  
+                            marginRight: '20px'
                         },
                         format: 'm/d/Y',
                         fieldLabel: param.display_name,
-                        name: param.name,
-                        value: new Date()
+                        name: param.name
                     });
                     break;
                 }
             });
             me.items.push(container);
         });
-        
-        
+
+
         me.callParent();
-        
+
     },
 
     getReportParams: function(){
@@ -65,7 +64,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
             if(!field.value){
                 field.value = '';
             }
-            
+
             if(field.xtype == 'textfield'){
                 paramsObj[field.name] = Ext.String.trim(field.value);
             }else{
@@ -76,7 +75,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         });
 
         return paramsObj;
-        
+
     },
 
     clearReportParams: function(){
