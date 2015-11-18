@@ -97,6 +97,24 @@ module Api
         render :json => {success: true, work_effort_type: [work_effort_type.to_data_hash]}
       end
 
+      def create
+        description = params[:description].strip
+
+        ActiveRecord::Base.transaction do
+          work_effort_type = WorkEffortType.create(description: description, internal_identifier: description.to_iid)
+
+          if !params[:parent].blank? and params[:parent] != 'No Parent'
+            parent = WorkEffortType.iid(params[:parent])
+            work_effort_type.move_to_child_of(parent)
+          elsif !params[:default_parent].blank?
+            parent = WorkEffortType.iid(params[:default_parent])
+            work_effort_type.move_to_child_of(parent)
+          end
+
+          render :json => {success: true, work_effort_type: work_effort_type.to_hash(only: [:id, :description, :internal_identifier])}
+        end
+      end
+
     end # WorkEffortTypeController
   end # V1
 end # Api
