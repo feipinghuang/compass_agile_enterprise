@@ -99,7 +99,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
         'checkchange': function (node, checked) {
             var me = this;
 
-            if(me.unSelectableTypes && Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))){
+            if (me.unSelectableTypes && Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
                 Ext.Msg.warning('Warning', me.disabledNodeMessage);
 
                 node.set('checked', !checked);
@@ -189,23 +189,32 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
             me.store.load();
         }
 
+        toolbarItems = [{
+            xtype: 'button',
+            text: 'Select All',
+            iconCls: 'icon-info',
+            handler: function (btn) {
+                btn.up('typeselectiontree').toggleChecked(btn, true);
+            }
+        }];
+
         if (me.canCreate) {
-            me.dockedItems = [
-                {
-                    xtype: 'toolbar',
-                    items: [
-                        {
-                            xtype: 'button',
-                            text: me.createNewText,
-                            iconCls: 'icon-add',
-                            handler: function () {
-                                me.showCreateType();
-                            }
-                        }
-                    ]
+            toolbarItems.push({
+                xtype: 'button',
+                text: me.createNewText,
+                iconCls: 'icon-add',
+                handler: function () {
+                    me.showCreateType();
                 }
-            ]
+            });
         }
+
+        me.dockedItems = [
+            {
+                xtype: 'toolbar',
+                items: toolbarItems
+            }
+        ];
 
         me.callParent(arguments);
 
@@ -414,10 +423,31 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
         });
     },
 
-    setUnSelectableTypes: function(types){
+    setUnSelectableTypes: function (types) {
         var me = this;
 
         me.unSelectableTypes = types;
+    },
+
+    toggleChecked: function (btn, checked) {
+        var me = this;
+
+        me.getRootNode().cascadeBy(function (node) {
+            if (!me.unSelectableTypes || !Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
+                node.set('checked', checked);
+            }
+        });
+
+        if(checked){
+            btn.setText('Unselect All');
+        }
+        else{
+            btn.setText('Select All');
+        }
+
+        btn.setHandler(function () {
+            me.toggleChecked(btn, !checked);
+        });
     },
 
     /*
