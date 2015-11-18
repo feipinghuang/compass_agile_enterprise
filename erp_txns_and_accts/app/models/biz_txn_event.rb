@@ -61,12 +61,12 @@ class BizTxnEvent < ActiveRecord::Base
 
       # filter by start_at
       unless filters[:start_date].blank?
-        statement = statement.where(biz_txn_event_tbl[:entered_date].gteq(Date.parse(filters[:start_date])))
+        statement = statement.where(biz_txn_event_tbl[:entered_date].gteq(Time.parse(filters[:start_date])))
       end
 
       # filter by end_at
       unless filters[:end_date].blank?
-        statement = statement.where(biz_txn_event_tbl[:entered_date].lteq(Date.parse(filters[:end_date])))
+        statement = statement.where(biz_txn_event_tbl[:entered_date].lteq(Time.parse(filters[:end_date])))
       end
 
       statement
