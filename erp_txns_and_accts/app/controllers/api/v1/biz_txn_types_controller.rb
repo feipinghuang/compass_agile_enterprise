@@ -3,7 +3,7 @@ module Api
     class BizTxnTypesController < BaseController
 
       def index
-        if params[:parent]
+        if !params[:parent].blank?
           parent = nil
           # create parent if it doesn't exist
           # if the parent param is a comma separated string then
@@ -15,12 +15,99 @@ module Api
               parent = BizTxnType.find_or_create(parent_iid, parent_iid.humanize)
             end
           end
-          biz_txn_types = parent.children.all.collect { |txn_type| txn_type.to_data_hash }
+
+          respond_to do |format|
+            format.tree do
+              render :json => {success: true, biz_txn_types: parent.children_to_tree_hash}
+            end
+            format.json do
+              render :json => {success: true, biz_txn_types: BizTxnType.to_all_representation(parent)}
+            end
+          end
+
+          # if ids are passed look up on the txn types with the ids passed
+        elsif params[:ids]
+          ids = params[:ids].split(',').compact
+
+          biz_txn_types = []
+
+          ids.each do |id|
+            # check if id is a integer if so fine by id
+            if id.is_integer?
+              biz_txn_type = BizTxnType.find(id)
+            else
+              biz_txn_type = BizTxnType.iid(id)
+            end
+
+            respond_to do |format|
+              format.tree do
+                data = biz_txn_type.to_hash({
+                                             only: [:id, :parent_id, :internal_identifier, :description],
+                                             leaf: biz_txn_type.leaf?,
+                                             text: biz_txn_type.to_label,
+                                             children: []
+                                         })
+
+                parent = nil
+                biz_txn_types.each do |biz_txn_type_hash|
+                  if biz_txn_type_hash[:id] == data[:parent_id]
+                    parent = biz_txn_type_hash
+                  end
+                end
+
+                if parent
+                  parent[:children].push(data)
+                else
+                  biz_txn_types.push(data)
+                end
+              end
+              format.json do
+                biz_txn_types.push(biz_txn_type.to_hash(only: [:id, :description, :internal_identifier]))
+              end
+            end
+
+          end
+
+          render :json => {success: true, biz_txn_types: biz_txn_types}
+
+          # get all txn types
         else
-          biz_txn_types = BizTxnType.all.collect { |txn_type| txn_type.to_data_hash }
+
+          respond_to do |format|
+            format.tree do
+              nodes = [].tap do |nodes|
+                BizTxnType.roots.each do |root|
+                  nodes.push(root.to_tree_hash)
+                end
+              end
+
+              render :json => {success: true, biz_txn_types: nodes}
+            end
+            format.json do
+              render :json => {success: true, biz_txn_types: BizTxnType.to_all_representation}
+            end
+          end
+
         end
 
-        render :json => {success: true, biz_txn_types: biz_txn_types}
+      end
+
+      def create
+        description = params[:description].strip
+
+        ActiveRecord::Base.transaction do
+          biz_txn_type = BizTxnType.create(description: description, internal_identifier: description.to_iid)
+
+          if params[:parent] != 'No Parent'
+            parent = BizTxnType.iid(params[:parent])
+            biz_txn_type.move_to_child_of(parent)
+          elsif params[:default_parent]
+            parent = BizTxnType.iid(params[:default_parent])
+            biz_txn_type.move_to_child_of(parent)
+          end
+
+          render :json => {success: true, biz_txn_type: biz_txn_type.to_hash(only: [:id, :description, :internal_identifier])}
+        end
       end
 
     end # BizTxnTypesController

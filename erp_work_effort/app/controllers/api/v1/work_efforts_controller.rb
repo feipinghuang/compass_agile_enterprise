@@ -25,6 +25,11 @@ module Api
           work_efforts = work_efforts.scope_by_party(party_ids.split(','), {role_types: RoleType.where('internal_identifier' => role_types.split(','))})
         end
 
+        # if filters are passed apply filters
+        if params[:query_filter].present?
+          work_efforts = WorkEffort.apply_filters(JSON.parse(params[:query_filter]).symbolize_keys, work_efforts)
+        end
+
         # scope by dba organization
         work_efforts = work_efforts.scope_by_dba_organization(current_user.party.dba_organization)
 
@@ -180,7 +185,7 @@ module Api
         end
 
         if data[:status_description].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ','_')])
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ', '_')])
         end
 
         work_effort.save!
@@ -241,7 +246,7 @@ module Api
         end
 
         if data[:status_description].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ','_')])
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ', '_')])
         end
 
         work_effort.save!

@@ -34,6 +34,25 @@ class BizTxnType < ActiveRecord::Base
     return nil
   end
 
+  # finds all child for given types.
+  #
+  # @param biz_txn_types [Array] BizTxnType internal identifiers or records
+  # @returns [Array] BizTxnTypes types based and any of their children in a flat array
+  def self.find_child_role_types(biz_txn_types)
+    all_biz_txn_types = []
+
+    biz_txn_types.each do |biz_txn_type|
+
+      if biz_txn_type.is_a?(String)
+        biz_txn_type = BizTxnType.iid(biz_txn_type)
+      end
+
+      all_biz_txn_types.concat biz_txn_type.self_and_descendants
+    end
+
+    all_biz_txn_types.flatten
+  end
+
   def to_data_hash
     to_hash(:only => [:id, :description, :internal_identifier, :created_at, :updated_at])
   end
