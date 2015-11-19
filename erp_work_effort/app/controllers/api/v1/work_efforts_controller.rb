@@ -149,11 +149,11 @@ module Api
         end
 
         if data[:start_at].present?
-          work_effort.start_at = Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+          work_effort.start_at = Time.parse(data[:start_at]).in_time_zone.utc
         end
 
         if data[:end_at].present?
-          work_effort.end_at = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+          work_effort.end_at = Time.parse(data[:end_at]).in_time_zone.utc
         end
 
         if data[:percent_done].present?
@@ -184,8 +184,12 @@ module Api
           work_effort.sequence = data[:sequence]
         end
 
-        if data[:status_description].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ', '_')])
+        if data[:status].present?
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+        end
+
+        if data[:work_effort_type].present?
+          work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
 
         work_effort.save!
@@ -210,11 +214,11 @@ module Api
         end
 
         if data[:start_at].present?
-          work_effort.start_at = Time.parse(params[:start_at])
+          work_effort.start_at = Time.parse(data[:start_at])
         end
 
         if data[:end_at].present?
-          work_effort.end_at = Time.parse(params[:end_at])
+          work_effort.end_at = Time.parse(data[:end_at])
         end
 
         if data[:percent_done].present?
@@ -245,8 +249,12 @@ module Api
           work_effort.sequence = data[:sequence]
         end
 
-        if data[:status_description].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ', '_')])
+        if data[:status].present?
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+        end
+
+        if data[:work_effort_type].present?
+          work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
 
         work_effort.save!

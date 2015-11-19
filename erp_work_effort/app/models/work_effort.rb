@@ -283,10 +283,6 @@ class WorkEffort < ActiveRecord::Base
     completed?
   end
 
-  def status_description
-    current_status.to_s.titleize
-  end
-
   # start work effort with initial_status (string)
   #
   # @param initial_status [String] status to start at
@@ -336,25 +332,30 @@ class WorkEffort < ActiveRecord::Base
   #
   # @return [Hash] data of record
   def to_data_hash
-    to_hash(only: [
-                :id,
-                {leaf?: :leaf},
-                :parent_id,
-                :description,
-                :start_at,
-                :end_at,
-                :percent_done,
-                :duration,
-                :duration_unit,
-                :effort,
-                :effort_unit,
-                :comments,
-                :sequence,
-                :created_at,
-                :updated_at,
-                :status_description
-            ]
+    data = to_hash(only: [
+                       :id,
+                       {leaf?: :leaf},
+                       :parent_id,
+                       :description,
+                       :start_at,
+                       :end_at,
+                       :percent_done,
+                       :duration,
+                       :duration_unit,
+                       :effort,
+                       :effort_unit,
+                       :comments,
+                       :sequence,
+                       :created_at,
+                       :updated_at,
+                       :current_status
+                   ]
     )
+
+    data[:status] = self.current_status_application.to_data_hash
+    data[:work_effort_type] = self.work_effort_type.to_data_hash
+
+    data
   end
 
   protected
