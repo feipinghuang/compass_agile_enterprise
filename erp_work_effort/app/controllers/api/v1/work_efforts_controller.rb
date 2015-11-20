@@ -30,6 +30,11 @@ module Api
           work_efforts = WorkEffort.apply_filters(JSON.parse(params[:query_filter]).symbolize_keys, work_efforts)
         end
 
+        # scope by user if present
+        if params[:scope_by_user].present? and params[:scope_by_user].to_bool
+          work_efforts = work_efforts.scope_by_user(current_user, {role_types: [RoleType.iid('work_resource')]})
+        end
+
         # scope by dba organization
         work_efforts = work_efforts.scope_by_dba_organization(current_user.party.dba_organization)
 
@@ -196,6 +201,15 @@ module Api
 
         # set dba_org
         work_effort.add_party_with_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
+
+        # if scope by user set the current user relationship
+        # scope by user if present
+        if params[:scope_by_user].present? and params[:scope_by_user].to_bool
+          work_resource_role_type = RoleType.find_or_create("work_resource", "Work Resource", RoleType.iid("application_composer"))
+          WorkEffortPartyAssignment.create(work_effort: work_effort,
+                                           role_type: work_resource_role_type,
+                                           party: current_user.party)
+        end
 
         if data[:parent_id].present? and data[:parent_id] != 0
           parent = WorkEffort.find(data[:parent_id])
