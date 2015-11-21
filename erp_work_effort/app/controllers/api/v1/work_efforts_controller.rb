@@ -273,10 +273,14 @@ module Api
 
         work_effort.save!
 
+        # if there is a parent move the node under that parent
         if data[:parent_id].present? and data[:parent_id] != 0
           parent = WorkEffort.find(data[:parent_id])
           work_effort.move_to_child_of(parent)
-          work_effort.reload
+
+          # if there is no parent then move to root
+        else
+          work_effort.move_to_root
         end
 
         work_effort
