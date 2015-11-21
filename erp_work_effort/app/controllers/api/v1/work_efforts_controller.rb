@@ -38,7 +38,7 @@ module Api
         # scope by dba organization
         work_efforts = work_efforts.scope_by_dba_organization(current_user.party.dba_organization)
 
-        work_efforts = work_efforts.order("sequence, created_at ASC")
+        work_efforts = work_efforts.order("sequence ASC")
 
         render :json => {success: true,
                          total: work_efforts.count,
@@ -52,7 +52,7 @@ module Api
         respond_to do |format|
           # if a tree format was requested then respond with the children of this WorkEffort
           format.tree do
-            render :json => {success: true, work_efforts: work_effort.children.collect { |child| child.to_data_hash }}
+            render :json => {success: true, work_efforts: WorkEffort.where(parent_id: work_effort).order("sequence ASC").collect { |child| child.to_data_hash }}
           end
 
           # if a json format was requested then respond with the WorkEffort in json format
