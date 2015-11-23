@@ -18,11 +18,16 @@ class Party < ActiveRecord::Base
   attr_writer :create_relationship
 
   class << self
-
-    def with_dba_organization(dba_org)
-      joins("inner join party_relationships on party_relationships.party_id_to = '#{dba_org.id}'
-             and party_relationships.role_type_id_to = '#{RoleType.iid('dba_org').id}'
+    # scope by dba organization
+    #
+    # @param dba_organization [Party, Array] dba organization to scope by or Array of dba organizations to
+    # scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      joins("inner join party_relationships on party_relationships.role_type_id_to ='#{RoleType.iid('dba_org').id}'
              and party_relationships.party_id_from = parties.id")
+      .where({party_relationships: {party_id_to: dba_organization}})
     end
 
     # Scopes parties by passed role types

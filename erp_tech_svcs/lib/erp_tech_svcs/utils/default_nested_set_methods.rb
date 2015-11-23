@@ -23,16 +23,11 @@ module ErpTechSvcs
             end
           else
             self.roots.each do |root|
-              root.children.each do |node|
-                container_arr << {id: node.id,
-                                  description: node.to_representation(level),
-                                  internal_identifier: node.internal_identifier}
+              container_arr << {id: root.id,
+                                description: root.to_representation(level),
+                                internal_identifier: root.internal_identifier}
 
-                unless node.leaf?
-                  to_all_representation(node, container_arr, (level + 1))
-                end
-
-              end
+              to_all_representation(root, container_arr, (level + 1))
             end
           end
 
@@ -89,6 +84,92 @@ module ErpTechSvcs
           record
         end
 
+        # Build a tree based on internal identifiers passed
+        #
+        # @param [Array] Array of internal identifiers
+        # @return [Array] Tree from nodes
+        def build_tree_from_nodes(node_iids)
+          tree = []
+
+          # first we convert the nodes to a hash based array
+          node_iids.each do |node_iid|
+            node = self.iid(node_iid)
+
+            tree << node.to_hash({only: [{id: :record_id}, :parent_id, :internal_identifier],
+                                  leaf: node.leaf?,
+                                  text: node.to_label,
+                                  children: []})
+          end
+
+          # next we need to build the tree structure based on the nodes
+          sorted_tree = tree.dup
+          tree.each do |node_hash|
+            node = self.find(node_hash[:record_id])
+
+            parent_node = nil
+            if node.parent
+              parent_node = find_parent_in_tree(sorted_tree, node.parent.id)
+            end
+
+            if parent_node
+              # add to children of parent
+              parent_node[:children] << node_hash
+
+              # remove from updated tree
+              sorted_tree.delete_if { |item| node_hash[:record_id] == item[:record_id] }
+            end
+          end
+
+          sorted_tree
+        end
+
+        # Delete nodes from a tree based on passed ids
+        #
+        # @param [Integer, Array] Either an Id or an array of ids to remove
+        # @return [Array] Tree with items removed
+        def delete_from_tree(tree, id)
+          if id.is_a? Array
+            id.each do |_id|
+              delete_from_tree(tree, _id)
+            end
+          else
+            tree.each do |node|
+              if node[:record_id] == id
+                tree.delete(node)
+              end
+
+              if node[:children]
+                delete_from_tree(node[:children], id)
+              end
+            end
+          end
+
+          tree
+        end
+
+        private
+
+        def find_parent_in_tree(tree, id)
+          parent = nil
+
+          tree.each do |node|
+            if node[:record_id] == id
+              parent = node
+              break
+            end
+
+            if node[:children]
+              parent = find_parent_in_tree(node[:children], id)
+
+              if parent
+                break
+              end
+            end
+          end
+
+          parent
+        end
+
       end
 
       def to_label
@@ -143,18 +224,18 @@ module ErpTechSvcs
         end
       end
 
-      def is_descendant_of?(role_type)
-        role_type = RoleType.iid(role_type) if (role_type.is_a? String)
+      def is_descendant_of?(type)
+        type = self.class.iid(type) if (type.is_a? String)
         parent = self.parent
 
-        if (role_type.id == self.id)
+        if type.id == self.id
           result = true
         elsif parent.nil?
           result = false
-        elsif parent.id == role_type.id
+        elsif parent.id == type.id
           result = true
         else
-          result = parent.is_descendant_of? role_type
+          result = parent.is_descendant_of? type
         end
         result
       end

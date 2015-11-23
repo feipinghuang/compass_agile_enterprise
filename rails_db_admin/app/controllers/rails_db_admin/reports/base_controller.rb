@@ -18,7 +18,7 @@ module RailsDbAdmin
             render :error_report, :layout => false
             return
           end
-
+          
           respond_to do |format|
 
             format.html {
@@ -139,12 +139,11 @@ module RailsDbAdmin
             @report.query,
             locals: parsed_report_params
         )
-
         columns, values, error = @query_support.execute_sql(query)
 
         @data = {:columns => columns, :rows => values, error: error}
 
-        if @data[:rows].count > 0
+        if @data[:rows] and @data[:rows].count > 0
           @custom_data = @data[:rows].last['custom_fields'] ? JSON.parse(@data[:rows].last['custom_fields']) : {}
         else
           @custom_data = {}

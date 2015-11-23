@@ -46,6 +46,32 @@ class BizTxnEvent < ActiveRecord::Base
   has_tracked_status
 
   class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement)
+      biz_txn_event_tbl = BizTxnEvent.arel_table
+
+      # filter by WorkEffortType
+      unless filters[:biz_txn_type_iids].blank?
+        statement = statement.where(biz_txn_type_id: BizTxnType.where(internal_identifier: filters[:biz_txn_type_iids]))
+      end
+
+      # filter by start_at
+      unless filters[:start_date].blank?
+        statement = statement.where(biz_txn_event_tbl[:entered_date].gteq(Time.parse(filters[:start_date])))
+      end
+
+      # filter by end_at
+      unless filters[:end_date].blank?
+        statement = statement.where(biz_txn_event_tbl[:entered_date].lteq(Time.parse(filters[:end_date])))
+      end
+
+      statement
+    end
+
     #
     # scoping helpers
     #
@@ -65,6 +91,21 @@ class BizTxnEvent < ActiveRecord::Base
 
     alias scope_by_dba scope_by_dba_organization
   end
+
+  # Get the dba_organization related to this BizTxnEvent
+  #
+  # @return [Party] returns a Party if the dba organization was found
+  def dba_organization
+    dba_org_role_type = BizTxnPartyRoleType.find_or_create('dba_org', 'DBA Organization')
+
+    biz_txn_party_role = biz_txn_party_roles.where('biz_txn_party_roles.biz_txn_party_role_type_id' => dba_org_role_type).first
+
+    if biz_txn_party_role
+      biz_txn_party_role.party
+    end
+  end
+
+  alias dba_org dba_organization
 
   def destroy_biz_txn_relationships
     BizTxnRelationship.where("txn_event_id_from = ? or txn_event_id_to = ?", self.id, self.id).destroy_all

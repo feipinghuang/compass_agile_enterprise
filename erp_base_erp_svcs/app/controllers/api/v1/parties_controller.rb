@@ -15,7 +15,18 @@ module Api
 
         unless query.blank?
           parties_tbl = Party.arel_table
-          parties = parties.where(parties_tbl[:description].matches(query + '%'))
+
+          where_clause = nil
+          # if the query has commas split on the commas and treat them as separate search terms
+          query.split(',').each do |query_part|
+            if where_clause.nil?
+              where_clause = parties_tbl[:description].matches(query_part.strip + '%')
+            else
+              where_clause = where_clause.or(parties_tbl[:description].matches(query_part.strip + '%'))
+            end
+          end
+
+          parties = parties.where(where_clause)
         end
 
         unless role_types.blank?
@@ -23,7 +34,14 @@ module Api
         end
 
         # scope by dba organization
-        parties = parties.with_dba_organization(current_user.party.dba_organization)
+        if params[:include_descendants].present? and params[:include_descendants].to_bool
+          dba_organization = [current_user.party.dba_organization]
+          dba_organization.concat(current_user.party.dba_organization.child_dba_organizations)
+
+          parties.scope_by_dba_organization(dba_organization)
+        else
+          parties = parties.scope_by_dba_organization(current_user.party.dba_organization)
+        end
 
         parties = parties.uniq.order("#{sort} #{dir}")
 
