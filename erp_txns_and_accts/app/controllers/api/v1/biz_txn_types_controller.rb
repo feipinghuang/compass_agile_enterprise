@@ -98,10 +98,10 @@ module Api
         ActiveRecord::Base.transaction do
           biz_txn_type = BizTxnType.create(description: description, internal_identifier: description.to_iid)
 
-          if params[:parent] != 'No Parent'
+          if !params[:parent].blank? and params[:parent] != 'No Parent'
             parent = BizTxnType.iid(params[:parent])
             biz_txn_type.move_to_child_of(parent)
-          elsif params[:default_parent]
+          elsif !params[:default_parent].blank?
             parent = BizTxnType.iid(params[:default_parent])
             biz_txn_type.move_to_child_of(parent)
           end

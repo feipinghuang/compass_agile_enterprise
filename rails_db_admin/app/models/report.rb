@@ -84,12 +84,7 @@ class Report < ActiveRecord::Base
           data = ''
           entry.get_input_stream { |io| data = io.read }
           data = StringIO.new(data) if data.present?
-          report_meta_data = YAML.load(data)
-          self.meta_data['print_page_size'] = report_meta_data['print_page_size'] if report_meta_data['print_page_size']
-          self.meta_data['print_margin_top'] = report_meta_data['print_margin_top'] if report_meta_data['print_margin_top']
-          self.meta_data['print_margin_right'] = report_meta_data['print_margin_right'] if report_meta_data['print_margin_right']
-          self.meta_data['print_margin_bottom'] = report_meta_data['print_margin_bottom'] if report_meta_data['print_margin_bottom']
-          self.meta_data['print_margin_left'] = report_meta_data['print_margin_left'] if report_meta_data['print_margin_left']
+          self.meta_data = YAML.load(data)
           self.save
         elsif entry.name.split('/').last == 'query.sql'
           data = ''

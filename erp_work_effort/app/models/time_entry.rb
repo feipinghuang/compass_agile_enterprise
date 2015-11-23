@@ -21,7 +21,9 @@ class TimeEntry < ActiveRecord::Base
 
   class << self
     def open
-      where(TimeEntry.arel_table[:from_datetime].not_eq(nil)).where(thru_datetime: nil).where(manual_entry: false)
+      where(TimeEntry.arel_table[:from_datetime].not_eq(nil))
+          .where(thru_datetime: nil)
+          .where(TimeEntry.arel_table[:manual_entry].eq(nil).or(TimeEntry.arel_table[:manual_entry].eq(false)))
     end
 
     # scope by work_effort

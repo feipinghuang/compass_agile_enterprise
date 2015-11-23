@@ -30,10 +30,15 @@ module Api
           work_efforts = WorkEffort.apply_filters(JSON.parse(params[:query_filter]).symbolize_keys, work_efforts)
         end
 
+        # scope by user if present
+        if params[:scope_by_user].present? and params[:scope_by_user].to_bool
+          work_efforts = work_efforts.scope_by_user(current_user, {role_types: [RoleType.iid('work_resource')]})
+        end
+
         # scope by dba organization
         work_efforts = work_efforts.scope_by_dba_organization(current_user.party.dba_organization)
 
-        work_efforts = work_efforts.order("sequence, created_at ASC")
+        work_efforts = work_efforts.order("sequence ASC")
 
         render :json => {success: true,
                          total: work_efforts.count,
@@ -47,7 +52,7 @@ module Api
         respond_to do |format|
           # if a tree format was requested then respond with the children of this WorkEffort
           format.tree do
-            render :json => {success: true, work_efforts: work_effort.children.collect { |child| child.to_data_hash }}
+            render :json => {success: true, work_efforts: WorkEffort.where(parent_id: work_effort).order("sequence ASC").collect { |child| child.to_data_hash }}
           end
 
           # if a json format was requested then respond with the WorkEffort in json format
@@ -149,11 +154,11 @@ module Api
         end
 
         if data[:start_at].present?
-          work_effort.start_at = Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+          work_effort.start_at = Time.parse(data[:start_at]).in_time_zone.utc
         end
 
         if data[:end_at].present?
-          work_effort.end_at = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+          work_effort.end_at = Time.parse(data[:end_at]).in_time_zone.utc
         end
 
         if data[:percent_done].present?
@@ -184,14 +189,27 @@ module Api
           work_effort.sequence = data[:sequence]
         end
 
-        if data[:status_description].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ', '_')])
+        if data[:status].present?
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+        end
+
+        if data[:work_effort_type].present?
+          work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
 
         work_effort.save!
 
         # set dba_org
         work_effort.add_party_with_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
+
+        # if scope by user set the current user relationship
+        # scope by user if present
+        if params[:scope_by_user].present? and params[:scope_by_user].to_bool
+          work_resource_role_type = RoleType.find_or_create("work_resource", "Work Resource", RoleType.iid("application_composer"))
+          WorkEffortPartyAssignment.create(work_effort: work_effort,
+                                           role_type: work_resource_role_type,
+                                           party: current_user.party)
+        end
 
         if data[:parent_id].present? and data[:parent_id] != 0
           parent = WorkEffort.find(data[:parent_id])
@@ -210,11 +228,11 @@ module Api
         end
 
         if data[:start_at].present?
-          work_effort.start_at = Time.parse(params[:start_at])
+          work_effort.start_at = Time.parse(data[:start_at])
         end
 
         if data[:end_at].present?
-          work_effort.end_at = Time.parse(params[:end_at])
+          work_effort.end_at = Time.parse(data[:end_at])
         end
 
         if data[:percent_done].present?
@@ -245,16 +263,24 @@ module Api
           work_effort.sequence = data[:sequence]
         end
 
-        if data[:status_description].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status_description].underscore.gsub(' ', '_')])
+        if data[:status].present?
+          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+        end
+
+        if data[:work_effort_type].present?
+          work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
 
         work_effort.save!
 
+        # if there is a parent move the node under that parent
         if data[:parent_id].present? and data[:parent_id] != 0
           parent = WorkEffort.find(data[:parent_id])
           work_effort.move_to_child_of(parent)
-          work_effort.reload
+
+          # if there is no parent then move to root
+        else
+          work_effort.move_to_root
         end
 
         work_effort

@@ -106,3 +106,9 @@ Ext.override(Ext.menu.Menu, {
         me.fireEvent('mouseleave', me, e);
     }
 });
+
+// Upate to include time zone
+Ext.JSON.encodeDate = function(o)
+{
+    return '"' + Ext.Date.format(o, 'c') + '"';
+};

@@ -46,6 +46,32 @@ class BizTxnEvent < ActiveRecord::Base
   has_tracked_status
 
   class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement)
+      biz_txn_event_tbl = BizTxnEvent.arel_table
+
+      # filter by WorkEffortType
+      unless filters[:biz_txn_type_iids].blank?
+        statement = statement.where(biz_txn_type_id: BizTxnType.where(internal_identifier: filters[:biz_txn_type_iids]))
+      end
+
+      # filter by start_at
+      unless filters[:start_date].blank?
+        statement = statement.where(biz_txn_event_tbl[:entered_date].gteq(Time.parse(filters[:start_date])))
+      end
+
+      # filter by end_at
+      unless filters[:end_date].blank?
+        statement = statement.where(biz_txn_event_tbl[:entered_date].lteq(Time.parse(filters[:end_date])))
+      end
+
+      statement
+    end
+
     #
     # scoping helpers
     #
