@@ -352,8 +352,8 @@ class WorkEffort < ActiveRecord::Base
                    ]
     )
 
-    data[:status] = self.current_status_application.to_data_hash
-    data[:work_effort_type] = self.work_effort_type.to_data_hash
+    data[:status] = self.try(:current_status_application).try(:to_data_hash)
+    data[:work_effort_type] = self.try(:work_effort_type).try(:to_data_hash)
 
     data
   end
