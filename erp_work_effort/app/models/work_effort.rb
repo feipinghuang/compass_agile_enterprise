@@ -102,6 +102,11 @@ class WorkEffort < ActiveRecord::Base
     def apply_filters(filters, statement)
       work_efforts_tbl = WorkEffort.arel_table
 
+      # filter by description
+      unless filters[:description].blank?
+        statement = statement.where(work_efforts_tbl[:description].matches("%#{filters[:description]}%"))
+      end
+
       # filter by WorkEffortType
       unless filters[:work_effort_type_iids].blank?
         statement = statement.where(work_effort_type_id: WorkEffortType.where(internal_identifier: filters[:work_effort_type_iids]))
