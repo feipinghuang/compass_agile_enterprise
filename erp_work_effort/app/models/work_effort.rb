@@ -114,9 +114,7 @@ class WorkEffort < ActiveRecord::Base
 
       # filter by Status
       unless filters[:status].blank?
-        tracked_status_iids = TrackedStatusType.where(id: filters[:status].split(',')).pluck(:internal_identifier)
-
-        statement = statement.with_current_status(tracked_status_iids)
+        statement = statement.with_current_status(filters[:status].split(','))
       end
 
       # filter by start_at
