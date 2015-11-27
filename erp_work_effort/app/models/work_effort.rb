@@ -102,6 +102,11 @@ class WorkEffort < ActiveRecord::Base
     def apply_filters(filters, statement)
       work_efforts_tbl = WorkEffort.arel_table
 
+      # filter by description
+      unless filters[:description].blank?
+        statement = statement.where(work_efforts_tbl[:description].matches("%#{filters[:description]}%"))
+      end
+
       # filter by WorkEffortType
       unless filters[:work_effort_type_iids].blank?
         statement = statement.where(work_effort_type_id: WorkEffortType.where(internal_identifier: filters[:work_effort_type_iids]))
@@ -109,9 +114,7 @@ class WorkEffort < ActiveRecord::Base
 
       # filter by Status
       unless filters[:status].blank?
-        tracked_status_iids = TrackedStatusType.where(id: filters[:status].split(',')).pluck(:internal_identifier)
-
-        statement = statement.with_current_status(tracked_status_iids)
+        statement = statement.with_current_status(filters[:status].split(','))
       end
 
       # filter by start_at
