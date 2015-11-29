@@ -8,5 +8,7 @@ CKEDITOR.editorConfig = function( config ) {
 	// config.language = 'fr';
 	// config.uiColor = '#AADC6E';
 
-    config.extraPlugins = 'syntaxhighlight'
+    config.extraPlugins = 'syntaxhighlight';
+    config.extraPlugins = 'scayt';
+    config.scayt_autoStartup = true;
 };

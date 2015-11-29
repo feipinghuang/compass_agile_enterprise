@@ -20,8 +20,7 @@ module Knitkit
 
                 if article.save
                   # set the currents users dba_org as the dba_org for this content
-                  article.add_party_with_role(current_user.party.dba_organization,
-                                              RoleType.iid('dba_org'))
+                  article.add_party_with_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
 
                   result[:node] = if website_section_id.blank?
                                     {:text => params[:title],
@@ -35,9 +34,13 @@ module Knitkit
                                   else
                                     website_section = WebsiteSection.find(website_section_id)
                                     article.website_sections << website_section
-                                    website_section_content = article.update_content_area_and_position_by_section(website_section, params['content_area'], params['position'])
+                                    website_section_content = article.update_content_area_and_position_by_section(website_section,
+                                                                                                                  params['content_area'],
+                                                                                                                  params['position'])
 
-                                    build_article_hash(website_section_content, website_section.website, website_section.is_blog?)
+                                    build_article_hash(website_section_content,
+                                                       website_section.website,
+                                                       website_section.is_blog?)
                                   end
 
                   result[:success] = true
@@ -69,7 +72,9 @@ module Knitkit
               if article.save
                 unless website_section_id.blank?
                   website_section = WebsiteSection.find(website_section_id)
-                  article.update_content_area_and_position_by_section(website_section, params['content_area'], params['position'])
+                  article.update_content_area_and_position_by_section(website_section,
+                                                                      params['content_area'],
+                                                                      params['position'])
                 end
 
                 result[:success] = true

@@ -345,7 +345,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         if (Compass.ErpApp.Utility.isBlank(item)) {
             var ckEditor = Ext.create("Compass.ErpApp.Shared.CKeditor", {
                 autoHeight: true,
-                //value:content,
                 ckEditorConfig: {
                     extraPlugins: self.ckEditorExtraPlugins,
                     toolbar: self.ckEditorToolbar
@@ -359,7 +358,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                         var dataTransfer = dropEvent.dataTransfer;
                         var files = dataTransfer.files;
                         for (var i = 0; i < files.length; i++) {
-                            var loadMask = new Ext.LoadMask(ckeditorPanel, {msg:"Please wait..."});
+                            var loadMask = new Ext.LoadMask(ckeditorPanel, {msg: "Please wait..."});
                             loadMask.show();
 
                             var file = files[i];
@@ -372,35 +371,35 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                                     headers: {'Content-Type': file.type},
                                     url: '/knitkit/erp_app/desktop/image_assets/shared/upload_file',
                                     jsonData: bin,
-                                    params:{
+                                    params: {
                                         name: file.name,
                                         directory: 'root_node',
                                         is_drag_drop: true
                                     },
-                                    success: function(result){
+                                    success: function (result) {
                                         loadMask.hide();
                                         resultObj = Ext.JSON.decode(result.responseText);
-                                        if(resultObj.success){
-                                            ckeditorPanel.insertHtml('<img src='+resultObj.url+' height="200" width="200" />');
+                                        if (resultObj.success) {
+                                            ckeditorPanel.insertHtml('<img src=' + resultObj.url + ' height="200" width="200" />');
                                             var sharedImageAssetsDataView = self.up('#knitkit').down('knitkit_ImageAssetsPanel').sharedImageAssetsDataView,
                                                 sharedImageAssetsTreePanel = self.up('#knitkit').down('knitkit_ImageAssetsPanel').sharedImageAssetsTreePanel;
 
                                             sharedImageAssetsDataView.getStore().load({
-                                                params:{
+                                                params: {
                                                     directory: sharedImageAssetsDataView.directory
                                                 }
                                             });
                                             sharedImageAssetsTreePanel.getStore().load({
-                                                callback:function(){
+                                                callback: function () {
                                                     sharedImageAssetsTreePanel.getView().refresh();
                                                 }
                                             });
                                         }
-                                        else{
+                                        else {
                                             Ext.Msg.alert('Error', 'Could not upload image');
                                         }
                                     },
-                                    failure: function(result){
+                                    failure: function (result) {
                                         loadMask.hide();
                                         Ext.Msg.alert('Error', 'Could not upload image');
                                     }
@@ -471,7 +470,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         }
 
         this.workArea.setActiveTab(item);
-        
+
     },
 
     /* image */
@@ -565,14 +564,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         this.workArea.setActiveTab(item);
     },
 
-    openIframeInTab : function( title, url ) {
+    openIframeInTab: function (title, url) {
 
         var item = Ext.create('Ext.panel.Panel', {
-            iframeId:'themes_iframe',
+            iframeId: 'themes_iframe',
             closable: true,
             layout: 'fit',
             title: title,
-            html:'<iframe height="100%" width="100%" frameBorder="0" src="'+url+'"></iframe>'
+            html: '<iframe height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>'
         });
 
         this.workArea.add(item);
@@ -601,7 +600,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                         var dataTransfer = dropEvent.dataTransfer;
                         var files = dataTransfer.files;
                         for (var i = 0; i < files.length; i++) {
-                            var loadMask = new Ext.LoadMask(ckeditorPanel, {msg:"Please wait..."});
+                            var loadMask = new Ext.LoadMask(ckeditorPanel, {msg: "Please wait..."});
                             loadMask.show();
 
                             var file = files[i];
@@ -614,35 +613,35 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                                     headers: {'Content-Type': file.type},
                                     url: '/knitkit/erp_app/desktop/image_assets/shared/upload_file',
                                     jsonData: bin,
-                                    params:{
+                                    params: {
                                         name: file.name,
                                         directory: 'root_node',
                                         is_drag_drop: true
                                     },
-                                    success: function(result){
+                                    success: function (result) {
                                         loadMask.hide();
                                         resultObj = Ext.JSON.decode(result.responseText);
-                                        if(resultObj.success){
-                                            ckeditorPanel.insertHtml('<img src='+resultObj.url+' height="200" width="200" />');
+                                        if (resultObj.success) {
+                                            ckeditorPanel.insertHtml('<img src=' + resultObj.url + ' height="200" width="200" />');
                                             var sharedImageAssetsDataView = self.up('#knitkit').down('knitkit_ImageAssetsPanel').sharedImageAssetsDataView,
                                                 sharedImageAssetsTreePanel = self.up('#knitkit').down('knitkit_ImageAssetsPanel').sharedImageAssetsTreePanel;
 
                                             sharedImageAssetsDataView.getStore().load({
-                                                params:{
+                                                params: {
                                                     directory: sharedImageAssetsDataView.directory
                                                 }
                                             });
                                             sharedImageAssetsTreePanel.getStore().load({
-                                                callback:function(){
+                                                callback: function () {
                                                     sharedImageAssetsTreePanel.getView().refresh();
                                                 }
                                             });
                                         }
-                                        else{
+                                        else {
                                             Ext.Msg.alert('Error', 'Could not upload image');
                                         }
                                     },
-                                    failure: function(result){
+                                    failure: function (result) {
                                         loadMask.hide();
                                         Ext.Msg.alert('Error', 'Could not upload image');
                                     }
@@ -723,7 +722,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         cardPanel.removeAll(true);
         cardPanel.add({
             xtype: 'panel',
-            html: comment
+            html: '<div style="padding:10px;">'+comment+'</div>'
         });
         cardPanel.getLayout().setActiveItem(0);
     },
@@ -919,7 +918,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                         text: 'Enabled',
                         checked: true,
                         hideOnClick: true,
-                        handler: function(item) {
+                        handler: function (item) {
                             currentItem.tab.setDisabled(!item.checked);
                         }
                     }
@@ -946,11 +945,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 remove: function () {
                     this.smartRenameTabs();
                 },
-                tabchange: function(tabPanel, newPanel, oldPanel, eOpts){
+                tabchange: function (tabPanel, newPanel, oldPanel, eOpts) {
                     // check if the panel has ckEditor
                     var ckEditor = newPanel.down('ckeditor');
-                    if (ckEditor){
-                        CKEDITOR.domReady(function(){
+                    if (ckEditor) {
+                        CKEDITOR.domReady(function () {
                             ckEditor.ckEditorInstance.focus();
                         });
                     }

@@ -33,7 +33,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ArticlesGridPanel", {
         var editArticleWindow = Ext.ComponentQuery.query('#' + itemId).first();
 
         if (Compass.ErpApp.Utility.isBlank(editArticleWindow)) {
-            var editArticleWindow = Ext.create("Ext.window.Window", {
+            editArticleWindow = Ext.create("Ext.window.Window", {
                 layout: 'fit',
                 width: 375,
                 title: 'Edit Article',
