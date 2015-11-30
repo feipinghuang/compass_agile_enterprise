@@ -182,7 +182,7 @@
             time_entry = TimeEntry.find(params[:id])
 
             time_entry.thru_datetime = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
-            time_entry.comment = params[:comment].strip
+            time_entry.comment = params[:comment].present? ? params[:comment].strip : nil
 
             time_entry.calculate_regular_hours_in_seconds!
 
