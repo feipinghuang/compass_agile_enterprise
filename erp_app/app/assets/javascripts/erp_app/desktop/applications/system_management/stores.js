@@ -2,7 +2,7 @@ Ext.define('SystemManagementTypeTreeNode', {
     extend: 'Ext.data.Model',
     fields: [
         // ExtJs node fields
-        {name: 'serverId', type: 'integer', mapping: 'id', useNull: true},
+        {name: 'serverId', type: 'integer', mapping: 'server_id', useNull: true},
         {name: 'text', type: 'string', mapping: 'description'},
         {name: 'leaf', type: 'boolean'},
         {name: 'children'},
