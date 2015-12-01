@@ -535,7 +535,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newSectionMenuItem = {
                     websiteId = knitkitWin.currentWebsite.id;
 
                 Ext.create("Ext.window.Window", {
-                    model: true,
+                    modal: true,
                     layout: 'fit',
                     title: 'New Section',
                     buttonAlign: 'center',

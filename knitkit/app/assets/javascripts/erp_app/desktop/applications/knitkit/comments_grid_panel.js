@@ -1,6 +1,7 @@
 Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CommentsGridPanel", {
     extend: "Ext.grid.Panel",
     alias: 'widget.knitkit_commentsgridpanel',
+
     approve: function (rec) {
         var self = this;
         self.initialConfig['centerRegion'].setWindowStatus('Approving Comment...');
@@ -55,8 +56,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CommentsGridPanel", {
                 Ext.Msg.alert('Error', 'Error deleting comemnt');
             }
         });
-
-
     },
 
     initComponent: function () {
@@ -111,19 +110,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CommentsGridPanel", {
                 {
                     header: 'Commentor',
                     sortable: true,
-                    width: 150,
+                    flex: 1,
                     dataIndex: 'commentor_name'
                 },
                 {
                     header: 'Email',
                     sortable: true,
-                    width: 150,
+                    flex: 1,
                     dataIndex: 'email'
                 },
                 {
                     header: 'Commented On',
                     dataIndex: 'created_at',
-                    width: 120,
+                    flex: 1,
                     sortable: true,
                     renderer: Ext.util.Format.dateRenderer('m/d/Y H:i:s')
                 },
@@ -135,7 +134,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CommentsGridPanel", {
                     align: 'center',
                     width: 50,
                     items: [{
-                        icon: '/assets/icons/document_view/document_view_16x16.png',
+                        icon: '/assets/icons/eye/eye_16x16.png',
                         tooltip: 'View',
                         handler: function (grid, rowIndex, colIndex) {
                             var rec = grid.getStore().getAt(rowIndex);
@@ -147,9 +146,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CommentsGridPanel", {
                     menuDisabled: true,
                     resizable: false,
                     xtype: 'actioncolumn',
-                    header: 'Approval',
+                    header: 'Approve',
                     align: 'center',
-                    width: 60,
+                    width: 100,
                     items: [{
                         getClass: function (v, meta, rec) {  // Or return a class from a function
                             if (rec.get('approved?')) {
@@ -174,13 +173,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CommentsGridPanel", {
                 {
                     header: 'Approved By',
                     sortable: true,
-                    width: 140,
+                    flex: 1,
                     dataIndex: 'approved_by_username'
                 },
                 {
                     header: 'Approved At',
                     sortable: true,
-                    width: 140,
+                    flex: 1,
                     dataIndex: 'approved_at',
                     renderer: Ext.util.Format.dateRenderer('m/d/Y H:i:s')
                 },
@@ -190,7 +189,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CommentsGridPanel", {
                     xtype: 'actioncolumn',
                     header: 'Delete',
                     align: 'center',
-                    width: 50,
+                    width: 100,
                     items: [{
                         icon: '/assets/icons/delete/delete_16x16.png',
                         tooltip: 'Delete',

@@ -374,30 +374,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.VersionsBlogGridPanel", 
                         name: 'publisher'
                     }
                 ]
-            }),
-            columns: [
-                {
-                    menuDisabled: true,
-                    resizable: false,
-                    xtype: 'actioncolumn',
-                    header: 'Action',
-                    align: 'center',
-                    width: 50,
-                    items: [
-                        {
-                            icon: '/assets/icons/document_view/document_view_16x16.png',
-                            tooltip: 'View',
-                            getClass: function (v, meta, rec) {
-                                return 'x-action-col-icon';
-                            },
-                            handler: function (grid, rowIndex, colIndex) {
-                                var rec = grid.getStore().getAt(rowIndex);
-                                grid.initialConfig['centerRegion'].viewContent(rec.get('title') + " Excerpt - Revision " + rec.get('version'), rec.get('body_html'));
-                            }
-                        }
-                    ]
-                }
-            ]
+            })
         }, config);
 
         this.callParent([config]);
@@ -648,7 +625,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.NonPublishedVersionsGrid
                     flex: 0.5,
                     items: [
                         {
-                            icon: '/assets/icons/document_view/document_view_16x16.png',
+                            icon: '/assets/icons/eye/eye_16x16.png',
                             tooltip: 'View',
                             getClass: function (v, meta, rec) {
                                 return 'x-action-col-icon';

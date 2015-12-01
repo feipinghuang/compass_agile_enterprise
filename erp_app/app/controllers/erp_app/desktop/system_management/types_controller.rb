@@ -11,7 +11,7 @@ module ErpApp
 
             compass_ae_type.children.each do |compass_ae_type_child|
               types.push({
-                             id: compass_ae_type_child.id,
+                             server_id: compass_ae_type_child.id,
                              description: compass_ae_type_child.description,
                              internal_identifier: compass_ae_type_child.internal_identifier,
                              klass: params[:klass]
@@ -23,7 +23,7 @@ module ErpApp
             if compass_ae_type.respond_to?(:roots)
               compass_ae_type.roots.each do |record|
                 types.push({
-                               id: record.id,
+                               server_id: record.id,
                                description: record.description,
                                internal_identifier: record.internal_identifier,
                                klass: params[:klass]
@@ -32,7 +32,7 @@ module ErpApp
             else
               compass_ae_type.all.each do |record|
                 types.push({
-                               id: record.id,
+                               server_id: record.id,
                                description: record.description,
                                internal_identifier: record.internal_identifier,
                                klass: params[:klass],
@@ -70,7 +70,7 @@ module ErpApp
               end
 
               render json: {success: true, type: {
-                         id: record.id,
+                         server_id: record.id,
                          description: record.description,
                          internal_identifier: record.internal_identifier,
                          klass: params[:klass]
@@ -97,7 +97,7 @@ module ErpApp
               record.save!
 
               render json: {success: true, type: {
-                         id: record.id,
+                         server_id: record.id,
                          description: record.description,
                          internal_identifier: record.internal_identifier,
                          klass: params[:klass]

@@ -35,8 +35,11 @@ module Knitkit
                       end
 
                       if params[:type] == "OnlineDocumentSection"
-                        documented_content = DocumentedContent.create(:title => website_section.title, :created_by => current_user, :body_html => website_section.title)
-                        DocumentedItem.create(:documented_content_id => documented_content.id, :online_document_section_id => website_section.id)
+                        documented_content = DocumentedContent.create(:title => website_section.title,
+                                                                      :created_by => current_user,
+                                                                      :body_html => website_section.title)
+                        DocumentedItem.create(:documented_content_id => documented_content.id,
+                                              :online_document_section_id => website_section.id)
                       end
 
                       website_section.update_path!
@@ -53,7 +56,6 @@ module Knitkit
                   end
                 end
               rescue => ex
-                # TODO send error notification
                 Rails.logger.error ex.message
                 Rails.logger.error ex.backtrace.join("\n")
 

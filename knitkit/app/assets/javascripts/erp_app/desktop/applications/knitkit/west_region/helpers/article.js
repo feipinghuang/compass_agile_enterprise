@@ -171,6 +171,18 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addArticleOptions = function (self, 
                 }
             }
         });
+
+        items.push({
+            text: 'View Comments',
+            iconCls: 'icon-eye',
+            listeners: {
+                'click': function () {
+                    var centerRegion = Ext.getCmp('knitkitCenterRegion');
+
+                    centerRegion.viewContentComments(record.get('recordId'), record.get('title') + ' - Comments');
+                }
+            }
+        });
     }
 
     items.push({
