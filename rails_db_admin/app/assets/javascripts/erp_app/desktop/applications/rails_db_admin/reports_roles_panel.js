@@ -13,7 +13,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
                 var panel = btn.up('railsdbadminreportsrolespanel'),
                     reportRoles = panel.down('typeselectiontree').getSelectedTypes(),
                     waitMsg = Ext.Msg.wait("Loading roles...");
-                
+
                 Ext.Ajax.request({
                     url:'/rails_db_admin/erp_app/desktop/reports/update',
                     method: 'POST',
@@ -25,7 +25,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
                         waitMsg.close();
                         var responseObj = Ext.decode(response.responseText);
                         if(responseObj.success){
-                            
+
                         }else{
                             waitMsg.close();
                             Ext.msg.alert('Error', 'Erorr setting roles');
@@ -50,7 +50,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
 
     setReportRoles: function(reportId, reportRoles){
         var me = this;
-        
+
         me.removeAll();
         me.reportId = reportId;
         me.add({
@@ -78,9 +78,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
                 var responseObj = Ext.decode(response.responseText);
                 if (responseObj.success) {
                     availableRoleTypes = responseObj.role_types;
-                    roleTypesTree.setAvailableRoleTypes(availableRoleTypes);
-                    roleTypesTree.setSelectedRoleTypes(reportRoles);
-                    
+                    roleTypesTree.setAvailableTypes(availableRoleTypes);
+                    roleTypesTree.setSelectedTypes(reportRoles);
+
                 }else{
                     waitMsg.close();
                     Ext.msg.alert('Error', 'Error loading roles');
