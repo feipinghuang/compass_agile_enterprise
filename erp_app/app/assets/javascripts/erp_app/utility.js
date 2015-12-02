@@ -385,7 +385,7 @@ Compass.ErpApp.Utility.formatCurrency = function (num) {
         cents = "0" + cents;
     for (var i = 0; i < Math.floor((num.length - (1 + i)) / 3); i++)
         num = num.substring(0, num.length - (4 * i + 3)) + ',' +
-        num.substring(num.length - (4 * i + 3));
+            num.substring(num.length - (4 * i + 3));
     return (((sign) ? '' : '-') + '$' + num + '.' + cents);
 };
 
@@ -654,7 +654,7 @@ Function.prototype.bindToEventHandler = function bindToEventHandler() {
     }
 };
 
-Function.prototype.inject = function(scope, args, scopeArgs) {
+Function.prototype.inject = function (scope, args, scopeArgs) {
 
     var code = '';
 
@@ -713,26 +713,25 @@ var stringToFunction = function (str) {
 // Date extensions
 
 // returns a date string acceptable with postgres
-Date.prototype.toPgDateString = function() {
+Date.prototype.toPgDateString = function () {
     function zeroPad(d) {
         return ("0" + d).slice(-2);
-    };
+    }
 
     var parsed = new Date(this);
 
-    
     return (
         [
             parsed.getUTCFullYear(),
             (parsed.getUTCMonth() + 1),
             parsed.getUTCDate()
         ].join('-')
-            + ' '
-            +
-            [
-                zeroPad(parsed.getUTCHours()),
-                zeroPad(parsed.getUTCMinutes()),
-                zeroPad(parsed.getUTCSeconds())
-            ].join(':')
+        + ' '
+        +
+        [
+            zeroPad(parsed.getUTCHours()),
+            zeroPad(parsed.getUTCMinutes()),
+            zeroPad(parsed.getUTCSeconds())
+        ].join(':')
     );
-}
+};

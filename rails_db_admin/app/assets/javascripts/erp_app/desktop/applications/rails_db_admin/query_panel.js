@@ -92,7 +92,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                                 }
                             }
                             else {
-                                Ext.Msg.alert("Error", response.exception);
+                                Ext.Msg.alert("Error", response.message);
                             }
                             
                         },

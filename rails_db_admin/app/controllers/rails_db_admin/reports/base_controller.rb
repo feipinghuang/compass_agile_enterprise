@@ -8,37 +8,66 @@ module RailsDbAdmin
       acts_as_report_controller
 
       def show
-        if @report.nil? or @report.query.nil?
-          render :no_report, :layout => false
-        else
+        begin
+
+          if @report.nil? or @report.query.nil?
+            render :no_report, :layout => false
+          else
+            build_report_data
+
+            if @data[:error]
+              @error = @data[:error]
+              render :error_report, :layout => false
+              return
+            end
+
+            respond_to do |format|
+
+              format.html {
+                render(inline: @report.template,
+                       locals:
+                           {
+                               unique_name: @report_iid,
+                               title: @report.name,
+                               columns: @data[:columns],
+                               rows: @data[:rows],
+                               custom_data: @custom_data
+                           }
+                )
+              }
+
+              format.pdf {
+                render build_pdf_config
+              }
+
+              format.csv {
+                csv_data = CSV.generate do |csv|
+                  csv << @data[:columns]
+                  @data[:rows].each do |row|
+                    csv << row.values
+                  end
+                end
+
+                send_data csv_data
+              }
+
+            end
+          end
+
+        end
+
+        def email
           build_report_data
 
-          if @data[:error]
-            @error = @data[:error]
-            render :error_report, :layout => false
-            return
-          end
-          
-          respond_to do |format|
+          file_attachments = []
 
-            format.html {
-              render(inline: @report.template,
-                     locals:
-                         {
-                             unique_name: @report_iid,
-                             title: @report.name,
-                             columns: @data[:columns],
-                             rows: @data[:rows],
-                             custom_data: @custom_data
-                         }
-              )
-            }
-
-            format.pdf {
-              render build_pdf_config
-            }
-
-            format.csv {
+          params[:report_format].each do |format|
+            if format == 'pdf'
+              file_attachments << {
+                  name: "#{@report.name}.pdf",
+                  data: render_to_string(build_pdf_config)
+              }
+            elsif format == 'csv'
               csv_data = CSV.generate do |csv|
                 csv << @data[:columns]
                 @data[:rows].each do |row|
@@ -46,48 +75,31 @@ module RailsDbAdmin
                 end
               end
 
-              send_data csv_data
-            }
-
-          end
-        end
-
-      end
-
-      def email
-        build_report_data
-
-        file_attachments = []
-
-        params[:report_format].each do |format|
-          if format == 'pdf'
-            file_attachments << {
-                name: "#{@report.name}.pdf",
-                data: render_to_string(build_pdf_config)
-            }
-          elsif format == 'csv'
-            csv_data = CSV.generate do |csv|
-              csv << @data[:columns]
-              @data[:rows].each do |row|
-                csv << row.values
-              end
+              file_attachments << {
+                  name: "#{@report.name}.csv",
+                  data: csv_data
+              }
             end
-
-            file_attachments << {
-                name: "#{@report.name}.csv",
-                data: csv_data
-            }
           end
+
+          to_email = params[:send_to]
+          cc_email = params[:cc_email]
+          message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
+          subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
+
+          ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
+
+          render json: {success: true}
+
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          # email notification
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {success: false, message: ex.message}
         end
-
-        to_email = params[:send_to]
-        cc_email = params[:cc_email]
-        message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
-        subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
-
-        ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
-
-        render json: {success: true}
       end
 
       protected
@@ -126,10 +138,10 @@ module RailsDbAdmin
       def build_report_data
         report_params = params[:report_params]
 
-        parsed_report_params = if report_params
-                                 JSON.parse(report_params).symbolize_keys
+        parsed_report_params = if report_params.blank?
+                                 {}
                                else
-                                 nil
+                                 JSON.parse(report_params).symbolize_keys
                                end
 
         # add current_user to locals

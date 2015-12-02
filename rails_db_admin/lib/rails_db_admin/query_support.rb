@@ -20,7 +20,7 @@ module RailsDbAdmin
 
       if pg_result && pg_result.count > 0
         pg_result.each do |row|
-          values << row
+          values << row.symbolize_keys
         end
       end
 
@@ -28,7 +28,7 @@ module RailsDbAdmin
     end
 
     def select_top_fifty(table)
-      #Actually, sanitizing here is pretty redundent since it's a constant...
+      #Actually, sanitizing here is pretty redundant since it's a constant...
       ar = Arel::Table::new(table)
       query = ar.project(Arel.sql('*')).take(50)
       #query = "SELECT * FROM #{table} LIMIT #{@connection.sanitize_limit(50)}"

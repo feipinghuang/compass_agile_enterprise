@@ -60,22 +60,20 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         var me = this,
             paramsObj = {};
         Ext.Array.each(me.query('field'), function(field){
-            // if field has no value set it to empty string to make the erb parser happy
-            if(!field.value){
-                field.value = '';
-            }
-
             if(field.xtype == 'textfield'){
-                paramsObj[field.name] = Ext.String.trim(field.value);
+                if(!Ext.isEmpty(field.value)){
+                    paramsObj[field.name] = Ext.String.trim(field.value);
+                }
             }else{
-                var date = new Date(field.value);
-                date.setHours(23,59,59);
-                paramsObj[field.name] = date.toPgDateString();
+                if(!Ext.isEmpty(field.value)) {
+                    var date = new Date(field.value);
+                    date.setHours(23, 59, 59);
+                    paramsObj[field.name] = date.toPgDateString();
+                }
             }
         });
 
         return paramsObj;
-
     },
 
     clearReportParams: function(){
