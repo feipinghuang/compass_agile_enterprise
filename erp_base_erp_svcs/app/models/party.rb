@@ -40,15 +40,24 @@ class Party < ActiveRecord::Base
   end
 
   # helper method to get dba_organization related to this party
+  #
+  # @return [Party] DBA Organization
   def dba_organization
     find_related_parties_with_role('dba_org').first
   end
 
+  # Get any child DBA Organizations related this party
+  #
+  # @param dba_orgs [Array] Array of current DBA Organizations to add to
+  # @return [Array] Child DBA Organizations
   def child_dba_organizations(dba_orgs=[])
+    dba_org = RoleType.iid('dba_org')
+
     PartyRelationship.joins('inner join parties on parties.id = party_relationships.party_id_from')
-        .joins('inner join party_roles on party_roles.party_id = parties.id')
+        .joins('inner join party_roles on party_roles.party_id = party_relationships.party_id_from')
         .where('party_id_to' => self.id)
-        .where('party_roles.role_type_id' => RoleType.iid('dba_org').id).each do |party_reln|
+        .where('party_relationships.role_type_id_to' => dba_org)
+        .where('party_roles.role_type_id' => dba_org).each do |party_reln|
 
       dba_orgs.push(party_reln.from_party)
       party_reln.from_party.child_dba_organizations(dba_orgs)
@@ -58,6 +67,10 @@ class Party < ActiveRecord::Base
     dba_orgs.uniq
   end
 
+  # Get any parent DBA Organizations related this party
+  #
+  # @param dba_orgs [Array] Array of current DBA Organizations to add to
+  # @return [Array] Parent DBA Organizations
   def parent_dba_organizations(dba_orgs=[])
     PartyRelationship.
         where('party_id_from = ?', id).
