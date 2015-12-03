@@ -36,9 +36,7 @@ module ErpBaseErpSvcs
 
         def get_offset_in_hours(client_utc_offset=nil)
           if client_utc_offset.nil?
-            zone = Rails.configuration.time_zone
-
-            zone.utc_offset / 60 / 100
+            ::Time.now.formatted_offset.to_i
           else
             client_utc_offset = client_utc_offset.to_i
             hours = client_utc_offset / 60
