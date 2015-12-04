@@ -36,15 +36,18 @@ module Api
       # this API
       # @return [ActiveRecord::Relation]
       def apply_scopes(biz_txn_events)
-        # scope by dba_organization
-        biz_txn_events = biz_txn_events.scope_by_dba_organization(current_user.party.dba_organization)
+        # scope by dba_organizations
+        dba_organizations = [current_user.party.dba_organization]
+        dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
+        biz_txn_events = biz_txn_events.scope_by_dba_organization(dba_organizations)
 
         if params[:query]
           biz_txn_events = biz_txn_events.where('description like ?', "%#{params[:query].strip}%")
         end
 
         if params[:biz_txn_types]
-          biz_txn_events = biz_txn_events.where('biz_txn_type_id' => BizTxnType.where(internal_identifier: params[:biz_txn_types].split(',')))
+          biz_txn_events = biz_txn_events.joins(:biz_txn_type)
+                               .where(:biz_txn_types => {internal_identifier: params[:biz_txn_types].split(',')})
         end
 
         biz_txn_events
