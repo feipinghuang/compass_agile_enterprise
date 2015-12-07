@@ -29,6 +29,10 @@ module Api
           parties = parties.where(where_clause)
         end
 
+        unless params[:id].blank?
+          parties = parties.where(id: params[:id].split(','))
+        end
+
         unless role_types.blank?
           parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.find_child_role_types(role_types.split(',')))
         end

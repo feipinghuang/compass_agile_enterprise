@@ -8,11 +8,19 @@ module Api
         dir = sort_hash[:direction] || 'ASC'
         limit = params[:limit] || 25
         start = params[:start] || 0
+        query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
         biz_txn_events = BizTxnEvent
 
         # hook method to apply any scopes passed via parameters to this api
-        biz_txn_events = apply_scopes(biz_txn_events)
+        biz_txn_events = biz_txn_events.apply_filters(query_filter, biz_txn_events)
+
+        # scope by dba_organizations if there are no parties passed as filters
+        unless query_filter[:parties]
+          dba_organizations = [current_user.party.dba_organization]
+          dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
+          biz_txn_events = biz_txn_events.scope_by_dba_organization(dba_organizations)
+        end
 
         biz_txn_events = biz_txn_events.order("#{sort} #{dir}")
 
@@ -26,31 +34,6 @@ module Api
         biz_txn_event = BizTxnEvent.find(params[:id])
 
         render :json => {biz_txn_event: biz_txn_event.to_data_hash}
-      end
-
-      protected
-
-      # hook method to apply any scopes passed via parameters to this API Controller
-      #
-      # @param statement [ActiveRecord::Relation] relation query being built for the record accessed via
-      # this API
-      # @return [ActiveRecord::Relation]
-      def apply_scopes(biz_txn_events)
-        # scope by dba_organizations
-        dba_organizations = [current_user.party.dba_organization]
-        dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
-        biz_txn_events = biz_txn_events.scope_by_dba_organization(dba_organizations)
-
-        if params[:query]
-          biz_txn_events = biz_txn_events.where('description like ?', "%#{params[:query].strip}%")
-        end
-
-        if params[:biz_txn_types]
-          biz_txn_events = biz_txn_events.joins(:biz_txn_type)
-                               .where(:biz_txn_types => {internal_identifier: params[:biz_txn_types].split(',')})
-        end
-
-        biz_txn_events
       end
 
 

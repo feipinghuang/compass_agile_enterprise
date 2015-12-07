@@ -3,23 +3,21 @@ module Api
     class WorkEffortPartyAssignmentsController < BaseController
 
       def index
+        query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
         limit = params[:limit] || 25
         start = params[:start] || 0
 
         work_effort_party_assignments = WorkEffortPartyAssignment
 
-        # scope by project
-        if params[:project_id]
-          work_effort_party_assignments = work_effort_party_assignments.scope_by_project(params[:project_id])
-        end
-
-        # scope by work_effort
-        if params[:work_effort_id]
-          work_effort_party_assignments = work_effort_party_assignments.scope_by_work_effort(params[:work_effort_id])
-        end
+        # apply filters
+        work_effort_party_assignments = WorkEffortPartyAssignment.apply_filters(query_filter, work_effort_party_assignments)
 
         # scope by dba organization
-        work_effort_party_assignments = work_effort_party_assignments.scope_by_dba_organization(current_user.party.dba_organization)
+        if query_filter[:parties].blank?
+          dba_organizations = [current_user.party.dba_organization]
+          dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
+          work_effort_party_assignments = work_effort_party_assignments.scope_by_dba_organization(dba_organizations)
+        end
 
         work_effort_party_assignments = work_effort_party_assignments.uniq
 

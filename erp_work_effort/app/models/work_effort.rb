@@ -141,6 +141,14 @@ class WorkEffort < ActiveRecord::Base
         statement = statement.where(work_efforts_tbl[:project_id].in(filters[:project_ids]))
       end
 
+      # filter by parties
+      unless filters[:parties].blank?
+        data = JSON.parse(filters[:parties])
+
+        statement = statement.scope_by_party(data['party_ids'].split(','),
+                                             {role_types: RoleType.where('internal_identifier' => data['role_types'].split(','))})
+      end
+
       statement
     end
 
@@ -180,15 +188,17 @@ class WorkEffort < ActiveRecord::Base
     def scope_by_party(party, options={})
       table_alias = String.random
 
-      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = work_efforts.id
-                         and \"#{table_alias}\".entity_record_type = 'WorkEffort'")
-                      .where("#{table_alias}.party_id" => party).uniq
-
       if options[:role_types]
-        statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
-      end
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'WorkEffort'
+                                     and #{table_alias}.entity_record_id = work_efforts.id and
+                                     #{table_alias}.role_type_id in (#{RoleType.find_child_role_types(options[:role_types]).collect(&:id).join(',')})
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
 
-      statement
+      else
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'WorkEffort'
+                                     and #{table_alias}.entity_record_id = work_efforts.id
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
+      end
     end
 
     # scope by work efforts assigned to the passed user
