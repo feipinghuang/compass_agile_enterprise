@@ -42,7 +42,7 @@ module Api
           dba_organization = [current_user.party.dba_organization]
           dba_organization.concat(current_user.party.dba_organization.child_dba_organizations)
 
-          parties.scope_by_dba_organization(dba_organization)
+          parties = parties.scope_by_dba_organization(dba_organization)
         else
           parties = parties.scope_by_dba_organization(current_user.party.dba_organization)
         end

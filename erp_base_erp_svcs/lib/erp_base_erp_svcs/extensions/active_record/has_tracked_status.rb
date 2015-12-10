@@ -86,7 +86,7 @@ module ErpBaseErpSvcs
                                              end
 
                                              unless status_ids.empty?
-                                               statement = statement.where(TrackedStatusType.arel_table[:id].in status_ids)
+                                               statement = statement.where(TrackedStatusType.arel_table[:id].not_in status_ids)
                                              end
                                            end
 

@@ -40,6 +40,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
     title: 'Select Types',
     width: '100%',
     minHeight: 200,
+    height: 200,
     rootVisible: false,
     cascadeSelectionUp: false,
     cascadeSelectionDown: false,
@@ -92,11 +93,81 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
      */
     unSelectableTypes: null,
 
-    listeners: {
-        'beforecellclick': function (grid) {
+    initComponent: function () {
+        var me = this;
+
+        if (me.availableTypes) {
+            me.store = Ext.create('Ext.data.TreeStore', {
+                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
+                folderSort: true,
+                sorters: [
+                    {
+                        property: 'text',
+                        direction: 'ASC'
+                    }
+                ]
+            });
+
+            me.store.setRootNode({text: '', children: me.availableTypes});
+        }
+        else {
+            me.store = Ext.create('Ext.data.TreeStore', {
+                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
+                tree: me,
+                folderSort: true,
+                proxy: {
+                    type: 'ajax',
+                    url: me.typesUrl + '.tree',
+                    reader: {
+                        type: 'treereader',
+                        root: me.typesRoot
+                    }
+                },
+                sorters: [
+                    {
+                        property: 'text',
+                        direction: 'ASC'
+                    }
+                ]
+            });
+
+            me.store.load();
+        }
+
+        toolbarItems = [{
+            xtype: 'button',
+            text: 'Select All',
+            iconCls: 'icon-info',
+            handler: function (btn) {
+                btn.up('typeselectiontree').toggleChecked(btn, true);
+            }
+        }];
+
+        if (me.canCreate) {
+            toolbarItems.push({
+                xtype: 'button',
+                text: me.createNewText,
+                iconCls: 'icon-add',
+                handler: function () {
+                    me.showCreateType();
+                }
+            });
+        }
+
+        me.dockedItems = [
+            {
+                xtype: 'toolbar',
+                items: toolbarItems
+            }
+        ];
+
+        me.callParent(arguments);
+
+        me.addListener('beforecellclick', function(grid){
             grid.ownerCt.suspendLayouts();
-        },
-        'checkchange': function (node, checked) {
+        });
+
+        me.addListener('checkchange', function(node, checked){
             var me = this;
 
             if (me.unSelectableTypes && Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
@@ -146,77 +217,8 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
             }
 
             node.getOwnerTree().resumeLayouts();
-        }
-    },
-
-    initComponent: function () {
-        var me = this;
-
-        if (me.availableTypes) {
-            me.store = Ext.create('Ext.data.TreeStore', {
-                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
-                folderSort: true,
-                sorters: [
-                    {
-                        property: 'text',
-                        direction: 'ASC'
-                    }
-                ]
-            });
-
-            me.store.setRootNode({text: '', children: me.availableTypes});
-        }
-        else {
-            me.store = Ext.create('Ext.data.TreeStore', {
-                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
-                folderSort: true,
-                proxy: {
-                    type: 'ajax',
-                    url: me.typesUrl + '.tree',
-                    reader: {
-                        type: 'treereader',
-                        root: me.typesRoot
-                    }
-                },
-                sorters: [
-                    {
-                        property: 'text',
-                        direction: 'ASC'
-                    }
-                ]
-            });
-
-            me.store.load();
-        }
-
-        toolbarItems = [{
-            xtype: 'button',
-            text: 'Select All',
-            iconCls: 'icon-info',
-            handler: function (btn) {
-                btn.up('typeselectiontree').toggleChecked(btn, true);
-            }
-        }];
-
-        if (me.canCreate) {
-            toolbarItems.push({
-                xtype: 'button',
-                text: me.createNewText,
-                iconCls: 'icon-add',
-                handler: function () {
-                    me.showCreateType();
-                }
-            });
-        }
-
-        me.dockedItems = [
-            {
-                xtype: 'toolbar',
-                items: toolbarItems
-            }
-        ];
-
-        me.callParent(arguments);
+            node.getOwnerTree().fireEvent('typesselected', node.getOwnerTree());
+        });
 
         me.collapseAll();
 
@@ -365,9 +367,9 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
         window.show();
     },
 
-    getSelectedTypes: function () {
+    getSelectedRecords: function () {
         var me = this;
-        var types = [];
+        var records = [];
 
         me.getRootNode().cascadeBy(function (node) {
             if (me.cascadeSelectionUp) {
@@ -378,15 +380,26 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
                     }
                 });
                 if (node.get('checked') && !childChecked) {
-                    types.push(node.get('internalIdentifier'));
+                    records.push(node);
                 }
             }
             else {
                 if (node.get('checked')) {
-                    types.push(node.get('internalIdentifier'));
+                    records.push(node);
                 }
             }
         });
+        return Ext.Array.clean(records);
+    },
+
+    getSelectedTypes: function () {
+        var me = this;
+        var types = [];
+
+        Ext.Array.forEach(me.getSelectedRecords(), function(record){
+            types.push(record.get('internalIdentifier'))
+        });
+
         return Ext.Array.clean(types);
     },
 
