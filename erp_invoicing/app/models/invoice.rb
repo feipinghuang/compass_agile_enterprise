@@ -58,6 +58,29 @@ class Invoice < ActiveRecord::Base
 
   class << self
 
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      if statement.nil?
+        statement = self
+      end
+
+      unless filters[:status].blank?
+        if filters[:status] == 'open'
+          statement = statement.where(id: self.open.collect(&:id))
+        end
+
+        if filters[:status] == 'closed'
+          statement = statement.where(id: self.closed.collect(:id))
+        end
+      end
+
+      statement
+    end
+
     # generate an invoice from a order_txn
     # options include
     # message - Message to display on Invoice
@@ -198,6 +221,22 @@ class Invoice < ActiveRecord::Base
       end
 
       "Inv-#{max_id}"
+    end
+
+    # Get all invoices that are open, meaning they have a balance
+    #
+    def open
+      # TODO this needs to be updated to use a status as if there are a lot of invoices this
+      # will get very slow
+      Invoice.all.select{|invoice| invoice.balance > 0}
+    end
+
+    # Get all invoices that are open, meaning they have a balance
+    #
+    def closed
+      # TODO this needs to be updated to use a status as if there are a lot of invoices this
+      # will get very slow
+      Invoice.all.select{|invoice| invoice.balance == 0}
     end
 
   end
@@ -353,6 +392,10 @@ class Invoice < ActiveRecord::Base
 
   def dba_organization
     find_parties_by_role_type('dba_org')
+  end
+
+  def to_data_hash
+    to_hash(only: [:id, :created_at, :updated_at, :description, :invoice_number, :invoice_date, :due_date])
   end
 
   private

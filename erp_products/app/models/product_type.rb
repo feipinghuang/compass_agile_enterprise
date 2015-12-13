@@ -52,6 +52,19 @@ class ProductType < ActiveRecord::Base
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
 
   class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      unless statement
+        statement = ProductType
+      end
+
+      statement
+    end
+
     #
     # scoping helpers
     #
@@ -127,15 +140,16 @@ class ProductType < ActiveRecord::Base
   end
 
   def to_data_hash
-    data = to_hash(only: [
-                       :id,
-                       :description,
-                       :sku,
-                       :comment,
-                       :created_at,
-                       :updated_at
-                   ],
-                   unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash))
+    to_hash(only: [
+                :id,
+                :description,
+                :internal_identifier,
+                :sku,
+                :comment,
+                :created_at,
+                :updated_at
+            ],
+            unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash))
   end
 
   def to_display_hash

@@ -1,6 +1,6 @@
 module Api
   module V1
-    class BizTxnEventsController < BaseController
+    class FinancialTxnsController < BaseController
 
       def index
         sort = nil
@@ -18,35 +18,33 @@ module Api
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
-        biz_txn_events = BizTxnEvent
-
         # hook method to apply any scopes passed via parameters to this api
-        biz_txn_events = biz_txn_events.apply_filters(query_filter, biz_txn_events)
+        financial_txns = FinancialTxn.apply_filters(query_filter)
 
         # scope by dba_organizations if there are no parties passed as filters
         unless query_filter[:parties]
           dba_organizations = [current_user.party.dba_organization]
           dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
-          biz_txn_events = biz_txn_events.scope_by_dba_organization(dba_organizations)
+          financial_txns = financial_txns.scope_by_dba_organization(dba_organizations)
         end
 
         if sort and dir
-          biz_txn_events = biz_txn_events.order("#{sort} #{dir}")
+          financial_txns = financial_txns.order("#{sort} #{dir}")
         end
 
-        total_count = biz_txn_events.count
+        total_count = financial_txns.count
 
         if start and limit
-          biz_txn_events = biz_txn_events.offset(start).limit(limit)
+          financial_txns = financial_txns.offset(start).limit(limit)
         end
 
-        render :json => {total_count: total_count, biz_txn_events: biz_txn_events.collect(&:to_data_hash)}
+        render :json => {success: true, total_count: total_count, financial_txns: financial_txns.collect(&:to_data_hash)}
       end
 
       def show
-        biz_txn_event = BizTxnEvent.find(params[:id])
+        financial_txn = FinancialTxn.find(params[:id])
 
-        render :json => {biz_txn_event: biz_txn_event.to_data_hash}
+        render :json => {financial_txn: financial_txn.to_data_hash}
       end
 
 
