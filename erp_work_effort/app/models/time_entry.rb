@@ -223,4 +223,30 @@ class TimeEntry < ActiveRecord::Base
     )
   end
 
+  # Sets the current status of the WorkEffort to In Progress
+  #
+  def update_task_status
+    # make sure this TimeEntry is related to a WorkEffort
+    if self.work_effort
+      work_effort.current_status = 'task_status_in_progress'
+    end
+  end
+
+  # Sets the current status of the WorkEffortAssignment to In Progress
+  #
+  def update_task_assignment_status
+    # make sure this TimeEntry is related to a WorkEffort
+    if self.work_effort
+      work_resource_role_type = RoleType.iid('work_resource')
+
+      # find the party with work_resource related to this TimeEntry
+      work_resource_party = self.find_party_by_role(work_resource_role_type)
+
+      assignment = work_effort.work_effort_party_assignments.where(party_id: work_resource_party)
+                       .where(role_type_id: work_resource_role_type).first
+
+      assignment.current_status = 'task_resource_status_in_progress'
+    end
+  end
+
 end

@@ -22,7 +22,7 @@ module Api
         # apply filters
         work_efforts = WorkEffort.apply_filters(query_filter, work_efforts)
 
-        work_efforts = work_efforts.order("sequence ASC")
+        work_efforts = work_efforts.order("sequence ASC").uniq
 
         render :json => {success: true,
                          total: work_efforts.count,

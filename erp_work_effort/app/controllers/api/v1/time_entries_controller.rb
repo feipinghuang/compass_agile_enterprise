@@ -152,6 +152,10 @@
             time_sheet = party.timesheets.current!(RoleType.iid('work_resource'))
             time_sheet.time_entries << time_entry
 
+            # update task statuses
+            time_entry.update_task_status
+            time_entry.update_task_assignment_status
+
             render json: {
                        success: true,
                        time_entry: time_entry.to_data_hash,
