@@ -34,7 +34,7 @@ module Api
         end
 
         unless role_types.blank?
-          parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.find_child_role_types(role_types.split(',')))
+          parties = parties.joins(party_roles: :role_type).where('role_types.internal_identifier' => role_types.split(','))
         end
 
         # scope by dba organization
