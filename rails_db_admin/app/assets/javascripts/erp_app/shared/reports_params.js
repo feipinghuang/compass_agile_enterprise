@@ -11,7 +11,6 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
     initComponent: function(){
         var me = this;
         me.items = [];
-
         me.params.eachSlice(me.slice, function(slice){
             var container = {
                 xtype: 'container',
@@ -60,19 +59,20 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         var me = this,
             paramsObj = {};
         Ext.Array.each(me.query('field'), function(field){
-            if(field.xtype == 'textfield'){
-                if(!Ext.isEmpty(field.value)){
+            // if field has no value set it to empty string to make the erb parser happy
+            if(field.value != undefined && Ext.String.trim(field.value.toString()) != ''){
+                if(field.xtype == 'textfield'){
                     paramsObj[field.name] = Ext.String.trim(field.value);
-                }
-            }else{
-                if(!Ext.isEmpty(field.value)) {
+                }else{
                     var date = new Date(field.value);
                     date.setHours(23, 59, 59);
                     paramsObj[field.name] = date.toPgDateString();
                 }
             }
+            else{
+                paramsObj[field.name] = '';
+            }
         });
-
         return paramsObj;
     },
 
