@@ -20,7 +20,7 @@ module RailsDbAdmin
 
       if pg_result && pg_result.count > 0
         pg_result.each do |row|
-          values << row
+          values << HashWithIndifferentAccess.new(row)
         end
       end
 

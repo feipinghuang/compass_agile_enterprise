@@ -4,7 +4,7 @@ module RailsDbAdmin
       class ReportsController < QueriesController
 
         before_filter :set_file_support
-        
+
         def index
           if params[:node] == 'root_node'
             setup_tree
@@ -63,14 +63,14 @@ module RailsDbAdmin
           report = Report.find(id)
 
           if report
-            report.meta_data['print_page_size'] = params[:page_size].strip if params[:page_size] 
+            report.meta_data['print_page_size'] = params[:page_size].strip if params[:page_size]
             report.meta_data['print_margin_top'] = params[:margin_top].strip if params[:margin_top]
             report.meta_data['print_margin_right'] = params[:margin_right].strip if params[:margin_right]
             report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip if params[:margin_bottom]
             report.meta_data['print_margin_left'] = params[:margin_left].strip if params[:margin_left]
 
-            if params[:report_params].present?
-              report.meta_data['params'] = params[:report_params]
+            if params.key?(:report_params)
+              report.meta_data['params'] = params[:report_params].nil? ? [] : params[:report_params]
             end
 
             report_roles = params[:report_roles]
@@ -88,7 +88,7 @@ module RailsDbAdmin
               end
 
             end
-            
+
             render :json => {success: report.save}
           else
             render :json => {success: false}

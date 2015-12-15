@@ -11,7 +11,6 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
     initComponent: function(){
         var me = this;
         me.items = [];
-        
         me.params.eachSlice(me.slice, function(slice){
             var container = {
                 xtype: 'container',
@@ -29,7 +28,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         labelWidth: 80,
                         fieldLabel: param.display_name,
                         style: {
-                            marginRight: '20px'  
+                            marginRight: '20px'
                         },
                         name: param.name
                     });
@@ -39,7 +38,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         xtype: 'datefield',
                         labelWidth: 80,
                         style: {
-                            marginRight: '20px'  
+                            marginRight: '20px'
                         },
                         format: 'm/d/Y',
                         fieldLabel: param.display_name,
@@ -51,10 +50,10 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
             });
             me.items.push(container);
         });
-        
-        
+
+
         me.callParent();
-        
+
     },
 
     getReportParams: function(){
@@ -62,21 +61,21 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
             paramsObj = {};
         Ext.Array.each(me.query('field'), function(field){
             // if field has no value set it to empty string to make the erb parser happy
-            if(!field.value){
-                field.value = '';
+            if(field.value != undefined && Ext.String.trim(field.value.toString()) != ''){
+                if(field.xtype == 'textfield'){
+                    paramsObj[field.name] = Ext.String.trim(field.value);
+                }else{
+                    var date = new Date(field.value);
+                    date.setHours(23, 59, 59);
+                    paramsObj[field.name] = date.toPgDateString();
+                }
             }
-            
-            if(field.xtype == 'textfield'){
-                paramsObj[field.name] = Ext.String.trim(field.value);
-            }else{
-                var date = new Date(field.value);
-                date.setHours(23,59,59);
-                paramsObj[field.name] = date.toPgDateString();
+            else{
+                paramsObj[field.name] = '';
             }
         });
-
         return paramsObj;
-        
+
     },
 
     clearReportParams: function(){
