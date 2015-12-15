@@ -245,7 +245,9 @@ class TimeEntry < ActiveRecord::Base
       assignment = work_effort.work_effort_party_assignments.where(party_id: work_resource_party)
                        .where(role_type_id: work_resource_role_type).first
 
-      assignment.current_status = 'task_resource_status_in_progress'
+      if assignment
+        assignment.current_status = 'task_resource_status_in_progress'
+      end
     end
   end
 
