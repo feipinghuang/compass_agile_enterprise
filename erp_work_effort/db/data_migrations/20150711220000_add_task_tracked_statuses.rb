@@ -7,7 +7,7 @@ class AddTaskTrackedStatuses
     [
         ['task_status_not_started', 'Not Started'],
         ['task_status_in_progress', 'In Progress'],
-        ['task_status_completed', 'Completed'],
+        ['task_status_complete', 'Complete'],
         ['task_status_hold', 'Hold'],
         ['task_status_canceled', 'Cancelled']
     ].each do |data|

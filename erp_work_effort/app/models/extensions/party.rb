@@ -174,8 +174,8 @@ Party.class_eval do
   def assigned_work_efforts(role_types=['work_resource'])
     role_types = RoleType.find_child_role_types(role_types)
 
-    WorkEffort.joins(:work_effort_party_assignments)
-        .where(work_effort_party_assignments: {role_type_id: role_types})
+    WorkEffort.joins(work_effort_party_assignments: :role_type)
+        .where(role_types: {internal_identifier: role_types})
         .where(work_effort_party_assignments: {party_id: self.id})
   end
 

@@ -153,8 +153,8 @@
             time_sheet.time_entries << time_entry
 
             # update task statuses
-            time_entry.update_task_status
-            time_entry.update_task_assignment_status
+            time_entry.update_task_status('task_status_in_progress')
+            time_entry.update_task_assignment_status('task_resource_status_in_progress')
 
             render json: {
                        success: true,

@@ -153,11 +153,10 @@ module ErpBaseErpSvcs
             self.current_status_type.internal_identifier unless self.current_status_type.nil?
           end
 
-          #set current status of entity.
-          #takes a TrackedStatusType internal_identifier and creates a StatusApplication
-          #with from_date set to today and tracked_status_type set to passed TrackedStatusType internal_identifier
-          #optionally can passed from_date and thru_date to manually set these
-          #it will set the thru_date on the current StatusApplication to now
+          # set current status of entity.
+          #
+          # @param args [String, TrackedStatusType, Array] This can be a string of the internal identifier of the
+          # TrackedStatusType to set, a TrackedStatusType instance, or three params the status, options and party_id
           def current_status=(args)
             options = {}
 

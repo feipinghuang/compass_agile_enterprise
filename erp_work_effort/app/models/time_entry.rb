@@ -225,16 +225,18 @@ class TimeEntry < ActiveRecord::Base
 
   # Sets the current status of the WorkEffort to In Progress
   #
-  def update_task_status
+  # @param status [String] Internal Identifier of TrackedStatusType to set
+  def update_task_status(status)
     # make sure this TimeEntry is related to a WorkEffort
     if self.work_effort
-      work_effort.current_status = 'task_status_in_progress'
+      work_effort.current_status = status
     end
   end
 
   # Sets the current status of the WorkEffortAssignment to In Progress
   #
-  def update_task_assignment_status
+  # @param status [String] Internal Identifier of TrackedStatusType to set
+  def update_task_assignment_status(status)
     # make sure this TimeEntry is related to a WorkEffort
     if self.work_effort
       work_resource_role_type = RoleType.iid('work_resource')
@@ -246,7 +248,7 @@ class TimeEntry < ActiveRecord::Base
                        .where(role_type_id: work_resource_role_type).first
 
       if assignment
-        assignment.current_status = 'task_resource_status_in_progress'
+        assignment.current_status = status
       end
     end
   end

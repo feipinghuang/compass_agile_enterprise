@@ -246,9 +246,20 @@ class WorkEffort < ActiveRecord::Base
   def assigned_parties(role_types=['work_resource'])
     role_types = RoleType.find_child_role_types(role_types)
 
-    Party.joins(:work_effort_party_assignments)
-        .where(work_effort_party_assignments: {role_type_id: role_types})
-        .where(work_effort_party_assignments: {party_id: self.id})
+    Party.joins(work_effort_party_assignments: :role_type)
+        .where(role_types: {internal_identifier: role_types})
+        .where(work_effort_party_assignments: {work_effort_id: self.id})
+  end
+
+  # Returns true if the party is assigned to WorkEffort
+  #
+  # @param party [Party] Party to check if it is assigned
+  # @param role_types [Array] Array of role types to check the assignments for
+  def party_assigned?(party, role_types=['work_resource'])
+    !WorkEffort.joins(work_effort_party_assignments: :role_type)
+         .where(role_types: {internal_identifier: role_types})
+         .where(work_effort_party_assignments: {work_effort_id: self.id})
+         .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
   end
 
   # Get comma sepeated description of all Parties assigned
@@ -369,6 +380,33 @@ class WorkEffort < ActiveRecord::Base
     data[:work_effort_type] = self.try(:work_effort_type).try(:to_data_hash)
 
     data
+  end
+
+  # set current status of entity.
+  #
+  # This is overriding the default method to update the task assignments as well if the status is set to
+  # complete
+  #
+  # @param args [String, TrackedStatusType, Array] This can be a string of the internal identifier of the
+  # TrackedStatusType to set, a TrackedStatusType instance, or three params the status, options and party_id
+  def current_status=(args)
+    super(args)
+
+    if args.is_a?(Array)
+      status = args[0]
+    else
+      status = args
+    end
+
+    if status.is_a? TrackedStatusType
+      status = status.internal_identifier
+    end
+
+    if status == 'task_status_complete'
+      self.work_effort_party_assignments.each do |assignment|
+        assignment.current_status = 'task_resource_status_in_complete'
+      end
+    end
   end
 
   protected
