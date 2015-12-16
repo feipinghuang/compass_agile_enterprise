@@ -45,6 +45,19 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         name: param.name
                     });
                     break;
+                case 'select':
+                    container.items.push({
+                        xtype: 'combo',
+                        labelWidth: 80,
+                        queryMode: 'local',
+                        style: {
+                            marginRight: '20px'
+                        },
+                        fieldLabel: param.display_name,
+                        name: param.name,
+                        store: (param.select_values == "") ? [] : eval(param.select_values)
+                    });
+                    break;
                 }
             });
             me.items.push(container);
@@ -61,7 +74,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         Ext.Array.each(me.query('field'), function(field){
             // if field has no value set it to empty string to make the erb parser happy
             if(field.value != undefined && Ext.String.trim(field.value.toString()) != ''){
-                if(field.xtype == 'textfield'){
+                if(field.xtype == 'textfield' || field.xtype == 'combo'){
                     paramsObj[field.name] = Ext.String.trim(field.value);
                 }else{
                     var date = new Date(field.value);
