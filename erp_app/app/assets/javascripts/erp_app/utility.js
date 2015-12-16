@@ -605,7 +605,7 @@ Array.prototype.collect = function (item) {
     var items = [];
     try {
         for (var i = 0; i < this.length; i++) {
-            items.push(this[i][item]);
+            items.push(eval('this[i].' + item));
         }
     }
     catch (ex) {
@@ -639,6 +639,26 @@ String.prototype.upcase = function () {
 
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
+String.prototype.squish = function(){
+    var me = this;
+
+    if(me.substring(0,1) == ' '){
+        me = me.substring(1);
+    }
+
+    if(me.substring(me.length-1,me.length) == ' '){
+        me = me.substring(0, me.length - 1);
+    }
+
+    me = me.replace(/\s{2,}/g, ' ');
+
+    return me;
+};
+
+String.prototype.toIID = function(){
+    return this.squish().downcase().replace(/\W/g, '_').replace(/\W/g, '');
 };
 
 //Function Extensions
