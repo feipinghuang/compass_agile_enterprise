@@ -46,12 +46,13 @@ class ProductType < ActiveRecord::Base
   is_json :custom_fields
 
   belongs_to :product_type_record, polymorphic: true
-  has_one :product_instance
   belongs_to :unit_of_measurement
+  belongs_to :biz_txn_acct_root
+
+  has_one :product_instance
   has_many :product_type_pty_roles, dependent: :destroy
   has_many :simple_product_offers, dependent: :destroy
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
-  belongs_to :biz_txn_acct_root
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
 
@@ -155,7 +156,9 @@ class ProductType < ActiveRecord::Base
                 :created_at,
                 :updated_at
             ],
-            unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash))
+            unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
+            price: try(:get_current_simple_plan).try(:money_amount),
+            gl_account: try(:gl_account).try(:to_data_hash))
   end
 
   def to_display_hash

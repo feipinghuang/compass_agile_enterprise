@@ -96,7 +96,7 @@ module Api
 
             biz_txn_acct_root.save!
 
-            render :json => {success: true, biz_txn_type: biz_txn_acct_root.to_hash(only: [:id, :description, :internal_identifier])}
+            render :json => {success: true, biz_txn_type: biz_txn_acct_root.to_data_hash}
           end
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors.full_messages

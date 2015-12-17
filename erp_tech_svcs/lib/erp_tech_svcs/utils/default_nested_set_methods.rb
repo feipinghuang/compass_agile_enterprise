@@ -220,7 +220,7 @@ module ErpTechSvcs
         if root?
           description
         else
-          crawl_up_from(self, root).split('///').reverse.join(' > ')
+          crawl_up_from(self, root).split('///').compact.reverse.join(' > ')
         end
       end
 
@@ -243,9 +243,11 @@ module ErpTechSvcs
       private
 
       def crawl_up_from(node, to_node = self.class.root)
-        # returns a string that is a '///'-separated list of nodes
-        # from child node to root
-        "#{node.description}///#{crawl_up_from(node.parent, to_node) if node != to_node}"
+        unless node.nil?
+          # returns a string that is a '///'-separated list of nodes
+          # from child node to root
+          "#{node.description}///#{crawl_up_from(node.parent, to_node) if node != to_node}"
+        end
       end
 
 

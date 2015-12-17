@@ -45,12 +45,10 @@ module Api
       end
 
       def show
-
-        product_type = ProductType.find(params[:product_type_id])
+        product_type = ProductType.find(params[:id])
 
         render :json => {success: true,
                          product_type: product_type.to_data_hash}
-
       end
 
       def create
@@ -81,7 +79,6 @@ module Api
       end
 
       def update
-
         product_type = ProductType.find(params[:id])
 
         product_type.description = params[:description]
@@ -96,7 +93,6 @@ module Api
       end
 
       def destroy
-
         ProductType.find(params[:id]).destroy
 
         render :json => {:success => true}

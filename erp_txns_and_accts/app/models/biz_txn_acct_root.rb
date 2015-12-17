@@ -157,4 +157,8 @@ class BizTxnAcctRoot < ActiveRecord::Base
         .where('biz_txn_acct_root_id = ?', self.id)
   end
 
+  def to_data_hash
+    to_hash(only: [:id, :description, :internal_identifier])
+  end
+
 end

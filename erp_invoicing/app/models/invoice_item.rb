@@ -23,14 +23,17 @@
 class InvoiceItem < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  has_payment_applications
+
   belongs_to :invoice
   belongs_to :agreement
   belongs_to :invoice_item_type
+  belongs_to :biz_txn_acct_root
 
   has_many :invoiced_records, :dependent => :destroy
   has_many :sales_tax_lines, as: :taxed_record, dependent: :destroy
 
-  has_payment_applications
+  alias :gl_account :biz_txn_acct_root
 
   def taxed?
     self.taxed
