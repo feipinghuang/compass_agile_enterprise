@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :applications
+      resources :applications, defaults: { :format => 'json' }
     end
   end
 

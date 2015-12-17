@@ -26,9 +26,12 @@
 #   t.column  :cylindrical,              :boolean
 #   t.column  :taxable                   :boolean
 #   t.column  :available_on_web          :boolean
+#   t.references :biz_txn_acct_root
 #
 #   t.timestamps
 # end
+#
+# add_index :product_types, :biz_txn_acct_root_id
 
 class ProductType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
@@ -48,8 +51,11 @@ class ProductType < ActiveRecord::Base
   has_many :product_type_pty_roles, dependent: :destroy
   has_many :simple_product_offers, dependent: :destroy
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
+  belongs_to :biz_txn_acct_root
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
+
+  alias :gl_account :biz_txn_acct_root
 
   class << self
     # Filter records

@@ -51,7 +51,11 @@ class BizTxnEvent < ActiveRecord::Base
     # @param filters [Hash] a hash of filters to be applied,
     # @param statement [ActiveRecord::Relation] the query being built
     # @return [ActiveRecord::Relation] the query being built
-    def apply_filters(filters, statement)
+    def apply_filters(filters, statement=nil)
+      unless statement
+        statement = self
+      end
+
       biz_txn_event_tbl = BizTxnEvent.arel_table
 
       # filter by query which will filter on description
@@ -98,11 +102,7 @@ class BizTxnEvent < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_dba_organization(dba_organization)
-      dba_org_role_type = BizTxnPartyRoleType.find_or_create('dba_org', 'DBA Organization')
-
-      joins("inner join biz_txn_party_roles on biz_txn_party_roles.biz_txn_event_id = biz_txn_events.id")
-          .where('biz_txn_party_roles.party_id' => dba_organization)
-          .where('biz_txn_party_roles.biz_txn_party_role_type_id' => dba_org_role_type)
+      scope_by_party(dba_organization, {role_types: 'dba_org'})
     end
 
     alias scope_by_dba scope_by_dba_organization

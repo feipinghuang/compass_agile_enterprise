@@ -1,9 +1,10 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
-      resources :biz_txn_types
-      resources :biz_txn_events
-      resources :financial_txns
+      resources :biz_txn_types, defaults: { :format => 'json' }
+      resources :biz_txn_events, defaults: { :format => 'json' }
+      resources :biz_txn_acct_roots, defaults: { :format => 'json' }
+      resources :financial_txns, defaults: { :format => 'json' }
     end
   end
 

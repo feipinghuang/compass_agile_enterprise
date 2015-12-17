@@ -18,10 +18,8 @@ module Api
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
-        biz_txn_events = BizTxnEvent
-
         # hook method to apply any scopes passed via parameters to this api
-        biz_txn_events = biz_txn_events.apply_filters(query_filter, biz_txn_events)
+        biz_txn_events = BizTxnEvent.apply_filters(query_filter)
 
         # scope by dba_organizations if there are no parties passed as filters
         unless query_filter[:parties]

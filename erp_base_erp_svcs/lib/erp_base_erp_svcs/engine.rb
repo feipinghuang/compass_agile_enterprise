@@ -7,6 +7,8 @@ module ErpBaseErpSvcs
   class Engine < Rails::Engine
     isolate_namespace ErpBaseErpSvcs
 
+    Mime::Type.register "tree", :tree
+
     config.erp_base_erp_svcs = ErpBaseErpSvcs::Config
 
     ActiveSupport.on_load(:active_record) do

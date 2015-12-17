@@ -12,13 +12,13 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :users do
+      resources :users, defaults: { :format => 'json' } do
         member do
           put :reset_password
         end
       end
 
-      resources :security_roles
+      resources :security_roles, defaults: { :format => 'json' }
     end
   end
 
