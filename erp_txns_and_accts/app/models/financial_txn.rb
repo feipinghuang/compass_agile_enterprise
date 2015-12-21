@@ -11,6 +11,7 @@ class FinancialTxn < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   acts_as_biz_txn_event
+  can_be_generated
 
   belongs_to :money, :dependent => :destroy
 

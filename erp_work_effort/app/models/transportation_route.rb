@@ -1,5 +1,20 @@
+# create_table :transportation_routes do |t|
+#
+#   t.string :internal_identifier
+#   t.string :description
+#   t.string :comments
+#
+#   t.string :external_identifier
+#   t.string :external_id_source
+#
+#   t.timestamps
+# end
+
 class TransportationRoute < ActiveRecord::Base
   attr_protected :created_at, :updated_at
+
+  has_party_roles
+  has_tracked_status
 
   #declare array to related models
   attr_accessor :associated_records_array
