@@ -331,7 +331,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         reportParamsMgrPanel.setReportData(reportObj.id, reportObj.params);
         var reportRolesPanel = this.eastRegion.down('railsdbadminreportsrolespanel');
         reportRolesPanel.setReportRoles(reportObj.id, reportObj.roles);
-        
+
     },
     showImage: function (node, reportId) {
         var self = this;
@@ -455,8 +455,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                         // the panel to be activated is the report panel show the query params panel in the east region else hide the east region
                         if(isActivatingReportPanel){
                             reportParamsMgrPanel.setReportData(
-                                newPanel.reportId,
-                                newPanel.reportParams
+                                reportParamsMgrPanel.reportId,
+                                reportParamsMgrPanel.reportParams
                             );
                             self.eastRegion.show();
                         }else{
@@ -521,7 +521,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 items: [
                     {
                         xtype: 'railsdbadminreportsparamsmanager'
-                        
+
                     },
                     {
                         xtype: 'railsdbadminreportsrolespanel'
@@ -530,7 +530,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 ]
             });
 
-                
+
             win = desktop.createWindow({
                 id: 'rails_db_admin',
                 title: 'RailsDBAdmin',

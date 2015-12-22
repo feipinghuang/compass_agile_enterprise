@@ -7,8 +7,8 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         type: 'vbox'
     },
     items: [],
-    slice: 3,
-    initComponent: function () {
+    slice: 2,
+    initComponent: function(){
         var me = this;
         me.items = [];
         me.params.eachSlice(me.slice, function (slice) {
@@ -18,46 +18,49 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                 style: {
                     marginBottom: '5px'
                 },
+                defaults: {
+                    labelWidth: 80,
+                    style:{
+                        marginRight: '20px'
+                    }
+                },
                 items: []
             };
-            Ext.each(slice, function (param) {
-                switch (param.type) {
-                    case 'text':
-                        container.items.push({
-                            xtype: 'textfield',
-                            labelWidth: 80,
-                            fieldLabel: param.display_name,
-                            style: {
-                                marginRight: '20px'
-                            },
-                            name: param.name
-                        });
-                        break;
-                    case 'date':
-                        container.items.push({
-                            xtype: 'datefield',
-                            labelWidth: 80,
-                            style: {
-                                marginRight: '20px'
-                            },
-                            format: 'm/d/Y',
-                            fieldLabel: param.display_name,
-                            name: param.name
-                        });
-                        break;
-                    case 'select':
-                        container.items.push({
-                            xtype: 'combo',
-                            labelWidth: 80,
-                            queryMode: 'local',
-                            style: {
-                                marginRight: '20px'
-                            },
-                            fieldLabel: param.display_name,
-                            name: param.name,
-                            store: (param.select_values == "") ? [] : eval(param.select_values)
-                        });
-                        break;
+            Ext.each(slice, function(param){
+                switch(param.type){
+                case 'text':
+                    container.items.push({
+                        xtype: 'textfield',
+                        fieldLabel: param.display_name,
+                        name: param.name
+                    });
+                    break;
+                case 'date':
+                    container.items.push({
+                        xtype: 'datefield',
+                        format: 'm/d/Y',
+                        fieldLabel: param.display_name,
+                        name: param.name
+                    });
+                    break;
+                case 'select':
+                    container.items.push({
+                        xtype: 'combo',
+                        queryMode: 'local',
+                        fieldLabel: param.display_name,
+                        name: param.name,
+                        store: (param.select_values == "") ? [] : eval(param.select_values)
+                    });
+                    break;
+                case 'data record':
+                    container.items.push({
+                        xtype: 'businessmoduledatarecordfield',
+                        fieldLabel: param.display_name,
+                        extraParams: param.module_iid,
+                        name: param.name
+                    });
+
+                    break;
                 }
             });
             me.items.push(container);
@@ -73,10 +76,14 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
             paramsObj = {};
         Ext.Array.each(me.query('field'), function (field) {
             // if field has no value set it to empty string to make the erb parser happy
-            if (field.value != undefined && Ext.String.trim(field.value.toString()) != '') {
-                if (field.xtype == 'textfield' || field.xtype == 'combo') {
+            if (field.value != undefined && Ext.String.trim(field.value.toString()) != ''){
+                if(field.xtype == 'textfield' || field.xtype == 'combo'){
                     paramsObj[field.name] = Ext.String.trim(field.value);
-                } else {
+                }
+                else if (field.xtype = 'businessmoduledatarecordfield') {
+                    paramsObj[field.name] = field.value;
+                }
+                else {
                     var date = new Date(field.value);
                     date.setHours(23, 59, 59);
                     paramsObj[field.name] = date.toPgDateString();
