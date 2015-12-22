@@ -8,7 +8,7 @@ module Api
         # @param filters [Hash] a hash of filters to be applied,
         # @param statement [ActiveRecord::Relation] the query being built
         # @return [ActiveRecord::Relation] the query being built
-        def apply_filters(filters, statement)
+        def apply_filters(filters, statement=nil)
           biz_txn_events = super(filters, statement)
 
           if filters[:work_effort_id]
