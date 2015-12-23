@@ -55,7 +55,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 												{
 													xtype: 'reportparamspanel',
 													region: 'north',
-													params: me.reportParams
+													params: me.reportParams,
+													slice: 2
 												}
 											);
 										}
@@ -206,6 +207,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 							},
 							beforeedit: function(editor, context, eOpts) {
 								me.down('#addParamBtn').hide();
+								me.removeSpecialFields(me);
 								me.currentRecord = context.record.data;
 								if (context.record.data.type == "select") {
 									me.buildMultiSelectField(me, me.currentRecord.select_values)
