@@ -20,7 +20,9 @@ class TransportationRoute < ActiveRecord::Base
   attr_accessor :associated_records_array
 
   # This class instance variable is needed to hold the models linked within :associated_transportation_routes
-  class << self; attr_accessor :associated_models end
+  class << self;
+    attr_accessor :associated_models
+  end
   @associated_models = []
 
   # Needed for polymorophic relationship with other models
@@ -42,8 +44,42 @@ class TransportationRoute < ActiveRecord::Base
         values_hash["#{record.class.name.underscore}_id"] = record.id
         values_hash["associated_record_type"] = klass_name
         values_hash["associated_record_id"] = reln_record.id
-        
+
         AssociatedTransportationRoute.create(values_hash)
+      end
+    end
+  end
+
+  class << self
+    def open
+      joins(:segments).where(transportation_route_segments: {actual_arrival: nil})
+    end
+
+    #
+    # Scoping
+    #
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      table_alias = String.random
+
+      if options[:role_types]
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'TransportationRoute'
+                                     and #{table_alias}.entity_record_id = transportation_routes.id and
+                                     #{table_alias}.role_type_id in (#{RoleType.find_child_role_types(options[:role_types]).collect(&:id).join(',')})
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
+
+      else
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'TransportationRoute'
+                                     and #{table_alias}.entity_record_id = transportation_routes.id
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
       end
     end
   end
@@ -56,31 +92,36 @@ class TransportationRoute < ActiveRecord::Base
     self.class.associated_models.each do |model|
       records = records | self.send(model.to_s)
     end
-      
+
     #set it back to the instance variable
     self.send("associated_records_array=", records)
-      
+
     records
   end
 
   # Ties a segment's from/to stops to its route, and then forces a reload of the route's stops array from its cached value
   def modify_stops(segment)
-  	stops = []
-  	stops << segment.from_stop << segment.to_stop
+    stops = []
+    stops << segment.from_stop << segment.to_stop
 
-  	stops.each do |stop|
-	  	unless stop.nil? or stop.route == self
-	  		stop.route = self
-	  		stop.save
-	  	end
-	  end
+    stops.each do |stop|
+      unless stop.nil? or stop.route == self
+        stop.route = self
+        stop.save
+      end
+    end
 
-	  # Force reload of the stops array since it has changed
-	  self.stops(true)
+    # Force reload of the stops array since it has changed
+    self.stops(true)
   end
 
-  def test
-    puts self.name
+  def to_data_hash
+    data = to_hash(only: [:id, :internal_identifier, :description,
+                          :comments, :created_at, :updated_at])
+
+    data[:transportation_route_segments] = segments.collect { |item| item.to_data_hash }
+
+    data
   end
 
 end

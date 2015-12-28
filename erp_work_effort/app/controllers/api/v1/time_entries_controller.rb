@@ -307,6 +307,6 @@
         render json: result
       end
 
-    end # WorkEffortTypeController
+    end # TimeEntriesController
   end # V1
 end # Api

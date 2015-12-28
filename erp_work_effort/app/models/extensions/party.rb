@@ -39,6 +39,7 @@ Party.class_eval do
   #
 
   class << self
+
     # scope by project
     #
     # @param project [Integer | Project | Array] either a id of Project record, a Project record, an array of Project records
@@ -166,6 +167,10 @@ Party.class_eval do
   #
   # end relationship helpers
   #
+
+  def transportation_routes
+    TransportationRoute.scope_by_party(self)
+  end
 
   # Get array of assigned WorkEfforts
   #

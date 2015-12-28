@@ -91,6 +91,8 @@ class WorkEffort < ActiveRecord::Base
   belongs_to :facility
 
   has_many :time_entries
+  has_many :associated_transportation_routes, as: :associated_record
+  has_many :transportation_routes, through: :associated_transportation_routes
 
   class << self
 

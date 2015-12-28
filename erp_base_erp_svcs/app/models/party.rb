@@ -17,6 +17,8 @@ class Party < ActiveRecord::Base
   attr_reader :relationships
   attr_writer :create_relationship
 
+  has_many :entity_party_roles
+
   class << self
     # scope by dba organization
     #

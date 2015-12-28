@@ -24,6 +24,16 @@ Rails.application.routes.draw do
             put :stop
           end
         end
+        resources :transportation_routes, :defaults => {:format => 'json'} do
+          collection do
+            post :start
+            get :open
+          end
+
+          member do
+            put :stop
+          end
+        end
       end
 
       resources :work_effort_party_assignments, :defaults => {:format => 'json'}
