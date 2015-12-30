@@ -37,12 +37,6 @@ class TransportationRouteSegment < ActiveRecord::Base
   belongs_to :from_stop, :class_name => "TransportationRouteStop", :foreign_key => "from_transportation_route_stop_id"
   belongs_to :to_stop, :class_name => "TransportationRouteStop", :foreign_key => "to_transportation_route_stop_id"
 
-  # Calculates miles traveled for this Transportation Route Segment
-  #
-  def calculate_miles_traveled!
-
-  end
-
   def to_data_hash
     to_hash(only: [:id, :internal_identifier, :description,
                    :comments,
