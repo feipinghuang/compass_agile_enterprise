@@ -219,11 +219,11 @@ module ErpBaseErpSvcs
             primary_contact_mechanism = get_primary_contact(contact_mechanism_class)
             if primary_contact_mechanism
               primary_contact_mechanism.is_primary = false
-              primary_contact_mechanism.save
+              primary_contact_mechanism.save!
             end
 
             contact_mechanism_instance.is_primary = true
-            contact_mechanism_instance.save
+            contact_mechanism_instance.save!
 
             contact_mechanism_instance
           end
@@ -319,8 +319,8 @@ module ErpBaseErpSvcs
                 contact_mechanism.contact.contact_purposes << contact_purpose
               end
             end
-            contact_mechanism.contact.save
-            contact_mechanism.save
+            contact_mechanism.contact.save!
+            contact_mechanism.save!
 
             set_primary_contact(contact_mechanism_class, contact_mechanism) if is_primary
 

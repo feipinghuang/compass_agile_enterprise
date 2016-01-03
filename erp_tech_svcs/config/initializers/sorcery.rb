@@ -59,6 +59,8 @@ Rails.application.config.sorcery.configure do |config|
 
   # --- user config ---
   config.user_config do |user|
+    user.downcase_username_before_authenticating = true
+
     # -- core --
     user.username_attribute_names = [:username, :email]                               # specify username
                                                                                       # attributes, for example:
