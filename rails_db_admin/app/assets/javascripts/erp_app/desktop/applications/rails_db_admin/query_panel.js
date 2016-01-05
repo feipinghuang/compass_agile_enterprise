@@ -2,7 +2,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
     extend: "Ext.panel.Panel",
     alias: 'widget.railsdbadmin_querypanel',
     isReportQuery: false,
-    
+
     getSql: function () {
         return this.down('codemirror').getValue();
     },
@@ -50,6 +50,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
 
                     Ext.Ajax.request({
                         url: '/rails_db_admin/erp_app/desktop/queries/execute_query',
+                        timeout: 120000,
                         params: {
                             sql: sql,
                             database: database,
@@ -63,18 +64,18 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                         success: function (responseObject) {
                             messageBox.hide();
                             var response = Ext.decode(responseObject.responseText);
-                            
+
                             if (response.success) {
                                 var columns = response.columns;
                                 var fields = response.fields;
                                 var data = response.data;
-                                
+
                                 if (!Ext.isEmpty(self.down('railsdbadmin_readonlytabledatagrid'))) {
                                     var jsonStore = new Ext.data.JsonStore({
                                         fields: fields,
                                         data: data
                                     });
-                                    
+
                                     self.down('railsdbadmin_readonlytabledatagrid').reconfigure(jsonStore, columns);
                                 }
                                 else {
@@ -84,7 +85,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                                         fields: fields,
                                         data: data
                                     });
-                                    
+
                                     var cardPanel = self.down('#resultCardPanel');
                                     cardPanel.removeAll(true);
                                     cardPanel.add(readOnlyDataGrid);
@@ -94,7 +95,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                             else {
                                 Ext.Msg.alert("Error", response.exception);
                             }
-                            
+
                         },
                         failure: function () {
                             messageBox.hide();
@@ -164,13 +165,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 handler: function(){
                     var reportParamsPanel = self.down('reportparamspanel'),
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
-                        
+
                         reportTitle = "Preview" + " (" + self.reportName + ")";
                     self.openIframeInTab(reportTitle , '/reports/display/' + self.internalIdentifier + '?report_params=' + reportParamsWithValues);
 
                 }
             });
-            
+
             tbarItems.push({
                 text: 'Download CSV',
                 iconCls: 'icon-content',
@@ -193,7 +194,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 }
             });
         }
-        
+
         if (!this.initialConfig['hideSave']) {
             tbarItems.push({
                 text: 'Save',
@@ -297,7 +298,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
             });
         }
         this.items.push(codeMirrorPanel);
-        
+
 
         if (!Ext.isEmpty(this.initialConfig['southRegion'])) {
             this.items.push(this.initialConfig['southRegion']);
