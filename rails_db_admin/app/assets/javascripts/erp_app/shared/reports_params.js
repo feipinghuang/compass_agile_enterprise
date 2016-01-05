@@ -11,7 +11,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
     initComponent: function(){
         var me = this;
         me.items = [];
-        me.params.eachSlice(me.slice, function (slice) {
+        me.params.eachSlice(me.slice, function(slice){
             var container = {
                 xtype: 'container',
                 layout: 'hbox',
@@ -32,12 +32,19 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                     container.items.push({
                         xtype: 'textfield',
                         fieldLabel: param.display_name,
+                        style: {
+                            marginRight: '20px'
+                        },
                         name: param.name
                     });
                     break;
                 case 'date':
                     container.items.push({
                         xtype: 'datefield',
+                        labelWidth: 80,
+                        style: {
+                            marginRight: '20px'
+                        },
                         format: 'm/d/Y',
                         fieldLabel: param.display_name,
                         name: param.name
