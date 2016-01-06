@@ -39,10 +39,6 @@ class UpdateTransportationRoutes < ActiveRecord::Migration
     unless column_exists? :transportation_route_segments, :estimated_arrival
       rename_column :transportation_route_segments, :estmated_arrival, :estimated_arrival
     end
-
-    unless column_exists? :transportation_route_segments, :snapped_to_road_coordinates
-      add_column :transportation_route_segments, :snapped_to_road_coordinates, :text
-    end
   end
 
   def down
@@ -72,8 +68,5 @@ class UpdateTransportationRoutes < ActiveRecord::Migration
     remove_column :transportation_route_segments, :miles_traveled if column_exists? :transportation_route_segments, :miles_traveled
 
     rename_column :transportation_route_segments, :estimated_arrival, :estmated_arrival if column_exists? :transportation_route_segments, :estimated_arrival
-
-    remove_column :transportation_route_segments, :snapped_to_road_coordinates if column_exists? :transportation_route_segments, :snapped_to_road_coordinates
-
   end
 end

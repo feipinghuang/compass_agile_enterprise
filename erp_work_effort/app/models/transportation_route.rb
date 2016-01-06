@@ -52,12 +52,40 @@ class TransportationRoute < ActiveRecord::Base
 
   class << self
     def open
-      joins(:segments).where(transportation_route_segments: {actual_arrival: nil})
+      joins(:segments)
+          .where(transportation_routes: {manual_entry: false})
+          .where(transportation_route_segments: {actual_arrival: nil})
     end
 
     #
     # Scoping
     #
+
+    #
+    # scoping helpers
+    #
+
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      scope_by_party(dba_organization, {role_types: ['dba_org']})
+    end
+
+    alias scope_by_dba scope_by_dba_organization
+
+    # scope by work efforts assigned to the passed user
+    #
+    # @param user [User] user to look for assignments
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_user(user, options={})
+      scope_by_party(user.party, options)
+    end
 
     # scope by party
     #
