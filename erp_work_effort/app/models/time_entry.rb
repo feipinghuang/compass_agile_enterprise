@@ -68,11 +68,13 @@ class TimeEntry < ActiveRecord::Base
       end
 
       if opts[:start]
-        statement = statement.where(time_entry_arel_tbl[:from_datetime].gteq(opts[:start]))
+        statement = statement.where(time_entry_arel_tbl[:from_datetime].gteq(opts[:start].utc).
+                                        or(time_entry_arel_tbl[:manual_entry_start_date].gteq(opts[:start].utc)))
       end
 
       if opts[:end]
-        statement = statement.where(time_entry_arel_tbl[:from_datetime].lteq(opts[:end]))
+        statement = statement.where(time_entry_arel_tbl[:from_datetime].lteq(opts[:end].utc).
+                                        or(time_entry_arel_tbl[:manual_entry_start_date].lteq(opts[:end].utc)))
       end
 
       statement.each do |time_entry|

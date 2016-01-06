@@ -259,7 +259,7 @@ class WorkEffort < ActiveRecord::Base
   # @param role_types [Array] Array of role types to check the assignments for
   def party_assigned?(party, role_types=['work_resource'])
     !WorkEffort.joins(work_effort_party_assignments: :role_type)
-         .where(role_types: {internal_identifier: role_types})
+         .where(role_types: {internal_identifier: RoleType.find_child_role_types(role_types).collect{|item| item.internal_identifier}})
          .where(work_effort_party_assignments: {work_effort_id: self.id})
          .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
   end
