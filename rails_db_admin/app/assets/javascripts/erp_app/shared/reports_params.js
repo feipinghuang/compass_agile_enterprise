@@ -35,7 +35,8 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         style: {
                             marginRight: '20px'
                         },
-                        name: param.name
+                        name: param.name,
+                        value: param.default_value
                     });
                     break;
                 case 'date':
@@ -47,7 +48,8 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         },
                         format: 'm/d/Y',
                         fieldLabel: param.display_name,
-                        name: param.name
+                        name: param.name,
+                        value: (!param.default_value ? null : new Date(param.default_value))
                     });
                     break;
                 case 'select':
@@ -56,15 +58,18 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         queryMode: 'local',
                         fieldLabel: param.display_name,
                         name: param.name,
-                        store: (param.select_values == "") ? [] : eval(param.select_values)
+                        store: (!param.select_values) ? [] : eval(param.select_values),
+                        value: (!param.default_value ? null : param.default_value)
                     });
+
                     break;
                 case 'data record':
                     container.items.push({
                         xtype: 'businessmoduledatarecordfield',
                         fieldLabel: param.display_name,
                         extraParams: param.module_iid,
-                        name: param.name
+                        name: param.name,
+                        value: (!param.default_value ? null : param.default_value)
                     });
 
                     break;

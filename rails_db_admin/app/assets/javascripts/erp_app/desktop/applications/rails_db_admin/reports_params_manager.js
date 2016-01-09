@@ -28,7 +28,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 										type: item.get('type'),
 										select_values: item.get('select_values'),
 										app_id: item.get('app_id'),
-										module_iid: item.get('module_iid')
+										module_iid: item.get('module_iid'),
+										default_value: item.get('default_value')
 									};
 								});
 								var myMask = new Ext.LoadMask(me, {msg: "Please wait..."});
@@ -100,6 +101,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 					itemId: 'addParamBtn',
 					margin: '10 0 10 0',
 					handler: function (btn) {
+						me.removeSpecialFields(me);
 						me.add(me.buildAddReportParam());
 						btn.hide();
 					}
@@ -175,11 +177,44 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 						]
 					}
 				],
+				listeners: {
+					itemcontextmenu: function (view, record, item, index, e, eOpts) {
+						e.stopEvent();
+						var contextMenu = Ext.create('Ext.menu.Menu', {
+                items: [
+                	{
+                		text: 'Edit Default',
+                		iconCls: 'icon-edit',
+                		handler: function(e) {
+                			me.remove(me.down('#addReportParam'));
+                			me.remove(me.down('#buildDefaultField'));
+                			me.remove(me.down('applicationmanagementmultioptions'));
+											me.remove(me.down('#applicationSelect'));
+											me.remove(me.down('#module'));
+                			switch(record.data.type) {
+                			case 'text':
+                			case 'date':
+                				me.add(me.buildDefaultField(me, null, record, index));
+                				break;
+                			case 'select':
+                				me.add(me.buildDefaultComboField(me, null, record, index));
+                				break;
+                			case 'data record':
+                				me.add(me.buildDefaultDataRecordField(me, null, record, index));
+                				break;
+                			}
+                		}
+                	}
+                ]
+            });
+            contextMenu.showAt(e.xy);
+					}
+				},
 				padding: '0 0 35 0',
 				selType: 'rowmodel',
 				plugins: [
 					Ext.create('Ext.grid.plugin.RowEditing', {
-						clicksToEdit: 1,
+						clicksToEdit: 2,
 						listeners: {
 							edit: function (editor, context, eOpts) {
 								var type = context.record.data.type;
@@ -200,6 +235,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 									context.record.set('module_iid', null);
 									break;
 								}
+								context.record.set('default_value', null);
 								me.removeSpecialFields(me);
 								context.record.commit();
 								me.down('#addParamBtn').show();
@@ -208,6 +244,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 							beforeedit: function(editor, context, eOpts) {
 								me.down('#addParamBtn').hide();
 								me.removeSpecialFields(me);
+								var form = me.down('#addReportParam');
+								if (form){
+									me.remove(form);
+								}
 								me.currentRecord = context.record.data;
 								if (context.record.data.type == "select") {
 									me.buildMultiSelectField(me, me.currentRecord.select_values)
@@ -225,7 +265,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 					})
 				],
 				store: {
-					fields: ['name', 'type', 'display_name', 'select_values' ,'app_id', 'module_iid'],
+					fields: ['name', 'type', 'display_name', 'select_values' ,'app_id', 'module_iid', 'default_value'],
 					data: me.reportParams
 				}
 			});
@@ -286,7 +326,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 								me.removeSpecialFields(form);
 								switch(type){
 								case 'select':
-									me.buildMultiSelectField(form, ["All"])
+									me.buildMultiSelectField(form, ["All"]);
 									break;
 								case 'data record':
 									me.buildDataRecordField(form);
@@ -306,17 +346,31 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 								grid = panel.down('grid'),
 								paramSelectBox = panel.down('applicationmanagementmultioptions'),
 								appSelect = panel.down('#applicationSelect'),
-								moduleType = panel.down('#module');
-								grid.getStore().add({
-									display_name: panel.down('#paramDisplayName').getValue(),
-									name: panel.down('#paramName').getValue(),
-									type: panel.down('#paramType').getValue(),
-									select_values: (paramSelectBox == null ? null : paramSelectBox.getValue()),
-									app_id: (appSelect == null ? null : appSelect.getValue()),
-									module_iid: (moduleType == null ? null : moduleType.getValue())
-								});
+								moduleType = panel.down('#module'),
+								type = panel.down('#paramType').getValue();
+
+							grid.getStore().add({
+								display_name: panel.down('#paramDisplayName').getValue(),
+								name: panel.down('#paramName').getValue(),
+								type: type,
+								select_values: (!paramSelectBox ? null : paramSelectBox.getValue()),
+								app_id: (!appSelect ? null : appSelect.getValue()),
+								module_iid: (!moduleType ? null : moduleType.getValue())
+							});
+
 							me.remove(btn.up('#addReportParam'));
-							me.down('#addParamBtn').show();
+							switch(type) {
+							case 'date':
+							case 'text':
+								me.add(me.buildDefaultField(me, grid));
+								break;
+							case 'select':
+								me.add(me.buildDefaultComboField(me, grid));
+								break;
+							case 'data record':
+								me.add(me.buildDefaultDataRecordField(me, grid));
+								break;
+							}
 						}
 					},
 					{
@@ -446,13 +500,160 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 		removeSpecialFields: function(container) {
 			var selectField = container.down('applicationmanagementmultioptions'),
 					appSelect = container.down('#applicationSelect'),
-					moduleType = container.down('#module');
+					moduleType = container.down('#module'),
+					defaultField = container.down('#buildDefaultField');
 			if (appSelect) {
 				container.remove(appSelect);
 				container.remove(moduleType);
 			}
 			if (selectField){
 				container.remove(selectField);
+			}
+			if (defaultField) {
+				container.remove(defaultField);
+			}
+		},
+
+		buildDefaultField: function(container, grid, record, index) {
+			container.down('#addParamBtn').hide();
+			var data = (!grid) ? record.data : grid.getStore().data.items.last().data;
+			if (data.type == 'date') {
+				var value = (!data.default_value) ? null : new Date(data.default_value)
+			}
+			else{
+				var value = (!data.default_value) ? null : data.default_value
+			}
+			return {
+				xtype: 'form',
+				itemId: 'buildDefaultField',
+				bodyPadding: 10,
+				items: [
+					{
+						xtype: data.type + 'field',
+						fieldLabel: 'Default value (' + data.display_name + ')',
+						itemId: 'defaultField',
+						width: 260,
+						labelAlign: 'left',
+	          labelWidth: 110,
+	          value: value
+					}
+				],
+				buttons: [
+					{
+						text: 'Add',
+						handler: function (btn) {
+							var default_value = btn.up('#buildDefaultField').down('#defaultField').getValue();
+							if (grid) {
+								grid.getStore().data.items.last().set('default_value' ,default_value);
+							}
+							else{
+								container.down('grid').getStore().getAt(index).set('default_value' ,default_value);
+							}
+							container.remove(btn.up('#buildDefaultField'));
+							container.down('#addParamBtn').show();
+						}
+					},
+					{
+						text: 'Cancel',
+						handler: function (btn) {
+							container.remove(btn.up('#buildDefaultField'));
+							container.down('#addParamBtn').show();
+						}
+					}
+				]
+			}
+		},
+
+		buildDefaultComboField: function(container, grid, record, index) {
+			container.down('#addParamBtn').hide();
+			var data = (!grid) ? record.data : grid.getStore().data.items.last().data,
+				  value = (!data.default_value) ? null : data.default_value;
+			return {
+				xtype: 'form',
+				itemId: 'buildDefaultField',
+				bodyPadding: 10,
+				items: [
+					{
+						xtype: 'combo',
+						fieldLabel: 'Default value (' + data.display_name + ')',
+						itemId: 'defaultField',
+						width: 260,
+						queryMode: 'local',
+						labelAlign: 'left',
+	          labelWidth: 116,
+	          store: eval(data.select_values),
+	          value: value
+					}
+				],
+				buttons: [
+					{
+						text: 'Add',
+						handler: function (btn) {
+							var default_value = btn.up('#buildDefaultField').down('#defaultField').getValue();
+							if (grid) {
+								grid.getStore().data.items.last().set('default_value' ,default_value);
+							}
+							else{
+								container.down('grid').getStore().getAt(index).set('default_value' ,default_value);
+							}
+							container.remove(btn.up('#buildDefaultField'));
+							container.down('#addParamBtn').show();
+						}
+					},
+					{
+						text: 'Cancel',
+						handler: function (btn) {
+							container.remove(btn.up('#buildDefaultField'));
+							container.down('#addParamBtn').show();
+						}
+					}
+				]
+			}
+		},
+
+		buildDefaultDataRecordField: function(container, grid, record, index) {
+			container.down('#addParamBtn').hide();
+			var data = (!grid) ? record.data : grid.getStore().data.items.last().data,
+			    value = (!data.default_value) ? null : data.default_value;
+			return {
+				xtype: 'form',
+				itemId: 'buildDefaultField',
+				bodyPadding: 10,
+				items: [
+					{
+						xtype: 'businessmoduledatarecordfield',
+						fieldLabel: 'Default value (' + data.display_name + ')',
+						itemId: 'defaultField',
+						width: 260,
+						labelAlign: 'left',
+	          labelWidth: 110,
+	          extraParams: data.module_iid,
+	          value: value
+					}
+				],
+				buttons: [
+					{
+						text: 'Add',
+						handler: function (btn) {
+							var default_value = btn.up('#buildDefaultField').down('#defaultField').getValue();
+							if (grid) {
+								grid.getStore().data.items.last().set('default_value' ,default_value);
+							}
+							else{
+								container.down('grid').getStore().getAt(index).set('default_value' ,default_value);
+							}
+							container.remove(btn.up('#buildDefaultField'));
+							container.down('#addParamBtn').show();
+						}
+					},
+					{
+						text: 'Cancel',
+						handler: function (btn) {
+							container.remove(btn.up('#buildDefaultField'));
+							container.down('#addParamBtn').show();
+						}
+					}
+				]
 			}
 		}
 });
