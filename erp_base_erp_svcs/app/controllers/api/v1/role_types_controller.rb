@@ -113,18 +113,24 @@ module Api
       def create
         description = params[:description].strip
 
-        ActiveRecord::Base.transaction do
-          role_type = RoleType.create(description: description, internal_identifier: description.to_iid)
+        begin
+          ActiveRecord::Base.transaction do
+            role_type = RoleType.create!(description: description, internal_identifier: description.to_iid)
 
-          if params[:parent] != 'No Parent'
-            parent = RoleType.iid(params[:parent])
-            role_type.move_to_child_of(parent)
-          elsif params[:default_parent]
-            parent = RoleType.iid(params[:default_parent])
-            role_type.move_to_child_of(parent)
+            if params[:parent] != 'No Parent'
+              parent = RoleType.iid(params[:parent])
+              role_type.move_to_child_of(parent)
+            elsif params[:default_parent]
+              parent = RoleType.iid(params[:default_parent])
+              role_type.move_to_child_of(parent)
+            end
+
+            render :json => {success: true, role_type: role_type.to_hash(only: [:id, :description, :internal_identifier])}
           end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors.full_messages
 
-          render :json => {success: true, role_type: role_type.to_hash(only: [:id, :description, :internal_identifier])}
+          render :json => {:success => false, :message => invalid.record.errors.full_messages.join('</br>')}
         end
       end
 

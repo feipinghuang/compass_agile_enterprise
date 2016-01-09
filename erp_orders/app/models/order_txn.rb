@@ -39,8 +39,6 @@ class OrderTxn < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   acts_as_biz_txn_event
-  has_tracked_status
-
 
   belongs_to :order_txn_record, :polymorphic => true
   has_many :order_line_items, :dependent => :destroy

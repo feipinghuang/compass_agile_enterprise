@@ -111,7 +111,7 @@ class Invoice < ActiveRecord::Base
         invoice.save
 
         # add customer relationship
-        party = order_txn.find_party_by_role('customer')
+        party = order_txn.find_party_by_role('order_roles_customer')
         invoice.add_party_with_role_type(party, RoleType.customer)
 
         # add dba_org relationship if present
