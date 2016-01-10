@@ -114,10 +114,8 @@ class Invoice < ActiveRecord::Base
         party = order_txn.find_party_by_role('order_roles_customer')
         invoice.add_party_with_role_type(party, RoleType.customer)
 
-        # add dba_org relationship if present
-        if options[:dba_organization]
-          invoice.add_party_with_role_type(options[:dba_organization], RoleType.dba_org)
-        end
+        dba_organization = options[:dba_organization] || order_txn.find_party_by_role(RoleType.iid('dba_org'))
+        invoice.add_party_with_role_type(dba_organization, RoleType.dba_org)
 
         order_txn.order_line_items.each do |line_item|
           invoice_item = InvoiceItem.new
@@ -130,7 +128,8 @@ class Invoice < ActiveRecord::Base
           invoice_item.quantity = line_item.quantity
           invoice_item.unit_price = line_item.sold_price
           invoice_item.amount = (line_item.quantity * line_item.sold_price)
-          invoice_item.taxed = line_item.taxed
+          invoice_item.taxed = line_item.taxed?
+          invoice_item.biz_txn_acct_root = charged_item.try(:biz_txn_acct_root)
           invoice_item.add_invoiced_record(charged_item)
 
           invoice.invoice_items << invoice_item
@@ -152,7 +151,7 @@ class Invoice < ActiveRecord::Base
             invoice_item.unit_price = charged_item.sold_price
             invoice_item.amount = charged_item.sold_amount
             invoice_item.add_invoiced_record(charged_item.line_item_record)
-            invoice_item.taxed = charged_item.taxed
+            invoice_item.taxed = charged_item.taxed?
           elsif charged_item.is_a?(OrderTxn)
             invoice_item.quantity = 1
             invoice_item.unit_price = charge_line.money.amount
@@ -175,8 +174,8 @@ class Invoice < ActiveRecord::Base
             shipping_invoice_item.quantity = 1
             shipping_invoice_item.amount = shipping_invoice_item.unit_price.nil? ? charge_line.money.amount : shipping_invoice_item.unit_price + charge_line.money.amount
             shipping_invoice_item.unit_price = shipping_invoice_item.unit_price.nil? ? charge_line.money.amount : shipping_invoice_item.unit_price + charge_line.money.amount
-            shipping_invoice_item.taxed = charge_line.taxed
-            shipping_invoice_item.add_invoiced_record(find_or_create_shipping_product_type)
+            shipping_invoice_item.taxed = charge_line.taxed?
+            shipping_invoice_item.add_invoiced_record(charge_line)
 
             invoice.invoice_items << shipping_invoice_item
           end
@@ -190,16 +189,6 @@ class Invoice < ActiveRecord::Base
 
         invoice
       end
-    end
-
-    def find_or_create_shipping_product_type
-      product_type = ProductType.find_by_internal_identifier('shipping')
-      unless product_type
-        product_type = ProductType.create(internal_identifier: 'shipping', description: 'Shipping', available_on_web: false, taxable: true)
-        product_type.pricing_plans.new(money_amount: 0, is_simple_amount: true)
-        product_type.save
-      end
-      product_type
     end
 
     def next_invoice_number
@@ -316,6 +305,7 @@ class Invoice < ActiveRecord::Base
   # calculates tax for each line item and save to sales_tax
   def calculate_tax(ctx={})
     tax = 0
+
     self.invoice_items.each do |line_item|
       tax += line_item.calculate_tax(ctx)
     end

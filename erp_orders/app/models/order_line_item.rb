@@ -47,12 +47,8 @@ class OrderLineItem < ActiveRecord::Base
 
   before_destroy :destroy_order_line_item_relationships
 
-  def taxable?
-    line_item_record.taxable?
-  end
-
   def taxed?
-    self.taxed
+    line_item_record.taxable?
   end
 
   # helper method to get dba_organization related to this order_line_item
@@ -112,11 +108,14 @@ class OrderLineItem < ActiveRecord::Base
   # calculates tax and save to sales_tax
   def calculate_tax(ctx={})
     taxation = ErpOrders::Taxation.new
+    tax = 0
 
-    tax = taxation.calculate_tax(self,
-                                 ctx.merge({
-                                               amount: (self.sold_price * (self.quantity || 1))
-                                           }))
+    if self.taxed?
+      tax = taxation.calculate_tax(self,
+                                   ctx.merge({
+                                                 amount: (self.sold_price * (self.quantity || 1))
+                                             }))
+    end
 
     # only get charges that are USD currency
     charge_lines.joins(:money).joins(:charge_type)

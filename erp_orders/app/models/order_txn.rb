@@ -174,12 +174,13 @@ class OrderTxn < ActiveRecord::Base
   # calculates tax for each line item and save to sales_tax
   def calculate_tax(ctx)
     tax = 0
-    order_line_items.select { |line_item| line_item.taxable? }.each do |line_item|
+    order_line_items.select { |line_item| line_item.taxed? }.each do |line_item|
       tax += line_item.calculate_tax(ctx)
     end
 
     # only get charges that are USD currency
-    charge_lines.joins(:money).joins(:charge_type)
+    charge_lines.joins(:money)
+        .joins(:charge_type)
         .where('money.currency_id' => Currency.usd)
         .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
       tax += charge_line.calculate_tax(ctx)
@@ -193,7 +194,6 @@ class OrderTxn < ActiveRecord::Base
 
   #add product_type or product_instance line item
   def add_line_item(object, reln_type = nil, to_role = nil, from_role = nil)
-    class_name = object.class.name
     if object.is_a?(Array)
       class_name = object.first.class.name
     else
@@ -361,6 +361,20 @@ class OrderTxn < ActiveRecord::Base
     end
   end
 
+  # Get shipping info formatted for HTML
+  #
+  def shipping_info
+    info = %(#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1})
+
+    if ship_to_address_line_2.present?
+      info << "<br>#{ship_to_address_line_2}"
+    end
+
+    info << %(<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country})
+
+    info
+  end
+
   def set_billing_info(party)
     self.email = party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).email_address unless party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).nil?
     self.phone_number = party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).phone_number unless party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).nil?
@@ -378,6 +392,20 @@ class OrderTxn < ActiveRecord::Base
       # self.bill_to_country_name = billing_address.country_name
       self.bill_to_country = billing_address.country
     end
+  end
+
+  # Get billing info formatted for HTML
+  #
+  def billing_info
+    info = %(#{bill_to_first_name} #{bill_to_last_name}<br>#{bill_to_address_line_1}<br>)
+
+    if bill_to_address_line_2.present?
+      info << "<br>#{bill_to_address_line_2}"
+    end
+
+    info << %(<br>#{bill_to_city} #{bill_to_state} #{bill_to_postal_code}<br>#{bill_to_country})
+
+    info
   end
 
   def determine_txn_party_roles

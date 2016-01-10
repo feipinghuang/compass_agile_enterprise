@@ -23,7 +23,7 @@ class ChargeLine < ActiveRecord::Base
   has_many :sales_tax_lines, as: :taxed_record, dependent: :destroy
 
   def taxed?
-    self.taxed
+    self.charge_type.try(:taxable)
   end
 
   # calculates tax and save to sales_tax

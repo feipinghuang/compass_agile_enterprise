@@ -8,7 +8,7 @@
 #    t.integer    :item_seq_id
 #    t.string     :item_description
 #    t.decimal    :unit_price, :precision => 8, :scale => 2
-#    t.boolean    :taxable
+#    t.boolean    :taxed
 #    t.decimal    :sales_tax, :precision => 8, :scale => 2
 #    t.decimal    :quantity, :precision => 8, :scale => 2
 #    t.decimal    :amount, :precision => 8, :scale => 2
@@ -63,12 +63,19 @@ class InvoiceItem < ActiveRecord::Base
 
   # calculates tax and save to sales_tax
   def calculate_tax(ctx={})
-    taxation = ErpOrders::Taxation.new
+    tax = 0
 
-    taxation.calculate_tax(self,
-                           ctx.merge({
-                                         amount: (self.unit_price * (self.quantity || 1))
-                                     }))
+    # see if anything is taxed
+    if invoiced_records.collect { |item| item.taxed? }.include?(true)
+      taxation = ErpOrders::Taxation.new
+
+      tax += taxation.calculate_tax(self,
+                                    ctx.merge({
+                                                  amount: (self.unit_price * (self.quantity || 1))
+                                              }))
+    end
+
+    tax
   end
 
   def add_invoiced_record(record)
