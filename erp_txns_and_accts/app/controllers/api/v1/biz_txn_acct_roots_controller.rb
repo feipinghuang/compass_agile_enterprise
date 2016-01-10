@@ -94,6 +94,10 @@ module Api
               biz_txn_acct_root.biz_txn_acct_type = BizTxnAcctType.iid(params[:biz_txn_acct_type_iid])
             end
 
+            BizTxnAcctPartyRole.create(biz_txn_acct_root: biz_txn_acct_root,
+                                       party: current_user.party.dba_organization,
+                                       BizTxnPartyRoleType: BizTxnPartyRoleType.find_or_create('dba_org', 'DBA Organization'))
+
             biz_txn_acct_root.save!
 
             render :json => {success: true, biz_txn_type: biz_txn_acct_root.to_data_hash}
