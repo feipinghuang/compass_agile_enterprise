@@ -8,7 +8,7 @@
 class PhoneNumber < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-  has_contact
+  is_contact_mechanism
 
   def summary_line
     "#{description} : #{phone_number}"

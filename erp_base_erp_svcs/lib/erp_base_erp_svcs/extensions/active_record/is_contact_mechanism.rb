@@ -1,15 +1,15 @@
 module ErpBaseErpSvcs
   module Extensions
     module ActiveRecord
-      module HasContact
+      module IsContactMechanism
         def self.included(base)
           base.extend(ClassMethods)
         end
 
         module ClassMethods
-          def has_contact
-            extend HasContact::SingletonMethods
-            include HasContact::InstanceMethods
+          def is_contact_mechanism
+            extend IsContactMechanism::SingletonMethods
+            include IsContactMechanism::InstanceMethods
 
             after_initialize :initialize_contact
             after_create :save_contact
@@ -67,7 +67,7 @@ module ErpBaseErpSvcs
           end
 
           def initialize_contact
-            if self.new_record? and self.contact.nil?
+            if self.new_record? || self.contact.nil?
               self.contact = Contact.new
               self.contact.description = self.description
             end

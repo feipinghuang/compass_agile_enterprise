@@ -303,8 +303,7 @@ module ErpBaseErpSvcs
             query
           end
 
-          # looks for contacts matching on value and purpose
-          # if a contact exists, it updates, if not, it adds it
+          # Adds contact
           def add_contact(contact_mechanism_class, contact_mechanism_args={}, contact_purposes=[])
             is_primary = contact_mechanism_args['is_primary']
             contact_purposes = [contact_purposes] if !contact_purposes.kind_of?(Array) # gracefully handle a single purpose not in an array

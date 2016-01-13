@@ -17,7 +17,7 @@ module ErpBaseErpSvcs
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsNoteType
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsErpType
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsCategory
-      include ErpBaseErpSvcs::Extensions::ActiveRecord::HasContact
+      include ErpBaseErpSvcs::Extensions::ActiveRecord::IsContactMechanism
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsFixedAsset
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsFacility
       include ErpBaseErpSvcs::Extensions::ActiveRecord::CanBeGenerated
