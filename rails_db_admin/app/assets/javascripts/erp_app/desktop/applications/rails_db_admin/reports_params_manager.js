@@ -623,6 +623,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
 					{
 						xtype: 'businessmoduledatarecordfield',
 						fieldLabel: 'Default value (' + data.display_name + ')',
+						isReport: true,
 						itemId: 'defaultField',
 						width: 260,
 						labelAlign: 'left',

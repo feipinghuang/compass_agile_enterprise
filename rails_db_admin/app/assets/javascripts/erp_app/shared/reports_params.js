@@ -56,31 +56,30 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                     container.items.push({
                         xtype: 'combo',
                         queryMode: 'local',
+                        multiSelect: true,
                         fieldLabel: param.display_name,
                         name: param.name,
                         store: (!param.select_values) ? [] : eval(param.select_values),
                         value: (!param.default_value ? null : param.default_value)
                     });
-
                     break;
                 case 'data record':
                     container.items.push({
                         xtype: 'businessmoduledatarecordfield',
+                        itemId: param.name,
+                        isReport: true,
+                        multiSelect: true,
                         fieldLabel: param.display_name,
                         extraParams: param.module_iid,
                         name: param.name,
                         value: (!param.default_value ? null : param.default_value)
                     });
-
                     break;
                 }
             });
             me.items.push(container);
         });
-
-
         me.callParent();
-
     },
 
     getReportParams: function () {
@@ -88,17 +87,27 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
             paramsObj = {};
         Ext.Array.each(me.query('field'), function (field) {
             // if field has no value set it to empty string to make the erb parser happy
-            if (field.value != undefined && Ext.String.trim(field.value.toString()) != ''){
-                if(field.xtype == 'textfield' || field.xtype == 'combo'){
+            if (field.value){
+                switch(field.xtype){
+                case 'textfield':
                     paramsObj[field.name] = Ext.String.trim(field.value);
-                }
-                else if (field.xtype = 'businessmoduledatarecordfield') {
-                    paramsObj[field.name] = field.value;
-                }
-                else {
+                    break;
+                case 'combo':
+                case 'businessmoduledatarecordfield':
+                    var fieldName = (field.xtype == 'combo' ? 'field1' : 'id');
+                    if (Ext.Array.contains(field.value, "All")){
+                        var allValues = Ext.Array.remove(field.store.collect(fieldName), "All");
+                        paramsObj[field.name] = '(' + allValues + ')';
+                    }
+                    else{
+                        paramsObj[field.name] = (field.value.length == 0) ? '(null)' : '(' + field.value + ')';
+                    }
+                    break;
+                case 'datefield':
                     var date = new Date(field.value);
                     date.setHours(23, 59, 59);
                     paramsObj[field.name] = date.toPgDateString();
+                    break;
                 }
             }
             else {
@@ -114,5 +123,4 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
             field.setValue('');
         });
     }
-
 });
