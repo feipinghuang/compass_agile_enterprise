@@ -383,6 +383,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
             ]
         };
     },
+
+    /**
+     * Builds applicationmanagementmultioptions (grid panel)
+     * @container {Object} The container which has this grid panel (either form or panel)
+     * @values {Array} Initial value to populate the grid
+     */
     buildMultiSelectField: function (container, values) {
         container.add({
             xtype: 'applicationmanagementmultioptions',
@@ -401,6 +407,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
             }
         });
     },
+
+    /**
+     * Builds two select fields Select Application and Select Module
+     * @container {Object} The container which has these fields (either form or panel)
+     * @app_id {Integer} sets the value for Select Application field
+     * @module_iid (String) sets the value for Select Module field
+     */
     buildDataRecordField: function (container, app_id, module_iid) {
         var me = this;
         container.add(
@@ -514,6 +527,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
         }
     },
 
+    /**
+     * Builds either textfield or datefield to set the default value of a param.
+     * @container {Object} The container which has this field (either form or panel)
+     * @grid {Object} The report params grid panel
+     * @record (Object) The current record being editted
+     * @index (Integer) The index of current record in the grid's store
+     */
     buildDefaultField: function (container, grid, record, index) {
         container.down('#addParamBtn').hide();
         var data = (!grid) ? record.data : grid.getStore().data.items.last().data;
@@ -564,6 +584,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
         }
     },
 
+    /**
+     * Builds select field to set the default value of param of type select.
+     * @container {Object} The container which has this field (either form or panel)
+     * @grid {Object} The report params grid panel
+     * @record (Object) The current record being editted
+     * @index (Integer) The index of current record in the grid's store
+     */
     buildDefaultComboField: function (container, grid, record, index) {
         container.down('#addParamBtn').hide();
         var data = (!grid) ? record.data : grid.getStore().data.items.last().data,
@@ -611,6 +638,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
         }
     },
 
+    /**
+     * Builds a data record field to set the default value of param of type data record
+     * @container {Object} The container which has this field (either form or panel)
+     * @grid {Object} The report params grid panel
+     * @record (Object) The current record being editted
+     * @index (Integer) The index of current record in the grid's store
+     */
     buildDefaultDataRecordField: function (container, grid, record, index) {
         container.down('#addParamBtn').hide();
         var data = (!grid) ? record.data : grid.getStore().data.items.last().data,

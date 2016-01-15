@@ -93,7 +93,17 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             fieldLabel: param.display_name,
                             extraParams: param.module_iid,
                             name: param.name,
-                            value: (!param.default_value ? null : param.default_value)
+                            value: (!param.default_value ? null : param.default_value),
+                            listeners: {
+                                afterrender: function (combo) {
+                                    combo.store.load();
+                                },
+                                select: function (combo, records) {
+                                    if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
+                                        combo.setValue('All');
+                                    }
+                                }
+                            }
                         });
                         break;
                 }
@@ -117,12 +127,11 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                     case 'businessmoduledatarecordfield':
                         var fieldName = (field.xtype == 'combo' ? 'name' : 'id');
                         if (Ext.Array.contains(field.value, "All")) {
-                            debugger
                             var allValues = Ext.Array.remove(field.store.collect(fieldName), "All");
                             paramsObj[field.name] = allValues.join(',');
                         }
                         else {
-                            paramsObj[field.name] = (field.value.length == 0) ? '' : field.value.join(',');
+                            paramsObj[field.name] = (field.value.length == 0) ? 'null' : field.value.join(',');
                         }
                         break;
                     case 'datefield':
