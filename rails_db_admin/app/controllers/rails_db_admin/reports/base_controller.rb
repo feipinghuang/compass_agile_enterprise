@@ -73,7 +73,9 @@ module RailsDbAdmin
                         custom_data.each do |field_name, field_value|
                           case business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.field_type.internal_identifier
                             when 'address'
-                              custom_values << "#{field_value['address_line_1']} #{field_value['address_line_2']} #{field_value['city']} #{field_value['state']}, #{field_value['zip']} #{field_value['country']}"
+                              unless field_value.blank?
+                                custom_values << "#{field_value['address_line_1']} #{field_value['address_line_2']} #{field_value['city']} #{field_value['state']}, #{field_value['zip']} #{field_value['country']}"
+                              end
                             else
                               custom_values << field_value
                           end
