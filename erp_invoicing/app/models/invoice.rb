@@ -23,6 +23,7 @@ class Invoice < ActiveRecord::Base
 
   acts_as_document
   can_be_generated
+  has_tracked_status
 
   belongs_to :billing_account
   belongs_to :invoice_type
@@ -70,11 +71,11 @@ class Invoice < ActiveRecord::Base
 
       unless filters[:status].blank?
         if filters[:status] == 'open'
-          statement = statement.where(id: self.open.collect(&:id))
+          statement = statement.open
         end
 
         if filters[:status] == 'closed'
-          statement = statement.where(id: self.closed.collect(:id))
+          statement = statement.closed
         end
       end
 
@@ -109,6 +110,8 @@ class Invoice < ActiveRecord::Base
         invoice.due_date = options[:due_date]
 
         invoice.save
+
+        invoice.current_status = 'invoice_statuses_open'
 
         # add customer relationship
         party = order_txn.find_party_by_role('order_roles_customer')
@@ -212,22 +215,21 @@ class Invoice < ActiveRecord::Base
       "Inv-#{max_id}"
     end
 
-    # Get all invoices that are open, meaning they have a balance
-    #
     def open
-      # TODO this needs to be updated to use a status as if there are a lot of invoices this
-      # will get very slow
-      Invoice.all.select{|invoice| invoice.balance > 0}
+      Invoice.with_current_status(['invoice_statuses_open'])
     end
 
-    # Get all invoices that are open, meaning they have a balance
-    #
     def closed
-      # TODO this needs to be updated to use a status as if there are a lot of invoices this
-      # will get very slow
-      Invoice.all.select{|invoice| invoice.balance == 0}
+      Invoice.with_current_status(['invoice_statuses_closed'])
     end
 
+    def hold
+      Invoice.with_current_status(['invoice_statuses_hold'])
+    end
+
+    def sent
+      Invoice.with_current_status(['invoice_statuses_sent'])
+    end
   end
 
   def has_invoice_items?
