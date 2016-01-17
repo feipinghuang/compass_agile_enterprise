@@ -9,7 +9,6 @@ module RailsDbAdmin
 
       def show
         begin
-
           if @report.nil? or @report.query.nil?
             render :no_report, :layout => false
           else
@@ -30,8 +29,7 @@ module RailsDbAdmin
                                unique_name: @report_iid,
                                title: @report.name,
                                columns: @data[:columns],
-                               rows: @data[:rows],
-                               custom_data: @custom_data
+                               rows: @data[:rows]
                            }
                 )
               }
@@ -41,10 +39,52 @@ module RailsDbAdmin
               }
 
               format.csv {
+                business_module = params[:business_module_id].present? ? BusinessModule.where(id: params[:business_module_id]).first : nil
+
                 csv_data = CSV.generate do |csv|
-                  csv << @data[:columns]
+                  custom_data_columns = []
+                  if @data[:columns].include?('custom_fields')
+
+                    custom_data = JSON.parse(@data[:rows].first['custom_fields'])
+
+                    if business_module
+                      custom_data.each do |field_name, field_value|
+                        custom_data_columns << business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.label
+                      end
+                    else
+                      custom_data_columns = custom_data.keys
+                    end
+
+                    # remove the custom_fields column if it exists
+                    @data[:columns].delete('custom_fields')
+                  end
+
+                  csv << @data[:columns] + custom_data_columns
+
                   @data[:rows].each do |row|
-                    csv << row.values
+                    custom_values = []
+
+                    custom_fields = row.delete('custom_fields')
+
+                    unless custom_fields.blank?
+                      custom_data = JSON.parse(custom_fields)
+
+                      if business_module
+                        custom_data.each do |field_name, field_value|
+                          case business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.field_type.internal_identifier
+                            when 'address'
+                              custom_values << "#{field_value['address_line_1']} #{field_value['address_line_2']} #{field_value['city']} #{field_value['state']}, #{field_value['zip']} #{field_value['country']}"
+                            else
+                              custom_values << field_value
+                          end
+
+                        end
+                      else
+                        custom_values = custom_data.values
+                      end
+                    end
+
+                    csv << row.values + custom_values
                   end
                 end
 
@@ -56,50 +96,51 @@ module RailsDbAdmin
 
         end
 
-        def email
-          build_report_data
+      end
 
-          file_attachments = []
+      def email
+        build_report_data
 
-          params[:report_format].each do |format|
-            if format == 'pdf'
-              file_attachments << {
-                  name: "#{@report.name}.pdf",
-                  data: render_to_string(build_pdf_config)
-              }
-            elsif format == 'csv'
-              csv_data = CSV.generate do |csv|
-                csv << @data[:columns]
-                @data[:rows].each do |row|
-                  csv << row.values
-                end
+        file_attachments = []
+
+        params[:report_format].each do |format|
+          if format == 'pdf'
+            file_attachments << {
+                name: "#{@report.name}.pdf",
+                data: render_to_string(build_pdf_config)
+            }
+          elsif format == 'csv'
+            csv_data = CSV.generate do |csv|
+              csv << @data[:columns]
+              @data[:rows].each do |row|
+                csv << row.values
               end
-
-              file_attachments << {
-                  name: "#{@report.name}.csv",
-                  data: csv_data
-              }
             end
+
+            file_attachments << {
+                name: "#{@report.name}.csv",
+                data: csv_data
+            }
           end
-
-          to_email = params[:send_to]
-          cc_email = params[:cc_email]
-          message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
-          subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
-
-          ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
-
-          render json: {success: true}
-
-        rescue StandardError => ex
-          Rails.logger.error ex.message
-          Rails.logger.error ex.backtrace.join("\n")
-
-          # email notification
-          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
-
-          render :json => {success: false, message: ex.message}
         end
+
+        to_email = params[:send_to]
+        cc_email = params[:cc_email]
+        message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
+        subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
+
+        ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
+
+        render json: {success: true}
+
+      rescue StandardError => ex
+        Rails.logger.error ex.message
+        Rails.logger.error ex.backtrace.join("\n")
+
+        # email notification
+        ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+        render :json => {success: false, message: ex.message}
       end
 
       protected
@@ -115,8 +156,7 @@ module RailsDbAdmin
                     unique_name: @report_iid,
                     title: @report.name,
                     columns: @data[:columns],
-                    rows: @data[:rows],
-                    custom_data: @custom_data
+                    rows: @data[:rows]
                 },
             :show_as_html => params[:debug].present?,
             :page_size => @report.meta_data['print_page_size'] || 'A4',
@@ -154,12 +194,12 @@ module RailsDbAdmin
         columns, values, error = @query_support.execute_sql(query)
 
         @data = {:columns => columns, :rows => values, error: error}
+      end
 
-        if @data[:rows] and @data[:rows].count > 0
-          @custom_data = @data[:rows].last['custom_fields'] ? JSON.parse(@data[:rows].last['custom_fields']) : {}
-        else
-          @custom_data = {}
-        end
+      # Build CSV data for report
+      #
+      def build_csv
+
       end
 
       # Load the report by internal identifier and set to an instance variable

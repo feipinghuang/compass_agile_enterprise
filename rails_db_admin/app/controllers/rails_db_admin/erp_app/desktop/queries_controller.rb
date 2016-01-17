@@ -106,8 +106,8 @@ module RailsDbAdmin
               sql = RailsDbAdmin::ErbStringParser.render(sql, locals: params[:report_params])
             end
 
-            #append a semicolon as the last character if the
-            #user forgot
+            # append a semicolon as the last character if the
+            # user forgot
             if !sql.end_with?(";")
               sql << ";"
             end
@@ -156,7 +156,7 @@ module RailsDbAdmin
             columns, values, exception = @query_support.execute_sql(sql_str)
 
             if !exception.nil?
-              result = {:success => false, :exception => exception.gsub("\n", " ")}
+              result = {:success => false, :message => exception.gsub("\n", " ")}
             else
               exception.nil?
               columns_array = columns.collect do |column|

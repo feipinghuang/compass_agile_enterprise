@@ -93,13 +93,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                                 }
                             }
                             else {
-                                Ext.Msg.alert("Error", response.message);
+                                Ext.Msg.error("Error", response.message);
                             }
 
                         },
                         failure: function () {
                             messageBox.hide();
-                            Ext.Msg.alert('Status', 'Error loading grid');
+                            Ext.Msg.error('Status', 'Error loading grid');
                         }
                     });
                 }
