@@ -19,7 +19,7 @@ class Project < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_dba_organization(dba_organization)
-      scope_by_party(dba_organization, RoleType.iid('dba_org'))
+      scope_by_party(dba_organization, {role_types: [RoleType.iid('dba_org')]})
     end
 
     alias scope_by_dba scope_by_dba_organization

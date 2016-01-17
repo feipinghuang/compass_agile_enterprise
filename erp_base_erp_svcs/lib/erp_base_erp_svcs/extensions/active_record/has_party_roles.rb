@@ -24,15 +24,24 @@ module ErpBaseErpSvcs
 
           def with_party_role(party, role_type)
             joins(:entity_party_roles).where('entity_party_roles.role_type_id = ?', role_type.id)
-              .where('entity_party_roles.party_id = ?', party.id)
+                .where('entity_party_roles.party_id = ?', party.id)
           end
         end
 
         module InstanceMethods
           def add_party_with_role(party, role_type)
-            EntityPartyRole.create(party: party,
-                                   role_type: role_type,
-                                   entity_record: self)
+            entity_party_role = EntityPartyRole.where(party_id: party,
+                                                      role_type_id: role_type,
+                                                      entity_record_id: self.id,
+                                                      entity_record_type: self.class.name).first
+
+            unless entity_party_role
+              entity_party_role = EntityPartyRole.create(party: party,
+                                                         role_type: role_type,
+                                                         entity_record: self)
+            end
+
+            entity_party_role
           end
 
           def remove_party_with_role(party, role_type)

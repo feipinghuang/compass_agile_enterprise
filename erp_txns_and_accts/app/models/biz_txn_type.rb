@@ -38,7 +38,7 @@ class BizTxnType < ActiveRecord::Base
   #
   # @param biz_txn_types [Array] BizTxnType internal identifiers or records
   # @returns [Array] BizTxnTypes types based and any of their children in a flat array
-  def self.find_child_role_types(biz_txn_types)
+  def self.find_child_types(biz_txn_types)
     all_biz_txn_types = []
 
     biz_txn_types.each do |biz_txn_type|
