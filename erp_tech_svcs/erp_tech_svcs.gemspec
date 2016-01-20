@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'erp_base_erp_svcs', "~> 4.1"
   s.add_development_dependency 'erp_dev_svcs', "~> 4.1"
 
+  s.add_dependency 'encryptor', '1.3.0'
   s.add_dependency 'attr_encrypted', '1.3.3'
   s.add_dependency "chronic", "0.10.2"
   s.add_dependency "aasm", "3.0.14"
