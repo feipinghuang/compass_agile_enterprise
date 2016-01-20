@@ -88,7 +88,6 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         container.items.push({
                             xtype: 'businessmoduledatarecordfield',
                             itemId: param.name,
-                            isReport: true,
                             multiSelect: true,
                             fieldLabel: param.display_name,
                             extraParams: param.module_iid,
