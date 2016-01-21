@@ -96,7 +96,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
     initComponent: function () {
         var me = this;
 
-        if (me.availableTypes) {
+        if (me.availableTypes && me.availableTypes.length > 0 && me.availableTypes.first()['text']) {
             me.store = Ext.create('Ext.data.TreeStore', {
                 model: 'Compass.ErpApp.Shared.TypeSelectionModel',
                 folderSort: true,
@@ -109,6 +109,10 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
             });
 
             me.store.setRootNode({text: '', children: me.availableTypes});
+
+            if (me.selectedTypes) {
+                me.setSelectedTypes(me.selectedTypes);
+            }
         }
         else {
             me.store = Ext.create('Ext.data.TreeStore', {
@@ -131,7 +135,28 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
                 ]
             });
 
-            me.store.load();
+            if (me.availableTypes) {
+                me.store.load({
+                    params: {
+                        ids: me.availableTypes.join(',')
+                    },
+                    callback: function () {
+                        if (me.selectedTypes) {
+                            me.setSelectedTypes(me.selectedTypes);
+                        }
+                    }
+                });
+            }
+            else {
+                me.store.load({
+                    callback: function () {
+                        if (me.selectedTypes) {
+                            me.setSelectedTypes(me.selectedTypes);
+                        }
+                    }
+                });
+
+            }
         }
 
         toolbarItems = [{
@@ -163,11 +188,11 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 
         me.callParent(arguments);
 
-        me.addListener('beforecellclick', function(grid){
+        me.addListener('beforecellclick', function (grid) {
             grid.ownerCt.suspendLayouts();
         });
 
-        me.addListener('checkchange', function(node, checked){
+        me.addListener('checkchange', function (node, checked) {
             var me = this;
 
             if (me.unSelectableTypes && Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
@@ -221,10 +246,6 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
         });
 
         me.collapseAll();
-
-        if (me.selectedTypes) {
-            me.setSelectedTypes(me.selectedTypes);
-        }
     },
 
     showCreateType: function () {
@@ -396,7 +417,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
         var me = this;
         var types = [];
 
-        Ext.Array.forEach(me.getSelectedRecords(), function(record){
+        Ext.Array.forEach(me.getSelectedRecords(), function (record) {
             types.push(record.get('internalIdentifier'))
         });
 
@@ -451,10 +472,10 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
             }
         });
 
-        if(checked){
+        if (checked) {
             btn.setText('Unselect All');
         }
-        else{
+        else {
             btn.setText('Select All');
         }
 
