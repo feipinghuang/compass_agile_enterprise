@@ -29,14 +29,14 @@ class Party < ActiveRecord::Base
     def scope_by_dba_organization(dba_organization)
       joins("inner join party_relationships on party_relationships.role_type_id_to ='#{RoleType.iid('dba_org').id}'
              and party_relationships.party_id_from = parties.id")
-      .where({party_relationships: {party_id_to: dba_organization}})
+          .where({party_relationships: {party_id_to: dba_organization}})
     end
 
     # Scopes parties by passed role types
     #
     # @param role_types [Array, RoleType] Array of RoleTypes to scope by
     def with_role_types(role_types)
-      joins('inner join party_roles on party_roles.party_id = parties.id').where('party_roles.role_type_id' =>  role_types)
+      joins('inner join party_roles on party_roles.party_id = parties.id').where('party_roles.role_type_id' => role_types)
     end
 
   end
@@ -62,11 +62,33 @@ class Party < ActiveRecord::Base
         .where('party_roles.role_type_id' => dba_org).each do |party_reln|
 
       dba_orgs.push(party_reln.from_party)
-      party_reln.from_party.child_dba_organizations(dba_orgs)
+      if !dba_orgs.collect(&:id).include? party_reln.from_party.id
+        party_reln.from_party.child_dba_organizations(dba_orgs)
+      end
 
     end
 
     dba_orgs.uniq
+  end
+
+  # Get all parties that have a relationship to this party. If deep is passed then of those parties do the same
+  # all the way down the relationship chain
+  #
+  # @param parties [Array] Array of currently found related parties
+  # @return [Array] Array of related parties
+  def parties_in_relationships(parties=[], deep=false)
+    PartyRelationship.where('party_id_to' => self.id).each do |party_reln|
+
+      parties.push(party_reln.from_party)
+      if deep and !parties.collect(&:id).include? party_reln.from_party.id
+        party_reln.from_party.parties_in_relationships(parties, deep)
+      else
+        parties
+      end
+
+    end
+
+    parties.uniq
   end
 
   # Get any parent DBA Organizations related this party
