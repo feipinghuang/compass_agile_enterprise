@@ -9,6 +9,7 @@
 #   t.text :scoped_by
 #   t.string :width
 #   t.string :height
+#   t.string :description
 #
 #   t.timestamps
 # end
@@ -313,6 +314,10 @@ class FileAsset < ActiveRecord::Base
     end
 
     return result, message
+  end
+
+  def to_s
+    self.description
   end
 
 end
