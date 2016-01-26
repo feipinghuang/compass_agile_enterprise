@@ -1,3 +1,15 @@
+# create_table :websites do |t|
+#   t.string :name
+#   t.string :title
+#   t.string :subtitle
+#   t.string :internal_identifier
+#   t.boolean :publishing, :default => false
+#
+#   t.timestamps
+# end
+#
+# add_index :websites, :internal_identifier, :name => 'websites_internal_identifier_idx'
+
 class Website < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
@@ -199,10 +211,10 @@ class Website < ActiveRecord::Base
       # AE-194: Inline Search is active, so no need for search page, take search layout
       # but change section name for the Search Results page 
       # and change layout so render widget to calls search action
-      website_section.in_menu = true unless ["Login", "Sign Up", "Reset Password","Search"].include?(widget_class.title)
+      website_section.in_menu = true unless ["Login", "Sign Up", "Reset Password", "Search"].include?(widget_class.title)
       if widget_class.title == 'Search'
         website_section.title = 'Search Results'
-        website_section.layout = widget_class.base_layout.gsub(":search",":search, :action => 'search'")
+        website_section.layout = widget_class.base_layout.gsub(":search", ":search, :action => 'search'")
       else
         website_section.title = widget_class.title
         website_section.layout = widget_class.base_layout
@@ -376,7 +388,24 @@ class Website < ActiveRecord::Base
     "website_#{self.iid}_access"
   end
 
+  def to_data_hash
+    to_hash(only: [:id, :name, :title, :subtitle,
+                   :internal_identifier, :created_at, :updated_at])
+  end
+
   class << self
+
+    # Scope websites by passed dba_organization(s)
+    #
+    # @param dba_organization [Party, Array] Either a single dba_organization to scope by
+    # or an array of dba_organizations to scope by
+    # @return [ActiveRecord::Relation] Websites scope by ba_organization(s)
+    def scope_by_dba_organization(dba_organization)
+      joins(website_party_roles: [:party, :role_type])
+          .where(role_types: {internal_identifier: 'dba_org'})
+          .where(parties: {id: dba_organization})
+    end
+
     def find_by_host(host)
       website = nil
       unless host.nil?

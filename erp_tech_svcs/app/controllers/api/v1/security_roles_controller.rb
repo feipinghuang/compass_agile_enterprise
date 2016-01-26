@@ -12,19 +12,30 @@ module Api
         limit = params[:limit] || 25
         start = params[:start] || 0
 
+        security_roles = []
+
         if parent_iids
           parent = nil
-          # create parent if it doesn't exist
-          # if the parent param is a comma seperated string then
-          # the parent is nested from left to right
+
+          # if the parent param is a comma separated string then
+          # there are multiple parents
           parent_iids.split(',').each do |parent_iid|
-            if parent
-              parent = SecurityRole.find_or_create(parent_iid, parent_iid.humanize, parent)
-            else
-              parent = SecurityRole.find_or_create(parent_iid, parent_iid.humanize)
+            parent = nil
+
+            # if the parent param is a colon separated string then
+            # the parent is nested from left to right
+            parent_iid.split(':').each do |nested_parent_iid|
+              if parent
+                parent = SecurityRole.find_or_create(nested_parent_iid, nested_parent_iid.humanize, parent)
+              else
+                parent = SecurityRole.find_or_create(nested_parent_iid, nested_parent_iid.humanize)
+              end
             end
+
+            security_roles = security_roles.concat parent.children
           end
-          security_roles = parent.children
+
+          security_roles = SecurityRole.where(id: security_roles.collect(&:id))
         else
           security_roles = SecurityRole
         end

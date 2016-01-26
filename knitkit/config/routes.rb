@@ -13,6 +13,15 @@ Rails.application.routes.draw do
   match '/unauthorized' => 'knitkit/unauthorized#index', :as => 'knitkit/unauthorized'
   match '/view_current_publication' => 'knitkit/base#view_current_publication'
   match '/online_document_sections(/:action)' => 'knitkit/online_document_sections'
+
+  namespace :api do
+    namespace :v1 do
+
+      resources :websites, defaults: { :format => 'json' }
+
+    end
+  end
+
 end
 
 Knitkit::Engine.routes.draw do
