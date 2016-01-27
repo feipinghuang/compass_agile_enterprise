@@ -79,7 +79,8 @@ module ErpBaseErpSvcs
           end
 
           def initialize_contact
-            if self.new_record? || self.contact.nil?
+            
+            if self.new_record? and self.contact.nil?
               self.contact = Contact.new
               self.contact.description = self.description
             end
