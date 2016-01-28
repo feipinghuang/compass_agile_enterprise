@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
   s.add_dependency('paperclip','3.3.1')
   s.add_dependency('wicked_pdf','0.11.0')
   s.add_dependency('sorcery','0.9.1')
+  s.add_dependency('daemons', '1.2.3')
   s.add_dependency('mail_alternatives_with_attachments','1.0.0')
 
 end
