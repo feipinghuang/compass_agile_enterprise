@@ -375,13 +375,31 @@ end
 class DocFile < TextFile
   self.file_type = :doc
   self.content_type = 'application/msword'
-  self.valid_extensions = %w(.doc .DOC)
+  self.valid_extensions = %w(.doc .dot)
 end
 
 class DocxFile < TextFile
   self.file_type = :docx
-  self.content_type = 'vnd.openxmlformats-officedocument.wordprocessingml.document'
-  self.valid_extensions = %w(.docx .DOCX)
+  self.content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  self.valid_extensions = %w(.docx)
+end
+
+class Xls < TextFile
+  self.file_type = :xls
+  self.content_type = 'application/vnd.ms-excel'
+  self.valid_extensions = %w(.xls .xlt .xla)
+end
+
+class Ppt < TextFile
+  self.file_type = :ppt
+  self.content_type = 'application/vnd.ms-powerpoint'
+  self.valid_extensions = %w(.ppt .pot .pps .ppa)
+end
+
+class Pptx < TextFile
+  self.file_type = :pptx
+  self.content_type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+  self.valid_extensions = %w(.pptx)
 end
 
 class Pdf < TextFile
