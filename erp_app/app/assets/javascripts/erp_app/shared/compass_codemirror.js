@@ -163,7 +163,7 @@ Ext.define("Compass.ErpApp.Shared.CodeMirror", {
      * colors are included in codemirror.css. It is possible to use multiple theming classes at onceâ€”for example
      * "foo bar" will assign both the cm-s-foo and the cm-s-bar classes to the editor.
      */
-    theme: 'vibrant-ink',
+    theme: 'cobalt',
 
     /**
      * @cfg {Boolean} disable save button.

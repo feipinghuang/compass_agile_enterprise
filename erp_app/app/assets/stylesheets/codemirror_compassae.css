@@ -9,6 +9,6 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require codemirror
- *= require codemirror/themes/vibrant-ink
+ *= require codemirror/themes/cobalt
  *= require codemirror/addons/fold/foldgutter
  */

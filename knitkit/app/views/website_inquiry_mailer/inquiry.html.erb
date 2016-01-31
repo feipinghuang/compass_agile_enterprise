@@ -4,7 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"/>
-  <title>Reports</title>
+  <title>Website Inquiry</title>
   <style type="text/css">
     .ReadMsgBody {
       width: 100%;
@@ -119,7 +119,7 @@
             <div style="line-height: 34px;">
                 <span>
                     <multiline>
-                      <strong>Reports Available</strong>
+                      <strong><%= @website_inquiry.website.title %> has had an Inquiry</strong>
                     </multiline>
                 </span>
             </div>
@@ -191,7 +191,17 @@
         <tr>
           <td>
             <p class="instructions" style="color: #555; font-size: 24px; font-family: 'Open Sans', Calibri, sans-serif; mso-line-height-rule: exactly; line-height: 42px;">
-              <%= raw @message -%>
+              <span>First Name: </span><span><%= @website_inquiry.first_name %></span>
+              <br/>
+              <span>Last Name: </span><span><%= @website_inquiry.last_name %></span>
+              <br/>
+              <span>Email: </span><span><%= @website_inquiry.email %></span>
+              <% if @website_inquiry.created_by %>
+                <br/>
+                <span>Username: </span><span><%= @website_inquiry.created_by.username %></span>
+              <% end %>
+              <br/>
+            <p style="color: #555; font-size: 24px; font-family: 'Open Sans', Calibri, sans-serif; mso-line-height-rule: exactly; line-height: 42px;"><%= @website_inquiry.message %></p>
             </p>
           </td>
         </tr>
@@ -253,3 +263,4 @@
 
 </body>
 </html>
+

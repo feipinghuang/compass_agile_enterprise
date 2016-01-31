@@ -1,7 +1,14 @@
 class WebsiteInquiryMailer < ActionMailer::Base
+  acts_as_themed_mailer
+
   default :from => ErpTechSvcs::Config.email_notifications_from
 
   def inquiry(website_inquiry)
+    # add theme paths if a website is present
+    if website_inquiry.website
+      add_theme_view_paths(website_inquiry.website)
+    end
+
     subject = "#{website_inquiry.website.title} Inquiry"
     @website_inquiry = website_inquiry
 

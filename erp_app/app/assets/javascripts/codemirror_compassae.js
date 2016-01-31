@@ -19,7 +19,9 @@
 //= require codemirror/modes/markdown
 //= require codemirror/modes/htmlmixed
 //= require codemirror/modes/xml
+//= require codemirror/addons/mode/multiplex
 //= require codemirror/modes/htmlembedded
+//= require codemirror/addons/wrap/hardwrap
 //= require codemirror/addons/fold/foldcode
 //= require codemirror/addons/fold/foldgutter
 //= require codemirror/addons/fold/brace-fold
