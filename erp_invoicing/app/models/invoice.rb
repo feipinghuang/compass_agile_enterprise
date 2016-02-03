@@ -383,7 +383,7 @@ class Invoice < ActiveRecord::Base
   end
 
   def dba_organization
-    find_parties_by_role_type('dba_org')
+    find_parties_by_role_type('dba_org').first
   end
 
   def to_data_hash
