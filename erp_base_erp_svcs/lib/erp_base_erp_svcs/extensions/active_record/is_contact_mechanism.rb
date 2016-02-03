@@ -28,16 +28,17 @@ module ErpBaseErpSvcs
 
         module SingletonMethods
           # return all contact mechanism instances for parties
+          #
+          # @param parties [Array] Array of parties to get contacts for
+          # @param contact_purposes [Array] Array of ContactPurposes to look up
           def for_parties(parties, contact_purposes=[])
-            contact_purpose_ids = if contact_purposes.blank?
-                                    ContactPurpose.pluck(:id).join(',')
-                                  elsif contact_purposes.is_a?(ContactPurpose)
-                                    contact_purposes.id
-                                  else
-                                    contact_purposes.map(&:id).join(',')
-                                  end
-            self.joins("inner join contacts on phones.id=contacts.contact_mechanism_id inner join parties on parties.id=contacts.contact_record_id inner join contact_purposes_contacts on contact_purposes_contacts.contact_id=contacts.id and contact_purposes_contacts.contact_purpose_id in (#{contact_purpose_ids})").where("parties.id in(#{parties.map(&:id).join(',')})")
+            query = self.joins(contact: [:contact_purposes])
 
+            unless contact_purposes.empty?
+              query = query.where(contact_purposes: {id: contact_purposes})
+            end
+
+            query.where(contacts: {contact_record_type: 'Party', contact_record_id: parties})
           end
         end
 
@@ -79,7 +80,7 @@ module ErpBaseErpSvcs
           end
 
           def initialize_contact
-            
+
             if self.new_record? and self.contact.nil?
               self.contact = Contact.new
               self.contact.description = self.description
