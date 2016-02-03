@@ -75,7 +75,7 @@ module RailsDbAdmin
 
               file = report.files.where('name = ? and directory = ?', name, directory).first
 
-              file.nil? ? '' : file.data.url
+              file.nil? ? '' : file.fully_qualified_url
             end
 
             def report_javascript_path(report, source)
@@ -85,7 +85,7 @@ module RailsDbAdmin
 
               file = report.files.where('name = ? and directory = ?', name, directory).first
 
-              file.nil? ? '' : file.data.url
+              file.nil? ? '' : file.fully_qualified_url
             end
 
             def name_and_path_from_source(source, base_directory)
@@ -166,7 +166,7 @@ module RailsDbAdmin
 
               file = report.files.where('name = ? and directory = ?', name, directory).first
 
-              file.nil? ? '' : file.data.url
+              file.nil? ? '' : file.fully_qualified_url
             end
 
             def bootstrap_load

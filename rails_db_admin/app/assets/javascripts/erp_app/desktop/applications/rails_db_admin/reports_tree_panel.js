@@ -1,49 +1,49 @@
 Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", {
-    extend:"Compass.ErpApp.Shared.FileManagerTree",
-    alias:'widget.railsdbadmin_reportstreepanel',
+    extend: "Compass.ErpApp.Shared.FileManagerTree",
+    alias: 'widget.railsdbadmin_reportstreepanel',
 
     newReport: function () {
         var me = this;
 
         Ext.create("Ext.window.Window", {
-            title:'New Report',
-            plain:true,
-            buttonAlign:'center',
+            title: 'New Report',
+            plain: true,
+            buttonAlign: 'center',
             defaultFocus: 'title',
-            items:Ext.create('Ext.FormPanel', {
-                labelWidth:110,
-                frame:false,
-                bodyStyle:'padding:5px 5px 0',
-                url:'/rails_db_admin/erp_app/desktop/reports/create',
-                defaults:{
-                    width:225
+            items: Ext.create('Ext.FormPanel', {
+                labelWidth: 110,
+                frame: false,
+                bodyStyle: 'padding:5px 5px 0',
+                url: '/rails_db_admin/erp_app/desktop/reports/create',
+                defaults: {
+                    width: 225
                 },
-                items:[
+                items: [
                     {
-                        xtype:'textfield',
-                        fieldLabel:'Title',
-                        allowBlank:false,
-                        name:'name',
+                        xtype: 'textfield',
+                        fieldLabel: 'Title',
+                        allowBlank: false,
+                        name: 'name',
                         itemId: 'title'
                     },
                     {
-                        xtype:'textfield',
-                        fieldLabel:'Unique Name',
-                        allowBlank:false,
-                        name:'internal_identifier'
+                        xtype: 'textfield',
+                        fieldLabel: 'Unique Name',
+                        allowBlank: false,
+                        name: 'internal_identifier'
                     }
                 ]
             }),
-            buttons:[
+            buttons: [
                 {
-                    text:'Submit',
-                    listeners:{
-                        'click':function (button) {
+                    text: 'Submit',
+                    listeners: {
+                        'click': function (button) {
                             var window = button.up('window');
                             var formPanel = window.down('form');
                             formPanel.getForm().submit({
-                                waitMsg:'Creating Report...',
-                                success:function (form, action) {
+                                waitMsg: 'Creating Report...',
+                                success: function (form, action) {
                                     var obj = Ext.decode(action.response.responseText);
                                     if (obj.success) {
                                         button.up('window').close();
@@ -53,7 +53,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                         Ext.Msg.alert("Error", obj.msg);
                                     }
                                 },
-                                failure:function (form, action) {
+                                failure: function (form, action) {
                                     var obj = Ext.decode(action.response.responseText);
                                     if (obj.msg) {
                                         Ext.Msg.alert("Error", obj.msg);
@@ -67,8 +67,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     }
                 },
                 {
-                    text:'Close',
-                    handler:function (btn) {
+                    text: 'Close',
+                    handler: function (btn) {
                         btn.up('window').close();
                     }
                 }
@@ -76,7 +76,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         }).show();
     },
 
-    uploadReport: function(){
+    uploadReport: function () {
         var me = this;
         Ext.create("Ext.window.Window", {
             modal: true,
@@ -139,19 +139,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
 
     },
 
-    editReportMetaData: function(node){
+    editReportMetaData: function (node) {
         var me = this;
         Ext.create("Ext.window.Window", {
-            title:'Edit Report Print Settings',
-            plain:true,
-            buttonAlign:'center',
+            title: 'Edit Report Print Settings',
+            plain: true,
+            buttonAlign: 'center',
             items: Ext.create('Ext.FormPanel', {
-                labelWidth:110,
-                frame:false,
-                bodyStyle:'padding:5px 5px 0',
-                url:'/rails_db_admin/erp_app/desktop/reports/update',
-                defaults:{
-                    width:225
+                labelWidth: 110,
+                frame: false,
+                bodyStyle: 'padding:5px 5px 0',
+                url: '/rails_db_admin/erp_app/desktop/reports/update',
+                defaults: {
+                    width: 225
                 },
                 items: [
                     {
@@ -161,7 +161,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         displayField: 'pageSize',
                         valueField: 'size',
                         store: {
-                            fields: ['pageSize','size'],
+                            fields: ['pageSize', 'size'],
                             data: [
                                 {pageSize: 'A4', size: 'A4'},
                                 {pageSize: 'A3', size: 'A3'},
@@ -171,7 +171,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                             ]
                         },
                         listeners: {
-                            afterrender: function(combo, eOpts){
+                            afterrender: function (combo, eOpts) {
                                 var store = combo.getStore(),
                                     pageSize = node.data.reportMetaData.print_page_size || 'A4';
 
@@ -205,19 +205,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         value: node.data.reportMetaData.print_margin_left || '10'
                     }
                 ],
-                buttons:[
+                buttons: [
                     {
-                        text:'Submit',
-                        listeners:{
-                            'click':function (button) {
+                        text: 'Submit',
+                        listeners: {
+                            'click': function (button) {
                                 var window = button.up('window');
                                 var formPanel = window.down('form');
                                 formPanel.getForm().submit({
-                                    waitMsg:'Updating Report...',
+                                    waitMsg: 'Updating Report...',
                                     params: {
                                         id: node.data.id
                                     },
-                                    success:function (form, action) {
+                                    success: function (form, action) {
                                         var obj = Ext.decode(action.response.responseText);
                                         if (obj.success) {
                                             button.up('window').close();
@@ -227,7 +227,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                             Ext.Msg.alert("Error", obj.msg);
                                         }
                                     },
-                                    failure:function (form, action) {
+                                    failure: function (form, action) {
                                         var obj = Ext.decode(action.response.responseText);
                                         if (obj.msg) {
                                             Ext.Msg.alert("Error", obj.msg);
@@ -241,8 +241,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         }
                     },
                     {
-                        text:'Close',
-                        handler:function (btn) {
+                        text: 'Close',
+                        handler: function (btn) {
                             btn.up('window').close();
                         }
                     }
@@ -264,11 +264,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
             else if (btn === 'yes') {
                 var waitMsg = Ext.Msg.wait("Deleting report...", "Status");
                 Ext.Ajax.request({
-                    url:'/rails_db_admin/erp_app/desktop/reports/delete',
-                    params:{
-                        id:id
+                    url: '/rails_db_admin/erp_app/desktop/reports/delete',
+                    params: {
+                        id: id
                     },
-                    success:function (responseObject) {
+                    success: function (responseObject) {
                         waitMsg.close();
                         var obj = Ext.decode(responseObject.responseText);
                         if (obj.success) {
@@ -278,7 +278,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                             Ext.Msg.alert('Status', 'Error deleting report');
                         }
                     },
-                    failure:function () {
+                    failure: function () {
                         waitMsg.close();
                         Ext.Msg.alert('Status', 'Error deleting report');
                     }
@@ -291,11 +291,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         var me = this;
         var waitMsg = Ext.Msg.wait("Loading query...", "Status");
         Ext.Ajax.request({
-            url:'/rails_db_admin/erp_app/desktop/reports/edit',
-            params:{
-                id:reportId
+            url: '/rails_db_admin/erp_app/desktop/reports/edit',
+            params: {
+                id: reportId
             },
-            success:function (responseObject) {
+            success: function (responseObject) {
                 waitMsg.close();
                 var obj = Ext.decode(responseObject.responseText);
                 if (obj.success) {
@@ -305,7 +305,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     Ext.Msg.alert('Status', 'Error deleting report');
                 }
             },
-            failure:function () {
+            failure: function () {
                 waitMsg.close();
                 Ext.Msg.alert('Status', 'Error deleting report');
             }
@@ -329,14 +329,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
             multiSelect: true,
             handleRootContextMenu: true,
             addViewContentsToContextMenu: true,
-            title:'Reports',
+            title: 'Reports',
             rootText: 'Reports',
-            autoScroll:true,
+            autoScroll: true,
             allowDownload: true,
-            url:'/rails_db_admin/erp_app/desktop/reports/index',
+            url: '/rails_db_admin/erp_app/desktop/reports/index',
             controllerPath: '/rails_db_admin/erp_app/desktop/reports',
             standardUploadUrl: '/rails_db_admin/erp_app/desktop/reports/upload_file',
-            fields:[
+            fields: [
                 'text',
                 'iconCls',
                 'leaf',
@@ -349,8 +349,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 'reportName',
                 {name: 'reportMetaData', type: 'object'}
             ],
-            animate:false,
-            listeners:{
+            animate: false,
+            listeners: {
                 'showImage': function (fileManager, node, themeId) {
                     var reportId = null;
                     var reportNode = node;
@@ -371,7 +371,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     var mode = Compass.ErpApp.Shared.CodeMirror.determineCodeMirrorMode(node.data.text);
 
                     if (Compass.ErpApp.Utility.isBlank(item)) {
-                        item = Ext.create('Compass.ErpApp.Shared.CodeMirror',{
+                        item = Ext.create('Compass.ErpApp.Shared.CodeMirror', {
                             mode: mode,
                             sourceCode: content,
                             title: node.data.text,
@@ -406,16 +406,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     }
                     centerRegion.setActiveTab(item);
                 },
-                'itemclick':function (view, record, item, index, e) {
+                'itemclick': function (view, record, item, index, e) {
                     e.stopEvent();
-                    var fileType = record.data.id.split('.').pop();
-                    if (Ext.Array.indexOf(['png', 'gif', 'jpg', 'jpeg', 'ico', 'bmp', 'tif', 'tiff'], fileType.toLowerCase()) > -1) {
-                        me.fireEvent('showImage', this, record);
-                    }
-                    else if (record.data.leaf && record.data.text == 'Query') {
+                    if (record.data.leaf && record.data.text == 'Query') {
                         me.editQuery(record.data.reportId);
                     }
-                    else if(record.data.leaf){
+                    else if (record.data.leaf) {
                         var msg = Ext.Msg.wait("Loading", "Retrieving contents...");
                         Ext.Ajax.request({
                             url: '/rails_db_admin/erp_app/desktop/reports/get_contents',
@@ -425,7 +421,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                             },
                             success: function (response) {
                                 msg.hide();
-                                me.fireEvent('contentLoaded',me, record, response.responseText);
+                                me.fireEvent('contentLoaded', me, record, response.responseText);
                             },
                             failure: function () {
                                 Ext.Msg.alert('Status', 'Error loading contents');
@@ -434,15 +430,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         });
                     }
                 },
-                'handleContextMenu':function (fileManager, node, e) {
+                'handleContextMenu': function (fileManager, node, e) {
                     var items = [];
                     if (node.isRoot()) {
                         items.push(
                             {
                                 text: "New Report",
                                 iconCls: 'icon-settings',
-                                listeners:{
-                                    'click':function () {
+                                listeners: {
+                                    'click': function () {
                                         me.newReport();
                                     }
                                 }
@@ -450,45 +446,45 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                             {
                                 text: "Upload",
                                 iconCls: 'icon-theme-upload',
-                                listeners:{
-                                    'click':function () {
+                                listeners: {
+                                    'click': function () {
                                         me.uploadReport();
                                     }
                                 }
                             });
                     }
-                    else if(node.data.isReport){
+                    else if (node.data.isReport) {
                         items.push(
                             {
-                                text:"Report Print Settings",
-                                iconCls:'icon-edit',
-                                listeners:{
-                                    scope:node,
-                                    'click':function () {
+                                text: "Report Print Settings",
+                                iconCls: 'icon-edit',
+                                listeners: {
+                                    scope: node,
+                                    'click': function () {
                                         me.editReportMetaData(node);
                                     }
                                 }
 
                             },
                             {
-                                text:"Delete Report",
-                                iconCls:'icon-delete',
-                                listeners:{
-                                    scope:node,
-                                    'click':function () {
+                                text: "Delete Report",
+                                iconCls: 'icon-delete',
+                                listeners: {
+                                    scope: node,
+                                    'click': function () {
                                         me.deleteReport(node.data.id);
                                     }
                                 }
                             },
                             {
-                                text:"Info",
-                                iconCls:'icon-info',
-                                listeners:{
-                                    scope:node,
-                                    'click':function () {
-                                        Ext.Msg.alert('Details', 'Title: '+node.data.text +
-                                                      '<br /> Unique Name: '+node.data.uniqueName
-                                                     );
+                                text: "Info",
+                                iconCls: 'icon-info',
+                                listeners: {
+                                    scope: node,
+                                    'click': function () {
+                                        Ext.Msg.alert('Details', 'Title: ' + node.data.text +
+                                            '<br /> Unique Name: ' + node.data.uniqueName
+                                        );
                                     }
                                 }
                             },

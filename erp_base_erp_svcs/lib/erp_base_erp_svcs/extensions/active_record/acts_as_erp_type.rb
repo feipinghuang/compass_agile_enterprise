@@ -130,16 +130,22 @@ module ErpBaseErpSvcs
 							
             where(fk_str + ' in (?)', in_clause_array)
 							
-				  end			
-				end
+          end
+
+        end
 
 					
 				# Adds instance methods.
 				module ActsAsInstanceMethods
-						
-				  # def instance_method_for_acts_as
-				  #   puts "Instance with ID #{self.id}"
-				  # end
+
+          def to_s
+            self.try(:description) ? self.try(:description) : self.try(:id)
+          end
+
+          # Alias for to_s
+          def to_label
+            to_s
+          end
 					  
 				end
 
