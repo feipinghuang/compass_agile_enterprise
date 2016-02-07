@@ -40,8 +40,6 @@ class CommunicationEvent < ActiveRecord::Base
   belongs_to :from_role , :class_name => 'RoleType', :foreign_key => 'role_type_id_from'
   belongs_to :to_role ,   :class_name => 'RoleType', :foreign_key => 'role_type_id_to'
 
-  belongs_to :comm_evt_status, :class_name => 'CommEvtStatus', :foreign_key => 'status_type_id'
-
   belongs_to :from_contact_mechanism, :polymorphic => true
   belongs_to :to_contact_mechanism, :polymorphic => true
 
