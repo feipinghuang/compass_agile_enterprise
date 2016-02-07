@@ -1,6 +1,6 @@
 class CreatePartyUnitOfMeasurements < ActiveRecord::Migration
   def up
-    unless table_exits? :party_unit_of_measurements
+    unless table_exists? :party_unit_of_measurements
       create_table :party_unit_of_measurements do |t|
 
         t.string :description
@@ -17,8 +17,8 @@ class CreatePartyUnitOfMeasurements < ActiveRecord::Migration
       add_index :party_unit_of_measurements, :party_id, name: 'party_uom_party_idx'
     end
 
-    unless index_exists? :party_unit_of_measurements, :unit_of_measurement, name: 'party_uom_uom_idx'
-      add_index :party_unit_of_measurements, :unit_of_measurement, name: 'party_uom_uom_idx'
+    unless index_exists? :party_unit_of_measurements, :unit_of_measurement_id, name: 'party_uom_uom_idx'
+      add_index :party_unit_of_measurements, :unit_of_measurement_id, name: 'party_uom_uom_idx'
     end
   end
 
