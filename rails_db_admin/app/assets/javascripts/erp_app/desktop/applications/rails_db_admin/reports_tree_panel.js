@@ -155,6 +155,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 },
                 items: [
                     {
+                        xtype: 'checkbox',
+                        fieldLabel: 'Auto Execute',
+                        name: 'auto_execute',
+                        checked: node.data.reportMetaData.auto_execute
+                    },
+                    {
                         xtype: 'combo',
                         fieldLabel: 'Page Size',
                         name: 'page_size',
@@ -456,7 +462,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     else if (node.data.isReport) {
                         items.push(
                             {
-                                text: "Report Print Settings",
+                                text: "Report Settings",
                                 iconCls: 'icon-edit',
                                 listeners: {
                                     scope: node,

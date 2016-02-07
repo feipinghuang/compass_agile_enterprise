@@ -68,6 +68,7 @@ module RailsDbAdmin
             report.meta_data['print_margin_right'] = params[:margin_right].strip if params[:margin_right]
             report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip if params[:margin_bottom]
             report.meta_data['print_margin_left'] = params[:margin_left].strip if params[:margin_left]
+            report.meta_data['auto_execute'] = params['auto_execute'] == 'on'
 
             if params.key?(:report_params)
               report.meta_data['params'] = params[:report_params].nil? ? [] : params[:report_params]

@@ -17,9 +17,11 @@ module RailsDbAdmin
             end
 
             def render_template(template, locals=nil)
-              if request.format.symbol == :html
+              if request && request.format.symbol == :html
                 locals.nil? ? (render :partial => "/#{template}") : (render :partial => "/#{template}",:locals => locals[:locals])
-              elsif request.format.symbol == :pdf
+              elsif request && request.format.symbol == :pdf
+                locals.nil? ? (render :partial => "/#{template}.html.erb") : (render :partial => "/#{template}.html.erb" , :locals => locals[:locals])
+              else
                 locals.nil? ? (render :partial => "/#{template}.html.erb") : (render :partial => "/#{template}.html.erb" , :locals => locals[:locals])
               end
             end
@@ -27,7 +29,7 @@ module RailsDbAdmin
             def report_stylesheet_link_tag(report_id, *sources)
               report = Report.iid(report_id)
               return("could not find report with the id #{report_id}") unless report
-              if request.format.symbol == :pdf
+              if request && request.format.symbol == :pdf
                 file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
                 css = sources.collect do |source|
                   css_path = report.stylesheet_path(source)
@@ -49,7 +51,7 @@ module RailsDbAdmin
             def report_javascript_include_tag(report_id, *sources)
               report = Report.iid(report_id)
               return("could not find report with the id #{report_id}") unless report
-              if request.format.symbol == :pdf
+              if request && request.format.symbol == :pdf
                 file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
                 js = sources.collect do |source|
                   js_path = report.javascript_path(source)
@@ -135,7 +137,7 @@ module RailsDbAdmin
               report = Report.iid(report_id)
               return("could not find report with the id #{report_id}") unless report
 
-              if request.format.symbol == :pdf
+              if request && request.format.symbol == :pdf
                 img_path = report.image_path(source)
 
                 file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)

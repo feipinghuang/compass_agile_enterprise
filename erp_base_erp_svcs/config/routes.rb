@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       resources :contact_purposes, defaults: { :format => 'json' }
       resources :geo_zones, defaults: { :format => 'json' }
       resources :status_applications, defaults: { :format => 'json' }
+      resources :unit_of_measurements, defaults: { :format => 'json' }
     end
   end
 
