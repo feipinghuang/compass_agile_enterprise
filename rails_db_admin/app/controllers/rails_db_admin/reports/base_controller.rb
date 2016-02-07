@@ -1,7 +1,7 @@
 module RailsDbAdmin
   module Reports
 
-    class BaseController < ErpApp::ApplicationController
+    class BaseController < ::ErpApp::ApplicationController
       layout nil
       before_filter :require_login
 
@@ -12,32 +12,45 @@ module RailsDbAdmin
 
           format.html {
 
-            attachments = report_helper.build_report(params[:iid],
+            result = report_helper.build_report(params[:iid],
                                                      [:html],
                                                      build_report_params)
-
-            render inline: attachments.first[:data]
+            if result.is_a? String
+              @error = result
+              render :error_report
+            else
+              render inline: result.first[:data]
+            end
           }
 
           format.pdf {
-            attachments = report_helper.build_report(params[:iid],
-                                                     [:pdf],
-                                                     build_report_params)
+            result = report_helper.build_report(params[:iid],
+                                                [:pdf],
+                                                build_report_params)
 
-            send_data attachments.first[:data],
-                      filename: attachments.first[:name],
-                      type: 'application/pdf',
-                      disposition: :inline
+            if result.is_a? String
+              @error = result
+              render :error_report
+            else
+              send_data result.first[:data],
+                        filename: result.first[:name],
+                        type: 'application/pdf',
+                        disposition: :inline
+            end
           }
 
           format.csv {
-            attachments = report_helper.build_report(params[:iid],
+            result = report_helper.build_report(params[:iid],
                                                      [:csv],
                                                      build_report_params)
-
-            send_data attachments.first[:data],
-                      filename: attachments.first[:name],
-                      type: 'application/csv'
+            if result.is_a? String
+              @error = result
+              render :error_report
+            else
+              send_data result.first[:data],
+                        filename: result.first[:name],
+                        type: 'application/csv'
+            end
           }
 
         end

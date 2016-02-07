@@ -16,104 +16,116 @@ module RailsDbAdmin
       # @param format [Symbol] Format to render the report in (:pdf, :csv)
       # @param report_params [Hash] Parameters for report
       def build_report(report_iid, formats=[:pdf, :csv], report_params={})
-        database_connection_class = RailsDbAdmin::ConnectionHandler.create_connection_class(Rails.env)
-        @query_support = RailsDbAdmin::QuerySupport.new(database_connection_class, Rails.env)
+        begin
 
-        @report = Report.find_by_internal_identifier(report_iid)
-        @report_params = report_params
+          database_connection_class = RailsDbAdmin::ConnectionHandler.create_connection_class(Rails.env)
+          @query_support = RailsDbAdmin::QuerySupport.new(database_connection_class, Rails.env)
 
-        add_report_view_paths
-        build_report_data
+          @report = Report.find_by_internal_identifier(report_iid)
+          @report_params = report_params
 
-        file_attachments = []
+          add_report_view_paths
+          build_report_data
 
-        if @data[:error]
-          @data[:error]
-        else
-          formats.each do |format|
-            case format
-              when :html
-                data = render inline: @report.template,
-                               locals:
-                                   {
-                                       unique_name: @report.internal_identifier,
-                                       title: @report.name,
-                                       columns: @data[:columns],
-                                       rows: @data[:rows],
-                                       client_utc_offset: report_params[:client_utc_offset]
-                                   }
+          file_attachments = []
+
+          if @data[:error]
+            @data[:error]
+          else
+            formats.each do |format|
+              case format
+                when :html
+                  data = render inline: @report.template,
+                                locals:
+                                    {
+                                        unique_name: @report.internal_identifier,
+                                        title: @report.name,
+                                        columns: @data[:columns],
+                                        rows: @data[:rows],
+                                        client_utc_offset: report_params[:client_utc_offset]
+                                    }
 
 
-                file_attachments.push({name: "#{@report.name}.html", data: data})
+                  file_attachments.push({name: "#{@report.name}.html", data: data})
 
-              when :pdf
-                file_attachments << {
-                    name: "#{@report.name}.pdf",
-                    data: WickedPdf.new.pdf_from_string(render_to_string(build_pdf_config))
-                }
+                when :pdf
+                  file_attachments << {
+                      name: "#{@report.name}.pdf",
+                      data: WickedPdf.new.pdf_from_string(render_to_string(build_pdf_config))
+                  }
 
-              when :csv
-                business_module = @report_params[:business_module_id].present? ? BusinessModule.where(id: @report_params[:business_module_id]).first : nil
+                when :csv
+                  business_module = @report_params[:business_module_id].present? ? BusinessModule.where(id: @report_params[:business_module_id]).first : nil
 
-                csv_data = CSV.generate do |csv|
-                  custom_data_columns = []
-                  if @data[:columns].include?('custom_fields')
+                  csv_data = CSV.generate do |csv|
+                    custom_data_columns = []
+                    if @data[:columns].include?('custom_fields')
 
-                    custom_data = JSON.parse(@data[:rows].first['custom_fields'])
-
-                    if business_module
-                      custom_data.each do |field_name, field_value|
-                        custom_data_columns << business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.label
-                      end
-                    else
-                      custom_data_columns = custom_data.keys
-                    end
-
-                    # remove the custom_fields column if it exists
-                    @data[:columns].delete('custom_fields')
-                  end
-
-                  csv << @data[:columns] + custom_data_columns
-
-                  @data[:rows].each do |row|
-                    custom_values = []
-
-                    custom_fields = row.delete('custom_fields')
-
-                    unless custom_fields.blank?
-                      custom_data = JSON.parse(custom_fields)
+                      custom_data = JSON.parse(@data[:rows].first['custom_fields'])
 
                       if business_module
                         custom_data.each do |field_name, field_value|
-                          case business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.field_type.internal_identifier
-                            when 'address'
-                              unless field_value.blank?
-                                custom_values << "#{field_value['address_line_1']} #{field_value['address_line_2']} #{field_value['city']} #{field_value['state']}, #{field_value['zip']} #{field_value['country']}"
-                              end
-                            else
-                              custom_values << field_value
-                          end
-
+                          custom_data_columns << business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.label
                         end
                       else
-                        custom_values = custom_data.values
+                        custom_data_columns = custom_data.keys
                       end
+
+                      # remove the custom_fields column if it exists
+                      @data[:columns].delete('custom_fields')
                     end
 
-                    csv << row.values + custom_values
-                  end
-                end
+                    csv << @data[:columns] + custom_data_columns
 
-                file_attachments << {
-                    name: "#{@report.name}.csv",
-                    data: csv_data
-                }
-              else
-                raise 'Invalid Format'
+                    @data[:rows].each do |row|
+                      custom_values = []
+
+                      custom_fields = row.delete('custom_fields')
+
+                      unless custom_fields.blank?
+                        custom_data = JSON.parse(custom_fields)
+
+                        if business_module
+                          custom_data.each do |field_name, field_value|
+                            case business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.field_type.internal_identifier
+                              when 'address'
+                                unless field_value.blank?
+                                  custom_values << "#{field_value['address_line_1']} #{field_value['address_line_2']} #{field_value['city']} #{field_value['state']}, #{field_value['zip']} #{field_value['country']}"
+                                end
+                              else
+                                custom_values << field_value
+                            end
+
+                          end
+                        else
+                          custom_values = custom_data.values
+                        end
+                      end
+
+                      csv << row.values + custom_values
+                    end
+                  end
+
+                  file_attachments << {
+                      name: "#{@report.name}.csv",
+                      data: csv_data
+                  }
+                else
+                  raise 'Invalid Format'
+              end
             end
+
+            file_attachments
           end
 
-          file_attachments
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          # email notification
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          "Error running report"
         end
       end
 
