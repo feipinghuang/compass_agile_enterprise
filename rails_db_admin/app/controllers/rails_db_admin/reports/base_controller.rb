@@ -29,7 +29,8 @@ module RailsDbAdmin
                                unique_name: @report_iid,
                                title: @report.name,
                                columns: @data[:columns],
-                               rows: @data[:rows]
+                               rows: @data[:rows],
+                               client_utc_offset: params[:client_utc_offset]
                            }
                 )
               }
@@ -158,7 +159,8 @@ module RailsDbAdmin
                     unique_name: @report_iid,
                     title: @report.name,
                     columns: @data[:columns],
-                    rows: @data[:rows]
+                    rows: @data[:rows],
+                    client_utc_offset: params[:client_utc_offset]
                 },
             :show_as_html => params[:debug].present?,
             :page_size => @report.meta_data['print_page_size'] || 'A4',
@@ -188,6 +190,11 @@ module RailsDbAdmin
 
         # add current_user to locals
         parsed_report_params[:current_user] = current_user
+
+        # add utc offset if it wasn't in the report params
+        if parsed_report_params[:client_utc_offset].blank?
+          parsed_report_params[:client_utc_offset] = params[:client_utc_offset]
+        end
 
         query = RailsDbAdmin::ErbStringParser.render(
             @report.query,

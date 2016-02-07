@@ -3,6 +3,7 @@ class ReportMailer < ActionMailer::Base
 
   def email_report(to_email, cc_email, file_attachments, subject, message)
     @message = message
+    @subject = subject
 
     file_attachments.each do |file_attachment|
       attachments[file_attachment[:name]] = file_attachment[:data]
