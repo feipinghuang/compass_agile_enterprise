@@ -9,7 +9,7 @@ module ErpTechSvcs
         # returns an array of hashes which represent all nodes in nested set order,
         # each of which consists of the node's id, internal identifier and representation
         # if a parent is passed it starts there in the tree
-        def to_all_representation(parent=nil, container_arr=[], level=0)
+        def to_all_representation(parent=nil, container_arr=[], level=0, ancestors=nil)
           if parent
             parent.children.each do |node|
               container_arr << {id: node.id,
@@ -22,7 +22,8 @@ module ErpTechSvcs
 
             end
           else
-            self.roots.each do |root|
+            ancestors = (ancestors || self.roots)
+            ancestors.each do |root|
               container_arr << {id: root.id,
                                 description: root.to_representation(level),
                                 internal_identifier: root.internal_identifier}

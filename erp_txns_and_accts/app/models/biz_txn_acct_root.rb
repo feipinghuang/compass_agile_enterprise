@@ -65,7 +65,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
         statement = statement.where('description like ?', "%#{filters[:query].strip}%")
       end
 
-      # filter by WorkEffortType
+      # filter by BizTxnAcctType
       unless filters[:biz_txn_acct_type_iids].blank?
         statement = statement.joins(:biz_txn_acct_type).where(biz_txn_acct_type: {internal_identifier: filters[:biz_txn_acct_type_iids]})
       end
