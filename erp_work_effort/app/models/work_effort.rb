@@ -211,8 +211,18 @@ class WorkEffort < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_user(user, options={})
-      statement = joins("join work_effort_party_assignments wepa on wepa.work_effort_id = work_efforts.id and wepa.party_id = #{user.party.id}")
+      scope_by_party_assignment(user.party, options)
+    end
 
+    # scope by work efforts assigned to the passed party
+    #
+    # @param party [Party] party to look for assignments
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party_assignment(party, options={})
+      statement = joins("join work_effort_party_assignments wepa on wepa.work_effort_id = work_efforts.id and wepa.party_id = #{party.id}")
 
       if options[:role_types]
         statement = statement.where("wepa.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
@@ -220,25 +230,11 @@ class WorkEffort < ActiveRecord::Base
 
       statement
     end
+
   end
 
   def dba_organization
     find_party_with_role(RoleType.dba_org)
-  end
-
-  # override for comparison of a work_effort
-  #
-  # @param an_other [WorkEffort] other work_effort
-  # @return [Integer] order
-  def <=>(an_other)
-    case an_other.current_status
-      when 'pending'
-        1
-      when 'complete'
-        2
-      else
-        3
-    end
   end
 
   # Get assigned parties by role type
@@ -249,7 +245,7 @@ class WorkEffort < ActiveRecord::Base
     role_types = RoleType.find_child_role_types(role_types)
 
     Party.joins(work_effort_party_assignments: :role_type)
-        .where(role_types: {internal_identifier: role_types})
+        .where(role_types: {id: role_types})
         .where(work_effort_party_assignments: {work_effort_id: self.id})
   end
 
@@ -259,7 +255,7 @@ class WorkEffort < ActiveRecord::Base
   # @param role_types [Array] Array of role types to check the assignments for
   def party_assigned?(party, role_types=['work_resource'])
     !WorkEffort.joins(work_effort_party_assignments: :role_type)
-         .where(role_types: {internal_identifier: RoleType.find_child_role_types(role_types).collect{|item| item.internal_identifier}})
+         .where(role_types: {id: RoleType.find_child_role_types(role_types)})
          .where(work_effort_party_assignments: {work_effort_id: self.id})
          .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
   end
