@@ -76,7 +76,7 @@ class InventoryEntry < ActiveRecord::Base
   end
 
   def get_sku
-    if self.sku.blank?
+    if self.sku.blank? and self.product_type
       self.product_type_sku
     else
       self.sku
@@ -84,7 +84,7 @@ class InventoryEntry < ActiveRecord::Base
   end
 
   def get_uom
-    if self.unit_of_measurement.nil?
+    if self.unit_of_measurement.nil? and self.product_type
       self.product_type_unit_of_measurement
     else
       self.unit_of_measurement
