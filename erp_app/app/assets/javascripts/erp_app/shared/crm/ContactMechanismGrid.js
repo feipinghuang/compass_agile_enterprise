@@ -501,6 +501,7 @@ Ext.define("Compass.ErpApp.Shared.Crm.ContactMechanismGrid.PhoneNumberGrid", {
             editFormTitle: 'Edit Phone Number',
             formFields: [
                 {
+                    xtype: 'businessmodulephonenumberfield',
                     fieldLabel: 'Phone Number',
                     name: 'phone_number',
                     allowBlank: false
