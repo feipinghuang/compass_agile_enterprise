@@ -161,6 +161,60 @@ class FileAsset < ActiveRecord::Base
       directory = nil if directory == '.'
       [directory, name]
     end
+
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      statement = FileAsset unless statement
+
+      if filters[:file_asset_holder_type].present? && filters[:file_asset_holder_id].present?
+        statement = statement.joins(:file_asset_holders)
+                        .where(file_asset_holders: {
+                                   file_asset_holder_id: filters[:file_asset_holder_id],
+                                   file_asset_holder_type: filters[:file_asset_holder_type]
+                               })
+      end
+
+      statement
+    end
+
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      scope_by_party(dba_organization, {role_types: [RoleType.iid('dba_org')]})
+    end
+
+    alias scope_by_dba_org scope_by_dba_organization
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      table_alias = String.random
+
+      if options[:role_types]
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'FileAsset'
+                                     and #{table_alias}.entity_record_id = file_assets.id and
+                                     #{table_alias}.role_type_id in (#{RoleType.find_child_role_types(options[:role_types]).collect(&:id).join(',')})
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
+
+      else
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'FileAsset'
+                                     and #{table_alias}.entity_record_id = file_assets.id
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
+      end
+    end
   end
 
   def initialize(attributes = {}, options={})
@@ -320,11 +374,36 @@ class FileAsset < ActiveRecord::Base
     self.description
   end
 
+  def to_data_hash
+    data = to_hash(only: [:id, :directory, :width, :height, :name, :description])
+
+    data[:url] = self.data.url
+    data[:fully_qualified_url] = self.fully_qualified_url
+    data[:tags] = self.tag_list.join(',')
+    data[:thumbnail_src] = self.thumbnail_src
+
+    data
+  end
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, 'assets/default_file.png')}"
+  end
+
 end
 
 class Image < FileAsset
   self.file_type = :image
   self.valid_extensions = %w(.jpg .JPG .jpeg .JPEG .gif .GIF .png .PNG .ico .ICO .bmp .BMP .tif .tiff .TIF .TIFF)
+
+  def thumbnail_src
+    thumbnail_image = FileAsset.where("data_file_name = ? and directory like '%thumbnail%' and id = ?", self.name, self.id).first
+
+    if thumbnail_image
+      thumbnail_image.fully_qualified_urlend
+    else
+      self.fully_qualified_url
+    end
+  end
 end
 
 class TextFile < FileAsset
@@ -340,76 +419,128 @@ class TextFile < FileAsset
   def text
     @text ||= ::File.read(path) rescue ''
   end
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, 'assets/default_file.png')}"
+  end
 end
 
 class Javascript < TextFile
   self.file_type = :javascript
   self.content_type = 'text/javascript'
   self.valid_extensions = %w(.js .JS)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/javascript_file.png')}"
+  end
 end
 
 class Stylesheet < TextFile
   self.file_type = :stylesheet
   self.content_type = 'text/css'
   self.valid_extensions = %w(.css .CSS)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/css_file.png')}"
+  end
 end
 
 class Template < TextFile
   self.file_type = :template
   self.content_type = 'text/plain'
   self.valid_extensions = %w(.erb .haml .liquid .builder)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, 'assets/tpl_file.png')}"
+  end
 end
 
 class HtmlFile < TextFile
   self.file_type = :html
   self.content_type = 'text/html'
   self.valid_extensions = %w(.html .HTML)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/html_file.png')}"
+  end
 end
 
 class XmlFile < TextFile
   self.file_type = :xml
   self.content_type = 'text/plain'
   self.valid_extensions = %w(.xml .XML)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/xml_file.png')}"
+  end
 end
 
 class DocFile < TextFile
   self.file_type = :doc
   self.content_type = 'application/msword'
   self.valid_extensions = %w(.doc .dot)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/doc_file.png')}"
+  end
 end
 
 class DocxFile < TextFile
   self.file_type = :docx
   self.content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   self.valid_extensions = %w(.docx)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/docx_file.png')}"
+  end
 end
 
 class Xls < TextFile
   self.file_type = :xls
   self.content_type = 'application/vnd.ms-excel'
-  self.valid_extensions = %w(.xls .xlt .xla)
+  self.valid_extensions = %w(.xls .xlt .xla .xlsx)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/xls_file.png')}"
+  end
 end
 
 class Ppt < TextFile
   self.file_type = :ppt
   self.content_type = 'application/vnd.ms-powerpoint'
   self.valid_extensions = %w(.ppt .pot .pps .ppa)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, 'assets/ppt_file.png')}"
+  end
 end
 
 class Pptx < TextFile
   self.file_type = :pptx
   self.content_type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
   self.valid_extensions = %w(.pptx)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, 'assets/pptx_file.png')}"
+  end
 end
 
 class Pdf < TextFile
   self.file_type = :pdf
   self.content_type = 'application/pdf'
   self.valid_extensions = %w(.pdf .PDF)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/pdf_file.png')}"
+  end
 end
 
 class Swf < FileAsset
   self.file_type = :swf
   self.content_type = 'application/x-shockwave-flash'
   self.valid_extensions = %w(.swf .SWF)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/shockwave_file.png')}"
+  end
 end
