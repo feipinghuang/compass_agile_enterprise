@@ -399,7 +399,7 @@ class Image < FileAsset
     thumbnail_image = FileAsset.where("data_file_name = ? and directory like '%thumbnail%' and id = ?", self.name, self.id).first
 
     if thumbnail_image
-      thumbnail_image.fully_qualified_urlend
+      thumbnail_image.fully_qualified_url
     else
       self.fully_qualified_url
     end
