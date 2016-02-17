@@ -17,14 +17,24 @@ module ErpBaseErpSvcs
         end
 
         module SingletonMethods
+          # Scope by a set of RoleTypes
+          #
+          # @param role_types [Integer | RoleType | Array] either a id of RoleType record, a RoleType record,
+          # an array of RoleType records or an array of RoleType ids
           def with_party_role_types(role_types)
             joins(:entity_party_roles)
-                .where("entity_party_roles.role_type_id in (#{role_types.collect(&:id).join(',')})")
+                .where(entity_party_roles: {role_type_id: role_types})
           end
 
-          def with_party_role(party, role_type)
-            joins(:entity_party_roles).where('entity_party_roles.role_type_id = ?', role_type.id)
-                .where('entity_party_roles.party_id = ?', party.id)
+          # Scope by a set of parties with the passed role_types
+          #
+          # @param party [Integer | Party | Array] either a id of Party record, a Party record,
+          # an array of Party records or an array of Party ids
+          # @param role_types [Integer | RoleType | Array] either a id of RoleType record, a RoleType record,
+          # an array of RoleType records or an array of RoleType ids
+          def with_party_role(parties, role_types)
+            joins(:entity_party_roles).where(entity_party_roles: {role_type_id: role_types})
+                .where(entity_party_roles: {party_id: parties})
           end
         end
 
