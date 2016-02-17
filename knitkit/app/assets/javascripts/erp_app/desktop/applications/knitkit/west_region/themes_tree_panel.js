@@ -265,7 +265,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     }
                     self.initialConfig['centerRegion'].editTemplateFile(node, content, [], themeId);
                 },
-                'handleContextMenu': function (fileManager, node, e) {
+                'handleContextMenu': function (fileManager, node, item, index, e) {
                     var items = [];
 
                     if (node.isRoot()) {

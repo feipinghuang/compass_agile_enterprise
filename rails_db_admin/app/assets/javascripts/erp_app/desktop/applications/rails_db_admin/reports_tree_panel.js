@@ -436,7 +436,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         });
                     }
                 },
-                'handleContextMenu': function (fileManager, node, e) {
+                'handleContextMenu': function (fileManager, node, item, index, e) {
                     var items = [];
                     if (node.isRoot()) {
                         items.push(

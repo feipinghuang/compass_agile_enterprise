@@ -567,10 +567,6 @@
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/link/link_16x16.png', sizingMethod='crop');
 }
 
-.icon-theme {
-
-}
-
 .schedule-col {
     background-image: url(/assets/icons/calendar/calendar_16x16.png) !important;
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/calendar/calendar_16x16.png', sizingMethod='crop');
