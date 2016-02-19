@@ -225,7 +225,7 @@ class FileAsset < ActiveRecord::Base
     base_path ||= data.original_filename if data.respond_to?(:original_filename)
 
     directory, name = FileAsset.split_path(base_path) if base_path and name.blank?
-    directory.gsub!(Rails.root.to_s, '')
+    directory.gsub!(Rails.root.to_s, '') if directory
 
     @type ||= FileAsset.type_for(name) if name
     @type = "TextFile" if @type.nil?
