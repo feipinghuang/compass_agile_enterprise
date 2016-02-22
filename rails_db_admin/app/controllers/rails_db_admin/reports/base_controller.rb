@@ -58,15 +58,13 @@ module RailsDbAdmin
       end
 
       def email
-        params[:report_format].map { |format| format.to_sym }
-
         report_helper = RailsDbAdmin::Services::ReportHelper.new
         file_attachments = report_helper.build_report(params[:iid],
-                                                      params[:report_format],
+                                                      params[:report_format].map { |format| format.to_sym },
                                                       build_report_params)
 
         if file_attachments.is_a? String
-          render :json => {success: false, message: ex.message}
+          render :json => {success: false, message: file_attachments}
         else
           to_email = params[:send_to]
           cc_email = params[:cc_email]
