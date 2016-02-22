@@ -510,6 +510,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
             this.eastRegion = Ext.create('Ext.panel.Panel', {
                 ui: 'rounded-panel',
                 region: 'east',
+                id: 'reports_accordian_panel',
                 margins: '0 0 0 0',
                 cmargins: '0 0 0 0',
                 width: 300,
@@ -521,7 +522,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 items: [
                     {
                         xtype: 'railsdbadminreportsparamsmanager'
-
+                    },
+                    {
+                        xtype: 'railsdbadminreportsprintsettings'
                     },
                     {
                         xtype: 'railsdbadminreportsrolespanel'

@@ -306,6 +306,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 var obj = Ext.decode(responseObject.responseText);
                 if (obj.success) {
                     me.initialConfig.module.editQuery(obj.report);
+                    Ext.getCmp('reports_accordian_panel').down('railsdbadminreportsparamsmanager').expand();
                 }
                 else {
                     Ext.Msg.alert('Status', 'Error deleting report');
@@ -324,6 +325,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         var waitMsg = Ext.Msg.wait("Exporting Report...", "Status");
         window.open('/rails_db_admin/erp_app/desktop/reports/export?id=' + reportId, '_blank');
         waitMsg.hide();
+    },
+
+    setReportPrintSettings: function (reportId, reportMetaData) {
+        var me = this;
+        var eastRegion = me.initialConfig.module.eastRegion;
+        eastRegion.show();
+        var reportPrintSettingsPanel = eastRegion.down('railsdbadminreportsprintsettings');
+        reportPrintSettingsPanel.setReportPrintSettings(reportId, reportMetaData);
     },
 
     constructor: function (config) {
@@ -415,6 +424,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 'itemclick': function (view, record, item, index, e) {
                     e.stopEvent();
                     if (record.data.leaf && record.data.text == 'Query') {
+                        me.setReportPrintSettings(record);
                         me.editQuery(record.data.reportId);
                     }
                     else if (record.data.leaf) {
@@ -434,6 +444,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                 msg.hide();
                             }
                         });
+                    }
+                    else if (record.data.isReport) {
+                        me.setReportPrintSettings(record);
+                        Ext.getCmp('reports_accordian_panel').down('railsdbadminreportsprintsettings').expand();
                     }
                 },
                 'handleContextMenu': function (fileManager, node, item, index, e) {
