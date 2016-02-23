@@ -402,6 +402,27 @@ Compass.ErpApp.Utility.addEventHandler = function (obj, evt, handler) {
     }
 };
 
+//method to call a callback on load of all the passed ExtJS store instances
+Compass.ErpApp.Utility.onStoresLoaded = function(stores, callback){
+    var _loaded = 0;
+    Ext.each(stores, function(store){
+        if(store.isLoading()){
+            store.on('load', function(){
+                _afterLoad();
+            });
+        }else{
+            _afterLoad();
+        }
+    });
+
+    function _afterLoad(){
+        if(++_loaded == stores.length){
+            _loaded = 0;
+            callback();
+        }
+    }
+};
+
 function OnDemandLoadByAjax() {
     this.load = function (components, callback) {
         this.components = components;
