@@ -38,6 +38,7 @@ module RailsDbAdmin
                   data = render inline: @report.template,
                                 locals:
                                     {
+                                        formats: formats,
                                         unique_name: @report.internal_identifier,
                                         title: @report.name,
                                         columns: @data[:columns],
@@ -45,13 +46,12 @@ module RailsDbAdmin
                                         client_utc_offset: report_params[:client_utc_offset]
                                     }
 
-
                   file_attachments.push({name: "#{@report.name}.html", data: data})
 
                 when :pdf
                   file_attachments << {
                       name: "#{@report.name}.pdf",
-                      data: WickedPdf.new.pdf_from_string(render_to_string(build_pdf_config))
+                      data: WickedPdf.new.pdf_from_string(render_to_string(build_pdf_config(formats)))
                   }
 
                 when :csv
@@ -145,12 +145,14 @@ module RailsDbAdmin
 
       # build configuration to render a pdf of a report
       #
-      def build_pdf_config
+      # @param formats [Array] Formats being requested of this report [:html, :pdf, :csv]
+      def build_pdf_config(formats)
         {
             :pdf => "#{@report.internal_identifier}",
             :template => 'base.html.erb',
             :locals =>
                 {
+                    formats: formats,
                     unique_name: @report,
                     title: @report.name,
                     columns: @data[:columns],

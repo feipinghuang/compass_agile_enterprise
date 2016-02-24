@@ -50,16 +50,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
                                         myMask.hide();
                                         var centerRegion = btn.up('window').down('#centerRegion'),
                                             queryPanel = centerRegion.getActiveTab();
-                                        queryPanel.down('reportparamspanel').destroy();
-                                        queryPanel.insert(
-                                            0,
-                                            {
-                                                xtype: 'reportparamspanel',
-                                                region: 'north',
-                                                params: me.reportParams,
-                                                slice: 2
-                                            }
-                                        );
+
+                                        if (queryPanel) {
+                                            queryPanel.down('reportparamspanel').destroy();
+                                            queryPanel.insert(
+                                                0,
+                                                {
+                                                    xtype: 'reportparamspanel',
+                                                    region: 'north',
+                                                    params: me.reportParams,
+                                                    slice: 2
+                                                }
+                                            );
+                                        }
                                     }
                                     else {
                                         myMask.hide();
@@ -88,11 +91,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsParamsManage
         });
         me.callParent();
     },
-    setReportData: function (reportId, reportParams) {
+
+    setReportData: function (report) {
         var me = this;
         me.clearReport();
-        me.reportId = reportId;
-        me.reportParams = reportParams;
+        me.reportId = report.get('id');
+        me.reportParams = report.get('reportMetaData').params || {};
         me.add(
             me.buildReportData(),
             {

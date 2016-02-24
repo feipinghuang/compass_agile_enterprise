@@ -2,13 +2,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
     extend: "Ext.panel.Panel",
     alias: 'widget.railsdbadmin_querypanel',
     isReportQuery: false,
+    report: null,
 
     getSql: function () {
         return this.down('codemirror').getValue();
     },
 
     initComponent: function () {
-        var self = this;
+        var me = this;
         var messageBox = null;
 
         var savedQueriesJsonStore = Ext.create('Ext.data.Store', {
@@ -35,32 +36,32 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 text: 'Execute',
                 iconCls: 'icon-playpause',
                 handler: function (button) {
-                    var textarea = self.query('.codemirror')[0];
+                    var textarea = me.query('.codemirror')[0];
                     var sql = textarea.getValue();
                     var selected_sql = textarea.getSelection();
                     var cursor_pos = textarea.getCursor().line;
-                    var database = self.module.getDatabase();
+                    var database = me.module.getDatabase();
 
                     var reportParams = null;
-                    if(self.isReportQuery){
-                        reportParams = self.down('reportparamspanel').getReportParams();
+                    if (me.isReportQuery) {
+                        reportParams = me.down('reportparamspanel').getReportParams();
                     }
 
                     messageBox = Ext.Msg.wait('Status', 'Executing..');
 
                     Ext.Ajax.request({
+                        method: 'POST',
                         url: '/rails_db_admin/erp_app/desktop/queries/execute_query',
                         timeout: 120000,
                         params: {
-                            sql: sql,
                             database: database,
-                            cursor_pos: cursor_pos,
-                            selected_sql: selected_sql
+                            cursor_pos: cursor_pos
                         },
                         jsonData: {
+                            sql: sql,
+                            selected_sql: selected_sql,
                             report_params: reportParams
                         },
-                        method: 'post',
                         success: function (responseObject) {
                             messageBox.hide();
                             var response = Ext.decode(responseObject.responseText);
@@ -70,13 +71,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                                 var fields = response.fields;
                                 var data = response.data;
 
-                                if (!Ext.isEmpty(self.down('railsdbadmin_readonlytabledatagrid'))) {
+                                if (!Ext.isEmpty(me.down('railsdbadmin_readonlytabledatagrid'))) {
                                     var jsonStore = new Ext.data.JsonStore({
                                         fields: fields,
                                         data: data
                                     });
 
-                                    self.down('railsdbadmin_readonlytabledatagrid').reconfigure(jsonStore, columns);
+                                    me.down('railsdbadmin_readonlytabledatagrid').reconfigure(jsonStore, columns);
                                 }
                                 else {
                                     var readOnlyDataGrid = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReadOnlyTableDataGrid', {
@@ -86,7 +87,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                                         data: data
                                     });
 
-                                    var cardPanel = self.down('#resultCardPanel');
+                                    var cardPanel = me.down('#resultCardPanel');
                                     cardPanel.removeAll(true);
                                     cardPanel.add(readOnlyDataGrid);
                                     cardPanel.getLayout().setActiveItem(readOnlyDataGrid);
@@ -108,16 +109,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 text: 'Save Query',
                 iconCls: 'icon-save',
                 handler: function (btn) {
-                    var textarea = self.query('.codemirror')[0];
+                    var textarea = me.query('.codemirror')[0];
                     var sql = textarea.getValue();
                     var waitMsg;
 
-                    if(self.initialConfig.reportId){
+                    if (me.report.get('reportId')) {
                         waitMsg = Ext.Msg.wait("Saving Report...", "Status");
                         Ext.Ajax.request({
                             url: '/rails_db_admin/erp_app/desktop/reports/save_query',
                             params: {
-                                id: self.initialConfig.reportId,
+                                id: me.report.get('reportId'),
                                 query: sql
                             },
                             success: function (responseObject) {
@@ -133,13 +134,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                             }
                         });
                     }
-                    else{
+                    else {
                         waitMsg = Ext.Msg.wait("Saving Query...", "Status");
                         Ext.Ajax.request({
                             url: '/rails_db_admin/erp_app/desktop/queries/save_query',
                             params: {
                                 query: sql,
-                                query_name: self.initialConfig.title
+                                query_name: me.initialConfig.title
                             },
                             success: function (responseObject) {
                                 waitMsg.close();
@@ -158,38 +159,37 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
             }
         ];
 
-        if(this.initialConfig['isReportQuery']){
+        if (this.initialConfig['isReportQuery']) {
             tbarItems.push({
                 text: 'Preview Report',
-                iconCls: 'icon-content',
-                handler: function(){
-                    var reportParamsPanel = self.down('reportparamspanel'),
+                iconCls: 'icon-document',
+                handler: function () {
+                    var reportParamsPanel = me.down('reportparamspanel'),
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
 
-                        reportTitle = "Preview" + " (" + self.reportName + ")";
-                    self.openIframeInTab(reportTitle , '/reports/display/' + self.internalIdentifier + '?report_params=' + reportParamsWithValues);
-
+                        reportTitle = "Preview" + " (" + me.report.get('reportName') + ")";
+                    me.openIframeInTab(reportTitle, '/reports/display/' + me.report.get('internalIdentifier') + '?report_params=' + reportParamsWithValues);
                 }
             });
 
             tbarItems.push({
                 text: 'Download CSV',
-                iconCls: 'icon-content',
-                handler: function(){
-                    var reportParamsPanel = self.down('reportparamspanel'),
+                iconCls: 'icon-website-export',
+                handler: function () {
+                    var reportParamsPanel = me.down('reportparamspanel'),
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
-                        url = '/reports/display/' + self.internalIdentifier + '.csv?report_params=' + reportParamsWithValues;
+                        url = '/reports/display/' + me.report.get('internalIdentifier') + '.csv?report_params=' + reportParamsWithValues;
                     window.open(url);
                 }
             });
 
             tbarItems.push({
                 text: 'Download PDF',
-                iconCls: 'icon-content',
-                handler: function(){
-                    var reportParamsPanel = self.down('reportparamspanel'),
+                iconCls: 'icon-website-export',
+                handler: function () {
+                    var reportParamsPanel = me.down('reportparamspanel'),
                         reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
-                        url = '/reports/display/' + self.internalIdentifier + '.pdf?report_params=' + reportParamsWithValues;
+                        url = '/reports/display/' + me.report.get('internalIdentifier') + '.pdf?report_params=' + reportParamsWithValues;
                     window.open(url, '_blank');
                 }
             });
@@ -200,8 +200,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 text: 'Save',
                 iconCls: 'icon-save',
                 handler: function () {
-                    var textarea = self.down('.codemirror');
-                    var save_window = new Ext.Window({
+                    var textarea = me.down('.codemirror');
+
+                    Ext.widget('window', {
                         layout: 'fit',
                         width: 375,
                         title: 'Save Query',
@@ -234,7 +235,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                                 },
                                 {
                                     xtype: 'hidden',
-                                    value: self.module.getDatabase(),
+                                    value: me.module.getDatabase(),
                                     name: 'database'
                                 }
                             ]
@@ -250,15 +251,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                                             waitMsg: 'Saving Query...',
                                             success: function (fp, o) {
                                                 Ext.Msg.alert('Success', 'Saved Query');
-                                                var database = self.module.getDatabase();
-                                                self.module.queriesTreePanel().store.setProxy({
+                                                var database = me.module.getDatabase();
+                                                me.module.queriesTreePanel().store.setProxy({
                                                     type: 'ajax',
                                                     url: '/rails_db_admin/erp_app/desktop/queries/saved_queries_tree',
                                                     extraParams: {
                                                         database: database
                                                     }
                                                 });
-                                                self.module.queriesTreePanel().store.load();
+                                                me.module.queriesTreePanel().store.load();
                                                 btn.up('window').hide();
                                             }
                                         });
@@ -288,23 +289,23 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
             disableSave: true
         };
 
-        this.items = [];
+        me.items = [];
         // if this a report query show the report params
-        if (this.isReportQuery){
-            this.items.push({
+        if (me.isReportQuery) {
+            me.items.push({
                 xtype: 'reportparamspanel',
                 region: 'north',
-                params: this.initialConfig['reportParams']
+                params: me.report.get('reportMetaData').params
             });
         }
-        this.items.push(codeMirrorPanel);
+        me.items.push(codeMirrorPanel);
 
 
-        if (!Ext.isEmpty(this.initialConfig['southRegion'])) {
-            this.items.push(this.initialConfig['southRegion']);
+        if (!Ext.isEmpty(me.initialConfig['southRegion'])) {
+            me.items.push(me.initialConfig['southRegion']);
         }
         else {
-            this.items.push({
+            me.items.push({
                 layout: 'card',
                 region: 'south',
                 margins: '0 0 0 0',
@@ -327,7 +328,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
             border: false,
             closable: true
         }, config);
-        if (config.title == null){
+        if (config.title == null) {
             config = Ext.applyIf({
                 title: 'New Query'
             }, config);
@@ -336,27 +337,43 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
     },
 
     openIframeInTab: function (title, url) {
-        var me = this;
         var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
         var itemId = Compass.ErpApp.Utility.Encryption.MD5(url);
         var item = centerRegion.getComponent(itemId);
+
         if (Compass.ErpApp.Utility.isBlank(item)) {
-            var item = Ext.create('Ext.panel.Panel', {
+            item = Ext.create('Ext.panel.Panel', {
                 iframeId: 'tutorials_iframe',
                 itemId: itemId,
                 closable: true,
+                bodyPadding: '5px',
                 layout: 'fit',
                 title: title,
-                html: '<iframe id="reports_iframe" height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>'
+                html: '<iframe id="reports_iframe" height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>',
+                dockedItems: [
+                    {
+                        xtype: 'toolbar',
+                        items: [
+                            {
+                                xtype: 'button',
+                                iconCls: 'icon-refresh',
+                                text: 'Refresh',
+                                handler: function (btn) {
+                                    btn.up('panel').el.query('iframe').first().contentWindow.location.reload();
+                                }
+                            }
+                        ]
+                    }
+                ]
             });
             centerRegion.add(item);
         }
-        else{
-            Ext.Msg.wait('Updating preview..','Status');
-            window.setTimeout(function(){
+        else {
+            Ext.Msg.wait('Updating preview..', 'Status');
+            window.setTimeout(function () {
                 item.update('<iframe id="reports_iframe" height="100%" width="100%" frameBorder="0" src="' + url + '"></iframe>');
                 Ext.Msg.hide();
-            },300);
+            }, 300);
         }
         centerRegion.setActiveTab(item);
     }
