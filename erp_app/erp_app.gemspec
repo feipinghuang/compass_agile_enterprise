@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'will_paginate', '3.0.3'
   s.add_dependency 'uglifier', '~> 1.3'
   s.add_dependency('friendly_id', '4.0.10.1')
-  s.add_dependency('codemirror-rails', '5.6')
+  s.add_dependency('codemirror-rails', '5.11')
   s.add_dependency('inflection-js-rails', '0.1.1')
 
   #compass dependencies
