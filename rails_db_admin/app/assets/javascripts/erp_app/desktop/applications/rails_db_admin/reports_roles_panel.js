@@ -52,7 +52,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
         var me = this;
 
         me.removeAll();
-        me.reportId = report.get('id');
+        me.reportId = report.get('reportId');
         me.add({
             xtype: 'typeselectiontree',
             title: 'Select Roles',
