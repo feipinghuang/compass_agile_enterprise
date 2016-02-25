@@ -190,6 +190,8 @@
 
             time_entry.calculate_regular_hours_in_seconds!
 
+            time_entry.update_task_assignment_status('task_resource_status_hold')
+
             result = {
                 success: true,
                 time_entry: time_entry.to_data_hash,

@@ -402,7 +402,7 @@ class WorkEffort < ActiveRecord::Base
 
     if status == 'task_status_complete'
       self.work_effort_party_assignments.each do |assignment|
-        assignment.current_status = 'task_resource_status_in_complete'
+        assignment.current_status = 'task_resource_status_complete'
       end
     end
   end
