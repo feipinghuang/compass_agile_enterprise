@@ -13,10 +13,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsSettings", {
             xtype: 'button',
             text: 'Save',
             iconCls: 'icon-save',
-            handler: function(btn){
+            handler: function (btn) {
                 var me = btn.up('railsdbadminreportsettings');
 
-                if(me.isValid()){
+                if (me.isValid()) {
                     me.getForm().submit({
                         waitMsg: 'Updating Report...',
                         params: {
@@ -50,7 +50,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsSettings", {
         }
     ],
 
-    items:[
+    items: [
         {
             xtype: 'textfield',
             fieldLabel: 'Report Name',
@@ -72,9 +72,23 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsSettings", {
             xtype: 'fieldset',
             title: 'Print Settings',
             defaults: {
-                width: 200
+                width: 245
             },
             items: [
+                {
+                    xtype: 'combo',
+                    fieldLabel: 'Orientation',
+                    name: 'print_orientation',
+                    queryMode: 'local',
+                    forceSelection: true,
+                    selectOnFocus: true,
+                    displayField: 'orientation',
+                    valueField: 'orientation',
+                    store: new Ext.data.ArrayStore({
+                        fields: ['orientation'],
+                        data: [['Portrait'],['Landscape']]
+                    })
+                },
                 {
                     xtype: 'combo',
                     fieldLabel: 'Page Size',
@@ -117,7 +131,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsSettings", {
         }
     ],
 
-    setReportSettings: function(report){
+    setReportSettings: function (report) {
         var me = this,
             reportMetaData = Ext.clone(report.get('reportMetaData'));
 
@@ -132,6 +146,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsSettings", {
             print_margin_right: 10,
             print_margin_bottom: 10,
             print_margin_left: 10,
+            print_orientation: 'Portrait',
             auto_execute: false
         });
 

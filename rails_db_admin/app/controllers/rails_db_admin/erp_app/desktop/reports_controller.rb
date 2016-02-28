@@ -67,6 +67,7 @@ module RailsDbAdmin
               report.meta_data['print_margin_right'] = params[:print_margin_right].strip if params[:print_margin_right]
               report.meta_data['print_margin_bottom'] = params[:print_margin_bottom].strip if params[:print_margin_bottom]
               report.meta_data['print_margin_left'] = params[:print_margin_left].strip if params[:print_margin_left]
+              report.meta_data['print_orientation'] = params[:print_orientation].strip if params[:print_orientation]
               report.meta_data['auto_execute'] = params['auto_execute'] == 'on'
 
               unless params[:report_name].blank?
