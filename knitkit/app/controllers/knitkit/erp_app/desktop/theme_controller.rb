@@ -56,6 +56,28 @@ module Knitkit
           end
         end
 
+        def update
+          begin
+            current_user.with_capability('view', 'Theme') do
+              theme = Theme.find(params[:id])
+              theme.name = params[:name].strip
+              if theme.save
+                render :json => {
+                         success: true,
+                         theme: {
+                           name: theme.name,
+                           text: "#{theme.name}[#{theme.theme_id}]"
+                         }
+                       }
+              else
+                render :json => {success: false}
+              end
+            end
+          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
+            render :json => {:success => false, :message => ex.message}
+          end
+        end
+
         def delete
           begin
             current_user.with_capability('view', 'Theme') do
@@ -315,9 +337,16 @@ module Knitkit
 
         def build_tree_node(theme, website)
 
-          theme_hash = {:text => "#{theme.name}[#{theme.theme_id}]", :handleContextMenu => true,
-                        :siteId => website.id, :isActive => (theme.active == 1), :iconCls => 'icon-content',
-                        :isTheme => true, :id => theme.id, :children => []}
+          theme_hash = {
+            :name => theme.name,
+            :text => "#{theme.name}[#{theme.theme_id}]",
+            :handleContextMenu => true,
+            :siteId => website.id,
+            :isActive => (theme.active == 1), :iconCls => 'icon-content',
+            :isTheme => true,
+            :id => theme.id,
+            :children => []
+          }
           if theme.active == 1
             theme_hash[:iconCls] = 'icon-add'
           else
