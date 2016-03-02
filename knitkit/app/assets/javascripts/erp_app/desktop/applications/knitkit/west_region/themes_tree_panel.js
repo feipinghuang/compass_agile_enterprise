@@ -172,6 +172,89 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
         });
     },
 
+    showUpdateThemeForm: function(node){
+        Ext.create("Ext.window.Window", {
+            layout: 'fit',
+            modal: true,
+            title: 'Rename Theme',
+            width: 360,
+            plain: true,
+            buttonAlign: 'center',
+            defaultFocus: 'name',
+            items: Ext.create('widget.form', {
+                labelWidth: 110,
+                frame: false,
+                bodyStyle: 'padding:5px 5px 0',
+                fileUpload: true,
+                url: '/knitkit/erp_app/desktop/theme/update',
+                defaults: {
+                    width: 320
+                },
+                items: [
+                    {
+                        xtype: 'hidden',
+                        name: 'id',
+                        value: node.get('id')
+                    },
+                    {
+                        xtype: 'textfield',
+                        fieldLabel: 'Name',
+                        value: node.get('name'),
+                        allowBlank: false,
+                        name: 'name',
+                        itemId: 'name'
+                    }
+                ]
+            }),
+            buttons: [
+                {
+                    text: 'Submit',
+                    listeners: {
+                        'click': function (button) {
+                            var window = button.findParentByType('window'),
+                                formPanel = window.query('form')[0],
+                                
+                                westRegion = Ext.ComponentQuery.query('#knitkitWestRegion').first(),
+                                themesTreePanel = westRegion.down('#themesTreePanel');
+
+
+                            var loading = new Ext.LoadMask(window, {msg: 'Please wait...'});
+                            loading.show();
+
+                            formPanel.getForm().submit({
+                                reset: true,
+                                timeout: 300000,
+                                success: function (form, action) {
+                                    loading.hide();
+                                    window.close();
+
+                                    var obj = Ext.decode(action.response.responseText);
+                                    if (obj.success) {
+                                        // update node
+                                        node.set('name', obj.theme.name);
+                                        node.set('text', obj.theme.text);
+                                        node.commit();
+                                    }
+                                },
+                                failure: function (form, action) {
+                                    loading.hide();
+
+                                    Ext.Msg.alert("Error", "Error updating theme");
+                                }
+                            });
+                        }
+                    }
+                },
+                {
+                    text: 'Close',
+                    handler: function (btn) {
+                        btn.up('window').close();
+                    }
+                }
+            ]
+        }).show();
+    },
+
     deleteTheme: function (theme) {
         var self = this,
             themeId = theme.get('id');
@@ -227,6 +310,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             fields: [
                 'isTheme',
                 'themeId',
+                'name',
                 'isActive',
                 'siteId',
                 'text',
@@ -308,6 +392,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                                             self.deleteTheme(node);
                                         }
                                     });
+                                }
+                            }
+                        });
+                        items.push({
+                            text: 'Rename Theme',
+                            iconCls: 'icon-edit',
+                            listeners: {
+                                'click': function () {
+                                    self.showUpdateThemeForm(node);
                                 }
                             }
                         });
