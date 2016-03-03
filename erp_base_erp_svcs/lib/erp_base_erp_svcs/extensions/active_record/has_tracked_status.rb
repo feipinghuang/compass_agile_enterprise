@@ -11,7 +11,9 @@ module ErpBaseErpSvcs
             extend HasTrackedStatus::SingletonMethods
             include HasTrackedStatus::InstanceMethods
 
-            has_many :status_applications, :as => :status_application_record, :dependent => :destroy
+            has_many :status_applications, :as => :status_application_record
+
+            before_destroy :destroy_status_applications
 
             scope :with_status, lambda { |status_type_iids|
                                 joins(:status_applications => :tracked_status_type).
@@ -99,6 +101,12 @@ module ErpBaseErpSvcs
         end
 
         module InstanceMethods
+
+          def destroy_status_applications
+            self.status_applications.each do |status_application|
+              status_application.destroy
+            end
+          end
 
           # does this status match the current_status?
           def has_status?(tracked_status_iid)
