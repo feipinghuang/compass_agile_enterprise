@@ -241,13 +241,13 @@ class TimeEntry < ActiveRecord::Base
   def update_task_assignment_status(status)
     # make sure this TimeEntry is related to a WorkEffort
     if self.work_effort
-      work_resource_role_type = RoleType.iid('work_resource')
+      work_resource_role_types = RoleType.find_child_role_types(['work_resource'])
 
       # find the party with work_resource related to this TimeEntry
-      work_resource_party = self.find_party_by_role(work_resource_role_type)
+      work_resource_party = self.find_party_by_role(work_resource_role_types)
 
       assignment = work_effort.work_effort_party_assignments.where(party_id: work_resource_party)
-                       .where(role_type_id: work_resource_role_type).first
+                       .where(role_type_id: work_resource_role_types).first
 
       if assignment
         assignment.current_status = status

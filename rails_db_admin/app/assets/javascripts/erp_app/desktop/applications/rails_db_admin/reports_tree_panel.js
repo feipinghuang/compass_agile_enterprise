@@ -136,7 +136,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 }
             ]
         }).show();
-
     },
 
     deleteReport: function (id) {
@@ -172,46 +171,45 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
         });
     },
 
-    editQuery: function (reportId) {
+    editQuery: function (report) {
         var me = this;
         var waitMsg = Ext.Msg.wait("Loading query...", "Status");
+
         Ext.Ajax.request({
-            url: '/rails_db_admin/erp_app/desktop/reports/edit',
+            url: '/rails_db_admin/erp_app/desktop/reports/query',
             params: {
-                id: reportId
+                id: report.get('reportId')
             },
             success: function (responseObject) {
                 waitMsg.close();
+
                 var obj = Ext.decode(responseObject.responseText);
                 if (obj.success) {
-                    me.initialConfig.module.editQuery(obj.report);
-                    Ext.getCmp('reports_accordian_panel').down('railsdbadminreportsparamsmanager').expand();
+                    me.initialConfig.module.editQuery(report, obj.query);
                 }
                 else {
-                    Ext.Msg.alert('Status', 'Error deleting report');
+                    Ext.Msg.error('Status', 'Error loading report');
                 }
             },
             failure: function () {
                 waitMsg.close();
-                Ext.Msg.alert('Status', 'Error deleting report');
+                Ext.Msg.error('Status', 'Error loading report');
             }
         });
     },
 
+    loadReport: function(report){
+        var me = this;
 
-    exportReport: function (reportId) {
-        var self = this;
-        var waitMsg = Ext.Msg.wait("Exporting Report...", "Status");
-        window.open('/rails_db_admin/erp_app/desktop/reports/export?id=' + reportId, '_blank');
-        waitMsg.hide();
+        me.initialConfig.module.loadReport(report);
     },
 
-    setReportPrintSettings: function (reportId, reportMetaData) {
-        var me = this;
-        var eastRegion = me.initialConfig.module.eastRegion;
-        eastRegion.show();
-        var reportPrintSettingsPanel = eastRegion.down('railsdbadminreportsprintsettings');
-        reportPrintSettingsPanel.setReportPrintSettings(reportId, reportMetaData);
+    exportReport: function (reportId) {
+        var waitMsg = Ext.Msg.wait("Exporting Report...", "Status");
+
+        window.open('/rails_db_admin/erp_app/desktop/reports/export?id=' + reportId, '_blank');
+
+        waitMsg.hide();
     },
 
     constructor: function (config) {
@@ -234,12 +232,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                 'text',
                 'iconCls',
                 'leaf',
-                'id',
                 'reportIid',
                 'reportId',
                 'isReport',
                 'handleContextMenu',
-                'uniqueName',
+                'internalIdentifier',
                 'reportName',
                 {name: 'reportMetaData', type: 'object'}
             ],
@@ -295,16 +292,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                     });
                                 }
                             }
-                        })
+                        });
+
                         centerRegion.add(item);
                     }
                     centerRegion.setActiveTab(item);
                 },
                 'itemclick': function (view, record, item, index, e) {
                     e.stopEvent();
-                    if (record.data.leaf && record.data.text == 'Query') {
-                        me.setReportPrintSettings(record);
-                        me.editQuery(record.data.reportId);
+                    if (record.data.leaf && record.parentNode.data.isReport) {
+                        me.editQuery(record.parentNode);
                     }
                     else if (record.data.leaf) {
                         var msg = Ext.Msg.wait("Loading", "Retrieving contents...");
@@ -325,8 +322,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                         });
                     }
                     else if (record.data.isReport) {
-                        me.setReportPrintSettings(record);
-                        Ext.getCmp('reports_accordian_panel').down('railsdbadminreportsprintsettings').expand();
+                        me.loadReport(record);
+                        Ext.getCmp('reports_accordian_panel').down('railsdbadminreportsettings').expand();
                     }
                 },
                 'handleContextMenu': function (fileManager, node, item, index, e) {
@@ -360,19 +357,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                 listeners: {
                                     scope: node,
                                     'click': function () {
-                                        me.deleteReport(node.data.id);
-                                    }
-                                }
-                            },
-                            {
-                                text: "Info",
-                                iconCls: 'icon-info',
-                                listeners: {
-                                    scope: node,
-                                    'click': function () {
-                                        Ext.Msg.alert('Details', 'Title: ' + node.data.text +
-                                            '<br /> Unique Name: ' + node.data.uniqueName
-                                        );
+                                        me.deleteReport(node.data.reportId);
                                     }
                                 }
                             },
@@ -381,16 +366,20 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                 iconCls: 'icon-document_out',
                                 listeners: {
                                     'click': function () {
-                                        me.exportReport(node.data.id);
+                                        me.exportReport(node.data.reportId);
                                     }
                                 }
                             }
                         );
                     }
-                    var contextMenu = Ext.create('Ext.menu.Menu', {
-                        items: items
-                    });
-                    contextMenu.showAt(e.xy);
+
+                    if(items.length > 0){
+                        var contextMenu = Ext.create('Ext.menu.Menu', {
+                            items: items
+                        });
+                        contextMenu.showAt(e.xy);
+                    }
+
                     return false;
                 }
             }

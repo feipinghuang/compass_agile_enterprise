@@ -19,6 +19,8 @@ Rails.application.routes.draw do
       end
 
       resources :security_roles, defaults: { :format => 'json' }
+      resources :file_assets, defaults: { :format => 'json' }
+
     end
   end
 

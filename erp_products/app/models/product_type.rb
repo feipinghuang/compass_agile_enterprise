@@ -26,6 +26,7 @@
 #   t.column  :cylindrical,              :boolean
 #   t.column  :taxable                   :boolean
 #   t.column  :available_on_web          :boolean
+#   t.references :unit_of_measurement
 #   t.references :biz_txn_acct_root
 #
 #   t.timestamps

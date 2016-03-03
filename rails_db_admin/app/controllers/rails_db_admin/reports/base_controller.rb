@@ -13,8 +13,8 @@ module RailsDbAdmin
           format.html {
 
             result = report_helper.build_report(params[:iid],
-                                                     [:html],
-                                                     build_report_params)
+                                                [:html],
+                                                build_report_params)
             if result.is_a? String
               @error = result
               render :error_report
@@ -41,8 +41,8 @@ module RailsDbAdmin
 
           format.csv {
             result = report_helper.build_report(params[:iid],
-                                                     [:csv],
-                                                     build_report_params)
+                                                [:csv],
+                                                build_report_params)
             if result.is_a? String
               @error = result
               render :error_report
@@ -58,24 +58,23 @@ module RailsDbAdmin
       end
 
       def email
-        params[:report_format].map { |format| format.to_sym }
-
         report_helper = RailsDbAdmin::Services::ReportHelper.new
         file_attachments = report_helper.build_report(params[:iid],
-                                                      params[:report_format],
-                                                      {
-                                                          parent_record_id: params[:id],
-                                                          client_utc_offset: params[:client_utc_offset]
-                                                      })
+                                                      params[:report_format].map { |format| format.to_sym },
+                                                      build_report_params)
 
-        to_email = params[:send_to]
-        cc_email = params[:cc_email]
-        message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
-        subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
+        if file_attachments.is_a? String
+          render :json => {success: false, message: file_attachments}
+        else
+          to_email = params[:send_to]
+          cc_email = params[:cc_email]
+          message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
+          subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
 
-        ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
+          ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
 
-        render json: {success: true}
+          render json: {success: true}
+        end
 
       rescue StandardError => ex
         Rails.logger.error ex.message

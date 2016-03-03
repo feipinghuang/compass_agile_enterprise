@@ -70,7 +70,26 @@ module ErpBaseErpSvcs
 							
 				  def iid( internal_identifier_string )
             where('internal_identifier = ?', internal_identifier_string.to_s).first
-				  end
+          end
+
+          def generate_unique_iid(name)
+            iid = name.to_iid
+
+            iid_exists = true
+            iid_test = iid
+            iid_counter = 1
+            while iid_exists
+              if self.where(internal_identifier: iid_test).first
+                iid_test = "#{iid}_#{iid_counter}"
+                iid_counter += 1
+              else
+                iid_exists = false
+                iid = iid_test
+              end
+            end
+
+            iid
+          end
 						
 				end
 

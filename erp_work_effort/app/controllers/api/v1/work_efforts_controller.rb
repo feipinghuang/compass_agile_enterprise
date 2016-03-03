@@ -16,7 +16,6 @@ module Api
           dba_organizations = [current_user.party.dba_organization]
           dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
           work_efforts = work_efforts.scope_by_dba_organization(dba_organizations)
-
         end
 
         # apply filters

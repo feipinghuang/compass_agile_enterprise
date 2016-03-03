@@ -201,6 +201,8 @@ Ext.define("Compass.ErpApp.Shared.Crm.UsersGrid", {
             'email',
             {name: 'status', mapping: 'activation_state'},
             {name: 'lastLoginAt', mapping: 'last_login_at', type: 'date'},
+            {name: 'lastLogoutAt', mapping: 'last_logout_at', type: 'date'},
+            {name: 'lastActivityAt', mapping: 'last_activity_at', type: 'date'},
             {name: 'createdAt', mapping: 'created_at', type: 'date'},
             {name: 'updatedAt', mapping: 'updated_at', type: 'date'}
         ];
@@ -369,7 +371,40 @@ Ext.define("Compass.ErpApp.Shared.Crm.UsersGrid", {
                 header: 'Last Login',
                 width: 150,
                 dataIndex: 'lastLoginAt',
-                renderer: Ext.util.Format.dateRenderer('m/d/Y H:i:s')
+                renderer: function (value) {
+                    if(value){
+                        return Ext.util.Format.date(value, 'm/d/Y H:i:s');
+                    }
+                    else{
+                        return 'Has not logged in';
+                    }
+                }
+            },
+            {
+                header: 'Last Activity',
+                width: 150,
+                dataIndex: 'lastActivityAt',
+                renderer: function (value) {
+                    if(value){
+                        return Ext.util.Format.date(value, 'm/d/Y H:i:s');
+                    }
+                    else{
+                        return 'No Activity';
+                    }
+                }
+            },
+            {
+                header: 'Last Logout',
+                width: 150,
+                dataIndex: 'lastLogoutAt',
+                renderer: function (value) {
+                    if(value){
+                        return Ext.util.Format.date(value, 'm/d/Y H:i:s');
+                    }
+                    else{
+                        return 'Has not logged out';
+                    }
+                }
             },
             {
                 header: 'Created At',
@@ -467,7 +502,7 @@ Ext.define("Compass.ErpApp.Shared.Crm.UsersGrid", {
                                             if (responseObj.success) {
                                                 grid.store.reload();
                                             }
-                                            else{
+                                            else {
                                                 Ext.Msg.alert("Error", responseObj.message);
                                             }
                                         },
@@ -487,7 +522,7 @@ Ext.define("Compass.ErpApp.Shared.Crm.UsersGrid", {
             });
         }
 
-        if(me.additionalActionColumns.length > 0){
+        if (me.additionalActionColumns.length > 0) {
             columns = columns.concat(me.additionalActionColumns);
         }
 

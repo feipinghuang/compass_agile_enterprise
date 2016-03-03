@@ -49,7 +49,7 @@ module Api
 
             application.save!
 
-            render :json => {success: true, application: application.to_data_hash}
+            render json: {success: true, application: application.to_data_hash}
 
           end
         rescue ActiveRecord::RecordInvalid => invalid

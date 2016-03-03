@@ -135,7 +135,7 @@ class Timesheet < ActiveRecord::Base
   # @param role_type [RoleType] role type to use in the association
   # @return [Party] Party associated to this timesheet
   def find_party_by_role(role_type)
-    timesheet_party_role = self.timesheet_party_roles.where('role_type_id' => role_type).first
+    timesheet_party_role = self.timesheet_party_roles.where(role_type_id: role_type).first
 
     if timesheet_party_role
       timesheet_party_role.party

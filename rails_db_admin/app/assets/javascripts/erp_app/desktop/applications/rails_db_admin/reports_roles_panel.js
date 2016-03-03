@@ -48,11 +48,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
         me.callParent();
     },
 
-    setReportRoles: function(reportId, reportRoles){
+    setReportRoles: function(report){
         var me = this;
 
         me.removeAll();
-        me.reportId = reportId;
+        me.reportId = report.get('reportId');
         me.add({
             xtype: 'typeselectiontree',
             title: 'Select Roles',
@@ -79,7 +79,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel",
                 if (responseObj.success) {
                     availableRoleTypes = responseObj.role_types;
                     roleTypesTree.setAvailableTypes(availableRoleTypes);
-                    roleTypesTree.setSelectedTypes(reportRoles);
+                    roleTypesTree.setSelectedTypes(report.get('reportMetaData').roles || []);
 
                 }else{
                     waitMsg.close();
