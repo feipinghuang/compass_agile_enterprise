@@ -1,6 +1,6 @@
 module Knitkit
   class BaseController < ::ErpApp::ApplicationController
-    before_filter :set_website, :clear_widget_params
+    before_filter :set_website
     before_filter :set_login_path, :set_active_publication, :load_sections, :set_section, :except => [:view_current_publication]
     acts_as_themed_controller 
 
@@ -22,10 +22,6 @@ module Knitkit
     
     def load_sections
       @website_sections = @website.website_sections.positioned
-    end
-
-    def clear_widget_params
-      session[:widgets] = {}
     end
     
     def set_section
