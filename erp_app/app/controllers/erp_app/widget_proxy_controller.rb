@@ -31,8 +31,6 @@ module ErpApp
     end
 
     def clear
-      session['test']
-
       unless params[:uuids].blank?
         params[:uuids].split(',').each do |uuid|
           if session[:widgets] and session[:widgets][uuid]
