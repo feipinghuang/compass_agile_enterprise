@@ -71,7 +71,7 @@ module RailsDbAdmin
           message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
           subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
 
-          ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
+          ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message, current_user.party.dba_organization).deliver
 
           render json: {success: true}
         end
