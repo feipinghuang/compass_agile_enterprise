@@ -13,7 +13,6 @@ class WebsiteInquiryMailer < ActionMailer::Base
     subject = "#{website_inquiry.website.title} Inquiry"
     @website_inquiry = website_inquiry
     
-    ::ActionMailer::Base.load_configuration(dba_organization) if dba_organization.present?
     mail(:to => website_inquiry.website.configurations.first.get_item(ConfigurationItemType.find_by_internal_identifier('contact_us_email_address')).options.first.value,
          :subject => subject,
          :content_type => 'text/html'

@@ -9,7 +9,6 @@ class ReportMailer < ActionMailer::Base
       attachments[file_attachment[:name]] = file_attachment[:data]
     end
 
-	::ActionMailer::Base.load_configuration(dba_organization) if dba_organization.present?
     mail(:to => to_email, :subject => subject, :cc => cc_email)
   end
 

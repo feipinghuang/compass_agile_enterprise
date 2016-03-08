@@ -4,7 +4,6 @@ class CrmMailer < ActionMailer::Base
   def send_message(to_email, subject, message, dba_organization=nil)
     @message = message
     
-    ::ActionMailer::Base.load_configuration(dba_organization) if dba_organization.present?
     mail(:to => to_email, :subject => subject)
   end
 
