@@ -17,6 +17,7 @@ module RailsDbAdmin
       # @param report_params [Hash] Parameters for report
       def build_report(report_iid, formats=[:pdf, :csv], report_params={})
         begin
+          @formats = formats
 
           database_connection_class = RailsDbAdmin::ConnectionHandler.create_connection_class(Rails.env)
           @query_support = RailsDbAdmin::QuerySupport.new(database_connection_class, Rails.env)
@@ -32,26 +33,23 @@ module RailsDbAdmin
           if @data[:error]
             @data[:error]
           else
-            formats.each do |format|
+            @formats.each do |format|
               case format
                 when :html
                   data = render inline: @report.template,
-                                locals:
-                                    {
-                                        formats: formats,
-                                        unique_name: @report.internal_identifier,
-                                        title: @report.name,
-                                        columns: @data[:columns],
-                                        rows: @data[:rows],
-                                        client_utc_offset: report_params[:client_utc_offset]
-                                    }
+                                locals: build_tpl_locals
 
                   file_attachments.push({name: "#{@report.name}.html", data: data})
 
                 when :pdf
+                  data = render_to_string({
+                                              template: 'base.html.erb',
+                                              locals: build_tpl_locals
+                                          })
+
                   file_attachments << {
                       name: "#{@report.name}.pdf",
-                      data: WickedPdf.new.pdf_from_string(render_to_string(build_pdf_config(formats)))
+                      data: WickedPdf.new.pdf_from_string(data, build_pdf_config)
                   }
 
                 when :csv
@@ -145,31 +143,19 @@ module RailsDbAdmin
 
       # build configuration to render a pdf of a report
       #
-      # @param formats [Array] Formats being requested of this report [:html, :pdf, :csv]
-      def build_pdf_config(formats)
+      def build_pdf_config
         {
-            :pdf => "#{@report.internal_identifier}",
-            :template => 'base.html.erb',
-            :locals =>
-                {
-                    formats: formats,
-                    unique_name: @report,
-                    title: @report.name,
-                    columns: @data[:columns],
-                    rows: @data[:rows],
-                    client_utc_offset: @report_params[:client_utc_offset]
-                },
-            :show_as_html => @report_params[:debug].present?,
-            :page_size => @report.meta_data['print_page_size'] || 'A4',
-            :margin => {
-                :top => (@report.meta_data['print_margin_top'].blank? ? 10 : @report.meta_data['print_margin_top'].to_i),
-                :bottom => (@report.meta_data['print_margin_bottom'].blank? ? 10 : @report.meta_data['print_margin_bottom'].to_i),
-                :left => (@report.meta_data['print_margin_left'].blank? ? 10 : @report.meta_data['print_margin_left'].to_i),
-                :right => (@report.meta_data['print_margin_right'].blank? ? 10 : @report.meta_data['print_margin_right'].to_i),
+            page_size: @report.meta_data['print_page_size'] || 'A4',
+            orientation: @report.meta_data['print_orientation'] || 'Portrait',
+            margin: {
+                top: (@report.meta_data['print_margin_top'].blank? ? 10 : @report.meta_data['print_margin_top'].to_i),
+                bottom: (@report.meta_data['print_margin_bottom'].blank? ? 10 : @report.meta_data['print_margin_bottom'].to_i),
+                left: (@report.meta_data['print_margin_left'].blank? ? 10 : @report.meta_data['print_margin_left'].to_i),
+                right: (@report.meta_data['print_margin_right'].blank? ? 10 : @report.meta_data['print_margin_right'].to_i),
 
             },
-            :footer => {
-                :right => 'Page [page] of [topage]'
+            footer: {
+                right: 'Page [page] of [topage]'
             }
         }
       end
@@ -206,6 +192,17 @@ module RailsDbAdmin
 
       def current_report_path
         {:url => @report.url.to_s, :path => @report.base_dir.to_s}
+      end
+
+      def build_tpl_locals
+        @report_params.merge({
+                                 time_helper: ErpBaseErpSvcs::Helpers::Time::Client.new(@report_params[:client_utc_offset]),
+                                 formats: @formats,
+                                 unique_name: @report,
+                                 title: @report.name,
+                                 columns: @data[:columns],
+                                 rows: @data[:rows]
+                             })
       end
 
     end # ReportHelper

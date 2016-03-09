@@ -357,7 +357,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                 listeners: {
                                     scope: node,
                                     'click': function () {
-                                        me.deleteReport(node.data.id);
+                                        me.deleteReport(node.data.reportId);
                                     }
                                 }
                             },
@@ -366,7 +366,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                                 iconCls: 'icon-document_out',
                                 listeners: {
                                     'click': function () {
-                                        me.exportReport(node.data.id);
+                                        me.exportReport(node.data.reportId);
                                     }
                                 }
                             }

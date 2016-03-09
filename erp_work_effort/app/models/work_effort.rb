@@ -324,20 +324,26 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  # set status to complete
-  #
-  def finish
-    complete
-  end
-
   # completes work effort by setting finished at to Time.now and calculates
   # actual_completion_time in minutes
   #
-  def complete
+  def complete!
     self.end_at = Time.now
-    self.actual_completion_time = time_diff_in_minutes(self.end_at.to_time, self.start_at.to_time)
     self.save
+
+    self.current_status = 'task_status_complete'
+
+    # close all open time entries
+    time_entries.each do |time_entry|
+      time_entry.thru_datetime = Time.now
+
+      time_entry.calculate_regular_hours_in_seconds!
+
+      time_entry.update_task_assignment_status('task_resource_status_complete')
+    end
   end
+
+  alias finish! complete!
 
   # get total hours for this WorkEffort by TimeEntries
   #

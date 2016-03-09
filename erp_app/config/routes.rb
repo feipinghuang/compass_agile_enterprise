@@ -116,6 +116,7 @@ ErpApp::Engine.routes.draw do
 
   #widget proxy
   match '/widgets/:widget_name/:widget_action/:uuid(/:id)' => "widget_proxy#index", :as => :widget
+  delete '/widgets/clear' => "widget_proxy#clear"
 
   #shared
   match '/shared/configuration/(/:action(/:id(/:category_id)))' => "shared/configuration"

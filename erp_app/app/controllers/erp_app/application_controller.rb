@@ -5,7 +5,6 @@ module ErpApp
     protected
 
     def not_authenticated
-      session[:return_to_url] = request.env['REQUEST_URI']
       redirect_to '/erp_app/login', :notice => "Please login first."
     end
     
