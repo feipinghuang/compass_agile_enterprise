@@ -44,8 +44,6 @@ class ProductType < ActiveRecord::Base
   has_file_assets
   is_describable
 
-  is_json :custom_fields
-
   belongs_to :product_type_record, polymorphic: true
   belongs_to :unit_of_measurement
   belongs_to :biz_txn_acct_root
