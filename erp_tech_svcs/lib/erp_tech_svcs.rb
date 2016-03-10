@@ -9,7 +9,6 @@ require 'wicked_pdf'
 require 'aws-sdk'
 require 'nested-hstore'
 require "erp_tech_svcs/version"
-require "erp_tech_svcs/utils/compass_logger"
 require "erp_tech_svcs/utils/default_nested_set_methods"
 require "erp_tech_svcs/utils/compass_access_negotiator"
 require "erp_tech_svcs/extensions"
