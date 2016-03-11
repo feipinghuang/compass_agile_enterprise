@@ -1,4 +1,4 @@
-module CompassAeBusinessSuite
+module ErpBaseErpSvcs
   module Extensions
     module ActiveRecord
       module TracksCreatedByUpdatedBy
@@ -36,4 +36,4 @@ module CompassAeBusinessSuite
       end # TracksCreatedByUpdatedBy
     end # ActiveRecord
   end # Extensions
-end # CompassAeBusinessSuite
+end # ErpBaseErpSvcs
