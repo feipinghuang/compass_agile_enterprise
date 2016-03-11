@@ -1,4 +1,4 @@
-class AddCreatedByUpdatedBy < ActiveRecord::Migration
+class AddCreatedByUpdatedByToErpWorkEffort < ActiveRecord::Migration
   def up
     %w{candidate_submissions
        experiences

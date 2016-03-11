@@ -1,4 +1,4 @@
-class AddCreatedByUpdatedBy < ActiveRecord::Migration
+class AddCreatedByUpdatedByToErpOrders < ActiveRecord::Migration
   def up
     %w{charge_lines order_line_items}.each do |table|
 
