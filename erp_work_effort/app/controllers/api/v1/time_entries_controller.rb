@@ -12,11 +12,11 @@
             )
 
             if params[:from_datetime]
-              time_entry.from_datetime = Time.strptime(params[:from_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+              time_entry.from_datetime = params[:from_datetime].to_time
             end
 
             if params[:thru_datetime]
-              time_entry.from_datetime = Time.strptime(params[:thru_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+              time_entry.from_datetime = params[:thru_datetime].to_time
             end
 
             if params[:comment]
@@ -71,11 +71,11 @@
             time_entry = TimeEntry.find(params[:id])
 
             if params[:from_datetime]
-              time_entry.from_datetime = Time.strptime(params[:from_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+              time_entry.from_datetime = params[:from_datetime].to_time
             end
 
             if params[:thru_datetime]
-              time_entry.from_datetime = Time.strptime(params[:thru_datetime], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+              time_entry.from_datetime = params[:thru_datetime].to_time
             end
 
             if params[:comment]
@@ -143,7 +143,7 @@
             end
 
             time_entry = TimeEntry.create(
-                from_datetime: Time.strptime(params[:start_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+                from_datetime: params[:start_at].to_time
             )
 
             time_entry.work_effort = work_effort
@@ -185,7 +185,7 @@
             work_effort = WorkEffort.find(params[:work_effort_id])
             time_entry = TimeEntry.find(params[:id])
 
-            time_entry.thru_datetime = Time.strptime(params[:end_at], "%Y-%m-%dT%H:%M:%S%z").in_time_zone.utc
+            time_entry.thru_datetime = params[:end_at].to_time
             time_entry.comment = params[:comment].present? ? params[:comment].strip : nil
 
             time_entry.calculate_regular_hours_in_seconds!
