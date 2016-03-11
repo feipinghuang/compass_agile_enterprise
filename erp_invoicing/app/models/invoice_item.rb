@@ -24,6 +24,7 @@ class InvoiceItem < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   has_payment_applications
+  tracks_created_by_updated_by
 
   belongs_to :invoice
   belongs_to :agreement

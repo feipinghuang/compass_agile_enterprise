@@ -23,6 +23,7 @@ module ErpBaseErpSvcs
       include ErpBaseErpSvcs::Extensions::ActiveRecord::CanBeGenerated
       include ErpBaseErpSvcs::Extensions::ActiveRecord::HasPartyRoles
       include ErpBaseErpSvcs::Extensions::ActiveRecord::HasContacts
+      include ErpBaseErpSvcs::Extensions::ActiveRecord::TracksCreatedByUpdatedBy
       extend ErpBaseErpSvcs::Extensions::ActiveRecord::StiInstantiation::ActMacro
     end
 

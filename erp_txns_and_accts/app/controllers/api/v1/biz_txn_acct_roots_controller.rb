@@ -99,6 +99,8 @@ module Api
                                        party: current_user.party.dba_organization,
                                        biz_txn_acct_pty_rtype: BizTxnAcctPtyRtype.find_or_create('dba_org', 'DBA Organization'))
 
+            biz_txn_acct_root.created_by_party = current_user.party
+
             biz_txn_acct_root.save!
 
             render :json => {success: true, biz_txn_type: biz_txn_acct_root.to_data_hash}

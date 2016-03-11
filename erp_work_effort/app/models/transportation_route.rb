@@ -13,6 +13,7 @@
 class TransportationRoute < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
   has_party_roles
   has_tracked_status
 

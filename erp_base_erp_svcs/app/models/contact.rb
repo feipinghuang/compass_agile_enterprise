@@ -1,6 +1,8 @@
 class Contact < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   has_and_belongs_to_many :contact_purposes
   belongs_to :contact_mechanism, :polymorphic => true, :dependent => :destroy
   belongs_to :contact_record, :polymorphic => true

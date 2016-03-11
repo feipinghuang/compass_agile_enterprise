@@ -20,6 +20,9 @@
 class BizTxnEvent < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  has_tracked_status
+  tracks_created_by_updated_by
+
   belongs_to :biz_txn_acct_root
   belongs_to :biz_txn_record, :polymorphic => true
   has_many :biz_txn_party_roles, :dependent => :destroy
@@ -42,8 +45,6 @@ class BizTxnEvent < ActiveRecord::Base
   alias :account :biz_txn_acct_root
   alias :account= :biz_txn_acct_root=
   alias :descriptions :biz_txn_event_descs
-
-  has_tracked_status
 
   class << self
     # Filter records

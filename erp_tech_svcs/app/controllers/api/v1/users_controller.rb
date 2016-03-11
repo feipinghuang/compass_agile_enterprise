@@ -76,6 +76,9 @@ module Api
                 user.party = individual.party
                 user.save
 
+                user.party.created_by_party = current_user.party
+                user.party.save!
+
                 # add employee role to party
                 party = individual.party
                 party.add_role_type(RoleType.find_or_create('employee', 'Employee'))
@@ -138,6 +141,9 @@ module Api
               user.password = params[:password].strip
               user.password_confirmation = params[:password].strip
             end
+
+            user.party.updated_by_party = current_user.party
+            user.party.save!
 
             user.email = params[:email].strip
 

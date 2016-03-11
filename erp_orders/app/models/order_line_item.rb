@@ -29,6 +29,8 @@
 class OrderLineItem < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :order_txn, :class_name => 'OrderTxn'
   belongs_to :order_line_item_type
 

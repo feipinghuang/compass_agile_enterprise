@@ -4,6 +4,7 @@ class Project < ActiveRecord::Base
 
   has_many :work_efforts, :dependent => :destroy
 
+  tracks_created_by_updated_by
   has_tracked_status
   has_party_roles
 

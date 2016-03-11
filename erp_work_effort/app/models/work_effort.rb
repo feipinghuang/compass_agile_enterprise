@@ -49,6 +49,8 @@ class WorkEffort < ActiveRecord::Base
   ## How is this Work Effort related to business parties, requestors, workers, approvers
   has_party_roles
 
+  tracks_created_by_updated_by
+
   belongs_to :work_effort_item, :polymorphic => true
 
   belongs_to :project

@@ -85,6 +85,9 @@ module Api
                                                        relationship_type)
             end
 
+            business_party.party.created_by_party = current_user.party
+            business_party.party.save!
+
             render :json => {success: true, party: business_party.party.to_data_hash}
           end
         rescue ActiveRecord::RecordInvalid => invalid
@@ -154,7 +157,8 @@ module Api
               PartyRole.create(party: party, role_type: role_type)
             end
 
-            # add a new relationship to the root dba_org with this role type
+            party.updated_by_party = current_user.party
+            party.save!
 
             render :json => {success: true}
 

@@ -52,51 +52,87 @@ module Api
       end
 
       def create
+        begin
+          ActiveRecord::Base.transaction do
+            product_type = ProductType.new
+            product_type.description = params[:description]
+            product_type.sku = params[:sku]
+            product_type.unit_of_measurement_id = params[:unit_of_measurement]
+            product_type.comment = params[:comment]
 
-        product_type = ProductType.new
-        product_type.description = params[:description]
-        product_type.sku = params[:sku]
-        product_type.unit_of_measurement_id = params[:unit_of_measurement]
-        product_type.comment = params[:comment]
-        product_type.save
+            product_type.created_by_party = current_user.party
 
-        #
-        # For scoping by party, add party_id and role_type 'vendor' to product_party_roles table. However may want to override controller elsewhere
-        # so that default is no scoping in erp_products engine
-        #
-        party_role = params[:party_role]
-        party_id = params[:party_id]
-        unless party_role.blank? or party_id.blank?
-          product_type_party_role = ProductTypePtyRole.new
-          product_type_party_role.product_type = product_type
-          product_type_party_role.party_id = party_id
-          product_type_party_role.role_type = RoleType.iid(party_role)
-          product_type_party_role.save
+            product_type.save!
+
+            #
+            # For scoping by party, add party_id and role_type 'vendor' to product_party_roles table. However may want to override controller elsewhere
+            # so that default is no scoping in erp_products engine
+            #
+            party_role = params[:party_role]
+            party_id = params[:party_id]
+            unless party_role.blank? or party_id.blank?
+              product_type_party_role = ProductTypePtyRole.new
+              product_type_party_role.product_type = product_type
+              product_type_party_role.party_id = party_id
+              product_type_party_role.role_type = RoleType.iid(party_role)
+              product_type_party_role.save
+            end
+          end
+
+          render :json => {success: true,
+                           product_type: product_type.to_data_hash}
+
+        rescue ActiveRecord::RecordInvalid => invalid
+
+          render :json => {success: false, message: invalid.record.errors.messages}
+
+        rescue => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          # email error
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {success: false, message: 'Could not create product type'}
         end
-
-        render :json => {success: true,
-                         product_type: product_type.to_data_hash}
       end
 
       def update
-        product_type = ProductType.find(params[:id])
+        begin
+          ActiveRecord::Base.transaction do
+            product_type = ProductType.find(params[:id])
 
-        product_type.description = params[:description]
-        product_type.sku = params[:sku]
-        product_type.unit_of_measurement_id = params[:unit_of_measurement]
-        product_type.comment = params[:comment]
-        product_type.save
+            product_type.description = params[:description]
+            product_type.sku = params[:sku]
+            product_type.unit_of_measurement_id = params[:unit_of_measurement]
+            product_type.comment = params[:comment]
 
-        render :json => {success: true,
-                         product_type: product_type.to_data_hash}
+            product_type.updated_by_party = current_user.party
 
+            product_type.save!
+
+            render :json => {success: true,
+                             product_type: product_type.to_data_hash}
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+
+          render :json => {success: false, message: invalid.record.errors.messages}
+
+        rescue => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          # email error
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {success: false, message: 'Could not update product type'}
+        end
       end
 
       def destroy
         ProductType.find(params[:id]).destroy
 
         render :json => {:success => true}
-
       end
 
     end # ProductTypesController

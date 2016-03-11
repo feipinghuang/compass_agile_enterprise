@@ -20,6 +20,8 @@
 class CreditCard < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :postal_address
   has_one :credit_card_account_party_role, :dependent => :destroy
 

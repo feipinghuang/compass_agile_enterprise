@@ -18,6 +18,8 @@
 class ProductFeatureType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   has_many :product_feature_type_product_feature_values, dependent: :destroy
   has_many :product_feature_values, through: :product_feature_type_product_feature_values
 

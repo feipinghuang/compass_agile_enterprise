@@ -1,6 +1,6 @@
 class Experience < ActiveRecord::Base
 
-  is_json :custom_fields
+  tracks_created_by_updated_by
 
   belongs_to :party
   belongs_to :experience_type

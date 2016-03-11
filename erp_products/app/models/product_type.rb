@@ -41,6 +41,7 @@ class ProductType < ActiveRecord::Base
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   acts_as_taggable
 
+  tracks_created_by_updated_by
   has_file_assets
   is_describable
 

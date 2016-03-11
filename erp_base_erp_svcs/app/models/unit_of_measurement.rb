@@ -22,7 +22,8 @@ class UnitOfMeasurement < ActiveRecord::Base
 
   acts_as_nested_set
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
-                                PartyUnitOfMeasurement
+
+  tracks_created_by_updated_by
 
   has_many :party_unit_of_measurements
 
