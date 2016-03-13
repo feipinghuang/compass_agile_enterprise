@@ -268,6 +268,55 @@ Compass.ErpApp.Utility.handleFormFailure = function (action) {
     }
 };
 
+/**
+ * @method ajaxRequest
+ * Makes ajax call with default handlers
+ * @param {Object} options Options for call
+ * @option {Function} success Success callback
+ * @option {Function} failure Failure callback
+ * @option {String} errorMessage Error Message if there is no message from the server
+ */
+Compass.ErpApp.Utility.ajaxRequest = function (options) {
+    if (window['Ext']) {
+
+        if (options['success']) {
+            options['successCallback'] = options['success'];
+            delete options['success'];
+        }
+
+
+        if (options['failure']) {
+            options['failureCallback'] = options['failure'];
+            delete options['failure'];
+        }
+
+        Ext.Ajax.request(Ext.apply(options, {
+            success: function (response) {
+                var responseObj = Ext.decode(response.responseText);
+
+                if (responseObj.success) {
+                    if (options.successCallback)
+                        options.successCallback(responseObj);
+                }
+                else {
+                    if (responseObj.message) {
+                        Ext.Msg.error('Error', responseObj.message);
+                    }
+                    else {
+                        Ext.Msg.error('Error', options.errorMessage);
+                    }
+                }
+            },
+            failure: function () {
+                Ext.Msg.error('Error', options.errorMessage);
+
+                if (options.failureCallback)
+                    options.failureCallback();
+            }
+        }));
+    }
+};
+
 Compass.ErpApp.Utility.randomString = function (length) {
     var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
     var randomString = '';
@@ -343,7 +392,7 @@ Compass.ErpApp.Utility.isBlank = function (obj) {
     }
 };
 
-Compass.ErpApp.Utility.removeDublicates = function (arrayName) {
+Compass.ErpApp.Utility.removeDuplicates = function (arrayName) {
     var newArray = [];
     label:for (var i = 0; i < arrayName.length; i++) {
         for (var j = 0; j < newArray.length; j++) {
@@ -357,7 +406,7 @@ Compass.ErpApp.Utility.removeDublicates = function (arrayName) {
 
 Compass.ErpApp.Utility.isArray = function (o) {
     return Object.prototype.toString.call(o) === '[object Array]';
-}
+};
 
 Compass.ErpApp.Utility.wait = function (ms) {
     ms += new Date().getTime();
@@ -403,20 +452,20 @@ Compass.ErpApp.Utility.addEventHandler = function (obj, evt, handler) {
 };
 
 //method to call a callback on load of all the passed ExtJS store instances
-Compass.ErpApp.Utility.onStoresLoaded = function(stores, callback){
+Compass.ErpApp.Utility.onStoresLoaded = function (stores, callback) {
     var _loaded = 0;
-    Ext.each(stores, function(store){
-        if(store.isLoading()){
-            store.on('load', function(){
+    Ext.each(stores, function (store) {
+        if (store.isLoading()) {
+            store.on('load', function () {
                 _afterLoad();
             });
-        }else{
+        } else {
             _afterLoad();
         }
     });
 
-    function _afterLoad(){
-        if(++_loaded == stores.length){
+    function _afterLoad() {
+        if (++_loaded == stores.length) {
             _loaded = 0;
             callback();
         }
@@ -662,14 +711,14 @@ String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
-String.prototype.squish = function(){
+String.prototype.squish = function () {
     var me = this;
 
-    if(me.substring(0,1) == ' '){
+    if (me.substring(0, 1) == ' ') {
         me = me.substring(1);
     }
 
-    if(me.substring(me.length-1,me.length) == ' '){
+    if (me.substring(me.length - 1, me.length) == ' ') {
         me = me.substring(0, me.length - 1);
     }
 
@@ -678,7 +727,7 @@ String.prototype.squish = function(){
     return me;
 };
 
-String.prototype.toIID = function(){
+String.prototype.toIID = function () {
     return this.squish().downcase().replace(/\W/g, '_').replace(/\W/g, '');
 };
 

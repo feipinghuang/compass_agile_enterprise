@@ -50,7 +50,7 @@ module ErpApp
                                                  :audit_log_id,
                                                  {:audit_log_item_value => :new_value},
                                                  {:audit_log_item_old_value => :old_value}],
-                                 :audit_log_item_type => audit_log_item.type.description)
+                                 :audit_log_item_type => audit_log_item.try(:type).try(:description))
         end
 
         render :json => {:audit_log_items => data}
