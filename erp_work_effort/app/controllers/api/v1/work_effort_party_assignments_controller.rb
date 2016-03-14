@@ -42,6 +42,9 @@ module Api
             work_effort_party_assignment.work_effort_id = params['work_effort.id']
             work_effort_party_assignment.role_type = RoleType.iid('work_resource')
             work_effort_party_assignment.resource_allocation = params[:resource_allocation]
+
+            work_effort_party_assignment.created_by_party = current_user.party
+
             work_effort_party_assignment.save!
 
             # if the party assigned is not watching this task then make them a watcher
@@ -85,6 +88,8 @@ module Api
             work_effort_party_assignment.work_effort_id = params['work_effort.id']
             work_effort_party_assignment.role_type = RoleType.iid('work_resource')
             work_effort_party_assignment.resource_allocation = params[:resource_allocation]
+
+            work_effort_party_assignment.updated_by_party = current_user.party
 
             render :json => {success: work_effort_party_assignment.save!,
                              work_effort_party_assignment: work_effort_party_assignment.to_data_hash}

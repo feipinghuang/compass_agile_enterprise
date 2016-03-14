@@ -46,6 +46,7 @@ class CommunicationEvent < ActiveRecord::Base
   has_and_belongs_to_many :comm_evt_purpose_types, :join_table => 'comm_evt_purposes'
 
   has_tracked_status
+  tracks_created_by_updated_by
 
   def to_label
     "#{short_description}"

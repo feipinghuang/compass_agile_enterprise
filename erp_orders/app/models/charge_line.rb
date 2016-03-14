@@ -16,6 +16,8 @@
 class ChargeLine < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :charged_item, :polymorphic => true
   belongs_to :money, :dependent => :destroy
   belongs_to :charge_type

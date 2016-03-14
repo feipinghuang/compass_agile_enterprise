@@ -29,6 +29,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
 
   has_tracked_status
+  tracks_created_by_updated_by
 
   belongs_to :biz_txn_acct, :polymorphic => true
   belongs_to :biz_txn_acct_type

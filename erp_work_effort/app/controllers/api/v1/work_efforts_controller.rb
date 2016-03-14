@@ -180,6 +180,8 @@ module Api
           work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
 
+        work_effort.created_by_party = current_user.party
+
         work_effort.save!
 
         # set dba_org
@@ -253,6 +255,8 @@ module Api
         if data[:work_effort_type].present?
           work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
+
+        work_effort.updated_by_party = current_user.party
 
         work_effort.save!
 

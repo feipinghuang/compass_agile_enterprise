@@ -18,6 +18,8 @@
 class PaymentApplication < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :financial_txn
   belongs_to :payment_applied_to, :polymorphic => true
   belongs_to :money, :foreign_key => 'applied_money_amount_id', :dependent => :destroy

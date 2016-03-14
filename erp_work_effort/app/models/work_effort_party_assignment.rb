@@ -33,6 +33,7 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
   belongs_to :role_type
 
   has_tracked_status
+  tracks_created_by_updated_by
 
   class << self
 

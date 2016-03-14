@@ -24,6 +24,7 @@ class Invoice < ActiveRecord::Base
   acts_as_document
   can_be_generated
   has_tracked_status
+  tracks_created_by_updated_by
 
   belongs_to :billing_account
   belongs_to :invoice_type
