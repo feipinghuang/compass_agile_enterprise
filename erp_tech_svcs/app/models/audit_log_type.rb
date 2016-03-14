@@ -1,3 +1,22 @@
+#  create_table :audit_log_types do |t|
+#    t.string :description
+#    t.string :error_code
+#    t.string :comments
+#    t.string :internal_identifier
+#    t.string :external_identifier
+#    t.string :external_id_source
+#
+#    # awesome nested set columns
+#    t.integer :parent_id
+#    t.integer :lft
+#    t.integer :rgt
+#
+#    t.timestamps
+#  end
+#
+#  add_index :audit_log_types, :internal_identifier, :name => 'audit_log_types_internal_identifier_idx'
+#  add_index :audit_log_types, :parent_id, :name => 'audit_log_types_parent_id_idx'
+
 class AuditLogType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
   

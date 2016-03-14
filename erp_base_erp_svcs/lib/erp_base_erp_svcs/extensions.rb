@@ -23,4 +23,5 @@ require 'erp_base_erp_svcs/extensions/active_record/can_be_generated'
 require 'erp_base_erp_svcs/extensions/active_record/has_party_roles'
 require 'erp_base_erp_svcs/extensions/active_record/has_contacts'
 require 'erp_base_erp_svcs/extensions/active_record/tracks_created_by_updated_by'
+require 'erp_base_erp_svcs/extensions/active_record/is_tenantable'
 

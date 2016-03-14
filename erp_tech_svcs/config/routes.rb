@@ -18,6 +18,10 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :audit_logs, defaults: { :format => 'json' } do
+        resources :audit_log_items, defaults: { :format => 'json'}
+      end
+
       resources :security_roles, defaults: { :format => 'json' }
       resources :file_assets, defaults: { :format => 'json' }
 
