@@ -82,26 +82,23 @@ namespace :compass_ae do
   end #install
 
   desc "Upgrade you installation of Compass AE"
-  task :upgrade => :environment do
-    begin
-      ActiveRecord::Migrator.prepare_upgrade_migrations
-      RussellEdge::DataMigrator.prepare_upgrade_migrations
+  namespace :upgrade do
 
-      Rake::Task["db:migrate"].reenable
-      Rake::Task["db:migrate"].invoke
+    task :v1 => :environment do
+      puts "Upgrading CompassAE"
 
-      Rake::Task["db:migrate_data"].reenable
-      Rake::Task["db:migrate_data"].invoke
+      # loop through engines looking for upgrade tasks to run
+      Rails.application.config.erp_base_erp_svcs.compass_ae_engines.collect { |e| "#{e.name.split("::").first.underscore}" }.each do |engine|
 
-      ActiveRecord::Migrator.cleanup_upgrade_migrations
-      RussellEdge::DataMigrator.cleanup_upgrade_migrations
-    rescue => ex
-      ActiveRecord::Migrator.cleanup_migrations
-      ActiveRecord::Migrator.cleanup_upgrade_migrations
-      RussellEdge::DataMigrator.cleanup_upgrade_migrations
+        if Rake::Task.task_defined?("#{engine}:upgrade:v1")
+          puts "Upgrading #{engine}"
 
-      puts ex.inspect
-      puts ex.backtrace
-    end #handle exceptions
-  end #upgrade
-end #compass_ae
+          Rake.application["#{engine}:upgrade:v1"].reenable
+          Rake.application["#{engine}:upgrade:v1"].invoke
+        end
+      end
+
+    end
+
+  end # upgrade
+end # compass_ae
