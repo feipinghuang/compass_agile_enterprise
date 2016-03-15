@@ -348,6 +348,7 @@ module ErpBaseErpSvcs
           def update_contact(contact_mechanism_class, contact, contact_mechanism_args)
             set_primary_contact(contact_mechanism_class, contact.contact_mechanism) if contact_mechanism_args[:is_primary] == true
 
+            contact_mechanism_args.delete_if { |k, v| ['client_utc_offset'].include? k.to_s }
             contact.contact_mechanism.update_attributes!(contact_mechanism_args)
 
             contact.contact_mechanism
