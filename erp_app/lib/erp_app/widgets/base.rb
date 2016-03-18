@@ -100,7 +100,8 @@ module ErpApp
             process_opts_for(opts, view)
             js = render_to_string(opts).html_safe
           end
-          return {:json => {:htmlId => update_opts[:id], :html => js, :success => true}}
+          extra_params = update_opts[:extraParams] || {}
+          return {:json => {:htmlId => update_opts[:id], :html => js, :success => true, :extraParams => extra_params}}
         elsif (opts.keys & [:text, :inline, :file]).blank?
           process_opts_for(opts, view)
           return render_to_string(opts).html_safe # ActionView::Template::Text doesn't do that for us.
