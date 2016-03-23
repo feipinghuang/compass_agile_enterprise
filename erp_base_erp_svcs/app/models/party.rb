@@ -80,7 +80,7 @@ class Party < ActiveRecord::Base
   def parties_in_relationships(parties=[], deep=false)
     PartyRelationship.where('party_id_to' => self.id).each do |party_reln|
 
-      parties.push(party_reln.from_party)
+      parties.push(party_reln.from_party) unless parties.include?(party_reln.from_party)
       if deep and !parties.collect(&:id).include? party_reln.from_party.id
         party_reln.from_party.parties_in_relationships(parties, deep)
       else

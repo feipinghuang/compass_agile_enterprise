@@ -57,12 +57,12 @@ class AuditLog < ActiveRecord::Base
 
       # filter by start_at
       unless filters[:start_date].blank?
-        statement = statement.where(audit_log_tbl[:created_at].gteq(Date.parse(filters[:start_date])))
+        statement = statement.where(audit_log_tbl[:created_at].gteq(filters[:start_date]))
       end
 
       # filter by end_at
       unless filters[:end_date].blank?
-        statement = statement.where(audit_log_tbl[:created_at].lteq(Date.parse(filters[:end_date])))
+        statement = statement.where(audit_log_tbl[:created_at].lteq(filters[:end_date]))
       end
 
       statement
