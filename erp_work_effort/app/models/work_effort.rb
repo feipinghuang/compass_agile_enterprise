@@ -235,6 +235,14 @@ class WorkEffort < ActiveRecord::Base
 
   end
 
+  def to_s
+    self.description
+  end
+
+  def to_label
+    self.description
+  end
+
   def dba_organization
     find_party_with_role(RoleType.dba_org)
   end
