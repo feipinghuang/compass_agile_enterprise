@@ -1,5 +1,5 @@
 Ext.define("Compass.ErpApp.Shared.ReportsParams", {
-    extend: "Ext.panel.Panel",
+    extend: "Ext.form.Panel",
     alias: 'widget.reportparamspanel',
     params: [],
     bodyPadding: '0 0 0 10',
@@ -7,10 +7,12 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         type: 'vbox'
     },
     items: [],
-    slice: 2,
+    slice: 3,
+
     initComponent: function () {
         var me = this;
         me.items = [];
+
         me.params.eachSlice(me.slice, function (slice) {
             var container = {
                 xtype: 'container',
@@ -26,12 +28,16 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                 },
                 items: []
             };
+
             Ext.each(slice, function (param) {
+                var defaultValue = param.default_value;
+
                 switch (param.type) {
                     case 'text':
                         container.items.push({
                             xtype: 'textfield',
                             fieldLabel: param.display_name,
+                            allowBlank: (param.required !== true),
                             style: {
                                 marginRight: '20px'
                             },
@@ -40,8 +46,13 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         });
                         break;
                     case 'date':
+                        if (defaultValue == 'current_date') {
+                            defaultValue = new Date();
+                        }
+
                         container.items.push({
                             xtype: 'datefield',
+                            allowBlank: (param.required !== true),
                             labelWidth: 80,
                             style: {
                                 marginRight: '20px'
@@ -49,12 +60,11 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             format: 'm/d/Y',
                             fieldLabel: param.display_name,
                             name: param.name,
-                            value: (!param.default_value ? null : new Date(param.default_value))
+                            value: defaultValue
                         });
                         break;
                     case 'select':
-
-                        var values = (!param.select_values) ? [] : eval(param.select_values);
+                        var values = (!param.options.values) ? [] : eval(param.options.values);
                         var storeData = [];
                         for (var i = 0; i < values.length; i++) {
                             storeData.push([values[i]]);
@@ -67,6 +77,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 
                         container.items.push({
                             xtype: 'combo',
+                            allowBlank: (param.required !== true),
                             queryMode: 'local',
                             multiSelect: true,
                             displayField: 'name',
@@ -74,7 +85,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             fieldLabel: param.display_name,
                             name: param.name,
                             store: arrayStore,
-                            value: (!param.default_value ? null : param.default_value),
+                            value: defaultValue,
                             listeners: {
                                 select: function (combo, records) {
                                     if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
@@ -84,37 +95,76 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             }
                         });
                         break;
-                    case 'data record':
-                        container.items.push({
-                            xtype: 'businessmoduledatarecordfield',
-                            itemId: param.name,
-                            multiSelect: true,
-                            fieldLabel: param.display_name,
-                            extraParams: param.module_iid,
-                            name: param.name,
-                            value: (!param.default_value ? null : param.default_value),
-                            listeners: {
-                                afterrender: function (combo) {
-                                    combo.store.load();
-                                },
-                                select: function (combo, records) {
-                                    if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
-                                        combo.setValue('All');
+                    case 'data_record':
+                        // make sure we have all the options we need
+                        if (param.options && param.options.businessModule) {
+                            container.items.push({
+                                xtype: 'businessmoduledatarecordfield',
+                                itemId: param.name,
+                                multiSelect: true,
+                                allowBlank: (param.required !== true),
+                                fieldLabel: param.display_name,
+                                extraParams: {business_module_iid: param.options.businessModule},
+                                name: param.name,
+                                value: defaultValue,
+                                listeners: {
+                                    afterrender: function (combo) {
+                                        combo.store.load();
+                                    },
+                                    select: function (combo, records) {
+                                        if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
+                                            combo.setValue('All');
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
+
+                        break;
+                    case 'service':
+                        // make sure we have all the options we need
+                        if (param.options.root && param.options.displayField && param.options.valueField) {
+                            container.items.push({
+                                xtype: 'combo',
+                                fieldLabel: param.display_name,
+                                name: param.name,
+                                allowBlank: (param.required !== true),
+                                value: defaultValue,
+                                displayField: param.options.displayField,
+                                valueField: param.options.valueField,
+                                queryMode: 'remote',
+                                store: {
+                                    proxy: {
+                                        type: 'ajax',
+                                        url: param.options.url,
+                                        reader: {
+                                            type: 'json',
+                                            root: param.options.root
+                                        }
+                                    },
+                                    fields: [
+                                        param.options.displayField,
+                                        param.options.valueField
+                                    ],
+                                    autoLoad: true
+                                }
+                            });
+                        }
+
                         break;
                 }
             });
+
             me.items.push(container);
         });
+
         me.callParent();
     },
 
     getReportParams: function () {
         var me = this,
             paramsObj = {};
+
         Ext.Array.each(me.query('field'), function (field) {
             // if field has no value set it to empty string to make the erb parser happy
             if (field.value) {
@@ -144,6 +194,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                 paramsObj[field.name] = '';
             }
         });
+
         return paramsObj;
     },
 

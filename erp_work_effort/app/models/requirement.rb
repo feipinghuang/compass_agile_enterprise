@@ -11,4 +11,6 @@ class Requirement < ActiveRecord::Base
   belongs_to :requirement_type
   belongs_to :requirement_record, :polymorphic => true
 
+  has_file_assets
+
 end

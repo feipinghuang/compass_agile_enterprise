@@ -1,6 +1,6 @@
-Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsSettings", {
+Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.Settings", {
     extend: "Ext.form.Panel",
-    alias: 'widget.railsdbadminreportsettings',
+    alias: 'widget.railsdbadminreportssettings',
     title: 'Report Settings',
     report: null,
     reportId: null,
@@ -14,7 +14,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsSettings", {
             text: 'Save',
             iconCls: 'icon-save',
             handler: function (btn) {
-                var me = btn.up('railsdbadminreportsettings');
+                var me = btn.up('railsdbadminreportssettings');
 
                 if (me.isValid()) {
                     me.getForm().submit({
