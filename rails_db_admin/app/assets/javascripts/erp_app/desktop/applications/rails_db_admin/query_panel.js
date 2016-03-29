@@ -36,73 +36,75 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 text: 'Execute',
                 iconCls: 'icon-playpause',
                 handler: function (button) {
-                    var textarea = me.query('.codemirror')[0];
-                    var sql = textarea.getValue();
-                    var selected_sql = textarea.getSelection();
-                    var cursor_pos = textarea.getCursor().line;
-                    var database = me.module.getDatabase();
+                    if (me.paramPanelIsValid()) {
+                        var textarea = me.query('.codemirror')[0];
+                        var sql = textarea.getValue();
+                        var selected_sql = textarea.getSelection();
+                        var cursor_pos = textarea.getCursor().line;
+                        var database = me.module.getDatabase();
 
-                    var reportParams = null;
-                    if (me.isReportQuery) {
-                        reportParams = me.down('reportparamspanel').getReportParams();
-                    }
+                        var reportParams = null;
+                        if (me.isReportQuery) {
+                            reportParams = me.down('reportparamspanel').getReportParams();
+                        }
 
-                    messageBox = Ext.Msg.wait('Status', 'Executing..');
+                        messageBox = Ext.Msg.wait('Status', 'Executing..');
 
-                    Ext.Ajax.request({
-                        method: 'POST',
-                        url: '/rails_db_admin/erp_app/desktop/queries/execute_query',
-                        timeout: 120000,
-                        params: {
-                            database: database,
-                            cursor_pos: cursor_pos
-                        },
-                        jsonData: {
-                            sql: sql,
-                            selected_sql: selected_sql,
-                            report_params: reportParams
-                        },
-                        success: function (responseObject) {
-                            messageBox.hide();
-                            var response = Ext.decode(responseObject.responseText);
+                        Ext.Ajax.request({
+                            method: 'POST',
+                            url: '/rails_db_admin/erp_app/desktop/queries/execute_query',
+                            timeout: 120000,
+                            params: {
+                                database: database,
+                                cursor_pos: cursor_pos
+                            },
+                            jsonData: {
+                                sql: sql,
+                                selected_sql: selected_sql,
+                                report_params: reportParams
+                            },
+                            success: function (responseObject) {
+                                messageBox.hide();
+                                var response = Ext.decode(responseObject.responseText);
 
-                            if (response.success) {
-                                var columns = response.columns;
-                                var fields = response.fields;
-                                var data = response.data;
+                                if (response.success) {
+                                    var columns = response.columns;
+                                    var fields = response.fields;
+                                    var data = response.data;
 
-                                if (!Ext.isEmpty(me.down('railsdbadmin_readonlytabledatagrid'))) {
-                                    var jsonStore = new Ext.data.JsonStore({
-                                        fields: fields,
-                                        data: data
-                                    });
+                                    if (!Ext.isEmpty(me.down('railsdbadmin_readonlytabledatagrid'))) {
+                                        var jsonStore = new Ext.data.JsonStore({
+                                            fields: fields,
+                                            data: data
+                                        });
 
-                                    me.down('railsdbadmin_readonlytabledatagrid').reconfigure(jsonStore, columns);
+                                        me.down('railsdbadmin_readonlytabledatagrid').reconfigure(jsonStore, columns);
+                                    }
+                                    else {
+                                        var readOnlyDataGrid = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReadOnlyTableDataGrid', {
+                                            layout: 'fit',
+                                            columns: columns,
+                                            fields: fields,
+                                            data: data
+                                        });
+
+                                        var cardPanel = me.down('#resultCardPanel');
+                                        cardPanel.removeAll(true);
+                                        cardPanel.add(readOnlyDataGrid);
+                                        cardPanel.getLayout().setActiveItem(readOnlyDataGrid);
+                                    }
                                 }
                                 else {
-                                    var readOnlyDataGrid = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReadOnlyTableDataGrid', {
-                                        layout: 'fit',
-                                        columns: columns,
-                                        fields: fields,
-                                        data: data
-                                    });
-
-                                    var cardPanel = me.down('#resultCardPanel');
-                                    cardPanel.removeAll(true);
-                                    cardPanel.add(readOnlyDataGrid);
-                                    cardPanel.getLayout().setActiveItem(readOnlyDataGrid);
+                                    Ext.Msg.error("Error", response.message);
                                 }
-                            }
-                            else {
-                                Ext.Msg.error("Error", response.message);
-                            }
 
-                        },
-                        failure: function () {
-                            messageBox.hide();
-                            Ext.Msg.error('Status', 'Error loading grid');
-                        }
-                    });
+                            },
+                            failure: function () {
+                                messageBox.hide();
+                                Ext.Msg.error('Status', 'Error loading grid');
+                            }
+                        });
+                    }
                 }
             },
             {
@@ -164,11 +166,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 text: 'Preview Report',
                 iconCls: 'icon-document',
                 handler: function () {
-                    var reportParamsPanel = me.down('reportparamspanel'),
-                        reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
+                    if (me.paramPanelIsValid()) {
+                        var reportParamsPanel = me.down('reportparamspanel'),
+                            reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
 
-                        reportTitle = "Preview" + " (" + me.report.get('reportName') + ")";
-                    me.openIframeInTab(reportTitle, '/reports/display/' + me.report.get('internalIdentifier') + '?report_params=' + reportParamsWithValues);
+                            reportTitle = "Preview" + " (" + me.report.get('reportName') + ")";
+                        me.openIframeInTab(reportTitle, '/reports/display/' + me.report.get('internalIdentifier') + '?report_params=' + reportParamsWithValues);
+                    }
                 }
             });
 
@@ -176,10 +180,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 text: 'Download CSV',
                 iconCls: 'icon-website-export',
                 handler: function () {
-                    var reportParamsPanel = me.down('reportparamspanel'),
-                        reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
-                        url = '/reports/display/' + me.report.get('internalIdentifier') + '.csv?report_params=' + reportParamsWithValues;
-                    window.open(url);
+                    if (me.paramPanelIsValid()) {
+                        var reportParamsPanel = me.down('reportparamspanel'),
+                            reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
+                            url = '/reports/display/' + me.report.get('internalIdentifier') + '.csv?report_params=' + reportParamsWithValues;
+                        window.open(url);
+                    }
                 }
             });
 
@@ -187,10 +193,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                 text: 'Download PDF',
                 iconCls: 'icon-website-export',
                 handler: function () {
-                    var reportParamsPanel = me.down('reportparamspanel'),
-                        reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
-                        url = '/reports/display/' + me.report.get('internalIdentifier') + '.pdf?report_params=' + reportParamsWithValues;
-                    window.open(url, '_blank');
+                    if (me.paramPanelIsValid()) {
+                        var reportParamsPanel = me.down('reportparamspanel'),
+                            reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
+                            url = '/reports/display/' + me.report.get('internalIdentifier') + '.pdf?report_params=' + reportParamsWithValues;
+                        window.open(url, '_blank');
+                    }
                 }
             });
         }
@@ -376,6 +384,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
             }, 300);
         }
         centerRegion.setActiveTab(item);
-    }
+    },
 
+    paramPanelIsValid: function () {
+        if(this.down('reportparamspanel')){
+            return this.down('reportparamspanel').isValid();
+        }
+        else{
+            return true;
+        }
+    }
 });

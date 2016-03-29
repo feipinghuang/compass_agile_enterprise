@@ -1,5 +1,5 @@
 Ext.define("Compass.ErpApp.Shared.ReportsParams", {
-    extend: "Ext.panel.Panel",
+    extend: "Ext.form.Panel",
     alias: 'widget.reportparamspanel',
     params: [],
     bodyPadding: '0 0 0 10',
@@ -8,6 +8,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
     },
     items: [],
     slice: 3,
+
     initComponent: function () {
         var me = this;
         me.items = [];
@@ -36,6 +37,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         container.items.push({
                             xtype: 'textfield',
                             fieldLabel: param.display_name,
+                            allowBlank: (param.required !== true),
                             style: {
                                 marginRight: '20px'
                             },
@@ -50,6 +52,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 
                         container.items.push({
                             xtype: 'datefield',
+                            allowBlank: (param.required !== true),
                             labelWidth: 80,
                             style: {
                                 marginRight: '20px'
@@ -74,6 +77,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 
                         container.items.push({
                             xtype: 'combo',
+                            allowBlank: (param.required !== true),
                             queryMode: 'local',
                             multiSelect: true,
                             displayField: 'name',
@@ -93,11 +97,12 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         break;
                     case 'data_record':
                         // make sure we have all the options we need
-                        if(param.options && param.options.businessModule){
+                        if (param.options && param.options.businessModule) {
                             container.items.push({
                                 xtype: 'businessmoduledatarecordfield',
                                 itemId: param.name,
                                 multiSelect: true,
+                                allowBlank: (param.required !== true),
                                 fieldLabel: param.display_name,
                                 extraParams: {business_module_iid: param.options.businessModule},
                                 name: param.name,
@@ -118,11 +123,12 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         break;
                     case 'service':
                         // make sure we have all the options we need
-                        if(param.options.root && param.options.displayField && param.options.valueField){
+                        if (param.options.root && param.options.displayField && param.options.valueField) {
                             container.items.push({
                                 xtype: 'combo',
                                 fieldLabel: param.display_name,
                                 name: param.name,
+                                allowBlank: (param.required !== true),
                                 value: defaultValue,
                                 displayField: param.options.displayField,
                                 valueField: param.options.valueField,
@@ -158,6 +164,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
     getReportParams: function () {
         var me = this,
             paramsObj = {};
+
         Ext.Array.each(me.query('field'), function (field) {
             // if field has no value set it to empty string to make the erb parser happy
             if (field.value) {
@@ -187,6 +194,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                 paramsObj[field.name] = '';
             }
         });
+
         return paramsObj;
     },
 

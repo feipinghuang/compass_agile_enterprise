@@ -28,92 +28,110 @@ module RailsDbAdmin
           add_report_view_paths
           build_report_data
 
-          file_attachments = []
+          required_params = @report.meta_data['params'].select { |item| item['required'] === true }
+          missing_params = []
+          required_params.each do |required_param|
+            if @report_params[required_param['name'].to_sym].blank? || @report_params[required_param['name'].to_sym] == 'null'
+              missing_params.push(required_param['display_name'])
+            end
+          end
 
-          if @data[:error]
-            @data[:error]
+          if missing_params.count > 0
+            if missing_params.count == 1
+              "#{missing_params.join(', ')} is required"
+            else
+              "#{missing_params.join(', ')} are required"
+            end
+
           else
-            @formats.each do |format|
-              case format
-                when :html
-                  data = render inline: @report.template,
-                                locals: build_tpl_locals
+            file_attachments = []
 
-                  file_attachments.push({name: "#{@report.name}.html", data: data})
+            if @data[:error]
+              @data[:error]
+            else
+              @formats.each do |format|
+                case format
+                  when :html
+                    data = render inline: @report.template,
+                                  locals: build_tpl_locals
 
-                when :pdf
-                  data = render_to_string({
-                                              template: 'base.html.erb',
-                                              locals: build_tpl_locals
-                                          })
+                    file_attachments.push({name: "#{@report.name}.html", data: data})
 
-                  file_attachments << {
-                      name: "#{@report.name}.pdf",
-                      data: WickedPdf.new.pdf_from_string(data, build_pdf_config)
-                  }
+                  when :pdf
+                    data = render_to_string({
+                                                template: 'base.html.erb',
+                                                locals: build_tpl_locals
+                                            })
 
-                when :csv
-                  business_module = @report_params[:business_module_id].present? ? BusinessModule.where(id: @report_params[:business_module_id]).first : nil
+                    file_attachments << {
+                        name: "#{@report.name}.pdf",
+                        data: WickedPdf.new.pdf_from_string(data, build_pdf_config)
+                    }
 
-                  csv_data = CSV.generate do |csv|
-                    custom_data_columns = []
-                    if @data[:columns].include?('custom_fields')
+                  when :csv
+                    business_module = @report_params[:business_module_id].present? ? BusinessModule.where(id: @report_params[:business_module_id]).first : nil
 
-                      custom_data = JSON.parse(@data[:rows].first['custom_fields'])
+                    csv_data = CSV.generate do |csv|
+                      custom_data_columns = []
+                      if @data[:columns].include?('custom_fields')
 
-                      if business_module
-                        custom_data.each do |field_name, field_value|
-                          custom_data_columns << business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.label
-                        end
-                      else
-                        custom_data_columns = custom_data.keys
-                      end
-
-                      # remove the custom_fields column if it exists
-                      @data[:columns].delete('custom_fields')
-                    end
-
-                    csv << @data[:columns] + custom_data_columns
-
-                    @data[:rows].each do |row|
-                      custom_values = []
-
-                      custom_fields = row.delete('custom_fields')
-
-                      unless custom_fields.blank?
-                        custom_data = JSON.parse(custom_fields)
+                        custom_data = JSON.parse(@data[:rows].first['custom_fields'])
 
                         if business_module
                           custom_data.each do |field_name, field_value|
-                            case business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.field_type.internal_identifier
-                              when 'address'
-                                unless field_value.blank?
-                                  custom_values << "#{field_value['address_line_1']} #{field_value['address_line_2']} #{field_value['city']} #{field_value['state']}, #{field_value['zip']} #{field_value['country']}"
-                                end
-                              else
-                                custom_values << field_value
-                            end
-
+                            custom_data_columns << business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.label
                           end
                         else
-                          custom_values = custom_data.values
+                          custom_data_columns = custom_data.keys
                         end
+
+                        # remove the custom_fields column if it exists
+                        @data[:columns].delete('custom_fields')
                       end
 
-                      csv << row.values + custom_values
-                    end
-                  end
+                      csv << @data[:columns] + custom_data_columns
 
-                  file_attachments << {
-                      name: "#{@report.name}.csv",
-                      data: csv_data
-                  }
-                else
-                  raise 'Invalid Format'
+                      @data[:rows].each do |row|
+                        custom_values = []
+
+                        custom_fields = row.delete('custom_fields')
+
+                        unless custom_fields.blank?
+                          custom_data = JSON.parse(custom_fields)
+
+                          if business_module
+                            custom_data.each do |field_name, field_value|
+                              case business_module.organizer_view.selected_fields.where('field_name = ?', field_name).first.field_type.internal_identifier
+                                when 'address'
+                                  unless field_value.blank?
+                                    custom_values << "#{field_value['address_line_1']} #{field_value['address_line_2']} #{field_value['city']} #{field_value['state']}, #{field_value['zip']} #{field_value['country']}"
+                                  end
+                                else
+                                  custom_values << field_value
+                              end
+
+                            end
+                          else
+                            custom_values = custom_data.values
+                          end
+                        end
+
+                        csv << row.values + custom_values
+                      end
+                    end
+
+                    file_attachments << {
+                        name: "#{@report.name}.csv",
+                        data: csv_data
+                    }
+                  else
+                    raise 'Invalid Format'
+                end
               end
+
+              file_attachments
             end
 
-            file_attachments
           end
 
         rescue StandardError => ex

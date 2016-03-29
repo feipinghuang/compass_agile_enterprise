@@ -36,6 +36,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
                             display_name: values.display_name,
                             name: values.name,
                             type: values.type,
+                            required: (values.required == 'on'),
                             options: options
                         });
                     }
@@ -43,6 +44,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
                         me.report.set('display_name', values.display_name);
                         me.report.set('name', values.name);
                         me.report.set('type', values.type);
+                        me.report.set('required', (values.required == 'on'));
                         me.report.set('default_value', values.default_value);
                         me.report.set('options', options);
                         me.report.commit(false);
@@ -100,6 +102,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
                         regexText: 'Spaces not allowed',
                         name: 'name',
                         allowBlank: false
+                    },
+                    {
+                        xtype: 'checkbox',
+                        fieldLabel: 'Required',
+                        name: 'required'
                     },
                     {
                         xtype: 'combobox',

@@ -15,14 +15,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamsManag
                 items: [
                     {
                         xtype: 'button',
-                        text: 'Save',
-                        iconCls: 'icon-save',
-                        handler: function (btn) {
-                            btn.up('railsdbadminreportsparamsmanager').save();
-                        }
-                    },
-                    {
-                        xtype: 'button',
                         text: 'Add',
                         iconCls: 'icon-add',
                         handler: function () {
@@ -49,6 +41,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamsManag
     buildReportData: function () {
         var me = this;
         return Ext.create('Ext.grid.Panel', {
+            viewConfig: {
+                plugins: {
+                    ptype: 'gridviewdragdrop',
+                    dragGroup: 'optionsGrid',
+                    dropGroup: 'optionsGrid'
+                }
+            },
             columns: [
                 {
                     header: 'Display Name',
@@ -100,7 +99,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamsManag
             padding: '0 0 35 0',
             selType: 'rowmodel',
             store: {
-                fields: ['name', 'type', 'display_name', 'options', 'default_value'],
+                fields: ['name', 'type', 'display_name', 'options', 'default_value', 'required'],
                 data: me.report.get('reportMetaData').params
             }
         });
@@ -123,6 +122,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamsManag
                 name: item.get('name'),
                 type: item.get('type'),
                 options: item.get('options'),
+                required: item.get('required'),
                 default_value: item.get('default_value')
             };
         });
