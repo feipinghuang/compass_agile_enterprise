@@ -347,7 +347,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         var me = this;
 
         me.eastRegion.show();
-        me.eastRegion.down('railsdbadminreportsettings').setReportSettings(report);
+        me.eastRegion.down('railsdbadminreportssettings').setReportSettings(report);
         me.eastRegion.down('railsdbadminreportsparamsmanager').setReportData(report);
         me.eastRegion.down('railsdbadminreportsrolespanel').setReportRoles(report);
     },
@@ -515,7 +515,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 hidden: true,
                 items: [
                     {
-                        xtype: 'railsdbadminreportsettings'
+                        xtype: 'railsdbadminreportssettings'
                     },
                     {
                         xtype: 'railsdbadminreportsparamsmanager'

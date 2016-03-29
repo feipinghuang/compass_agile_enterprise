@@ -1,4 +1,4 @@
-Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsRolesPanel", {
+Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.RolesPanel", {
     extend: "Ext.panel.Panel",
     alias: 'widget.railsdbadminreportsrolespanel',
     title: 'Security/Visibility',

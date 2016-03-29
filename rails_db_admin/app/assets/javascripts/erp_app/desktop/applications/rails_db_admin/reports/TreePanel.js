@@ -1,4 +1,4 @@
-Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", {
+Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.TreePanel", {
     extend: "Compass.ErpApp.Shared.FileManagerTree",
     alias: 'widget.railsdbadmin_reportstreepanel',
 
@@ -323,7 +323,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReportsTreePanel", 
                     }
                     else if (record.data.isReport) {
                         me.loadReport(record);
-                        Ext.getCmp('reports_accordian_panel').down('railsdbadminreportsettings').expand();
+                        Ext.getCmp('reports_accordian_panel').down('railsdbadminreportssettings').expand();
                     }
                 },
                 'handleContextMenu': function (fileManager, node, item, index, e) {

@@ -15,9 +15,6 @@
 //= require ./queries_tree_menu
 //= require ./query_panel
 //= require ./readonly_table_data_grid
-//= require ./reports_tree_panel
-//= require ./reports_params_manager
-//= require ./report_settings.js
-//= require ./reports_roles_panel.js
 //= require ./splash_screen
 //= require ./tables_tree_menu
+//= require_tree ./reports
