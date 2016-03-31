@@ -69,6 +69,12 @@ class ProductType < ActiveRecord::Base
         statement = ProductType
       end
 
+      if filters[:category_id]
+        statement = statement.joins("inner join category_classifications on category_classifications.classification_type = 'ProductType'
+                         and category_classifications.classification_id = product_types.id")
+        statement = statement.where('category_classifications.category_id' => filters[:category_id])
+      end
+
       statement
     end
 
@@ -173,6 +179,19 @@ class ProductType < ActiveRecord::Base
     }
   end
 
+  def to_mobile_hash
+    {
+        id: id,
+        description: description,
+        offer_list_description: find_description_by_view_type('list_description').try(:description),
+        offer_short_description: find_description_by_view_type('short_description').try(:description),
+        offer_long_description: find_description_by_view_type('long_description').try(:description),
+        offer_base_price: get_current_simple_amount_with_currency,
+        img_url: images.first.try(:fully_qualified_url),
+        vendor: find_party_with_role_type(RoleType.iid('vendor')).try(:description)
+    }
+  end
+
   def parent_dba_organizations(dba_orgs=[])
     ProductTypePtyRole.
         where('product_type_id = ?', id).
@@ -191,6 +210,14 @@ class ProductType < ActiveRecord::Base
     end
 
     ProductTypePtyRole.create(party: party, role_type: role_type, product_type: self)
+  end
+
+  def find_party_with_role_type(role_type)
+    if role_type.is_a?(String)
+      role_type = RoleType.iid(role_type)
+    end
+
+    product_type_pty_roles.where(role_type_id: role_type).first.try(:party)
   end
 
   def has_dimensions?

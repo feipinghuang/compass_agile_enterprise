@@ -19,11 +19,14 @@ class User < ActiveRecord::Base
   validates :password, :presence => true, :password_strength => true, :if => :password
 
   #email validations
-  validates :email, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false}
+  validates :email, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false,
+                                                                                  message: "In use by another user"}
+
   validates_format_of :email, :with => /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/
 
   #username validations
-  validates :username, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false}
+  validates :username, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false,
+                                                                                     message: "In use by another user"}
 
   validate :email_cannot_match_username_of_other_user
 

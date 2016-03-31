@@ -32,6 +32,8 @@ class Category < ActiveRecord::Base
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   acts_as_erp_type
 
+  has_file_assets
+
   attr_protected :created_at, :updated_at
 
   validates :internal_identifier, uniqueness: {allow_nil: false}
@@ -110,7 +112,7 @@ class Category < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(
+    data = to_hash(
         only: [
             :id,
             :description,
@@ -120,6 +122,10 @@ class Category < ActiveRecord::Base
         ],
         leaf: leaf?
     )
+
+    data['image_url'] = self.images.first.try(:fully_qualified_url)
+
+    data
   end
 
 end

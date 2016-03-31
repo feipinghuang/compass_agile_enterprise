@@ -27,7 +27,7 @@ module ErpBaseErpSvcs
 							
             if ::ActiveRecord::Base.connection.tables.include?(self.table_name)
               # find each valid value for the domain type (erp_type) in question
-              # we will then create a class method with the name of the internal indentifier
+              # we will then create a class method with the name of the internal identifier
               # for that type
               valid_values = self.all
 							

@@ -17,6 +17,7 @@ module Api
         end
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
+        context = params[:context].blank? ? {} : JSON.parse(params[:context]).symbolize_keys
 
         # hook method to apply any scopes passed via parameters to this api
         product_types = ProductType.apply_filters(query_filter)
@@ -38,9 +39,17 @@ module Api
           product_types = product_types.offset(start).limit(limit)
         end
 
-        render :json => {success: true,
-                         total_count: total_count,
-                         product_types: product_types.collect { |product_type| product_type.to_data_hash }}
+        if context[:view]
+          if context[:view] == 'mobile'
+            render :json => {success: true,
+                             total_count: total_count,
+                             product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
+          end
+        else
+          render :json => {success: true,
+                           total_count: total_count,
+                           product_types: product_types.collect { |product_type| product_type.to_data_hash }}
+        end
 
       end
 

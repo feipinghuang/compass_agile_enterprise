@@ -189,7 +189,9 @@ class Invoice < ActiveRecord::Base
         invoice.generated_by = order_txn
 
         # calculate taxes
-        invoice.calculate_tax(options[:taxation])
+        if options[:taxation]
+          invoice.calculate_tax(options[:taxation])
+        end
 
         invoice
       end

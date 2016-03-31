@@ -167,4 +167,28 @@ class OrderLineItem < ActiveRecord::Base
     order_line_item_dup
   end
 
+  def to_data_hash
+    data = {
+        id: id,
+        sold_price: sold_price,
+        quantity: quantity
+    }
+
+    data[:product_type] = line_item_record.to_data_hash
+
+    data
+  end
+
+  def to_mobile_hash
+    data = {
+        id: id,
+        sold_price: sold_price,
+        quantity: quantity
+    }
+
+    data[:product_type] = line_item_record.to_mobile_hash
+
+    data
+  end
+
 end

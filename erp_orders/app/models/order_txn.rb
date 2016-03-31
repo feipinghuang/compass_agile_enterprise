@@ -51,7 +51,63 @@ class OrderTxn < ActiveRecord::Base
   validates :order_number, {uniqueness: true, :allow_nil => true}
 
   class << self
-    #find a order by given biz txn party role iid and party
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      unless statement
+        statement = OrderTxn
+      end
+
+      if filters[:user_id]
+        statement = statement.joins(biz_txn_event: :biz_txn_party_roles)
+                        .where(biz_txn_party_roles: {party_id: User.find(filters[:user_id]).party}).uniq
+      end
+
+      statement
+    end
+
+    #
+    # scoping helpers
+    #
+
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      role_type_parent = BizTxnPartyRoleType.iid('order_roles')
+      biz_txn_party_role_type = BizTxnPartyRoleType.find_or_create('order_roles_dba_org',
+                                                                   'Doing Business As Organization',
+                                                                   role_type_parent)
+
+      scope_by_party(dba_organization, {role_types: [biz_txn_party_role_type]})
+    end
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      statement = joins(biz_txn_event: :biz_txn_party_roles)
+          .where(biz_txn_party_roles: {party_id: party}).uniq
+
+      if options[:role_types]
+        statement = statement.where(biz_txn_party_roles: {biz_txn_party_role_type_id: options[:role_types]})
+      end
+
+      statement
+    end
+
+    # find a order by given biz txn party role iid and party
+    #
     def find_by_party_role(biz_txn_party_role_type_iid, party)
       BizTxnPartyRole.where('party_id = ? and biz_txn_party_role_type_id = ?', party.id, BizTxnPartyRoleType.find_by_internal_identifier(biz_txn_party_role_type_iid).id).all.collect { |item| item.biz_txn_event.biz_txn_record }
     end
@@ -631,5 +687,19 @@ class OrderTxn < ActiveRecord::Base
 
   def to_label
     self.order_number
+  end
+
+  def to_data_hash
+    {
+        id: id,
+        description: description,
+        order_number: order_number,
+        amount: total_amount,
+        status: current_status_application.try(:tracked_status_type).try(:description)
+    }
+  end
+
+  def to_mobile_hash
+    to_data_hash
   end
 end
