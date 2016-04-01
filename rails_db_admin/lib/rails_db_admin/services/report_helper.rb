@@ -28,13 +28,7 @@ module RailsDbAdmin
           add_report_view_paths
           build_report_data
 
-          required_params = @report.meta_data['params'].select { |item| item['required'] === true }
-          missing_params = []
-          required_params.each do |required_param|
-            if @report_params[required_param['name'].to_sym].blank? || @report_params[required_param['name'].to_sym] == 'null'
-              missing_params.push(required_param['display_name'])
-            end
-          end
+          missing_params = check_required_params
 
           if missing_params.count > 0
             if missing_params.count == 1
@@ -221,6 +215,22 @@ module RailsDbAdmin
                                  columns: @data[:columns],
                                  rows: @data[:rows]
                              })
+      end
+
+      def check_required_params
+        missing_params = []
+
+        if @report.meta_data['params']
+          required_params = @report.meta_data['params'].select { |item| item['required'] === true }
+
+          required_params.each do |required_param|
+            if @report_params[required_param['name'].to_sym].blank? || @report_params[required_param['name'].to_sym] == 'null'
+              missing_params.push(required_param['display_name'])
+            end
+          end
+        end
+
+        missing_params
       end
 
     end # ReportHelper
