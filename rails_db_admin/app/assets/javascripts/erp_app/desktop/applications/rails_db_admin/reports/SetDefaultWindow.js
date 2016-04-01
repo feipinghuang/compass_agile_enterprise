@@ -132,7 +132,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
             store: Ext.create('Ext.data.Store', {
                 fields: ['display', 'value'],
                 data: [
-                    {display: 'Current Date', value: 'current_date'}
+                    {display: 'Current Day', value: 'current_date'},
+                    {display: 'Previous Day', value: 'previous_date'},
+                    {display: 'Next Day', value: 'next_date'}
                 ]
             }),
             queryMode: 'local',
