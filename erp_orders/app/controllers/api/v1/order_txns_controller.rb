@@ -31,6 +31,8 @@ module Api
 
         if sort and dir
           order_txns = order_txns.order("#{sort} #{dir}")
+        else
+          order_txns = order_txns.order("id desc")
         end
 
         total_count = order_txns.count
