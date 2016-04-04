@@ -136,6 +136,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                                 name: param.name,
                                 allowBlank: (param.required !== true),
                                 value: defaultValue,
+                                multiSelect: true,
                                 displayField: param.options.displayField,
                                 valueField: param.options.valueField,
                                 queryMode: 'remote',
