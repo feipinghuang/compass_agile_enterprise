@@ -32,4 +32,5 @@ Gem::Specification.new do |s|
   s.add_dependency('rubyzip','0.9.9')
   s.add_dependency('acts-as-taggable-on','2.3.3')
   s.add_dependency('kramdown','1.0.1')
+  s.add_dependency('html_truncator', '0.2')
 end

@@ -12,6 +12,7 @@ require "knitkit/syntax_validator"
 require "knitkit/config"
 require "knitkit/engine"
 require 'kramdown'
+require 'html_truncator'
 
 module Knitkit
 end
