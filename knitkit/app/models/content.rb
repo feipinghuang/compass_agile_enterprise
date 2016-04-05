@@ -21,7 +21,7 @@ class Content < ActiveRecord::Base
       if attributes['excerpt_html'].blank?
         HTML_Truncator.truncate(attributes['body_html'], 25)
       else
-        attributes['excerpt_html'].blank?
+        attributes['excerpt_html']
       end
     end
   end
