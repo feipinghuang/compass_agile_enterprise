@@ -35,9 +35,15 @@ Ext.define('SiteContentsModel', {
         'parentItemId',
         'tag_list',
         // if an article is part of a blog then you can edit the excerpt
-        'canEditExcerpt',
-        {name: 'createdAt', mapping: 'created_at', type: 'date'},
-        {name: 'updatedAt', mapping: 'updated_at', type: 'date'}
+        'canEditExcerpt', {
+            name: 'createdAt',
+            mapping: 'created_at',
+            type: 'date'
+        }, {
+            name: 'updatedAt',
+            mapping: 'updated_at',
+            type: 'date'
+        }
     ]
 });
 
@@ -57,7 +63,7 @@ var siteContentsStore = Ext.create('Ext.data.TreeStore', {
         expanded: true
     },
     listeners: {
-        beforeexpand: function (node, eOpts) {
+        beforeexpand: function(node, eOpts) {
             if (!node.isRoot()) {
                 var tree = node.getOwnerTree();
                 tree.getStore().getProxy().setExtraParam('record_type', node.get('recordType'));
@@ -77,7 +83,7 @@ var viewConfigItems = {
     markDirty: false,
     plugins: pluginItems,
     listeners: {
-        'beforedrop': function (dom, data, overModel, dropPosition, dropHandlers, options) {
+        'beforedrop': function(dom, data, overModel, dropPosition, dropHandlers, options) {
             var record = data.records.first();
 
             if (record.get('objectType') == 'Article') {
@@ -86,7 +92,7 @@ var viewConfigItems = {
                 }
             }
         },
-        'drop': function (dom, data, overModel, dropPosition, options) {
+        'drop': function(dom, data, overModel, dropPosition, options) {
             var positionArray = [],
                 record = data.records.first(),
                 result = true,
@@ -95,66 +101,57 @@ var viewConfigItems = {
             if (record.get('isSection') || record.get('isDocument')) {
                 // if the record is modified and the parentId has changed we need to change
                 // the section parent
+                var parentNode = null;
                 
                 if (dropPosition == 'append') {
-                    Ext.Ajax.request({
-                        url: '/knitkit/erp_app/desktop/position/change_section_parent',
-                        method: 'PUT',
-                        params: {
-                            section_id: record.get('recordId'),
-                            parent_id: overModel.get('recordId')
-                        },
-                        success: function (response) {
-                            var obj = Ext.decode(response.responseText);
-                            if (!obj.success) {
-                                Ext.Msg.alert("Error", obj.message);
-                                result = false;
-                            }
-                        },
-                        failure: function (response) {
-                            Ext.Msg.alert('Error', 'Error saving positions.');
-                            result = false;
-                        }
-                    });
-                }
-                else {
-                    overModel.parentNode.eachChild(function (node) {
-                        if (node.get('isSection') || record.get('isDocument')) {
-                            positionArray.push({
-                                id: node.get('recordId'),
-                                position: counter
-                            });
-                            counter++;
-                        }
+                    positionArray.push({
+                        id: record.get('recordId'),
+                        parent_id: overModel.get('recordId'),
+                        position: 0
                     });
 
-                    Ext.Ajax.request({
-                        url: '/knitkit/erp_app/desktop/position/update_section_position',
-                        method: 'PUT',
-                        jsonData: {
-                            position_array: positionArray
-                        },
-                        success: function (response) {
-                            var obj = Ext.decode(response.responseText);
-                            if (!obj.success) {
-                                Ext.Msg.alert("Error", obj.message);
-                                result = false;
-                            }
-                        },
-                        failure: function (response) {
-                            Ext.Msg.alert('Error', 'Error saving positions.');
+                    parentNode = overModel;
+                } else {
+                    parentNode = overModel.parentNode;
+                }
+
+                parentNode.eachChild(function(node) {
+                    if (node.get('isSection') || record.get('isDocument')) {
+                        positionArray.push({
+                            id: node.get('recordId'),
+                            parent_id: node.parentNode.get('recordId'),
+                            position: counter
+                        });
+
+                        counter++;
+                    }
+                });
+
+                Ext.Ajax.request({
+                    url: '/knitkit/erp_app/desktop/position/update_section_position',
+                    method: 'PUT',
+                    jsonData: {
+                        position_array: positionArray
+                    },
+                    success: function(response) {
+                        var obj = Ext.decode(response.responseText);
+                        if (!obj.success) {
+                            Ext.Msg.alert("Error", obj.message);
                             result = false;
                         }
-                    });
-                }
+                    },
+                    failure: function(response) {
+                        Ext.Msg.alert('Error', 'Error saving positions.');
+                        result = false;
+                    }
+                });
             }
             // this is an article
             else {
                 if (record.modified && record.modified.parentId) {
                     result = false;
-                }
-                else {
-                    overModel.parentNode.eachChild(function (node) {
+                } else {
+                    overModel.parentNode.eachChild(function(node) {
                         positionArray.push({
                             id: node.get('recordId'),
                             position: counter
@@ -171,14 +168,14 @@ var viewConfigItems = {
                         params: {
                             section_id: record.parentNode.get('recordId')
                         },
-                        success: function (response) {
+                        success: function(response) {
                             var obj = Ext.decode(response.responseText);
                             if (!obj.success) {
                                 Ext.Msg.alert("Error", obj.message);
                                 result = false;
                             }
                         },
-                        failure: function (response) {
+                        failure: function(response) {
                             Ext.Msg.alert('Error', 'Error saving positions.');
                             result = false;
                         }
@@ -203,7 +200,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
     store: siteContentsStore,
     enableDD: true,
 
-    editSectionLayout: function (sectionName, sectionId, websiteId) {
+    editSectionLayout: function(sectionName, sectionId, websiteId) {
         var self = this;
 
         Ext.Ajax.request({
@@ -212,40 +209,37 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
             params: {
                 id: sectionId
             },
-            success: function (response) {
+            success: function(response) {
                 self.initialConfig['centerRegion'].editSectionLayout(
                     sectionName,
                     websiteId,
                     sectionId,
-                    response.responseText,
-                    [
-                        {
-                            text: 'Insert Content Area',
-                            handler: function (btn) {
-                                var codeMirror = btn.findParentByType('codemirror');
-                                Ext.MessageBox.prompt('New File', 'Please enter content area name:', function (btn, text) {
-                                    if (btn == 'ok') {
-                                        codeMirror.insertContent('<%=render_content_area(:' + text + ')%>');
-                                    }
+                    response.responseText, [{
+                        text: 'Insert Content Area',
+                        handler: function(btn) {
+                            var codeMirror = btn.findParentByType('codemirror');
+                            Ext.MessageBox.prompt('New File', 'Please enter content area name:', function(btn, text) {
+                                if (btn == 'ok') {
+                                    codeMirror.insertContent('<%=render_content_area(:' + text + ')%>');
+                                }
 
-                                });
-                            }
+                            });
                         }
-                    ]);
+                    }]);
             },
-            failure: function (response) {
+            failure: function(response) {
                 Ext.Msg.alert('Error', 'Error loading section layout.');
             }
         });
     },
 
-    clearWebsite: function () {
+    clearWebsite: function() {
         var store = this.getStore();
         store.getProxy().extraParams = {};
         store.load();
     },
 
-    selectWebsite: function (website) {
+    selectWebsite: function(website) {
         var store = this.getStore();
         store.getProxy().extraParams = {
             website_id: website.id
@@ -254,14 +248,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
     },
 
     listeners: {
-        'itemclick': function (view, record, htmlItem, index, e) {
+        itemclick: function(view, record, htmlItem, index, e) {
+            var url = null;
             var self = this;
             e.stopEvent();
+
             if (record.data['isSection']) {
                 self.initialConfig['centerRegion'].openIframeInTab(record.data.text, record.data['url']);
-            }
-            else if (record.data['objectType'] === "Article") {
-                var url = '/knitkit/erp_app/desktop/articles/show/' + record.get('recordId');
+            } else if (record.data['objectType'] === "Article") {
+                url = '/knitkit/erp_app/desktop/articles/show/' + record.get('recordId');
 
                 Ext.Ajax.request({
                     url: url,
@@ -270,36 +265,33 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                         id: record.get('recordId')
                     },
                     timeout: 90000,
-                    success: function (response) {
+                    success: function(response) {
                         var article = Ext.decode(response.responseText);
                         self.initialConfig['centerRegion'].editContent(record.data.text, record.get('recordId'), article.body_html, record.data['siteId'], 'article');
                     },
-                    failure: function(){
+                    failure: function() {
                         Ext.Msg.alert('Error', 'Could not load content');
                     }
                 });
-            }
-            else if (record.data['isDocument']) {
-                var url = '/knitkit/erp_app/desktop/online_document_sections/' + record.get('recordId') + '/content/';
+            } else if (record.data['isDocument']) {
+                url = '/knitkit/erp_app/desktop/online_document_sections/' + record.get('recordId') + '/content/';
                 var contentInfo = record.data['contentInfo'];
 
                 Ext.Ajax.request({
                     url: url,
                     method: 'GET',
                     timeout: 90000,
-                    success: function (response) {
+                    success: function(response) {
                         var result = Ext.decode(response.responseText);
-                        if(result.success){
+                        if (result.success) {
                             if (record.data['useMarkdown']) {
                                 self.initialConfig['centerRegion'].editDocumentationMarkdown(
                                     contentInfo.title,
                                     record.data['siteId'],
                                     contentInfo.id,
-                                    result.content,
-                                    []
+                                    result.content, []
                                 );
-                            }
-                            else{
+                            } else {
                                 self.initialConfig['centerRegion'].editContent(
                                     contentInfo.title,
                                     contentInfo.id,
@@ -308,18 +300,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                                     'article'
                                 );
                             }
-                        }
-                        else{
+                        } else {
                             Ext.Msg.alert('Error', 'Could not load content');
                         }
                     },
-                    failure: function(){
+                    failure: function() {
                         Ext.Msg.alert('Error', 'Could not load content');
                     }
                 });
             }
         },
-        'itemcontextmenu': function (view, record, htmlItem, index, e) {
+        itemcontextmenu: function(view, record, htmlItem, index, e) {
             e.stopEvent();
             var items = [];
 
@@ -328,7 +319,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                     text: 'View In Web Navigator',
                     iconCls: 'icon-globe',
                     listeners: {
-                        'click': function () {
+                        'click': function() {
                             var webNavigator = window.compassDesktop.getModule('web-navigator-win');
                             webNavigator.createWindow(record.data['url']);
                         }
@@ -359,24 +350,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
 
             if (record.data['isSection']) {
                 items = Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions(self, items, record);
-            }
-            else if (record.data['isWebsite']) {
+            } else if (record.data['isWebsite']) {
                 items = Compass.ErpApp.Desktop.Applications.Knitkit.addWebsiteOptions(self, items, record);
             }
 
-            if (items.length != 0) {
+            if (items.length !== 0) {
                 var contextMenu = Ext.create("Ext.menu.Menu", {
                     items: items
                 });
                 contextMenu.showAt(e.xy);
             }
         }
-    },
-
-    initComponent: function (config) {
-        config = Ext.apply({
-        }, config);
-
-        this.callParent([config]);
     }
 });

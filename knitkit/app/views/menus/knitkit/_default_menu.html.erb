@@ -1,18 +1,18 @@
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
   <ul class="nav navbar-nav">
-   <% selected_menu_item = nil
+   <%- selected_menu_item = nil
       menu_items.each do |menu_item| 
         if menu_item.allow_access?(current_user, :view)
-        if menu_item_selected(menu_item)
-          selected_menu_item = menu_item %>
-        <li class="selected">
-        <% else %>
-        <li>
-        <% end %>
-        <a href="<%= menu_item.path %>"><%= menu_item.title %></a>
-      </li>
-    <% end %>
-  <% end %>
+          if menu_item_selected(menu_item)
+            selected_menu_item = menu_item %>
+              <li class="active">
+      <%- else %>
+              <li>
+      <%- end %>
+                <a href="<%= menu_item.path %>"><%= menu_item.title %></a>
+              </li>
+    <%- end %>
+  <%- end %>
   </ul>
 </div>
 
