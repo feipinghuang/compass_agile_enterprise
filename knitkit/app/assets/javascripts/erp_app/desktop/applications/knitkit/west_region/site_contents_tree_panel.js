@@ -95,13 +95,14 @@ var viewConfigItems = {
             if (record.get('isSection') || record.get('isDocument')) {
                 // if the record is modified and the parentId has changed we need to change
                 // the section parent
-                if (record.modified && record.modified.parentId) {
+                
+                if (dropPosition == 'append') {
                     Ext.Ajax.request({
                         url: '/knitkit/erp_app/desktop/position/change_section_parent',
                         method: 'PUT',
                         params: {
                             section_id: record.get('recordId'),
-                            parent_id: record.parentNode.get('recordId')
+                            parent_id: overModel.get('recordId')
                         },
                         success: function (response) {
                             var obj = Ext.decode(response.responseText);

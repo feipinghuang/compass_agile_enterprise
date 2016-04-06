@@ -7,7 +7,7 @@
         <% @website_sections.each do |section|
           if section.display_in_menu?
             if section.allow_access?(current_user, :view)
-              if (!@website_section.nil? && section.id == @website_section.id) or (!selected_section_parent.nil? and selected_section_parent.id == section.id) %>
+              if menu_active?(section, selected_section_parent) %>
                         <li class="active">
                     <%
                        selected_section_parent = section
