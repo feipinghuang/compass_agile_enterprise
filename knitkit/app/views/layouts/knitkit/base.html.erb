@@ -56,7 +56,7 @@
       :action => :login_header,
       :params => {:login_url => '/login', :signup_url => '/sign-up'} %>
 
-      <div class="container">
+      <div class="container-fluid">
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <%= content_for?(:menu) ? yield(:menu) : render_menu(@contents) %>
