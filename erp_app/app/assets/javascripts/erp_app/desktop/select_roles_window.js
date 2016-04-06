@@ -176,9 +176,10 @@ Ext.define("Compass.ErpApp.Desktop.SelectRolesWindow", {
             title: 'Secure',
             iconCls: 'icon-document_lock',
             width: 250,
-            height: 600,
+            height: 400,
             buttonAlign: 'center',
             plain: true,
+            autoScroll: true,
             items: panel,
             buttons: [
                 {
