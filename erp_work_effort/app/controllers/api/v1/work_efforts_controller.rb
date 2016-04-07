@@ -171,9 +171,9 @@ module Api
         if data[:sequence].present?
           work_effort.sequence = data[:sequence]
         end
-
+      
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
         end
 
         if data[:work_effort_type].present?
@@ -249,7 +249,7 @@ module Api
         end
 
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
         end
 
         if data[:work_effort_type].present?
