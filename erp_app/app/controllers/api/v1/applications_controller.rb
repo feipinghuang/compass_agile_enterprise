@@ -62,7 +62,7 @@ module Api
 
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render json: {success: false, message: 'Error updating Work Effort'}
+          render json: {success: false, message: 'Error updating Application'}
         end
       end
 
