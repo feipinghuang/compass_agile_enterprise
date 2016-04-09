@@ -89,6 +89,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamsManag
                     handler: function(grid, rowIndex, colIndex) {
                         var record = grid.getStore().getAt(rowIndex);
                         grid.getStore().remove(record);
+
+                        me.save();
                     }
                 }]
             }],
