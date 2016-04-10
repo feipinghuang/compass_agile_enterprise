@@ -172,7 +172,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
     },
 
     /**
-     * Builds applicationmanagementmultioptions (grid panel)
+     * Builds sharedmultioptions (grid panel)
      * @param container (Object) Container component
      * @param report (Object) The current report being edited
      */
@@ -193,9 +193,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
         }, {
             xtype: 'container',
             layout: 'form',
+            autoScroll: true,
             items: [{
-                xtype: 'applicationmanagementmultioptions',
+                xtype: 'sharedmultioptions',
                 header: false,
+                height: 300,
                 name: 'options_values',
                 field: {
                     xtype: 'combo',
