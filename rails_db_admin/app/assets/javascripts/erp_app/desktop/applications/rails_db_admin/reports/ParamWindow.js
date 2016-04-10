@@ -197,7 +197,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
             items: [{
                 xtype: 'sharedmultioptions',
                 header: false,
-                height: 300,
+                height: 250,
                 name: 'options_values',
                 field: {
                     xtype: 'combo',
