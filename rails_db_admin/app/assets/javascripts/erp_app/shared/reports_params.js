@@ -186,7 +186,11 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             var allValues = Ext.Array.remove(field.store.collect(fieldName), "All");
                             paramsObj[field.name] = allValues.join(',');
                         } else {
-                            paramsObj[field.name] = (field.value.length == 0) ? 'null' : field.value.join(',');
+                            if (field.value.constructor === Array) {
+                                paramsObj[field.name] = (field.value.length === 0) ? 'null' : field.value.join(',');
+                            } else {
+                                paramsObj[field.name] = field.value;
+                            }
                         }
                         break;
                     case 'datefield':
