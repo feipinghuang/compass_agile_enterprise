@@ -3,8 +3,8 @@ module ErpApp
     layout :nil
 
     def index
-      if session[:return_to_url]
-        if session[:return_to_url].include? 'erp_app/desktop'
+      if session[:app_container]
+        if session[:app_container] == :desktop
           @app_container = '/erp_app/desktop/'
         else
           @app_container = '/erp_app/organizer/'
