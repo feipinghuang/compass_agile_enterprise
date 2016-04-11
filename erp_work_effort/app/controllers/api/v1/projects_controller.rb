@@ -13,6 +13,10 @@ module Api
           projects = Project.scope_by_dba_organization(current_user.party.dba_organization)
         end
 
+        if params[:query]
+          projects = projects.where(projects.arel_table[:description].matches("%#{params[:query]}%"))
+        end
+
         render :json => {success: true, projects: projects.all.map { |project| project.to_data_hash }}
       end
 

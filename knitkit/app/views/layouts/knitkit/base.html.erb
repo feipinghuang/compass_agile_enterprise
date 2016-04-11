@@ -32,54 +32,55 @@
 </head>
 <body>
 
-<div id="wrap">
+  <div id="wrap">
 
-  <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="navbar-header pull-left">
-      <a class="navbar-brand" href="/home"><img src="/assets/knitkit/logo.png" alt="Logo"/></a>
-    </div>
-
-    <div class="navbar-header pull-right">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-    </div>
-
-    <%= render_widget :search,
-                      :action => :index,
-                      :params => {:redirect_results => true, :results_permalink => '/search-results'} %>
-
-
-    <%= render_widget :login,
-                      :action => :login_header,
-                      :params => {:login_url => '/login', :signup_url => '/sign-up'} %>
-
-    <div class="container">
-      <div class="navbar-collapse collapse">
-        <ul class="nav navbar-nav">
-          <%= content_for?(:menu) ? yield(:menu) : render_menu(@contents) %>
-        </ul>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="navbar-header pull-left">
+        <a class="navbar-brand" href="/home"><img src="/assets/knitkit/logo.png" alt="Logo"/></a>
       </div>
+
+      <div class="navbar-header pull-right">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+
+      <%= render_widget :search,
+      :action => :index,
+      :params => {:redirect_results => true, :results_permalink => '/search-results'} %>
+
+
+      <%= render_widget :login,
+      :action => :login_header,
+      :params => {:login_url => '/login', :signup_url => '/sign-up'} %>
+
+      <div class="container-fluid">
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <%= content_for?(:menu) ? yield(:menu) : render_menu(@contents) %>
+          </ul>
+        </div>
+      </div>
+
+    </nav>
+
+    <div class="content-area">
+      <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>  
+
+      <%= yield %>
     </div>
 
-  </nav>
-
-  <!-- Wrap all page content here -->
-
-  <div class="content-area">
-    <%= yield %>
   </div>
 
-</div>
+  <div class="footer">
+    <%= content_for?(:footer) ? yield(:footer) : (render :partial => 'shared/knitkit/footer') %>
+    <%= yield :foot %>
+  </div>
+  <%= set_authenticity_token %>
+  <%= set_session_timeout %>
+  <%= setup_inline_editing %>
 
-<div class="footer">
-  <%= content_for?(:footer) ? yield(:footer) : (render :partial => 'shared/knitkit/footer') %>
-  <%= yield :foot %>
-</div>
-<%= set_authenticity_token %>
-<%= set_session_timeout %>
-<%= setup_inline_editing %>
 </body>
 </html>

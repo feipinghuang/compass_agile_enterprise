@@ -9,11 +9,11 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
     items: [],
     slice: 3,
 
-    initComponent: function () {
+    initComponent: function() {
         var me = this;
         me.items = [];
 
-        me.params.eachSlice(me.slice, function (slice) {
+        me.params.eachSlice(me.slice, function(slice) {
             var container = {
                 xtype: 'container',
                 layout: 'hbox',
@@ -29,7 +29,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                 items: []
             };
 
-            Ext.each(slice, function (param) {
+            Ext.each(slice, function(param) {
                 var defaultValue = param.default_value;
 
                 switch (param.type) {
@@ -48,11 +48,9 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                     case 'date':
                         if (defaultValue == 'current_date') {
                             defaultValue = new Date();
-                        }
-                        else if(defaultValue == 'previous_date'){
+                        } else if (defaultValue == 'previous_date') {
                             defaultValue = Ext.Date.subtract(new Date(), Ext.Date.DAY, 1);
-                        }
-                        else if(defaultValue == 'next_date'){
+                        } else if (defaultValue == 'next_date') {
                             defaultValue = Ext.Date.add(new Date(), Ext.Date.DAY, 1);
                         }
 
@@ -85,7 +83,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             xtype: 'combo',
                             allowBlank: (param.required !== true),
                             queryMode: 'local',
-                            multiSelect: true,
+                            multiSelect: (param.options.multiSelect == 'on'),
                             displayField: 'name',
                             valueField: 'name',
                             fieldLabel: param.display_name,
@@ -93,7 +91,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             store: arrayStore,
                             value: defaultValue,
                             listeners: {
-                                select: function (combo, records) {
+                                select: function(combo, records) {
                                     if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
                                         combo.setValue('All');
                                     }
@@ -107,17 +105,19 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             container.items.push({
                                 xtype: 'businessmoduledatarecordfield',
                                 itemId: param.name,
-                                multiSelect: true,
+                                multiSelect: (param.options.multiSelect == 'on'),
                                 allowBlank: (param.required !== true),
                                 fieldLabel: param.display_name,
-                                extraParams: {business_module_iid: param.options.businessModule},
+                                extraParams: {
+                                    business_module_iid: param.options.businessModule
+                                },
                                 name: param.name,
                                 value: defaultValue,
                                 listeners: {
-                                    afterrender: function (combo) {
+                                    afterrender: function(combo) {
                                         combo.store.load();
                                     },
-                                    select: function (combo, records) {
+                                    select: function(combo, records) {
                                         if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
                                             combo.setValue('All');
                                         }
@@ -136,7 +136,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                                 name: param.name,
                                 allowBlank: (param.required !== true),
                                 value: defaultValue,
-                                multiSelect: true,
+                                multiSelect: (param.options.multiSelect == 'on'),
                                 displayField: param.options.displayField,
                                 valueField: param.options.valueField,
                                 queryMode: 'remote',
@@ -168,11 +168,11 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         me.callParent();
     },
 
-    getReportParams: function () {
+    getReportParams: function() {
         var me = this,
             paramsObj = {};
 
-        Ext.Array.each(me.query('field'), function (field) {
+        Ext.Array.each(me.query('field'), function(field) {
             // if field has no value set it to empty string to make the erb parser happy
             if (field.value) {
                 switch (field.xtype) {
@@ -185,9 +185,12 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         if (Ext.Array.contains(field.value, "All")) {
                             var allValues = Ext.Array.remove(field.store.collect(fieldName), "All");
                             paramsObj[field.name] = allValues.join(',');
-                        }
-                        else {
-                            paramsObj[field.name] = (field.value.length == 0) ? 'null' : field.value.join(',');
+                        } else {
+                            if (field.value.constructor === Array) {
+                                paramsObj[field.name] = (field.value.length === 0) ? 'null' : field.value.join(',');
+                            } else {
+                                paramsObj[field.name] = field.value;
+                            }
                         }
                         break;
                     case 'datefield':
@@ -196,8 +199,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         paramsObj[field.name] = date.toPgDateString();
                         break;
                 }
-            }
-            else {
+            } else {
                 paramsObj[field.name] = '';
             }
         });
@@ -205,9 +207,9 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         return paramsObj;
     },
 
-    clearReportParams: function () {
+    clearReportParams: function() {
         var me = this;
-        Ext.each(me.query('field'), function (field) {
+        Ext.each(me.query('field'), function(field) {
             field.setValue('');
         });
     }

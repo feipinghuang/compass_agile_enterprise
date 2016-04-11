@@ -1,0 +1,30 @@
+<% if @website_section.children_in_menu.count > 0 || !@website_section.parent.nil? %>
+
+<!-- Sidebar -->
+<div id="sidebar-wrapper" class="expanded">
+	<ul class="sidebar-nav">
+		<%- section = @website_section.parent ? @website_section.parent : @website_section %>
+
+		<%- section.children_in_menu.each do |child_section|
+			if child_section.allow_access?(current_user, :view)
+              if menu_active?(child_section, @website_section) %>
+              	<li class="active">
+              <%- else  %>
+              	<li>
+              <%- end %>
+
+                <a href="<%= child_section.path %>"><%= child_section.title %></a>
+			  </li>
+
+            <%- end %>  
+		<%- end %>
+
+	</ul>
+</div>
+
+<script type='text/javascript'>
+  $('.content-area').addClass('side-bar-content-wrapper');
+</script>
+
+<% end %>
+

@@ -19,10 +19,10 @@ module Widgets
         begin
           ActiveRecord::Base.transaction do
             @user = User.new(
-                :email => @email,
-                :username => params[:username],
-                :password => params[:password],
-                :password_confirmation => params[:password_confirmation]
+              :email => @email,
+              :username => params[:username],
+              :password => params[:password],
+              :password_confirmation => params[:password_confirmation]
             )
             @user.password_validator = {:regex => password_config_option.value, :error_message => password_config_option.comment}
             #set this to tell activation where to redirect_to for login and temp password
@@ -59,12 +59,14 @@ module Widgets
               end
 
               # associate the new party to the dba_organization of the current website
-              relationship_type = RelationshipType.find_or_create(RoleType.iid('dba_org'), RoleType.iid('customer'))
               @dba_party = @website.website_party_roles.where('role_type_id' => RoleType.iid('dba_org')).first.party
-              party.create_relationship(relationship_type.description,
-                                        @dba_party.id,
-                                        relationship_type)
-              party.save
+              party.party_roles.collect(&:role_type).each do |role_type|
+                relationship_type = RelationshipType.find_or_create(RoleType.iid('dba_org'), role_type)
+
+                party.create_relationship(relationship_type.description,
+                                          @dba_party.id,
+                                          relationship_type)
+              end
 
               after_registration
 
@@ -81,11 +83,11 @@ module Widgets
       end
 
       def after_registration
-        #override in your code to do special registration logic
+        # override in your code to do special registration logic
       end
 
-      #should not be modified
-      #modify at your own risk
+      # should not be modified
+      # modify at your own risk
       def locate
         File.dirname(__FILE__)
       end
@@ -113,4 +115,3 @@ module Widgets
     end # Base
   end # Signup
 end # Widgets
-
