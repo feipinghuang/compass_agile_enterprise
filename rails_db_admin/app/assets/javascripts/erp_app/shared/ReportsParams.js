@@ -53,7 +53,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             defaultDate = new Date(today.getFullYear(), today.getMonth(), (today.getDate() - today.getDay() + 1));
 
                             if (defaultValue == 'previous') {
-                                defaultDate = Ext.Date.substract(defaultDate, Ext.Date.DAY, 7);
+                                defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.DAY, 7);
                             } else if (defaultValue == 'next') {
                                 defaultDate = Ext.Date.add(defaultDate, Ext.Date.DAY, 7);
                             }
@@ -76,7 +76,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                             defaultDate = new Date(today.getFullYear(), today.getMonth(), 1);
 
                             if (defaultValue == 'previous') {
-                                defaultDate = Ext.Date.substract(defaultDate, Ext.Date.MONTH, 1);
+                                defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.MONTH, 1);
                             } else if (defaultValue == 'next') {
                                 defaultDate = Ext.Date.add(defaultDate, Ext.Date.MONTH, 1);
                             }
