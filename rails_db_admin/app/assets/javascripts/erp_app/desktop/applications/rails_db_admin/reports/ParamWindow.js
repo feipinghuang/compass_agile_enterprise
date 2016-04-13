@@ -154,6 +154,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
                 optionsContainer.show();
                 break;
             case 'date':
+                optionsContainer.add(me.buildOptionsDateField(optionsContainer, me.report));
                 optionsContainer.show();
                 break;
             case 'select':
@@ -169,6 +170,47 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
                 optionsContainer.show();
                 break;
         }
+    },
+
+    /**
+     * Build options for Date field
+     * @param container (Object) Container component
+     * @param report (Object) The current report being edited
+     */
+    buildOptionsDateField: function(container, report) {
+        var options = {};
+
+        if (report) {
+            options = report.get('options');
+        }
+
+        return [{
+            xtype: 'checkbox',
+            fieldLabel: 'Only allow week selection',
+            name: 'options_onlyWeeks',
+            itemId: 'optionOnlyWeeks',
+            value: options.onlyWeeks,
+            listeners: {
+                change: function(field, newValue) {
+                    if (newValue) {
+                        field.up('form').down('#optionOnlyMonths').setValue(false);
+                    }
+                }
+            }
+        }, {
+            xtype: 'checkbox',
+            fieldLabel: 'Only allow month selection',
+            name: 'options_onlyMonths',
+            itemId: 'optionOnlyMonths',
+            value: options.onlyMonths,
+            listeners: {
+                change: function(field, newValue) {
+                    if (newValue) {
+                        field.up('form').down('#optionOnlyWeeks').setValue(false);
+                    }
+                }
+            }
+        }];
     },
 
     /**
