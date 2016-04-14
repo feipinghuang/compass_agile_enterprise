@@ -10,67 +10,71 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
     paramsManager: null,
     report: null,
 
-    buttons: [
-        {
-            text: 'Save',
-            handler: function (btn) {
-                var me = btn.up('window');
+    buttons: [{
+        text: 'Save',
+        handler: function(btn) {
+            var me = btn.up('window');
 
-                var grid = me.paramsManager.down('grid');
-                var form = me.down('form');
+            var grid = me.paramsManager.down('grid');
+            var form = me.down('form');
 
-                if (form.isValid()) {
-                    var values = form.getValues();
+            if (form.isValid()) {
+                var values = form.getValues();
 
-                    me.report.set('default_value', values.default_value);
-                    me.report.commit(false);
+                me.report.set('default_value', values.default_value);
+                me.report.commit(false);
 
-                    me.paramsManager.save();
+                me.paramsManager.save();
 
-                    me.hide();
-                }
-            }
-        },
-        {
-            text: 'Cancel',
-            handler: function (btn) {
-                var window = btn.up('window');
-
-                window.hide();
+                me.hide();
             }
         }
-    ],
+    }, {
+        text: 'Cancel',
+        handler: function(btn) {
+            var window = btn.up('window');
 
-    initComponent: function () {
+            window.hide();
+        }
+    }],
+
+    initComponent: function() {
         var me = this;
 
         var reportTypeStore = Ext.create('Ext.data.Store', {
             fields: ['name', 'type'],
-            data: [
-                {name: 'Text', type: 'text'},
-                {name: 'Date', type: 'date'},
-                {name: 'Select', type: 'select'},
-                {name: 'Data Record', type: 'data_record'},
-                {name: 'Service', type: 'service'}
-            ]
+            data: [{
+                name: 'Text',
+                type: 'text'
+            }, {
+                name: 'Date',
+                type: 'date'
+            }, {
+                name: 'Select',
+                type: 'select'
+            }, {
+                name: 'Data Record',
+                type: 'data_record'
+            }, {
+                name: 'Service',
+                type: 'service'
+            }]
         });
 
-        me.items = [
-            {
-                xtype: 'form',
-                itemId: 'addReportParam',
-                bodyPadding: 10,
-                layout: 'form',
-                items: []
-            }
-        ];
+        me.items = [{
+            xtype: 'form',
+            itemId: 'addReportParam',
+            bodyPadding: 10,
+            layout: 'form',
+            items: []
+        }];
 
         this.callParent(arguments);
 
         me.setType(me.report.get('type'));
     },
 
-    setType: function (type) {
+    setType: function(type) {
         var me = this;
         var form = me.down('form');
 
@@ -97,7 +101,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
      * Builds default textfield.
      * @report (Object) The current report being edited
      */
-    buildDefaultTextField: function (report) {
+    buildDefaultTextField: function(report) {
         var defaultValue = null;
 
         if (report) {
@@ -116,11 +120,23 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
      * Builds date field.
      * @report (Object) The current report being edited
      */
-    buildDefaultDateField: function (report) {
+    buildDefaultDateField: function(report) {
         var defaultValue = 'current_date';
+        var displayName = null;
 
         if (report) {
             defaultValue = report.get('default_value');
+            options = report.get('options');
+        }
+
+        if (options.onlyWeeks == 'on') {
+            displayName = 'Week';
+
+        } else if (options.onlyMonths == 'on') {
+            displayName = 'Month';
+
+        } else {
+            displayName = 'Day';
         }
 
         return [{
@@ -131,11 +147,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
             valueField: 'value',
             store: Ext.create('Ext.data.Store', {
                 fields: ['display', 'value'],
-                data: [
-                    {display: 'Current Day', value: 'current_date'},
-                    {display: 'Previous Day', value: 'previous_date'},
-                    {display: 'Next Day', value: 'next_date'}
-                ]
+                data: [{
+                    display: 'Current ' + displayName,
+                    value: 'current'
+                }, {
+                    display: 'Previous ' + displayName,
+                    value: 'previous'
+                }, {
+                    display: 'Next ' + displayName,
+                    value: 'next'
+                }]
             }),
             queryMode: 'local',
             value: defaultValue
@@ -146,9 +167,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
      * Builds select field to set the default value of param of type select.
      * @report (Object) The current report being edited
      */
-    buildDefaultSelectField: function (report) {
+    buildDefaultSelectField: function(report) {
         var defaultValue = null;
-        var options = {values: []};
+        var options = {
+            values: []
+        };
 
         if (report) {
             defaultValue = report.get('default_value');
@@ -169,7 +192,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
      * Builds a data report field to set the default value of param of type data report
      * @report (Object) The current report being edited
      */
-    buildDefaultDataRecordField: function (report) {
+    buildDefaultDataRecordField: function(report) {
         var defaultValue = null;
         var options = {};
 
@@ -181,7 +204,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
         return [{
             xtype: 'businessmoduledatarecordfield',
             fieldLabel: 'Default Value',
-            extraParams: {business_module_iid: options.businessModule},
+            extraParams: {
+                business_module_iid: options.businessModule
+            },
             name: 'default_value',
             value: defaultValue
         }];
@@ -191,7 +216,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
      * Builds a data report field to set the default value of param of type data report
      * @report (Object) The current report being edited
      */
-    buildDefaultServiceUrlField: function (report) {
+    buildDefaultServiceUrlField: function(report) {
         var defaultValue = null;
         var options = {};
 
@@ -226,8 +251,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.SetDefaultW
                     autoLoad: true
                 }
             }];
-        }
-        else {
+        } else {
             return null;
         }
     }
