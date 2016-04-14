@@ -66,10 +66,12 @@ module RailsDbAdmin
         if file_attachments.is_a? String
           render :json => {success: false, message: file_attachments}
         else
+          default_name = Report.find_by_internal_identifier(params[:iid]).name
+
           to_email = params[:send_to]
           cc_email = params[:cc_email]
-          message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
-          subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
+          message = params[:message].blank? ? "Attached is report #{default_name}" : params[:message]
+          subject = params[:subject].blank? ? "Attached is report #{default_name}" : params[:subject]
 
           ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message, current_user.party.dba_organization).deliver
 

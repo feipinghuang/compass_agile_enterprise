@@ -46,26 +46,77 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         });
                         break;
                     case 'date':
-                        if (defaultValue == 'current_date') {
-                            defaultValue = new Date();
-                        } else if (defaultValue == 'previous_date') {
-                            defaultValue = Ext.Date.subtract(new Date(), Ext.Date.DAY, 1);
-                        } else if (defaultValue == 'next_date') {
-                            defaultValue = Ext.Date.add(new Date(), Ext.Date.DAY, 1);
+                        var today = new Date();
+                        var defaultDate = null;
+
+                        if (param.options.onlyWeeks == 'on') {
+                            defaultDate = new Date(today.getFullYear(), today.getMonth(), (today.getDate() - today.getDay() + 1));
+
+                            if (defaultValue == 'previous') {
+                                defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.DAY, 7);
+                            } else if (defaultValue == 'next') {
+                                defaultDate = Ext.Date.add(defaultDate, Ext.Date.DAY, 7);
+                            }
+
+                            container.items.push({
+                                xtype: 'datefield',
+                                allowBlank: (param.required !== true),
+                                labelWidth: 80,
+                                style: {
+                                    marginRight: '20px'
+                                },
+                                format: 'm/d/Y',
+                                fieldLabel: param.display_name,
+                                name: param.name,
+                                disabledDays: [0, 2, 3, 4, 5, 6],
+                                value: defaultDate
+                            });
+
+                        } else if (param.options.onlyMonths == 'on') {
+                            defaultDate = new Date(today.getFullYear(), today.getMonth(), 1);
+
+                            if (defaultValue == 'previous') {
+                                defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.MONTH, 1);
+                            } else if (defaultValue == 'next') {
+                                defaultDate = Ext.Date.add(defaultDate, Ext.Date.MONTH, 1);
+                            }
+
+                            container.items.push({
+                                xtype: 'monthfield',
+                                allowBlank: (param.required !== true),
+                                labelWidth: 80,
+                                style: {
+                                    marginRight: '20px'
+                                },
+                                format: 'm/d/Y',
+                                fieldLabel: param.display_name,
+                                name: param.name,
+                                value: defaultDate
+                            });
+
+                        } else {
+                            defaultDate = new Date();
+
+                            if (defaultValue == 'previous') {
+                                defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.DAY, 1);
+                            } else if (defaultValue == 'next') {
+                                defaultDate = Ext.Date.add(defaultDate, Ext.Date.DAY, 1);
+                            }
+
+                            container.items.push({
+                                xtype: 'datefield',
+                                allowBlank: (param.required !== true),
+                                labelWidth: 80,
+                                style: {
+                                    marginRight: '20px'
+                                },
+                                format: 'm/d/Y',
+                                fieldLabel: param.display_name,
+                                name: param.name,
+                                value: defaultDate
+                            });
                         }
 
-                        container.items.push({
-                            xtype: 'datefield',
-                            allowBlank: (param.required !== true),
-                            labelWidth: 80,
-                            style: {
-                                marginRight: '20px'
-                            },
-                            format: 'm/d/Y',
-                            fieldLabel: param.display_name,
-                            name: param.name,
-                            value: defaultValue
-                        });
                         break;
                     case 'select':
                         var values = (!param.options.values) ? [] : eval(param.options.values);
@@ -194,6 +245,7 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         }
                         break;
                     case 'datefield':
+                    case 'monthfield':
                         var date = new Date(field.value);
                         date.setHours(23, 59, 59);
                         paramsObj[field.name] = date.toPgDateString();

@@ -11,13 +11,13 @@
 // GO AFTER THE REQUIRES BELOW.
 //
 //= require ./ext-all-debug
-//= require ./ext-theme-neptune.js
-//= require ./ext_ux_tab_close_menu.js
-//= require ./Ext.ux.form.MultiSelect.js
-//= require ./Ext.ux.CheckColumn.js
-//= require ./Callout.js
-//= require ./MultiCellSelectionModel.js
-//= require ./helpQtip.js
-//= require ./Promise.js
-//= require ./Deferred.js
-//= require ./overrides.js
+//= require ./ext-theme-neptune
+//= require ./ext_ux_tab_close_menu
+//= require ./Ext.ux.form.MultiSelect
+//= require ./Ext.ux.CheckColumn
+//= require ./MultiCellSelectionModel
+//= require ./Ext.form.field.Month
+//= require ./helpQtip
+//= require ./Promise
+//= require ./Deferred
+//= require ./overrides
