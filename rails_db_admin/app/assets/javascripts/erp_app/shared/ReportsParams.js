@@ -97,9 +97,9 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                         } else {
                             defaultValue = new Date();
 
-                            if (defaultValue == 'previous_date') {
+                            if (defaultValue == 'previous') {
                                 defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.DAY, 1);
-                            } else if (defaultValue == 'next_date') {
+                            } else if (defaultValue == 'next') {
                                 defaultDate = Ext.Date.add(defaultDate, Ext.Date.DAY, 1);
                             }
 
