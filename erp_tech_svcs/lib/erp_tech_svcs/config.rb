@@ -50,6 +50,11 @@ module ErpTechSvcs
       def configure!
         @configure_blk.call(self) if @configure_blk
       end
+
+      def installation_url
+        "#{self.file_protocol}://#{self.installation_domain}"
+      end
+
     end
     init!
     reset!
