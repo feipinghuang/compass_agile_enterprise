@@ -249,7 +249,7 @@
                                                                            end: time_helper.end_of_week)
                  }
         else
-          render :json => {success: true, time_entries: TimeEntry.open.collect { |time_entry| time_entry.to_data_hash }}
+          render :json => {success: true, time_entries: TimeEntry.open_entries.collect { |time_entry| time_entry.to_data_hash }}
         end
       end
 

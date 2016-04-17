@@ -344,7 +344,7 @@ class WorkEffort < ActiveRecord::Base
     self.current_status = 'task_status_complete'
 
     # close all open time entries
-    time_entries.open.each do |time_entry|
+    time_entries.open_entries.each do |time_entry|
       time_entry.thru_datetime = Time.now
 
       time_entry.calculate_regular_hours_in_seconds!
