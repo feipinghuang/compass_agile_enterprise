@@ -234,7 +234,7 @@
           work_effort = WorkEffort.find(params[:work_effort_id])
           party = current_user.party
 
-          open_time_entry = work_effort.time_entries.scope_by_party(current_user.party).open.first
+          open_time_entry = work_effort.time_entries.scope_by_party(current_user.party).open_entries.first
           time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
 
           render :json => {success: true,
