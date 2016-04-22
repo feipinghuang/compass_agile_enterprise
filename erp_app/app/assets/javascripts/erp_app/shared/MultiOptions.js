@@ -169,11 +169,11 @@ Ext.define("Compass.ErpApp.Shared.MultiOptions", {
 		if (!this.allowBlank) {
 			if (this.getStore().count() === 0) {
 				valid = false;
-				if (this.getEl())
-					this.getEl().setStyle('border', 'solid 1px red');
+				if (this.getView().getEl())
+					this.getView().getEl().setStyle('border', 'solid 1px red');
 			} else {
-				if (this.getEl())
-					this.getEl().setStyle('border', 'none');
+				if (this.getView().getEl())
+					this.getView().getEl().setStyle('border', '');
 			}
 		}
 
