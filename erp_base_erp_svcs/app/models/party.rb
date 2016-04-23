@@ -18,8 +18,6 @@ class Party < ActiveRecord::Base
   attr_reader :relationships
   attr_writer :create_relationship
 
-  has_many :entity_party_roles
-
   class << self
     # scope by dba organization
     #
@@ -30,7 +28,7 @@ class Party < ActiveRecord::Base
     def scope_by_dba_organization(dba_organization)
       joins("inner join party_relationships on party_relationships.role_type_id_to ='#{RoleType.iid('dba_org').id}'
              and party_relationships.party_id_from = parties.id")
-          .where({party_relationships: {party_id_to: dba_organization}})
+      .where({party_relationships: {party_id_to: dba_organization}})
     end
 
     # Scopes parties by passed role types
@@ -57,10 +55,10 @@ class Party < ActiveRecord::Base
     dba_org = RoleType.iid('dba_org')
 
     PartyRelationship.joins('inner join parties on parties.id = party_relationships.party_id_from')
-        .joins('inner join party_roles on party_roles.party_id = party_relationships.party_id_from')
-        .where('party_id_to' => self.id)
-        .where('party_relationships.role_type_id_to' => dba_org)
-        .where('party_roles.role_type_id' => dba_org).each do |party_reln|
+    .joins('inner join party_roles on party_roles.party_id = party_relationships.party_id_from')
+    .where('party_id_to' => self.id)
+    .where('party_relationships.role_type_id_to' => dba_org)
+    .where('party_roles.role_type_id' => dba_org).each do |party_reln|
 
       dba_orgs.push(party_reln.from_party)
       if !dba_orgs.collect(&:id).include? party_reln.from_party.id
@@ -98,8 +96,8 @@ class Party < ActiveRecord::Base
   # @return [Array] Parent DBA Organizations
   def parent_dba_organizations(dba_orgs=[])
     PartyRelationship.
-        where('party_id_from = ?', id).
-        where('role_type_id_to' => RoleType.iid('dba_org')).each do |party_reln|
+      where('party_id_from = ?', id).
+    where('role_type_id_to' => RoleType.iid('dba_org')).each do |party_reln|
 
       dba_orgs.push(party_reln.to_party)
       party_reln.to_party.parent_dba_organizations(dba_orgs)
@@ -124,14 +122,14 @@ class Party < ActiveRecord::Base
 
   def find_related_parties_with_role(role_type_iid)
     Party.joins(:party_roles).joins("inner join party_relationships on (party_id_from = #{id} and parties.id = party_relationships.party_id_to)")
-        .where(PartyRole.arel_table[:role_type_id].eq(RoleType.iid(role_type_iid).id))
-        .where(Party.arel_table[:id].not_eq(id))
+    .where(PartyRole.arel_table[:role_type_id].eq(RoleType.iid(role_type_iid).id))
+    .where(Party.arel_table[:id].not_eq(id))
   end
 
   def find_relationships_by_type(relationship_type_iid)
     PartyRelationship.includes(:relationship_type).
-        where('party_id_from = ? or party_id_to = ?', id, id).
-        where('relationship_types.internal_identifier' => relationship_type_iid.to_s)
+      where('party_id_from = ? or party_id_to = ?', id, id).
+      where('relationship_types.internal_identifier' => relationship_type_iid.to_s)
   end
 
   # Creates a new PartyRelationship for this particular
@@ -190,27 +188,27 @@ class Party < ActiveRecord::Base
   #
   def to_data_hash
     data = to_hash(only: [
-                       :id,
-                       :description,
-                       :created_at,
-                       :updated_at
+                     :id,
+                     :description,
+                     :created_at,
+                     :updated_at
                    ],
                    business_party_type: business_party.class.name
-    )
+                   )
 
     # get business party data
     if business_party
       if business_party.is_a?(Individual)
         data.merge!({
-                        first_name: business_party.current_first_name,
-                        last_name: business_party.current_last_name,
-                        middle_name: business_party.current_middle_name,
-                        gender: business_party.gender
-                    })
+                      first_name: business_party.current_first_name,
+                      last_name: business_party.current_last_name,
+                      middle_name: business_party.current_middle_name,
+                      gender: business_party.gender
+        })
       else
         data.merge!({
-                        tax_id_number: business_party.tax_id_number
-                    })
+                      tax_id_number: business_party.tax_id_number
+        })
       end
     end
 
