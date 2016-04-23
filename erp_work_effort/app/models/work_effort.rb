@@ -136,8 +136,8 @@ class WorkEffort < ActiveRecord::Base
         work_effort_party_assignments_tbl = WorkEffortPartyAssignment.arel_table
 
         statement = statement.joins(:work_effort_party_assignments)
-                        .where(work_effort_party_assignments_tbl[:role_type_id].in(RoleType.find_child_role_types([RoleType.work_resource]).collect(&:id)))
-                        .where(work_effort_party_assignments_tbl[:party_id].in(filters[:assigned_to_ids]))
+        .where(work_effort_party_assignments_tbl[:role_type_id].in(RoleType.find_child_role_types([RoleType.work_resource]).collect(&:id)))
+        .where(work_effort_party_assignments_tbl[:party_id].in(filters[:assigned_to_ids]))
       end
 
       # filter by project
@@ -255,8 +255,8 @@ class WorkEffort < ActiveRecord::Base
     role_types = RoleType.find_child_role_types(role_types)
 
     Party.joins(work_effort_party_assignments: :role_type)
-        .where(role_types: {id: role_types})
-        .where(work_effort_party_assignments: {work_effort_id: self.id})
+    .where(role_types: {id: role_types})
+    .where(work_effort_party_assignments: {work_effort_id: self.id})
   end
 
   # Returns true if the party is assigned to WorkEffort
@@ -265,9 +265,9 @@ class WorkEffort < ActiveRecord::Base
   # @param role_types [Array] Array of role types to check the assignments for
   def party_assigned?(party, role_types=['work_resource'])
     !WorkEffort.joins(work_effort_party_assignments: :role_type)
-         .where(role_types: {id: RoleType.find_child_role_types(role_types)})
-         .where(work_effort_party_assignments: {work_effort_id: self.id})
-         .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
+    .where(role_types: {id: RoleType.find_child_role_types(role_types)})
+    .where(work_effort_party_assignments: {work_effort_id: self.id})
+    .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
   end
 
   # Get comma sepeated description of all Parties assigned
@@ -355,6 +355,14 @@ class WorkEffort < ActiveRecord::Base
 
   alias finish! complete!
 
+  # Check if a party is allowed to enter time aganist this Work Effort
+  #
+  # @param party [Party] Party to test aganist
+  # @return [Boolean] If time entries are allowed
+  def time_entries_allowed?(party)
+    self.party_assigned?(party) and self.current_status != 'task_status_complete'
+  end
+
   # get total hours for this WorkEffort by TimeEntries
   #
   def total_hours_in_seconds
@@ -371,24 +379,24 @@ class WorkEffort < ActiveRecord::Base
   # @return [Hash] data of record
   def to_data_hash
     data = to_hash(only: [
-                       :id,
-                       {leaf?: :leaf},
-                       :parent_id,
-                       :description,
-                       :start_at,
-                       :end_at,
-                       :percent_done,
-                       :duration,
-                       :duration_unit,
-                       :effort,
-                       :effort_unit,
-                       :comments,
-                       :sequence,
-                       :created_at,
-                       :updated_at,
-                       :current_status
+                     :id,
+                     {leaf?: :leaf},
+                     :parent_id,
+                     :description,
+                     :start_at,
+                     :end_at,
+                     :percent_done,
+                     :duration,
+                     :duration_unit,
+                     :effort,
+                     :effort_unit,
+                     :comments,
+                     :sequence,
+                     :created_at,
+                     :updated_at,
+                     :current_status
                    ]
-    )
+                   )
 
     data[:status] = self.try(:current_status_application).try(:to_data_hash)
     data[:work_effort_type] = self.try(:work_effort_type).try(:to_data_hash)
