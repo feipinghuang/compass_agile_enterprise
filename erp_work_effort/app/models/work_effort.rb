@@ -401,18 +401,20 @@ class WorkEffort < ActiveRecord::Base
     duration_total = nil
     percent_done_total = 0.0
     self.descendants.collect do |child|
-      if child.duration and child.duration > 0
-        duration_total = 0.0 if duration_total.nil?
+      if child.leaf?
+        if child.duration and child.duration > 0
+          duration_total = 0.0 if duration_total.nil?
 
-        duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration.to_f, child.duration_unit.to_sym, :h)
+          duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration.to_f, child.duration_unit.to_sym, :h)
 
-        percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
+          percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
 
-        if lowest_duration_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_duration_unit) > child.duration_unit.to_sym
-          lowest_duration_unit = child.duration_unit.to_sym
+          if lowest_duration_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_duration_unit) > child.duration_unit.to_sym
+            lowest_duration_unit = child.duration_unit.to_sym
+          end
+
+          duration_total += duration_in_hours
         end
-
-        duration_total += duration_in_hours
       end
     end
 
@@ -430,14 +432,16 @@ class WorkEffort < ActiveRecord::Base
     lowest_effort_unit = nil
     effort_total = nil
     self.descendants.collect do |child|
-      if child.effort and child.effort > 0
-        effort_total = 0.0 if effort_total.nil?
+      if child.leaf?
+        if child.effort and child.effort > 0
+          effort_total = 0.0 if effort_total.nil?
 
-        if lowest_effort_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_effort_unit) > child.effort_unit.to_sym
-          lowest_effort_unit = child.effort_unit.to_sym
+          if lowest_effort_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_effort_unit) > child.effort_unit.to_sym
+            lowest_effort_unit = child.effort_unit.to_sym
+          end
+
+          effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort.to_f, child.effort_unit.to_sym, :h)
         end
-
-        effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort.to_f, child.effort_unit.to_sym, :h)
       end
     end
 
