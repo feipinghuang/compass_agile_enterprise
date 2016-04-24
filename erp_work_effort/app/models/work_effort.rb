@@ -391,69 +391,74 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  # If this is a leaf that has a parent rollup totals
+  # Calculate totals for children
+  #
+  def calculate_children_totals
+    self.start_at = self.descendants.order('start_at asc').first.start_at
+    self.end_at = self.descendants.order('end_at desc').last.end_at
+
+    lowest_duration_unit = nil
+    duration_total = nil
+    percent_done_total = 0.0
+    self.descendants.collect do |child|
+      if child.duration and child.duration > 0
+        duration_total = 0.0 if duration_total.nil?
+
+        duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration.to_f, child.duration_unit.to_sym, :h)
+
+        percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
+
+        if lowest_duration_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_duration_unit) > child.duration_unit.to_sym
+          lowest_duration_unit = child.duration_unit.to_sym
+        end
+
+        duration_total += duration_in_hours
+      end
+    end
+
+    if duration_total
+      self.duration_unit = lowest_duration_unit.to_s
+      if lowest_duration_unit != :h
+        self.duration = ErpWorkEffort::Services::UnitConverter.convert_unit(duration_total.to_f, :h, lowest_duration_unit)
+      else
+        self.duration = duration_total
+      end
+
+      self.percent_done = (((percent_done_total / duration_total.to_f).round(2)) * 100)
+    end
+
+    lowest_effort_unit = nil
+    effort_total = nil
+    self.descendants.collect do |child|
+      if child.effort and child.effort > 0
+        effort_total = 0.0 if effort_total.nil?
+
+        if lowest_effort_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_effort_unit) > child.effort_unit.to_sym
+          lowest_effort_unit = child.effort_unit.to_sym
+        end
+
+        effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort.to_f, child.effort_unit.to_sym, :h)
+      end
+    end
+
+    if effort_total
+      self.effort_unit = lowest_effort_unit.to_s
+      if lowest_effort_unit != :h
+        self.effort = ErpWorkEffort::Services::UnitConverter.convert_unit(effort_total.to_f, :h, lowest_effort_unit)
+      else
+        self.effort = effort_total
+      end
+    end
+
+    self.save!
+  end
+
+  # Roll up totals to parents
   #
   def roll_up
-    if self.leaf? and self.parent
-      root_node = self.root
-
-      root_node.start_at = root_node.descendants.order('start_at asc').first.start_at
-      root_node.end_at = root_node.descendants.order('end_at desc').last.end_at
-
-      lowest_duration_unit = nil
-      duration_total = nil
-      percent_done_total = 0.0
-      root_node.descendants.collect do |child|
-        if child.duration and child.duration > 0
-          duration_total = 0.0 if duration_total.nil?
-
-          duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration.to_f, child.duration_unit.to_sym, :h)
-
-          percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
-
-          if lowest_duration_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_duration_unit) > child.duration_unit.to_sym
-            lowest_duration_unit = child.duration_unit.to_sym
-          end
-
-          duration_total += duration_in_hours
-        end
-      end
-
-      if duration_total
-        root_node.duration_unit = lowest_duration_unit.to_s
-        if lowest_duration_unit != :h
-          root_node.duration = ErpWorkEffort::Services::UnitConverter.convert_unit(duration_total.to_f, :h, lowest_duration_unit)
-        else
-          root_node.duration = duration_total
-        end
-
-        root_node.percent_done = (((percent_done_total / duration_total.to_f).round(2)) * 100)
-      end
-
-      lowest_effort_unit = nil
-      effort_total = nil
-      root_node.descendants.collect do |child|
-        if child.effort and child.effort > 0
-          effort_total = 0.0 if effort_total.nil?
-
-          if lowest_effort_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_effort_unit) > child.effort_unit.to_sym
-            lowest_effort_unit = child.effort_unit.to_sym
-          end
-
-          effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort.to_f, child.effort_unit.to_sym, :h)
-        end
-      end
-
-      if effort_total
-        root_node.effort_unit = lowest_effort_unit.to_s
-        if lowest_effort_unit != :h
-          root_node.effort = ErpWorkEffort::Services::UnitConverter.convert_unit(effort_total.to_f, :h, lowest_effort_unit)
-        else
-          root_node.effort = effort_total
-        end
-      end
-
-      root_node.save!
+    if self.parent
+      self.parent.calculate_children_totals
+      self.parent.roll_up
     end
   end
 
