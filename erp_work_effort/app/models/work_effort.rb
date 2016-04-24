@@ -51,6 +51,8 @@ class WorkEffort < ActiveRecord::Base
 
   tracks_created_by_updated_by
 
+  after_save :roll_up
+
   belongs_to :work_effort_item, :polymorphic => true
 
   belongs_to :project
@@ -232,7 +234,6 @@ class WorkEffort < ActiveRecord::Base
 
       statement
     end
-
   end
 
   def to_s
@@ -315,6 +316,22 @@ class WorkEffort < ActiveRecord::Base
     completed?
   end
 
+  # Check if a party is allowed to enter time aganist this Work Effort
+  #
+  # @param party [Party] Party to test aganist
+  # @return [Boolean] If time entries are allowed
+  def time_entries_allowed?(party)
+    self.party_assigned?(party) and self.current_status != 'task_status_complete'
+  end
+
+  def has_time_entries?
+    self.time_entries.count != 0
+  end
+
+  def has_assigned_parties?
+    self.work_effort_party_assignments.count != 0
+  end
+
   # start work effort with initial_status (string)
   #
   # @param initial_status [String] status to start at
@@ -355,23 +372,89 @@ class WorkEffort < ActiveRecord::Base
 
   alias finish! complete!
 
-  # Check if a party is allowed to enter time aganist this Work Effort
-  #
-  # @param party [Party] Party to test aganist
-  # @return [Boolean] If time entries are allowed
-  def time_entries_allowed?(party)
-    self.party_assigned?(party) and self.current_status != 'task_status_complete'
-  end
-
   # get total hours for this WorkEffort by TimeEntries
   #
   def total_hours_in_seconds
-    time_entries.sum(:regular_hours_in_seconds)
+    if self.leaf?
+      time_entries.sum(:regular_hours_in_seconds)
+    else
+      self.descendants.collect(&:total_hours_in_seconds)
+    end
   end
 
   # get total hours for this WorkEffort by TimeEntries
   def total_hours
-    time_entries.all.sum { |time_entry| time_entry.hours }
+    if self.leaf?
+      time_entries.all.sum { |time_entry| time_entry.hours }
+    else
+      self.descendants.collect(&:total_hours)
+    end
+  end
+
+  # If this is a leaf that has a parent rollup totals
+  #
+  def roll_up
+    if self.leaf? and self.parent
+      root_node = self.root
+
+      root_node.start_at = root_node.descendants.order('start_at asc').first.start_at
+      root_node.end_at = root_node.descendants.order('end_at desc').last.end_at
+
+      highest_duration_unit = :h
+      duration_total = nil
+      percent_done_total = 0.0
+      root_node.descendants.collect do |child|
+        if child.duration and child.duration > 0
+          duration_total = 0 if duration_total.nil?
+
+          duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration, child.duration_unit.to_sym, :h)
+
+          percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
+
+          if ErpWorkEffort::Services::UnitConverter.new(highest_duration_unit) < child.duration_unit.to_sym
+            highest_duration_unit = child.duration_unit.to_sym
+          end
+
+          duration_total += duration_in_hours
+        end
+      end
+
+      if duration_total
+        root_node.duration_unit = highest_duration_unit.to_s
+        if highest_duration_unit != :h
+          root_node.duration = ErpWorkEffort::Services::UnitConverter.convert_unit(duration_total, :h, highest_duration_unit)
+        else
+          root_node.duration = duration_total
+        end
+
+        root_node.percent_done = (((percent_done_total / duration_total.to_f).round(2)) * 100)
+      end
+
+      highest_effort_unit = :h
+      effort_total = nil
+      root_node.descendants.collect do |child|
+        if child.effort and child.effort > 0
+          effort_total = 0 if effort_total.nil?
+
+          if ErpWorkEffort::Services::UnitConverter.new(highest_effort_unit) < child.effort_unit.to_sym
+            highest_effort_unit = child.effort_unit.to_sym
+          end
+
+          effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort, child.effort_unit.to_sym, :h)
+        end
+      end
+
+      if effort_total
+        root_node.effort_unit = highest_effort_unit.to_s
+        if highest_effort_unit != :h
+          root_node.effort = ErpWorkEffort::Services::UnitConverter.convert_unit(effort_total, :h, highest_effort_unit)
+        else
+          root_node.effort = effort_total
+        end
+      end
+
+      root_node.save!
+    end
   end
 
   # converts this record a hash data representation
