@@ -400,19 +400,19 @@ class WorkEffort < ActiveRecord::Base
       root_node.start_at = root_node.descendants.order('start_at asc').first.start_at
       root_node.end_at = root_node.descendants.order('end_at desc').last.end_at
 
-      highest_duration_unit = :h
+      lowest_duration_unit = nil
       duration_total = nil
       percent_done_total = 0.0
       root_node.descendants.collect do |child|
         if child.duration and child.duration > 0
-          duration_total = 0 if duration_total.nil?
+          duration_total = 0.0 if duration_total.nil?
 
-          duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration, child.duration_unit.to_sym, :h)
+          duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration.to_f, child.duration_unit.to_sym, :h)
 
           percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
 
-          if ErpWorkEffort::Services::UnitConverter.new(highest_duration_unit) < child.duration_unit.to_sym
-            highest_duration_unit = child.duration_unit.to_sym
+          if lowest_duration_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_duration_unit) > child.duration_unit.to_sym
+            lowest_duration_unit = child.duration_unit.to_sym
           end
 
           duration_total += duration_in_hours
@@ -420,9 +420,9 @@ class WorkEffort < ActiveRecord::Base
       end
 
       if duration_total
-        root_node.duration_unit = highest_duration_unit.to_s
-        if highest_duration_unit != :h
-          root_node.duration = ErpWorkEffort::Services::UnitConverter.convert_unit(duration_total, :h, highest_duration_unit)
+        root_node.duration_unit = lowest_duration_unit.to_s
+        if lowest_duration_unit != :h
+          root_node.duration = ErpWorkEffort::Services::UnitConverter.convert_unit(duration_total.to_f, :h, lowest_duration_unit)
         else
           root_node.duration = duration_total
         end
@@ -430,24 +430,24 @@ class WorkEffort < ActiveRecord::Base
         root_node.percent_done = (((percent_done_total / duration_total.to_f).round(2)) * 100)
       end
 
-      highest_effort_unit = :h
+      lowest_effort_unit = nil
       effort_total = nil
       root_node.descendants.collect do |child|
         if child.effort and child.effort > 0
-          effort_total = 0 if effort_total.nil?
+          effort_total = 0.0 if effort_total.nil?
 
-          if ErpWorkEffort::Services::UnitConverter.new(highest_effort_unit) < child.effort_unit.to_sym
-            highest_effort_unit = child.effort_unit.to_sym
+          if lowest_effort_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_effort_unit) > child.effort_unit.to_sym
+            lowest_effort_unit = child.effort_unit.to_sym
           end
 
-          effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort, child.effort_unit.to_sym, :h)
+          effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort.to_f, child.effort_unit.to_sym, :h)
         end
       end
 
       if effort_total
-        root_node.effort_unit = highest_effort_unit.to_s
-        if highest_effort_unit != :h
-          root_node.effort = ErpWorkEffort::Services::UnitConverter.convert_unit(effort_total, :h, highest_effort_unit)
+        root_node.effort_unit = lowest_effort_unit.to_s
+        if lowest_effort_unit != :h
+          root_node.effort = ErpWorkEffort::Services::UnitConverter.convert_unit(effort_total.to_f, :h, lowest_effort_unit)
         else
           root_node.effort = effort_total
         end

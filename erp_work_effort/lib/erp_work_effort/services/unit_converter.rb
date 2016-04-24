@@ -31,10 +31,17 @@ module ErpWorkEffort
           else
             true
           end
+        when :w
+          case unit
+          when :ms, :mi, :h, :w
+            false
+          else
+            true
+          end
 
         when :d
           case unit
-          when :ms, :mi, :h, :d
+          when :ms, :mi, :h, :d, :w
             false
           else
             true
@@ -42,7 +49,7 @@ module ErpWorkEffort
 
         when :mo
           case unit
-          when :ms, :mi, :h, :d, :mo
+          when :ms, :mi, :h, :d, :w, :mo
             false
           else
             true
@@ -50,7 +57,7 @@ module ErpWorkEffort
 
         when :a
           case unit
-          when :ms, :mi, :h, :d, :mo, :a
+          when :ms, :mi, :h, :d, :w, :mo, :a
             false
           else
             true
@@ -106,7 +113,7 @@ module ErpWorkEffort
             false
           end
 
-        when :mo
+        when :w
           case unit
           when :ms, :mi, :h, :d
             true
@@ -114,9 +121,17 @@ module ErpWorkEffort
             false
           end
 
+        when :mo
+          case unit
+          when :ms, :mi, :h, :d, :w
+            true
+          else
+            false
+          end
+
         when :a
           case unit
-          when :ms, :mi, :h, :d, :mo
+          when :ms, :mi, :h, :d, :w, :mo
             true
           else
             false
@@ -146,6 +161,8 @@ module ErpWorkEffort
         # @param {Symbol} from_unit Unit to convert from
         # @param {Symbol} to_unit Unit to convert to
         def convert_unit(amount, from_unit, to_unit)
+          amount = amount.to_f
+
           if from_unit != to_unit
             # first convert to seconds
             case from_unit
@@ -156,13 +173,15 @@ module ErpWorkEffort
             when :h
               amount = ((amount * 60) * 60)
             when :d
-              amount = (((amount * 60) * 60) * 8)
+              amount = (((amount * 60) * 60) * ErpWorkEffort::Config.hours_per_day)
+            when :w
+              amount = ((((amount * 60) * 60) * ErpWorkEffort::Config.hours_per_day) * ErpWorkEffort::Config.days_per_week)
             when :mo
-              amount = ((((amount * 60) * 60) * 8) * 30.4167)
+              amount = ((((amount * 60) * 60) * ErpWorkEffort::Config.hours_per_day) * ErpWorkEffort::Config.days_per_month)
             when :a
-              amount = ((((amount * 60) * 60) * 8) * 3.2)
+              amount = (((((amount * 60) * 60) * 24) * ErpWorkEffort::Config.days_per_month) * 3)
             when :y
-              ((((amount * 60) * 60) * 8) * 365)
+              amount = ((((((amount * 60) * 60) * 24) * ErpWorkEffort::Config.days_per_month) * 3) * 4)
             else
               raise 'Unknown interval'
             end
@@ -176,13 +195,15 @@ module ErpWorkEffort
             when :h
               amount = ((amount / 60) / 60)
             when :d
-              amount = (((amount / 60) / 60) / 8)
+              amount = (((amount / 60) / 60) / ErpWorkEffort::Config.hours_per_day)
+            when :w
+              amount = ((((amount / 60) / 60) / ErpWorkEffort::Config.hours_per_day) / ErpWorkEffort::Config.days_per_week)
             when :mo
-              amount = ((((amount / 60) / 60) / 8) / 30.4167)
+              amount = ((((amount / 60) / 60) / ErpWorkEffort::Config.hours_per_day) / ErpWorkEffort::Config.days_per_month)
             when :a
-              amount = ((((amount / 60) / 60) / 8) / 3.2)
+              amount = ((((amount / 60) / 60)  / ErpWorkEffort::Config.days_per_month) / 3)
             when :y
-              ((((amount / 60) / 60) / 8) / 365)
+              amount = ((((((amount / 60) / 60) / 24) / ErpWorkEffort::Config.days_per_month) / 3) / 4)
             else
               raise 'Unknown interval'
             end
@@ -207,6 +228,8 @@ module ErpWorkEffort
             'h'
           when 'day'
             'd'
+          when 'week'
+            'w'
           when 'month'
             'mo'
           when 'quarter'
@@ -235,6 +258,8 @@ module ErpWorkEffort
             'hour'
           when :d
             'day'
+          when :w
+            'week'
           when :mo
             'month'
           when :a
