@@ -22,7 +22,7 @@ class TimeEntry < ActiveRecord::Base
   belongs_to :work_effort
 
   class << self
-    def open
+    def open_entries
       where(TimeEntry.arel_table[:from_datetime].not_eq(nil))
           .where(thru_datetime: nil)
           .where(TimeEntry.arel_table[:manual_entry].eq(nil).or(TimeEntry.arel_table[:manual_entry].eq(false)))

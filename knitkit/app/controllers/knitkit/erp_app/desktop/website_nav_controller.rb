@@ -11,7 +11,7 @@ module Knitkit
           if @website
             @website.website_navs.each do |website_nav|
               menu_hash = {:text => website_nav.name, :websiteNavId => website_nav.id, :canAddMenuItems => true,
-                           :iconCls => 'icon-index', :isWebsiteNav => true, :leaf => false, :children => []}
+                           :iconCls => 'icon-folder', :isWebsiteNav => true, :leaf => false, :children => []}
 
               menu_hash[:children] = website_nav.website_nav_items.positioned.map { |item| build_menu_item_hash(item) }
 
@@ -35,7 +35,7 @@ module Knitkit
                 result[:success] = true
                 result[:node] = {:text => params[:name],
                                  :websiteNavId => website_nav.id,
-                                 :iconCls => 'icon-index',
+                                 :iconCls => 'icon-folder',
                                  :canAddMenuItems => true,
                                  :isWebsiteNav => true,
                                  :leaf => false,

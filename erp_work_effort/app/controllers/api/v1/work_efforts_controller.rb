@@ -26,7 +26,6 @@ module Api
         render :json => {success: true,
                          total: work_efforts.count,
                          work_efforts: work_efforts.map { |work_effort| work_effort.to_data_hash }}
-
       end
 
       def show
@@ -124,6 +123,13 @@ module Api
         end
       end
 
+      def time_entries_allowed
+        work_effort = WorkEffort.find(params[:id])
+        party = params[:party_id].blank? ? current_user.party : Party.find(params[:party_id])
+
+        render json: {success: true, allowed: work_effort.time_entries_allowed?(party)}
+      end
+
       protected
 
       def create_work_effort(data)
@@ -173,7 +179,7 @@ module Api
         end
 
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
         end
 
         if data[:work_effort_type].present?
@@ -249,7 +255,7 @@ module Api
         end
 
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
         end
 
         if data[:work_effort_type].present?

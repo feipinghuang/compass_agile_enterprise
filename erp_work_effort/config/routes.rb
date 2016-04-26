@@ -12,6 +12,10 @@ Rails.application.routes.draw do
 
       # work efforts and its nested resources
       resources :work_efforts, :defaults => {:format => 'json'} do
+        member do
+          get :time_entries_allowed
+        end
+
         resources :work_effort_party_assignments, :defaults => {:format => 'json'}
         resources :time_entries, :defaults => {:format => 'json'} do
           collection do

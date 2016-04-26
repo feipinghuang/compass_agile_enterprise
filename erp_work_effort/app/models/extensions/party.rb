@@ -188,14 +188,14 @@ Party.class_eval do
   #
   # @return [TimeEntry] TimeEntry if present nil if not
   def open_time_entry
-    self.time_entries.open.first
+    self.time_entries.open_entries.first
   end
 
   # Returns the current Task this Party is working on if this is on, nil if not
   #
   # @return [WorkEffort] WorkEffort if present nil if not
   def current_work_effort
-    self.time_entries.open.try(:first).try(:work_effort)
+    self.time_entries.open_entries.try(:first).try(:work_effort)
   end
 
   # Returns True if there is an open TimeEntry, false if there is not

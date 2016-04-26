@@ -266,7 +266,11 @@ class Invoice < ActiveRecord::Base
 
   def sub_total
     if items.empty?
-      self.balance_record.amount
+      if self.balance_record
+        self.balance_record.amount
+      else
+        0
+      end
     else
       self.items.all.sum(&:sub_total).round(2)
     end
@@ -274,7 +278,11 @@ class Invoice < ActiveRecord::Base
 
   def total_amount
     if items.empty?
-      self.balance_record.amount
+      if self.balance_record
+        self.balance_record.amount
+      else
+        0
+      end
     else
       self.items.all.sum(&:total_amount).round(2)
     end

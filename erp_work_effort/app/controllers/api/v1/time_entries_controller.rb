@@ -1,4 +1,4 @@
- module Api
+module Api
   module V1
     class TimeEntriesController < BaseController
 
@@ -8,7 +8,7 @@
             party = current_user.party
 
             time_entry = TimeEntry.new(
-                manual_entry: true
+              manual_entry: true
             )
 
             if params[:from_datetime]
@@ -45,9 +45,9 @@
             end
 
             render json: {
-                       success: true,
-                       time_entry: time_entry.to_data_hash,
-                   }
+              success: true,
+              time_entry: time_entry.to_data_hash,
+            }
 
           end
         rescue ActiveRecord::RecordInvalid => invalid
@@ -94,9 +94,9 @@
             time_entry.manual_entry = true
 
             render json: {
-                       success: time_entry.save!,
-                       time_entry: time_entry.to_data_hash,
-                   }
+              success: time_entry.save!,
+              time_entry: time_entry.to_data_hash,
+            }
 
           end
         rescue ActiveRecord::RecordInvalid => invalid
@@ -137,13 +137,13 @@
 
             # if there is an open TimeEntry stop it and start a new one
             if open_time_entry
-              open_time_entry.thru_datetime = time_helper.in_client_time(Time.now)
+              open_time_entry.thru_datetime = time_helper.in_client_time(Time.now).utc
 
               open_time_entry.calculate_regular_hours_in_seconds!
             end
 
             time_entry = TimeEntry.create(
-                from_datetime: params[:start_at].to_time
+              from_datetime: params[:start_at].to_time
             )
 
             time_entry.work_effort = work_effort
@@ -157,9 +157,9 @@
             time_entry.update_task_assignment_status('task_resource_status_in_progress')
 
             render json: {
-                       success: true,
-                       time_entry: time_entry.to_data_hash,
-                   }
+              success: true,
+              time_entry: time_entry.to_data_hash,
+            }
           end
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors
@@ -185,7 +185,7 @@
             work_effort = WorkEffort.find(params[:work_effort_id])
             time_entry = TimeEntry.find(params[:id])
 
-            time_entry.thru_datetime = params[:end_at].to_time
+            time_entry.thru_datetime = params[:end_at].to_time.utc
             time_entry.comment = params[:comment].present? ? params[:comment].strip : nil
 
             time_entry.calculate_regular_hours_in_seconds!
@@ -193,8 +193,8 @@
             time_entry.update_task_assignment_status('task_resource_status_hold')
 
             result = {
-                success: true,
-                time_entry: time_entry.to_data_hash,
+              success: true,
+              time_entry: time_entry.to_data_hash,
             }
 
             time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
@@ -203,12 +203,12 @@
                                                                      party: party,
                                                                      start: time_helper.beginning_of_day,
                                                                      end: time_helper.end_of_day
-            )
+                                                                     )
             result[:week_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
                                                                       party: party,
                                                                       start: time_helper.beginning_of_week,
                                                                       end: time_helper.end_of_week
-            )
+                                                                      )
 
             render json: result
           end
@@ -234,7 +234,7 @@
           work_effort = WorkEffort.find(params[:work_effort_id])
           party = current_user.party
 
-          open_time_entry = work_effort.time_entries.scope_by_party(current_user.party).open.first
+          open_time_entry = work_effort.time_entries.scope_by_party(current_user.party).open_entries.first
           time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
 
           render :json => {success: true,
@@ -247,9 +247,9 @@
                                                                            party: party,
                                                                            start: time_helper.beginning_of_week,
                                                                            end: time_helper.end_of_week)
-                 }
+                           }
         else
-          render :json => {success: true, time_entries: TimeEntry.open.collect { |time_entry| time_entry.to_data_hash }}
+          render :json => {success: true, time_entries: TimeEntry.open_entries.collect { |time_entry| time_entry.to_data_hash }}
         end
       end
 
@@ -259,12 +259,12 @@
       #
       def totals
         result = {
-            success: true,
-            day_total_seconds: 0,
-            week_total_seconds: 0,
-            day_total_formatted: '00:00:00',
-            week_total_formatted: '00:00:00',
-            total_formatted: '00:00:00'
+          success: true,
+          day_total_seconds: 0,
+          week_total_seconds: 0,
+          day_total_formatted: '00:00:00',
+          week_total_formatted: '00:00:00',
+          total_formatted: '00:00:00'
         }
 
         work_effort = nil
@@ -283,28 +283,28 @@
                                                              party: party,
                                                              start: time_helper.beginning_of_day,
                                                              end: time_helper.end_of_day
-        )
+                                                             )
         result[:week_total_seconds] = TimeEntry.total_seconds(work_effort: work_effort,
                                                               party: party,
                                                               start: time_helper.beginning_of_week,
                                                               end: time_helper.end_of_week
-        )
+                                                              )
         result[:total_seconds] = TimeEntry.total_seconds(work_effort: work_effort,
                                                          party: party
-        )
+                                                         )
         result[:day_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
                                                                  party: party,
                                                                  start: time_helper.beginning_of_day,
                                                                  end: time_helper.end_of_day
-        )
+                                                                 )
         result[:week_total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
                                                                   party: party,
                                                                   start: time_helper.beginning_of_week,
                                                                   end: time_helper.end_of_week
-        )
+                                                                  )
         result[:total_formatted] = TimeEntry.total_formatted(work_effort: work_effort,
                                                              party: party
-        )
+                                                             )
 
         render json: result
       end
