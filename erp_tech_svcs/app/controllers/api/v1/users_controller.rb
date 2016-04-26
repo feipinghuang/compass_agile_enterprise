@@ -48,10 +48,10 @@ module Api
             current_user.with_capability(:create, 'User') do
 
               user = User.new(
-                  :email => params[:email],
-                  :username => params[:username],
-                  :password => params[:password],
-                  :password_confirmation => params[:password_confirmation]
+                :email => params[:email],
+                :username => params[:username],
+                :password => params[:password],
+                :password_confirmation => params[:password_confirmation]
               )
 
               # set this to tell activation where to redirect_to for login and temp password
@@ -65,42 +65,32 @@ module Api
                 user.skip_activation_email = true
               end
 
-              if user.save!
-                if params[:auto_activate] == 'yes'
-                  user.activate!
-                end
-
-                individual = Individual.create(:gender => params[:gender],
-                                               :current_first_name => params[:first_name],
-                                               :current_last_name => params[:last_name])
-                user.party = individual.party
-                user.save
-
-                user.party.created_by_party = current_user.party
-                user.party.save!
-
-                # add employee role to party
-                party = individual.party
-                party.add_role_type(RoleType.find_or_create('employee', 'Employee'))
-
-                # associate the new party to the dba_organization of the user creating this user
-                relationship_type = RelationshipType.find_or_create(RoleType.find_or_create('dba_org', 'Doing Business As Organization'),
-                                                                    RoleType.find_or_create('employee', 'Employee'))
-                party.create_relationship(relationship_type.description,
-                                          current_user.party.dba_organization.id,
-                                          relationship_type)
-
-                response = {:success => true}
-              else
-                message = "<ul>"
-                user.errors.collect do |e, m|
-                  message << "<li>#{e} #{m}</li>"
-                end
-                message << "</ul>"
-                response = {:success => false, :message => message, :user => user.to_data_hash}
+              user.save!
+              if params[:auto_activate] == 'yes'
+                user.activate!
               end
 
-              render :json => response
+              individual = Individual.create(:gender => params[:gender],
+                                             :current_first_name => params[:first_name],
+                                             :current_last_name => params[:last_name])
+              user.party = individual.party
+              user.save
+
+              user.party.created_by_party = current_user.party
+              user.party.save!
+
+              # add employee role to party
+              party = individual.party
+              party.add_role_type(RoleType.find_or_create('employee', 'Employee'))
+
+              # associate the new party to the dba_organization of the user creating this user
+              relationship_type = RelationshipType.find_or_create(RoleType.find_or_create('dba_org', 'Doing Business As Organization'),
+                                                                  RoleType.find_or_create('employee', 'Employee'))
+              party.create_relationship(relationship_type.description,
+                                        current_user.party.dba_organization.id,
+                                        relationship_type)
+
+              render :json => {:success => true}
             end
           end
         rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
@@ -108,7 +98,13 @@ module Api
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors
 
-          render :json => {:success => false, :message => invalid.record.errors, :user => nil}
+          message = "<ul>"
+          invalid.record.errors.collect do |e, m|
+            message << "<li>#{e} #{m}</li>"
+          end
+          message << "</ul>"
+
+          render :json => {:success => false, :message => message, :user => nil}
         rescue StandardError => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")

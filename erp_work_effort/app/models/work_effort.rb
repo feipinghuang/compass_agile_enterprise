@@ -51,6 +51,8 @@ class WorkEffort < ActiveRecord::Base
 
   tracks_created_by_updated_by
 
+  after_save :roll_up
+
   belongs_to :work_effort_item, :polymorphic => true
 
   belongs_to :project
@@ -136,8 +138,8 @@ class WorkEffort < ActiveRecord::Base
         work_effort_party_assignments_tbl = WorkEffortPartyAssignment.arel_table
 
         statement = statement.joins(:work_effort_party_assignments)
-                        .where(work_effort_party_assignments_tbl[:role_type_id].in(RoleType.find_child_role_types([RoleType.work_resource]).collect(&:id)))
-                        .where(work_effort_party_assignments_tbl[:party_id].in(filters[:assigned_to_ids]))
+        .where(work_effort_party_assignments_tbl[:role_type_id].in(RoleType.find_child_role_types([RoleType.work_resource]).collect(&:id)))
+        .where(work_effort_party_assignments_tbl[:party_id].in(filters[:assigned_to_ids]))
       end
 
       # filter by project
@@ -232,7 +234,6 @@ class WorkEffort < ActiveRecord::Base
 
       statement
     end
-
   end
 
   def to_s
@@ -255,8 +256,8 @@ class WorkEffort < ActiveRecord::Base
     role_types = RoleType.find_child_role_types(role_types)
 
     Party.joins(work_effort_party_assignments: :role_type)
-        .where(role_types: {id: role_types})
-        .where(work_effort_party_assignments: {work_effort_id: self.id})
+    .where(role_types: {id: role_types})
+    .where(work_effort_party_assignments: {work_effort_id: self.id})
   end
 
   # Returns true if the party is assigned to WorkEffort
@@ -265,9 +266,9 @@ class WorkEffort < ActiveRecord::Base
   # @param role_types [Array] Array of role types to check the assignments for
   def party_assigned?(party, role_types=['work_resource'])
     !WorkEffort.joins(work_effort_party_assignments: :role_type)
-         .where(role_types: {id: RoleType.find_child_role_types(role_types)})
-         .where(work_effort_party_assignments: {work_effort_id: self.id})
-         .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
+    .where(role_types: {id: RoleType.find_child_role_types(role_types)})
+    .where(work_effort_party_assignments: {work_effort_id: self.id})
+    .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
   end
 
   # Get comma sepeated description of all Parties assigned
@@ -315,6 +316,22 @@ class WorkEffort < ActiveRecord::Base
     completed?
   end
 
+  # Check if a party is allowed to enter time aganist this Work Effort
+  #
+  # @param party [Party] Party to test aganist
+  # @return [Boolean] If time entries are allowed
+  def time_entries_allowed?(party)
+    self.party_assigned?(party) and self.current_status != 'task_status_complete'
+  end
+
+  def has_time_entries?
+    self.time_entries.count != 0
+  end
+
+  def has_assigned_parties?
+    self.work_effort_party_assignments.count != 0
+  end
+
   # start work effort with initial_status (string)
   #
   # @param initial_status [String] status to start at
@@ -344,7 +361,7 @@ class WorkEffort < ActiveRecord::Base
     self.current_status = 'task_status_complete'
 
     # close all open time entries
-    time_entries.each do |time_entry|
+    time_entries.open_entries.each do |time_entry|
       time_entry.thru_datetime = Time.now
 
       time_entry.calculate_regular_hours_in_seconds!
@@ -358,12 +375,95 @@ class WorkEffort < ActiveRecord::Base
   # get total hours for this WorkEffort by TimeEntries
   #
   def total_hours_in_seconds
-    time_entries.sum(:regular_hours_in_seconds)
+    if self.leaf?
+      time_entries.sum(:regular_hours_in_seconds)
+    else
+      self.descendants.collect(&:total_hours_in_seconds)
+    end
   end
 
   # get total hours for this WorkEffort by TimeEntries
   def total_hours
-    time_entries.all.sum { |time_entry| time_entry.hours }
+    if self.leaf?
+      time_entries.all.sum { |time_entry| time_entry.hours }
+    else
+      self.descendants.collect(&:total_hours)
+    end
+  end
+
+  # Calculate totals for children
+  #
+  def calculate_children_totals
+    self.start_at = self.descendants.order('start_at asc').first.start_at
+    self.end_at = self.descendants.order('end_at desc').last.end_at
+
+    lowest_duration_unit = nil
+    duration_total = nil
+    percent_done_total = 0.0
+    self.descendants.collect do |child|
+      if child.leaf?
+        if child.duration and child.duration > 0
+          duration_total = 0.0 if duration_total.nil?
+
+          duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration.to_f, child.duration_unit.to_sym, :h)
+
+          percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
+
+          if lowest_duration_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_duration_unit) > child.duration_unit.to_sym
+            lowest_duration_unit = child.duration_unit.to_sym
+          end
+
+          duration_total += duration_in_hours
+        end
+      end
+    end
+
+    if duration_total
+      self.duration_unit = lowest_duration_unit.to_s
+      if lowest_duration_unit != :h
+        self.duration = ErpWorkEffort::Services::UnitConverter.convert_unit(duration_total.to_f, :h, lowest_duration_unit)
+      else
+        self.duration = duration_total
+      end
+
+      self.percent_done = (((percent_done_total / duration_total.to_f).round(2)) * 100)
+    end
+
+    lowest_effort_unit = nil
+    effort_total = nil
+    self.descendants.collect do |child|
+      if child.leaf?
+        if child.effort and child.effort > 0
+          effort_total = 0.0 if effort_total.nil?
+
+          if lowest_effort_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_effort_unit) > child.effort_unit.to_sym
+            lowest_effort_unit = child.effort_unit.to_sym
+          end
+
+          effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort.to_f, child.effort_unit.to_sym, :h)
+        end
+      end
+    end
+
+    if effort_total
+      self.effort_unit = lowest_effort_unit.to_s
+      if lowest_effort_unit != :h
+        self.effort = ErpWorkEffort::Services::UnitConverter.convert_unit(effort_total.to_f, :h, lowest_effort_unit)
+      else
+        self.effort = effort_total
+      end
+    end
+
+    self.save!
+  end
+
+  # Roll up totals to parents
+  #
+  def roll_up
+    if self.parent
+      self.parent.calculate_children_totals
+      self.parent.roll_up
+    end
   end
 
   # converts this record a hash data representation
@@ -371,24 +471,24 @@ class WorkEffort < ActiveRecord::Base
   # @return [Hash] data of record
   def to_data_hash
     data = to_hash(only: [
-                       :id,
-                       {leaf?: :leaf},
-                       :parent_id,
-                       :description,
-                       :start_at,
-                       :end_at,
-                       :percent_done,
-                       :duration,
-                       :duration_unit,
-                       :effort,
-                       :effort_unit,
-                       :comments,
-                       :sequence,
-                       :created_at,
-                       :updated_at,
-                       :current_status
+                     :id,
+                     {leaf?: :leaf},
+                     :parent_id,
+                     :description,
+                     :start_at,
+                     :end_at,
+                     :percent_done,
+                     :duration,
+                     :duration_unit,
+                     :effort,
+                     :effort_unit,
+                     :comments,
+                     :sequence,
+                     :created_at,
+                     :updated_at,
+                     :current_status
                    ]
-    )
+                   )
 
     data[:status] = self.try(:current_status_application).try(:to_data_hash)
     data[:work_effort_type] = self.try(:work_effort_type).try(:to_data_hash)

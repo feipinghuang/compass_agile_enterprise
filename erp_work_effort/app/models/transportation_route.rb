@@ -52,7 +52,7 @@ class TransportationRoute < ActiveRecord::Base
   end
 
   class << self
-    def open
+    def open_entries
       joins(:segments)
           .where(transportation_routes: {manual_entry: false})
           .where(transportation_route_segments: {actual_arrival: nil})
