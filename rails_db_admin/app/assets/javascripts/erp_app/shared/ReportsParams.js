@@ -95,12 +95,12 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 							});
 
 						} else {
-							defaultDate = new Date();
+							defaultDate = null;
 
 							if (defaultValue == 'previous') {
-								defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.DAY, 1);
+								defaultDate = Ext.Date.subtract(new Date(), Ext.Date.DAY, 1);
 							} else if (defaultValue == 'next') {
-								defaultDate = Ext.Date.add(defaultDate, Ext.Date.DAY, 1);
+								defaultDate = Ext.Date.add(new Date(), Ext.Date.DAY, 1);
 							}
 
 							container.items.push({
