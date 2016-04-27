@@ -163,7 +163,6 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 						}
 					}
 				});
-
 			}
 		}
 
