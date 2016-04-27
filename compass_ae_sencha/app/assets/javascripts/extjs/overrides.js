@@ -44,7 +44,7 @@ Ext.override(Ext.Msg, {
 			icon: Ext.Msg.ERROR,
 			fn: fn,
 			scope: scope
-		})
+		});
 	}
 });
 
