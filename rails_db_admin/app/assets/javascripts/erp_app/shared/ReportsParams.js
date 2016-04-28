@@ -102,8 +102,8 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 							} else if (defaultValue == 'next') {
 								defaultDate = Ext.Date.add(new Date(), Ext.Date.DAY, 1);
 							} else if (defaultValue == 'current') {
-                                defaultDate = new Date();
-                            }
+								defaultDate = new Date();
+							}
 
 							container.items.push({
 								xtype: 'datefield',
@@ -119,6 +119,18 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 							});
 						}
 
+						break;
+					case 'time':
+						container.items.push({
+							xtype: 'timefield',
+							fieldLabel: param.display_name,
+							allowBlank: (param.required !== true),
+							style: {
+								marginRight: '20px'
+							},
+							name: param.name,
+							value: param.default_value
+						});
 						break;
 					case 'select':
 						var values = (!param.options.values) ? [] : eval(param.options.values);
@@ -246,11 +258,18 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
 							}
 						}
 						break;
+					case 'timefield':
+						if (field.value) {
+							paramsObj[field.name] = Ext.Date.format(new Date(field.value), 'H:i:s');
+						}
+
+						break;
 					case 'datefield':
 					case 'monthfield':
-						var date = new Date(field.value);
-						date.setHours(23, 59, 59);
-						paramsObj[field.name] = date.toPgDateString();
+						if (field.value) {
+							paramsObj[field.name] = Ext.Date.format(new Date(field.value), 'c');
+						}
+
 						break;
 				}
 			} else {
