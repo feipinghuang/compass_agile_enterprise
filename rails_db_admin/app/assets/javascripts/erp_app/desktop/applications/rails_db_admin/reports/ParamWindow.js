@@ -182,7 +182,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
 	 * @param container (Object) Container component
 	 */
 	buildOptionsDateField: function(container) {
-		var options = {};
+		var options = {},
+            me = this;
 
 		if (me.param) {
 			options = me.param.get('options');
