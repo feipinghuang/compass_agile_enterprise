@@ -49,6 +49,16 @@ Ext.define('Ext.ux.form.DateTimeField', {
 		return value;
 	},
 
+	getSubmitValue: function() {
+		var value = this.getValue();
+
+		if (value) {
+			return Ext.Date.format(value, 'c');
+		} else {
+			return value;
+		}
+	},
+
 	setValue: function(value) {
 		var me = this;
 
