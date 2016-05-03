@@ -51,11 +51,19 @@ Ext.define('Ext.ux.form.DateTimeField', {
 		return value;
 	},
 
-	getSubmitValue: function() {
-		var format = this.submitFormat || this.format,
+	getSubmitData: function() {
+		var me = this,
+			data = null,
+			format = this.submitFormat || this.format,
 			value = this.getValue();
 
-		return value ? Ext.Date.format(value, format) : '';
+		value = value ? Ext.Date.format(value, format) : '';
+
+		if (!me.disabled && me.submitValue) {
+			data = {};
+			data[me.getName()] = '' + value;
+		}
+		return data;
 	},
 
 	setValue: function(value) {
