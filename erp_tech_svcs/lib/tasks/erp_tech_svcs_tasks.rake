@@ -56,7 +56,44 @@ namespace :erp_tech_svcs do
 
     end
 
+    task :build_add_index_for_missing_index => :environment do
+
+      connection = ActiveRecord::Base.connection
+      connection.tables.collect do |table|
+        columns = connection.columns(table).collect(&:name).select { |x| x.ends_with?("_id" || x.ends_with("_type")) || x == 'internal_identifier' }
+        indexed_columns = connection.indexes(table).collect(&:columns).flatten.uniq
+        unindexed = columns - indexed_columns
+        unless unindexed.empty?
+          unindexed.each do |column|
+            name = "#{table}_#{column}_idx"
+
+            puts "add_index :#{table}, :#{column}, :name => '#{name}'"
+
+          end
+        end
+      end
+
+    end
+
+    task :build_remove_index_for_missing_index => :environment do
+
+      connection = ActiveRecord::Base.connection
+      connection.tables.collect do |table|
+        columns = connection.columns(table).collect(&:name).select { |x| x.ends_with?("_id" || x.ends_with("_type")) || x == 'internal_identifier' }
+        indexed_columns = connection.indexes(table).collect(&:columns).flatten.uniq
+        unindexed = columns - indexed_columns
+        unless unindexed.empty?
+          unindexed.each do |column|
+            name = "#{table}_#{column}_idx"
+
+            puts "remove_index :#{table}, :#{column}, :name => '#{name}'"
+
+          end
+        end
+      end
+
+    end
+
   end
 
 end
-
