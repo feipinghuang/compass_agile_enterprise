@@ -39,30 +39,32 @@ module Api
               role_type = RoleType.iid(id)
             end
 
-            respond_to do |format|
-              format.tree do
-                data = role_type.to_hash({
+            if role_type
+              respond_to do |format|
+                format.tree do
+                  data = role_type.to_hash({
                                              only: [:id, :parent_id, :internal_identifier],
                                              leaf: role_type.leaf?,
                                              text: role_type.to_label,
                                              children: []
-                                         })
+                  })
 
-                parent = nil
-                role_types.each do |role_type_hash|
-                  if role_type_hash[:id] == data[:parent_id]
-                    parent = role_type_hash
+                  parent = nil
+                  role_types.each do |role_type_hash|
+                    if role_type_hash[:id] == data[:parent_id]
+                      parent = role_type_hash
+                    end
+                  end
+
+                  if parent
+                    parent[:children].push(data)
+                  else
+                    role_types.push(data)
                   end
                 end
-
-                if parent
-                  parent[:children].push(data)
-                else
-                  role_types.push(data)
+                format.json do
+                  role_types.push(role_type.to_hash(only: [:id, :description, :internal_identifier]))
                 end
-              end
-              format.json do
-                role_types.push(role_type.to_hash(only: [:id, :description, :internal_identifier]))
               end
             end
 
