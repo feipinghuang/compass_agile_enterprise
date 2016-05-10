@@ -20,7 +20,7 @@ module ErpTechSvcs
 
     def destroy
       message = "You have logged out."
-      logged_out_user_id = current_user.id if current_user
+      user = current_user
       logout_to = session[:logout_to]
 
       # clear return_to_url
@@ -29,7 +29,7 @@ module ErpTechSvcs
       logout
 
       # log when someone logs out
-      ErpTechSvcs::ErpTechSvcsAuditLog.successful_logout(logged_out_user_id) if logged_out_user_id
+      ErpTechSvcs::ErpTechSvcsAuditLog.successful_logout(user)
 
       if logout_to
         redirect_to logout_to, :notice => message
