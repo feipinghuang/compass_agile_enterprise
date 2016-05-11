@@ -29,7 +29,7 @@ module ErpTechSvcs
       logout
 
       # log when someone logs out
-      ErpTechSvcs::ErpTechSvcsAuditLog.successful_logout(user)
+      ErpTechSvcs::ErpTechSvcsAuditLog.successful_logout(user) unless user.nil?
 
       if logout_to
         redirect_to logout_to, :notice => message
