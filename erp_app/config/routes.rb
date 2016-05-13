@@ -4,6 +4,16 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :applications, defaults: { :format => 'json' }
+
+      resources :parties, defaults: { :format => 'json' } do
+
+        resources :applications, defaults: { :format => 'json' } do
+          collection do
+            put 'install'
+          end
+        end
+
+      end
     end
   end
 

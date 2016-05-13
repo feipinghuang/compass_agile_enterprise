@@ -21,6 +21,3 @@
 //= require ./roles_panel
 //= require ./roles_widget
 //= require ./south_panel
-//= require ./users_effective_security
-//= require ./users_panel
-//= require ./users_widget

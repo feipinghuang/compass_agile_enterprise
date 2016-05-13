@@ -6,6 +6,8 @@ Rails.application.routes.draw do
         member do
           put :update_roles
         end
+
+        resources :role_types, defaults: { :format => 'json' }
       end
       resources :tracked_status_types, defaults: { :format => 'json' }
       resources :role_types, defaults: { :format => 'json' }
