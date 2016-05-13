@@ -141,6 +141,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
 			me.setTitle('Edit Param');
 			me.selectType(me.param.get('type'));
 		}
+
+		me.on('show', function() {
+			me.down('#paramDisplayName').focus();
+		});
 	},
 
 	selectType: function(type) {
@@ -182,7 +186,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
 	 * @param container (Object) Container component
 	 */
 	buildOptionsDateField: function(container) {
-		var options = {};
+		var options = {},
+			me = this;
 
 		if (me.param) {
 			options = me.param.get('options');
@@ -223,8 +228,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
 	 */
 	buildOptionsSelectField: function(container) {
 		var options = {
-			values: []
-		};
+				values: []
+			},
+			me = this;
 
 		if (me.param) {
 			options = me.param.get('options');
@@ -264,7 +270,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
 	 * @param container (Object) Container component
 	 */
 	buildOptionsDataRecordField: function(container) {
-		var options = {};
+		var options = {},
+			me = this;
 
 		if (me.param) {
 			options = me.param.get('options');
@@ -375,7 +382,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
 	 * @param container (Object) Container component
 	 */
 	buildOptionsServiceUrlField: function(container) {
-		var options = {};
+		var options = {},
+			me = this;
 
 		if (me.param) {
 			options = me.param.get('options');

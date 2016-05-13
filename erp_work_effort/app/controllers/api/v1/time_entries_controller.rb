@@ -185,7 +185,7 @@ module Api
             work_effort = WorkEffort.find(params[:work_effort_id])
             time_entry = TimeEntry.find(params[:id])
 
-            time_entry.thru_datetime = params[:end_at].to_time.utc
+            time_entry.thru_datetime = params[:end_at].to_time
             time_entry.comment = params[:comment].present? ? params[:comment].strip : nil
 
             time_entry.calculate_regular_hours_in_seconds!

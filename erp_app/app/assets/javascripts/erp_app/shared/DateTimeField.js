@@ -21,6 +21,8 @@ Ext.define('Ext.ux.form.DateTimeField', {
 		itemId: 'time'
 	}],
 
+	format: 'c',
+
 	initComponent: function() {
 		var me = this;
 
@@ -47,6 +49,21 @@ Ext.define('Ext.ux.form.DateTimeField', {
 		}
 
 		return value;
+	},
+
+	getSubmitData: function() {
+		var me = this,
+			data = null,
+			format = this.submitFormat || this.format,
+			value = this.getValue();
+
+		value = value ? Ext.Date.format(value, format) : '';
+
+		if (!me.disabled && me.submitValue) {
+			data = {};
+			data[me.getName()] = '' + value;
+		}
+		return data;
 	},
 
 	setValue: function(value) {
