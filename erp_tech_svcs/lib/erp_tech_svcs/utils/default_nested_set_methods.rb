@@ -69,10 +69,10 @@ module ErpTechSvcs
         def find_or_create(iid, description, parent=nil)
           # look for it
           record = if parent
-                     parent.children.find_by_internal_identifier(iid)
-                   else
-                     find_by_internal_identifier(iid)
-                   end
+            parent.children.find_by_internal_identifier(iid)
+          else
+            find_by_internal_identifier(iid)
+          end
 
           unless record
             record = create(description: description, internal_identifier: iid)
@@ -189,10 +189,10 @@ module ErpTechSvcs
 
       def to_tree_hash(options={})
         options = {
-            only: [:parent_id, :internal_identifier],
-            leaf: self.leaf?,
-            text: self.to_label,
-            children: self.children.collect { |child| child.to_tree_hash(options) }
+          only: [:parent_id, :internal_identifier],
+          leaf: self.leaf?,
+          text: self.to_label,
+          children: self.children.collect { |child| child.to_tree_hash(options) }
         }.merge(options)
 
         self.to_hash(options)
@@ -255,4 +255,3 @@ module ErpTechSvcs
     end #DefaultNestedSetMethods
   end #Utils
 end #ErpTechSvcs
-

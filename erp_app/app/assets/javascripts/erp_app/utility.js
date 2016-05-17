@@ -297,6 +297,9 @@ Compass.ErpApp.Utility.ajaxRequest = function(options) {
 					} else {
 						Ext.Msg.error('Error', options.errorMessage);
 					}
+
+					if (options.failureCallback)
+						options.failureCallback();
 				}
 			},
 			failure: function() {

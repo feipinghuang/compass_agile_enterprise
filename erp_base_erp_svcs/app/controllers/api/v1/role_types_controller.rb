@@ -3,7 +3,12 @@ module Api
     class RoleTypesController < BaseController
 
       def index
-        if params[:parent]
+        if params[:party_id]
+          party = Party.find(params[:party_id])
+
+          render :json => {success: true, role_types: party.role_types.collect{|role_type| role_type.to_data_hash}}
+
+        elsif params[:parent]
           parent = nil
           # create parent if it doesn't exist
           # if the parent param is a comma seperated string then

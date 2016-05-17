@@ -12,17 +12,66 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+
+      resources :parties, defaults: { :format => 'json' } do
+        member do
+          get :user, controller: 'users', action: 'user_by_party'
+          get :effective_security, controller: 'users', action: 'effective_security_by_party'
+          put :update_security, controller: 'users', action: 'update_security_by_party'
+        end
+
+        resources :security_roles, defaults: { :format => 'json' }
+        resources :groups, defaults: { :format => 'json' }
+        resources :capabilities, defaults: { :format => 'json' }
+      end
+
       resources :users, defaults: { :format => 'json' } do
         member do
           put :reset_password
+          get :effective_security
+          put :update_security
         end
+
+        resources :security_roles, defaults: { :format => 'json' }
+        resources :groups, defaults: { :format => 'json' }
+        resources :capabilities, defaults: { :format => 'json' }
       end
 
       resources :audit_logs, defaults: { :format => 'json' } do
         resources :audit_log_items, defaults: { :format => 'json'}
       end
 
-      resources :security_roles, defaults: { :format => 'json' }
+      resources :security_roles, defaults: { :format => 'json' } do
+        collection do
+          get :selected
+          get :available
+          put :add
+          put :remove
+        end
+      end
+
+      resources :groups, defaults: { :format => 'json' } do
+        member do
+          get :effective_security
+        end
+
+        collection do
+          get :selected
+          get :available
+          put :add
+          put :remove
+        end
+      end
+
+      resources :capabilities, defaults: { :format => 'json' } do
+        collection do
+          get :selected
+          get :available
+          put :add
+          put :remove
+        end
+      end
+
       resources :file_assets, defaults: { :format => 'json' }
 
     end

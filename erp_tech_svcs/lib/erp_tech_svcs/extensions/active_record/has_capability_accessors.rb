@@ -12,23 +12,21 @@ module ErpTechSvcs
           def has_capability_accessors
             extend HasCapabilityAccessors::SingletonMethods
             include HasCapabilityAccessors::InstanceMethods
-            
+
             has_many :capability_accessors, :as => :capability_accessor_record
           end
-
         end
-        
+
         module SingletonMethods
-          
         end
 
-        module InstanceMethods        
+        module InstanceMethods
 
           # method to get capabilities this instance does NOT have
           def capabilities_not
             Capability.joins(:capability_type).
-                      joins("LEFT JOIN capability_accessors ON capability_accessors.capability_id = capabilities.id AND capability_accessors.capability_accessor_record_type = '#{self.class.name}' AND capability_accessors.capability_accessor_record_id = #{self.id}").
-                      where("capability_accessors.id IS NULL")
+              joins("LEFT JOIN capability_accessors ON capability_accessors.capability_id = capabilities.id AND capability_accessors.capability_accessor_record_type = '#{self.class.name}' AND capability_accessors.capability_accessor_record_id = #{self.id}").
+              where("capability_accessors.id IS NULL")
           end
 
           def scope_capabilities_not(scope_type_iid)
@@ -47,7 +45,7 @@ module ErpTechSvcs
 
           def capabilities
             Capability.joins(:capability_type).joins(:capability_accessors).
-                      where(:capability_accessors => { :capability_accessor_record_type => self.class.name, :capability_accessor_record_id => self.id })
+              where(:capability_accessors => { :capability_accessor_record_type => self.class.name, :capability_accessor_record_id => self.id })
           end
 
           def scope_capabilities(scope_type_iid)
@@ -75,19 +73,6 @@ module ErpTechSvcs
             scope_capabilities('instance')
           end
 
-          # pass in (capability_type_iid, klass) or (capability) object
-          def add_capability(*capability)
-            capability_type_iid = capability.first.is_a?(Symbol) ? capability.first.to_s : capability.first
-            capability = capability_type_iid.is_a?(String) ? get_or_create_capability(capability_type_iid, capability.second) : capability.first
-            ca = CapabilityAccessor.find_or_create_by_capability_accessor_record_type_and_capability_accessor_record_id_and_capability_id(get_superclass, self.id, capability.id)
-            self.reload
-            ca
-          end
-
-          def grant_capability(*capability)
-            add_capability(*capability)
-          end
-
           def get_or_create_capability(capability_type_iid, klass)
             capability_type = convert_capability_type(capability_type_iid)
             if klass.is_a?(String)
@@ -104,6 +89,32 @@ module ErpTechSvcs
             Capability.find_by_capability_resource_type_and_capability_type_id_and_scope_type_id(klass, capability_type.id, scope_type.id)
           end
 
+          def has_capabilities?
+            !capability_accessors.empty?
+          end
+
+          # Add multiple capabilities
+          #
+          # @param _capabilities [Array] Array of Capbilities
+          def add_capabilities(_capabilities)
+            _capabilities.each do |capability|
+              add_capability(capability)
+            end
+          end
+
+          alias :grant_capabilities :add_capabilities
+
+          # pass in (capability_type_iid, klass) or (capability) object
+          def add_capability(*capability)
+            capability_type_iid = capability.first.is_a?(Symbol) ? capability.first.to_s : capability.first
+            capability = capability_type_iid.is_a?(String) ? get_or_create_capability(capability_type_iid, capability.second) : capability.first
+            ca = CapabilityAccessor.find_or_create_by_capability_accessor_record_type_and_capability_accessor_record_id_and_capability_id(get_superclass, self.id, capability.id)
+            self.reload
+            ca
+          end
+
+          alias :grant_capability :add_capability
+
           # pass in (capability_type_iid, klass) or (capability) object
           def remove_capability(*capability)
             capability_type_iid = capability.first.is_a?(Symbol) ? capability.first.to_s : capability.first
@@ -114,15 +125,31 @@ module ErpTechSvcs
             ca
           end
 
-          def revoke_capability(*capability)
-            remove_capability(*capability)
+          alias :revoke_capability :remove_capability
+
+          # Remove multiple capabilities
+          #
+          # @param _capabilities [Array] Array of Capbilities
+          def remove_capabilities(_capabilities)
+            _capabilities.each do |capability|
+              remove_capability(capability)
+            end
           end
 
-          def has_capabilities?
-            !capability_accessors.empty?
+          alias :revoke_capabilities :remove_capabilities
+
+          # Remove all current capabilities
+          #
+          def remove_all_capabilities
+            capabilities.each do |capability|
+              remove_capability(capability)
+            end
           end
+
+          alias :revoke_all_capabilities :remove_all_capabilities
 
           private
+
           def convert_capability_type(type)
             return type if type.is_a?(CapabilityType)
             return nil unless (type.is_a?(String) || type.is_a?(Symbol))
@@ -131,7 +158,8 @@ module ErpTechSvcs
             CapabilityType.create(:internal_identifier => type.to_s, :description => type.to_s.titleize)
           end
         end
-      end
-    end
-  end
-end
+
+      end # HasCapabilityAccessors
+    end # ActiveRecord
+  end # Extensions
+end # ErpTechSvcs
