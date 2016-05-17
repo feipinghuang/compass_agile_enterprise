@@ -39,33 +39,34 @@ module Api
               biz_txn_type = BizTxnType.iid(id)
             end
 
-            respond_to do |format|
-              format.tree do
-                data = biz_txn_type.to_hash({
+            if biz_txn_type
+              respond_to do |format|
+                format.tree do
+                  data = biz_txn_type.to_hash({
                                                 only: [:id, :parent_id, :internal_identifier, :description],
                                                 leaf: biz_txn_type.leaf?,
                                                 text: biz_txn_type.to_label,
                                                 children: []
-                                            })
+                  })
 
-                parent = nil
-                biz_txn_types.each do |biz_txn_type_hash|
-                  if biz_txn_type_hash[:id] == data[:parent_id]
-                    parent = biz_txn_type_hash
+                  parent = nil
+                  biz_txn_types.each do |biz_txn_type_hash|
+                    if biz_txn_type_hash[:id] == data[:parent_id]
+                      parent = biz_txn_type_hash
+                    end
+                  end
+
+                  if parent
+                    parent[:children].push(data)
+                  else
+                    biz_txn_types.push(data)
                   end
                 end
-
-                if parent
-                  parent[:children].push(data)
-                else
-                  biz_txn_types.push(data)
+                format.json do
+                  biz_txn_types.push(biz_txn_type.to_hash(only: [:id, :description, :internal_identifier]))
                 end
               end
-              format.json do
-                biz_txn_types.push(biz_txn_type.to_hash(only: [:id, :description, :internal_identifier]))
-              end
             end
-
           end
 
           render :json => {success: true, biz_txn_types: biz_txn_types}

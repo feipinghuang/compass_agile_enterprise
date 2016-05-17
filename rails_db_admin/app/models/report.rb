@@ -5,7 +5,7 @@ class Report < ActiveRecord::Base
   validates :name, :internal_identifier, :uniqueness => true
 
   before_create :set_default_template
-  
+
   after_create :create_report_files!
 
   before_destroy :delete_report_files!
@@ -166,7 +166,7 @@ class Report < ActiveRecord::Base
 
   def set_default_template
     self.template =
-      "<%= bootstrap_load %>
+    "<%= bootstrap_load %>
   <%= report_stylesheet_link_tag '#{self.internal_identifier}','#{self.internal_identifier}.css' %>
 <h3> <%= title %> </h3>
 <table>
@@ -189,7 +189,11 @@ class Report < ActiveRecord::Base
   end
 
   def default_stylesheet
-    "table{
+    "body{
+  padding: 5px; 
+}
+
+table{
   width: 100%;
 }
 
@@ -199,12 +203,12 @@ table tr{
 
 table th{
   border: 1px solid black;
+  color: white;
   border-collapse:collapse;
-  font-size: 12px;
+  font-size: 16px;
   vertical-align:center;
   text-align: center;
-  background-color: black;
-  color: white;
+  background-color: 537697;
   padding-top: 2px;
   padding-bottom: 2px;
   padding-left: 15px;
@@ -215,11 +219,25 @@ table th{
 table td{
   border: 1px solid black;
   border-collapse:collapse;
-  font-size: 10px;
+  font-size: 14px;
   vertical-align:top;
   padding-top: 2px;
   padding-left: 15px;
   padding-right: 15px;
+}
+
+td.no-border {
+    border: 0px;
+    height: 20px;
+}
+
+.bold{
+    font-weight: bold;
+    height: 20px;
+}
+
+.left-padded{
+    padding-left: 20px;
 }"
   end
 

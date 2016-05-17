@@ -52,7 +52,7 @@ module ErpTechSvcs
           end
 
           def remove_scope(scope_name)
-            send(self.class.etrieve_scoped_by_name)[scope_name.to_s] = nil
+            send(self.class.retrieve_scoped_by_name)[scope_name.to_s] = nil
             save!
           end
 
@@ -65,4 +65,3 @@ module ErpTechSvcs
     end # ActiveRecord
   end # Extensions
 end # ErpTechSvcs
-

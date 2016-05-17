@@ -13,10 +13,10 @@ class SecurityRole < ActiveRecord::Base
 
   attr_accessible :description, :internal_identifier
 
-	def to_xml(options = {})
-		default_only = []
-  	options[:only] = (options[:only] || []) + default_only
-  	super(options)
+  def to_xml(options = {})
+    default_only = []
+    options[:only] = (options[:only] || []) + default_only
+    super(options)
   end
 
   # creating method because we only want a getter, not a setter for iid
@@ -49,7 +49,13 @@ class SecurityRole < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(:only => [:description, :internal_identifier, :created_at, :updated_at])
+    hash = to_hash(:only => [:id, :description, :internal_identifier, :created_at, :updated_at])
+
+    if parent
+      hash[:parent] = parent.to_data_hash
+    end
+
+    hash
   end
 
 end

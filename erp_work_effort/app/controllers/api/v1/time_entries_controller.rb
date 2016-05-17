@@ -128,7 +128,6 @@ module Api
         begin
           ActiveRecord::Base.connection.transaction do
 
-            time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(params[:client_utc_offset])
             party = current_user.party
             work_effort = WorkEffort.find(params[:work_effort_id])
 
@@ -137,7 +136,7 @@ module Api
 
             # if there is an open TimeEntry stop it and start a new one
             if open_time_entry
-              open_time_entry.thru_datetime = time_helper.in_client_time(Time.now).utc
+              open_time_entry.thru_datetime = Time.now
 
               open_time_entry.calculate_regular_hours_in_seconds!
             end
@@ -185,7 +184,7 @@ module Api
             work_effort = WorkEffort.find(params[:work_effort_id])
             time_entry = TimeEntry.find(params[:id])
 
-            time_entry.thru_datetime = params[:end_at].to_time.utc
+            time_entry.thru_datetime = params[:end_at].to_time
             time_entry.comment = params[:comment].present? ? params[:comment].strip : nil
 
             time_entry.calculate_regular_hours_in_seconds!

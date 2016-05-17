@@ -1,3 +1,10 @@
+# unless table_exists?(:groups)
+#   create_table :groups do |t|
+#     t.column :description, :string
+#     t.timestamps
+#   end
+# end
+
 # Security Group
 class Group < ActiveRecord::Base
   has_capability_accessors
@@ -5,7 +12,7 @@ class Group < ActiveRecord::Base
   after_create  :create_party
   after_save    :save_party
   after_destroy :destroy_party_relationships, :destroy_party
-  
+
   has_one :party, :as => :business_party
 
   attr_accessible :description
@@ -46,11 +53,11 @@ class Group < ActiveRecord::Base
     pty = Party.new
     pty.description = self.description
     pty.business_party = self
-    
+
     pty.save
     self.save
   end
-    
+
   def save_party
     self.party.description = self.description
     self.party.save
@@ -61,7 +68,7 @@ class Group < ActiveRecord::Base
       self.party.destroy
     end
   end
- 
+
   def destroy_party_relationships
     party_relationships.destroy_all
   end
@@ -71,23 +78,18 @@ class Group < ActiveRecord::Base
     PartyRelationship.where(:party_id_to => self.party.id)
   end
 
-  def join_party_relationships
-    role_type = RoleType.find_by_internal_identifier('group')
-    "party_relationships ON party_id_to = #{self.party.id} AND party_id_from = parties.id AND role_type_id_to=#{role_type.id}"
+  def members
+    Party.joins("JOIN #{group_member_join}")
   end
 
-  def members
-    Party.joins("JOIN #{join_party_relationships}")
-  end
-  
   # get users in this group
   def users
-    User.joins(:party).joins("JOIN #{join_party_relationships}")
+    User.joins(:party).joins("JOIN #{group_member_join}")
   end
 
   # get users not in this group
   def users_not
-    User.joins(:party).joins("LEFT JOIN #{join_party_relationships}").where("party_relationships.id IS NULL")
+    User.joins(:party).joins("LEFT JOIN #{group_member_join}").where("party_relationships.id IS NULL")
   end
 
   # add user to group
@@ -112,7 +114,7 @@ class Group < ActiveRecord::Base
     rel = get_relationship(a_party).first
     unless rel.nil?
       # if so, return relationship
-      return rel 
+      return rel
     else
       # if not then build party_relationship
       rt = RelationshipType.find_by_internal_identifier('group_membership')
@@ -142,19 +144,19 @@ class Group < ActiveRecord::Base
   def role_class_capabilities
     scope_type = ScopeType.find_by_internal_identifier('class')
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-          where(:capability_accessors => { :capability_accessor_record_type => "SecurityRole" }).
-          where("capability_accessor_record_id IN (#{roles.select('security_roles.id').to_sql})").
-          where(:scope_type_id => scope_type.id)
+      where(:capability_accessors => { :capability_accessor_record_type => "SecurityRole" }).
+      where("capability_accessor_record_id IN (#{roles.select('security_roles.id').to_sql})").
+      where(:scope_type_id => scope_type.id)
   end
 
   def all_class_capabilities
     scope_type = ScopeType.find_by_internal_identifier('class')
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-          where("(capability_accessors.capability_accessor_record_type = 'Group' AND
+    where("(capability_accessors.capability_accessor_record_type = 'Group' AND
                   capability_accessor_record_id = (#{self.id})) OR
                  (capability_accessors.capability_accessor_record_type = 'SecurityRole' AND
                   capability_accessor_record_id IN (#{roles.select('security_roles.id').to_sql}))").
-          where(:scope_type_id => scope_type.id)
+      where(:scope_type_id => scope_type.id)
   end
 
   def all_uniq_class_capabilities
@@ -162,11 +164,22 @@ class Group < ActiveRecord::Base
   end
 
   def class_capabilities_to_hash
-    all_uniq_class_capabilities.map {|capability| 
-      { :capability_type_iid => capability.capability_type.internal_identifier, 
-        :capability_resource_type => capability.capability_resource_type 
-      }
+    all_uniq_class_capabilities.map {|capability|
+      { :capability_type_iid => capability.capability_type.description,
+        :capability_resource_type => capability.capability_resource_type
+        }
     }.compact
+  end
+
+  def to_data_hash
+    self.to_hash(only: [:id, :description, :created_at, :updated_at])
+  end
+
+  protected
+
+  def group_member_join
+    role_type = RoleType.find_by_internal_identifier('group_member')
+    "party_relationships ON party_id_from = #{self.party.id} AND party_id_to = parties.id AND role_type_id_from=#{role_type.id}"
   end
 
 end

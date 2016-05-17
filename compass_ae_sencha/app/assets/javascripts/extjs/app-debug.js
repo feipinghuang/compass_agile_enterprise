@@ -21,3 +21,4 @@
 //= require ./Promise
 //= require ./Deferred
 //= require ./overrides
+//= require ./extensions
