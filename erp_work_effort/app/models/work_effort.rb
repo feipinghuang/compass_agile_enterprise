@@ -42,6 +42,14 @@
 class WorkEffort < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  cattr_accessor :task_status_complete_iid
+  cattr_accessor :task_status_in_progress_iid
+  cattr_accessor :task_resource_status_complete_iid
+
+  @@task_status_complete_iid = 'task_status_complete'
+  @@task_status_in_progress_iid = 'task_status_in_progress'
+  @@task_resource_status_complete_iid = 'task_resource_status_complete'
+
   acts_as_nested_set
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   has_tracked_status
@@ -52,6 +60,9 @@ class WorkEffort < ActiveRecord::Base
   tracks_created_by_updated_by
 
   after_save :roll_up
+  before_move :update_parent_status_before_move!
+  after_move :update_parent_status!
+  after_destroy :update_parent_status!
 
   belongs_to :work_effort_item, :polymorphic => true
 
@@ -321,7 +332,7 @@ class WorkEffort < ActiveRecord::Base
   # @param party [Party] Party to test aganist
   # @return [Boolean] If time entries are allowed
   def time_entries_allowed?(party)
-    self.party_assigned?(party) and self.current_status != 'task_status_complete'
+    self.party_assigned?(party) and self.current_status != @@task_status_complete_iid
   end
 
   def has_time_entries?
@@ -351,34 +362,64 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  # completes work effort by setting finished at to Time.now and calculates
-  # actual_completion_time in minutes
+  # set current status of entity.
   #
-  def complete!
-    self.end_at = Time.now
-    self.save
+  # This is overriding the default method to update the task assignments as well if the status is set to
+  # complete
+  #
+  # @param args [String, TrackedStatusType, Array] This can be a string of the internal identifier of the
+  # TrackedStatusType to set, a TrackedStatusType instance, or three params the status, options and party_id
+  def current_status=(args)
+    super(args)
 
-    self.current_status = 'task_status_complete'
+    if args.is_a?(Array)
+      status = args[0]
+    else
+      status = args
+    end
 
-    # close all open time entries
-    time_entries.open_entries.each do |time_entry|
-      time_entry.thru_datetime = Time.now
+    if status.is_a? TrackedStatusType
+      status = status.internal_identifier
+    end
 
-      time_entry.calculate_regular_hours_in_seconds!
-
-      time_entry.update_task_assignment_status('task_resource_status_complete')
+    if status == @@task_status_complete_iid
+      complete!
+    else
+      update_parent_status!
     end
   end
 
-  alias finish! complete!
+  # Check if all this WorkEfforts descendants are complete.
+  # An optional ignored_id can be passed for a node that you don't want to check if
+  # it is complete
+  #
+  # @param ingored_id [Integer] Id of WorkEffort to ingnore it's status
+  def descendants_complete?(ignored_id=nil)
+    all_complete = true
+
+    descendants.each do |node|
+      unless node.id == ignored_id
+        if !node.is_complete?
+          all_complete = false
+          break
+        end
+      end
+    end
+
+    all_complete
+  end
+
+  def is_complete?
+    (current_status == @@task_status_complete_iid)
+  end
 
   # get total hours for this WorkEffort by TimeEntries
   #
   def total_hours_in_seconds
-    if self.leaf?
+    if leaf?
       time_entries.sum(:regular_hours_in_seconds)
     else
-      self.descendants.collect(&:total_hours_in_seconds)
+      descendants.collect(&:total_hours_in_seconds)
     end
   end
 
@@ -496,33 +537,6 @@ class WorkEffort < ActiveRecord::Base
     data
   end
 
-  # set current status of entity.
-  #
-  # This is overriding the default method to update the task assignments as well if the status is set to
-  # complete
-  #
-  # @param args [String, TrackedStatusType, Array] This can be a string of the internal identifier of the
-  # TrackedStatusType to set, a TrackedStatusType instance, or three params the status, options and party_id
-  def current_status=(args)
-    super(args)
-
-    if args.is_a?(Array)
-      status = args[0]
-    else
-      status = args
-    end
-
-    if status.is_a? TrackedStatusType
-      status = status.internal_identifier
-    end
-
-    if status == 'task_status_complete'
-      self.work_effort_party_assignments.each do |assignment|
-        assignment.current_status = 'task_resource_status_complete'
-      end
-    end
-  end
-
   protected
 
   # determine difference in minutes between two times
@@ -533,4 +547,63 @@ class WorkEffort < ActiveRecord::Base
   def time_diff_in_minutes (time_one, time_two)
     (((time_one - time_two).round) / 60)
   end
+
+  private
+
+  # completes work effort by setting finished at to Time.now and calculates
+  # actual_completion_time in minutes
+  #
+  def complete!
+    self.end_at = Time.now
+    self.save
+
+    self.work_effort_party_assignments.each do |assignment|
+      assignment.current_status = @@task_resource_status_complete_iid
+    end
+
+    # close all open time entries
+    time_entries.open_entries.each do |time_entry|
+      time_entry.thru_datetime = Time.now
+
+      time_entry.calculate_regular_hours_in_seconds!
+
+      time_entry.update_task_assignment_status(@@task_resource_status_complete_iid)
+    end
+
+    update_parent_status!
+  end
+
+  # Update the parent statues based on it's child nodes
+  #
+  def update_parent_status!
+    if parent
+      _parent = parent
+      while _parent
+        if _parent.descendants_complete?
+          _parent.current_status = @@task_status_complete_iid
+        elsif _parent.current_status == @@task_status_complete_iid
+          _parent.current_status = @@task_status_in_progress_iid
+        end
+        _parent = _parent.parent
+      end
+    end
+  end
+
+  # Update the parent statues based on it's child nodes before a node is moved
+  # ingnoring the node that is being moved
+  #
+  def update_parent_status_before_move!
+    if parent
+      _parent = parent
+      while _parent
+        if _parent.descendants_complete?(self.id)
+          _parent.current_status = @@task_status_complete_iid
+        elsif _parent.current_status == @@task_status_complete_iid
+          _parent.current_status = @@task_status_in_progress_iid
+        end
+        _parent = _parent.parent
+      end
+    end
+  end
+
 end
