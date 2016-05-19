@@ -7,6 +7,8 @@ module ErpBaseErpSvcs
   class Engine < Rails::Engine
     isolate_namespace ErpBaseErpSvcs
 
+    Mime::Type.register "tree", :tree
+
     config.erp_base_erp_svcs = ErpBaseErpSvcs::Config
 
     ActiveSupport.on_load(:active_record) do
@@ -15,12 +17,14 @@ module ErpBaseErpSvcs
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsNoteType
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsErpType
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsCategory
-      include ErpBaseErpSvcs::Extensions::ActiveRecord::HasContact
+      include ErpBaseErpSvcs::Extensions::ActiveRecord::IsContactMechanism
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsFixedAsset
       include ErpBaseErpSvcs::Extensions::ActiveRecord::ActsAsFacility
       include ErpBaseErpSvcs::Extensions::ActiveRecord::CanBeGenerated
       include ErpBaseErpSvcs::Extensions::ActiveRecord::HasPartyRoles
       include ErpBaseErpSvcs::Extensions::ActiveRecord::HasContacts
+      include ErpBaseErpSvcs::Extensions::ActiveRecord::TracksCreatedByUpdatedBy
+      include ErpBaseErpSvcs::Extensions::ActiveRecord::IsTenantable
       extend ErpBaseErpSvcs::Extensions::ActiveRecord::StiInstantiation::ActMacro
     end
 

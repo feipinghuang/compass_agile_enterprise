@@ -4,7 +4,7 @@ module ErpBaseErpSvcs
 
       class Client
 
-        def initialize(client_utc_offset)
+        def initialize(client_utc_offset=nil)
           @offset_in_hours = get_offset_in_hours(client_utc_offset)
         end
 
@@ -36,21 +36,17 @@ module ErpBaseErpSvcs
 
         def get_offset_in_hours(client_utc_offset=nil)
           if client_utc_offset.nil?
-            zone = Rails.configuration.time_zone
-
-            zone.utc_offset / 60 / 100
+            offset = ::Time.now.formatted_offset
+            if offset.is_a? Integer
+              offset/60.0
+            else
+              hours_and_minutes = offset.split(':').map(&:to_f)
+              hours_and_minutes[0] + hours_and_minutes[1]/60
+            end
           else
             client_utc_offset = client_utc_offset.to_i
-            hours = client_utc_offset / 60
-
-            if hours < 0
-              hours = "+#{hours}"
-
-            else
-              hours = "-#{hours}"
-            end
-
-            hours.to_i
+            hours = client_utc_offset / 60.0
+            -hours
           end
         end
 

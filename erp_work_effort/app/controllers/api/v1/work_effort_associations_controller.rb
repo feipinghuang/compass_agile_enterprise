@@ -88,7 +88,8 @@ module Api
             work_effort_association = WorkEffortAssociation.new
             work_effort_association.work_effort_id_from = params[:work_effort_id_from]
             work_effort_association.work_effort_id_to = params[:work_effort_id_to]
-            work_effort_association.work_effort_association_type = WorkEffortAssociationType.where('external_identifier = ?', work_effort_association_type).first
+            work_effort_association.work_effort_association_type = WorkEffortAssociationType.where('external_identifier = ?', params['work_effort_association_type.external_identifier'].to_s).first
+
             work_effort_association.save!
 
             render :json => {success: true, work_effort_association: work_effort_association.to_data_hash}
@@ -138,7 +139,8 @@ module Api
             work_effort_association = WorkEffortAssociation.find(params[:id])
             work_effort_association.work_effort_id_from = params[:work_effort_id_from]
             work_effort_association.work_effort_id_to = params[:work_effort_id_to]
-            work_effort_association.work_effort_association_type = WorkEffortAssociationType.where('external_identifier = ?', work_effort_association_type).first
+            work_effort_association.work_effort_association_type = WorkEffortAssociationType.where('external_identifier = ?', params[:work_effort_association_type_external_id].to_s).first
+
             work_effort_association.save!
 
             render :json => {success: true, work_effort_association: work_effort_association.to_data_hash}

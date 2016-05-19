@@ -2,7 +2,7 @@ class AddBaseChargeTypes
 
   def self.up
     ActiveRecord::Base.transaction do
-      ChargeType.create(description: 'Shipping', internal_identifier: 'shipping', taxable: true)
+      ChargeType.create(description: 'Shipping', internal_identifier: 'shipping', taxable: false)
       ChargeType.create(description: 'Tax', internal_identifier: 'tax', taxable: true)
       ChargeType.create(description: 'Assembly', internal_identifier: 'assembly', taxable: true)
     end

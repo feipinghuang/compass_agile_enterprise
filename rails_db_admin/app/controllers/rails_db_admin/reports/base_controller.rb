@@ -1,160 +1,119 @@
 module RailsDbAdmin
   module Reports
 
-    class BaseController < RailsDbAdmin::ErpApp::Desktop::BaseController
-
-      before_filter :set_report
-
-      acts_as_report_controller
+    class BaseController < ::ErpApp::ApplicationController
+      layout nil
+      before_filter :require_login
 
       def show
-        if @report.nil? or @report.query.nil?
-          render :no_report, :layout => false
-        else
-          build_report_data
+        report_helper = RailsDbAdmin::Services::ReportHelper.new
 
-          if @data[:error]
-            @error = @data[:error]
-            render :error_report, :layout => false
-            return
-          end
-          
-          respond_to do |format|
+        respond_to do |format|
 
-            format.html {
-              render(inline: @report.template,
-                     locals:
-                         {
-                             unique_name: @report_iid,
-                             title: @report.name,
-                             columns: @data[:columns],
-                             rows: @data[:rows],
-                             custom_data: @custom_data
-                         }
-              )
-            }
+          format.html {
 
-            format.pdf {
-              render build_pdf_config
-            }
+            result = report_helper.build_report(params[:iid],
+                                                [:html],
+                                                build_report_params)
+            if result.is_a? String
+              @error = result
+              render :error_report
+            else
+              render inline: result.first[:data]
+            end
+          }
 
-            format.csv {
-              csv_data = CSV.generate do |csv|
-                csv << @data[:columns]
-                @data[:rows].each do |row|
-                  csv << row.values
-                end
-              end
+          format.pdf {
+            result = report_helper.build_report(params[:iid],
+                                                [:pdf],
+                                                build_report_params)
 
-              send_data csv_data
-            }
+            if result.is_a? String
+              @error = result
+              render :error_report
+            else
+              send_data result.first[:data],
+                        filename: result.first[:name],
+                        type: 'application/pdf',
+                        disposition: :inline
+            end
+          }
 
-          end
+          format.csv {
+            result = report_helper.build_report(params[:iid],
+                                                [:csv],
+                                                build_report_params)
+            if result.is_a? String
+              @error = result
+              render :error_report
+            else
+              send_data result.first[:data],
+                        filename: result.first[:name],
+                        type: 'application/csv'
+            end
+          }
+
         end
 
       end
 
       def email
-        build_report_data
+        report_helper = RailsDbAdmin::Services::ReportHelper.new
+        file_attachments = report_helper.build_report(params[:iid],
+                                                      params[:report_format].map { |format| format.to_sym },
+                                                      build_report_params)
 
-        file_attachments = []
+        if file_attachments.is_a? String
+          render :json => {success: false, message: file_attachments}
+        else
+          default_name = Report.find_by_internal_identifier(params[:iid]).name
 
-        params[:report_format].each do |format|
-          if format == 'pdf'
-            file_attachments << {
-                name: "#{@report.name}.pdf",
-                data: render_to_string(build_pdf_config)
-            }
-          elsif format == 'csv'
-            csv_data = CSV.generate do |csv|
-              csv << @data[:columns]
-              @data[:rows].each do |row|
-                csv << row.values
-              end
-            end
+          to_email = params[:send_to]
+          cc_email = params[:cc_email]
+          message = params[:message].blank? ? "Attached is report #{default_name}" : params[:message]
+          subject = params[:subject].blank? ? "Attached is report #{default_name}" : params[:subject]
 
-            file_attachments << {
-                name: "#{@report.name}.csv",
-                data: csv_data
-            }
-          end
+          ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message, current_user.party.dba_organization).deliver
+
+          render json: {success: true}
         end
 
-        to_email = params[:send_to]
-        cc_email = params[:cc_email]
-        message = params[:message].blank? ? "Attached is report #{@report.name}" : params[:message]
-        subject = params[:subject].blank? ? "Attached is report #{@report.name}" : params[:subject]
+      rescue StandardError => ex
+        Rails.logger.error ex.message
+        Rails.logger.error ex.backtrace.join("\n")
 
-        ReportMailer.email_report(to_email, cc_email, file_attachments, subject, message).deliver
+        # email notification
+        ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-        render json: {success: true}
+        render :json => {success: false, message: ex.message}
       end
 
       protected
 
-      # build configuration to render a pdf of a report
-      #
-      def build_pdf_config
-        {
-            :pdf => "#{@report.internal_identifier}",
-            :template => 'base.html.erb',
-            :locals =>
-                {
-                    unique_name: @report_iid,
-                    title: @report.name,
-                    columns: @data[:columns],
-                    rows: @data[:rows],
-                    custom_data: @custom_data
-                },
-            :show_as_html => params[:debug].present?,
-            :page_size => @report.meta_data['print_page_size'] || 'A4',
-            :margin => {
-                :top => (@report.meta_data['print_margin_top'].blank? ? 10 : @report.meta_data['print_margin_top'].to_i),
-                :bottom => (@report.meta_data['print_margin_bottom'].blank? ? 10 : @report.meta_data['print_margin_bottom'].to_i),
-                :left => (@report.meta_data['print_margin_left'].blank? ? 10 : @report.meta_data['print_margin_left'].to_i),
-                :right => (@report.meta_data['print_margin_right'].blank? ? 10 : @report.meta_data['print_margin_right'].to_i),
-
-            },
-            :footer => {
-                :right => 'Page [page] of [topage]'
-            }
-        }
-      end
-
       # Get the report data by running executing the sql
       #
-      def build_report_data
+      def build_report_params
         report_params = params[:report_params]
 
-        parsed_report_params = if report_params
-                                 JSON.parse(report_params).symbolize_keys
+        parsed_report_params = if report_params.blank?
+                                 {}
                                else
-                                 nil
+                                 JSON.parse(report_params).symbolize_keys
                                end
 
         # add current_user to locals
         parsed_report_params[:current_user] = current_user
 
-        query = RailsDbAdmin::ErbStringParser.render(
-            @report.query,
-            locals: parsed_report_params
-        )
-        columns, values, error = @query_support.execute_sql(query)
-
-        @data = {:columns => columns, :rows => values, error: error}
-
-        if @data[:rows] and @data[:rows].count > 0
-          @custom_data = @data[:rows].last['custom_fields'] ? JSON.parse(@data[:rows].last['custom_fields']) : {}
-        else
-          @custom_data = {}
+        # add utc offset if it wasn't in the report params
+        if parsed_report_params[:client_utc_offset].blank?
+          parsed_report_params[:client_utc_offset] = params[:client_utc_offset]
         end
-      end
 
-      # Load the report by internal identifier and set to an instance variable
-      #
-      def set_report
-        @report_iid = params[:iid]
-        @report = Report.find_by_internal_identifier(@report_iid)
+        if params[:business_module_id].present?
+          parsed_report_params[:business_module_id] = params[:business_module_id]
+        end
+
+        parsed_report_params
       end
 
     end # BaseController

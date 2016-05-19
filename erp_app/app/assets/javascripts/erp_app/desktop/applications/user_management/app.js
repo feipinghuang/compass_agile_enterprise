@@ -11,5 +11,3 @@
 // GO AFTER THE REQUIRES BELOW.
 //
 //= require ./module
-//= require ./personal_info_panel
-//= require ./user_application_mgt_panel

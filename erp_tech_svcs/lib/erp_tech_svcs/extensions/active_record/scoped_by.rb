@@ -48,12 +48,12 @@ module ErpTechSvcs
         module InstanceMethods
           def add_scope(scope_name, scope_value)
             send(self.class.retrieve_scoped_by_name)[scope_name.to_s] = scope_value
-            save
+            save!
           end
 
           def remove_scope(scope_name)
-            send(self.class.etrieve_scoped_by_name)[scope_name.to_s] = nil
-            save
+            send(self.class.retrieve_scoped_by_name)[scope_name.to_s] = nil
+            save!
           end
 
           def get_scope(scope_name)
@@ -65,4 +65,3 @@ module ErpTechSvcs
     end # ActiveRecord
   end # Extensions
 end # ErpTechSvcs
-

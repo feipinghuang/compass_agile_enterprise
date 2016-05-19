@@ -9,7 +9,7 @@ module ErpTechSvcs
         # returns an array of hashes which represent all nodes in nested set order,
         # each of which consists of the node's id, internal identifier and representation
         # if a parent is passed it starts there in the tree
-        def to_all_representation(parent=nil, container_arr=[], level=0)
+        def to_all_representation(parent=nil, container_arr=[], level=0, ancestors=nil)
           if parent
             parent.children.each do |node|
               container_arr << {id: node.id,
@@ -22,7 +22,8 @@ module ErpTechSvcs
 
             end
           else
-            self.roots.each do |root|
+            ancestors = (ancestors || self.roots)
+            ancestors.each do |root|
               container_arr << {id: root.id,
                                 description: root.to_representation(level),
                                 internal_identifier: root.internal_identifier}
@@ -68,10 +69,10 @@ module ErpTechSvcs
         def find_or_create(iid, description, parent=nil)
           # look for it
           record = if parent
-                     parent.children.find_by_internal_identifier(iid)
-                   else
-                     find_by_internal_identifier(iid)
-                   end
+            parent.children.find_by_internal_identifier(iid)
+          else
+            find_by_internal_identifier(iid)
+          end
 
           unless record
             record = create(description: description, internal_identifier: iid)
@@ -188,10 +189,10 @@ module ErpTechSvcs
 
       def to_tree_hash(options={})
         options = {
-            only: [:parent_id, :internal_identifier],
-            leaf: self.leaf?,
-            text: self.to_label,
-            children: self.children.collect { |child| child.to_tree_hash(options) }
+          only: [:parent_id, :internal_identifier],
+          leaf: self.leaf?,
+          text: self.to_label,
+          children: self.children.collect { |child| child.to_tree_hash(options) }
         }.merge(options)
 
         self.to_hash(options)
@@ -220,7 +221,7 @@ module ErpTechSvcs
         if root?
           description
         else
-          crawl_up_from(self, root).split('///').reverse.join(' > ')
+          crawl_up_from(self, root).split('///').compact.reverse.join(' > ')
         end
       end
 
@@ -243,13 +244,14 @@ module ErpTechSvcs
       private
 
       def crawl_up_from(node, to_node = self.class.root)
-        # returns a string that is a '///'-separated list of nodes
-        # from child node to root
-        "#{node.description}///#{crawl_up_from(node.parent, to_node) if node != to_node}"
+        unless node.nil?
+          # returns a string that is a '///'-separated list of nodes
+          # from child node to root
+          "#{node.description}///#{crawl_up_from(node.parent, to_node) if node != to_node}"
+        end
       end
 
 
     end #DefaultNestedSetMethods
   end #Utils
 end #ErpTechSvcs
-

@@ -1,6 +1,8 @@
 class SkillType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   acts_as_nested_set
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
 
@@ -12,4 +14,5 @@ class SkillType < ActiveRecord::Base
 	    find_by_internal_identifier(internal_identifier)
 	  end
 	end
+  
 end

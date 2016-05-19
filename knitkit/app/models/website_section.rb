@@ -98,7 +98,11 @@ class WebsiteSection < ActiveRecord::Base
   end
 
   def positioned_children
-    children.sort_by { |child| [child.position] }
+    children.order('position')
+  end
+
+  def children_in_menu
+    positioned_children.where('in_menu = ?', true)
   end
 
   def paths

@@ -1,0 +1,27 @@
+<% if menu_items.count > 0 %>
+
+<!-- Sidebar -->
+<div id="sidebar-wrapper" class="expanded">
+	<ul class="sidebar-nav">
+		<%- menu_items.each do |child_menu_item|
+			if child_menu_item.allow_access?(current_user, :view)
+              if menu_item_selected(child_menu_item) %>
+              	<li class="active">
+              <%- else  %>
+              	<li>
+              <%- end %>
+
+                <a href="<%= child_menu_item.path %>"><%= child_menu_item.title %></a>
+			  </li>
+
+            <%- end %>  
+		<%- end %>
+
+	</ul>
+</div>
+
+<script type='text/javascript'>
+  $('.content-area').addClass('side-bar-content-wrapper');
+</script>
+
+<% end %>

@@ -5,7 +5,7 @@ class RoleType < ActiveRecord::Base
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   acts_as_erp_type
 
-  validates :internal_identifier, uniqueness: {message: "Internal Identifiers should be unique"}
+  validates :internal_identifier, uniqueness: {message: "should be unique"}
 
   has_many :party_roles
   has_many :parties, :through => :party_roles

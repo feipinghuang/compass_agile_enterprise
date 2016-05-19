@@ -1,94 +1,80 @@
-Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.GroupsEffectiveSecurity",{
-  extend:"Ext.panel.Panel",
-  alias:'widget.security_management_groupseffectivesecurity',
+Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.GroupsEffectiveSecurity", {
+	extend: "Ext.panel.Panel",
+	alias: 'widget.security_management_groupseffectivesecurity',
 
-  updateTitle : function(){
-    if (this.assign_to_description){
-      this.down('#effective').setTitle('Effective Security for Group '+this.assign_to_description);
-    }
-  },
+	bodyPadding: '10px',
+	autoScroll: true,
+	layout: 'vbox',
 
-  refreshWidget : function(tab){
-    if (tab === undefined) tab = this;
+	updateTitle: function() {
+		if (this.assign_to_description) {
+			this.down('#effectiveTitle').update('<div style="font-weight:bold;margin-bottom:10px;">Effective Security for Group: ' + this.assign_to_description + '</div>');
+		}
+	},
 
-    if (tab.assign_to_id){
+	refreshWidget: function(tab) {
+		if (tab === undefined) tab = this;
 
-      Ext.Ajax.request({
-        url: '/erp_app/desktop/security_management/groups/effective_security',
-        method: 'POST',
-        params:{
-          id: tab.assign_to_id
-        },
-        success: function(response) {
-          var json_response = Ext.decode(response.responseText);
-          if (json_response.success){
-            if (json_response.capabilities.length > 0){
-              tab.down('#capabilities').update(json_response.capabilities);
-            }else{
-              tab.down('#capabilities').update("No capabilities.");
-            }
-          }else{
-            Ext.Msg.alert('Error', Ext.decode(response.responseText).message);
-          }
-        },
-        failure: function(response) {
-          Ext.Msg.alert('Error', 'Error Retrieving Effective Security');
-        }
-      });
+		if (tab.assign_to_id) {
 
-    }
-  },
+			Ext.Ajax.request({
+				url: '/api/v1/groups/' + tab.assign_to_id + '/effective_security',
+				method: 'GET',
+				success: function(response) {
+					var reponseObj = Ext.decode(response.responseText);
+					if (reponseObj.success) {
+						if (reponseObj.capabilities.length > 0) {
+							tab.down('#effective').update(tab.capabilitiesTpl.apply(reponseObj.capabilities));
+						} else {
+							tab.down('#effective').update("No capabilities.");
+						}
+					} else {
+						Ext.Msg.alert('Error', Ext.decode(response.responseText).message);
+					}
+				},
+				failure: function(response) {
+					Ext.Msg.alert('Error', 'Error Retrieving Effective Security');
+				}
+			});
+		}
+	},
 
-  constructor : function(config) {
-    var self = this;
+	constructor: function(config) {
+		var me = this;
 
-    var capabilities_tpl = new Ext.XTemplate(
-          '<tpl for=".">',
-          '{capability_type_iid} {capability_resource_type}<br />',
-          '</tpl>'
-          );
+		me.capabilitiesTpl = new Ext.XTemplate(
+			'<tpl for=".">',
+			'<tpl if="xindex==xcount">{.}',
+			'{capability_type_iid} {capability_resource_type}',
+			'<tpl else>',
+			'{capability_type_iid} {capability_resource_type}, ',
+			'</tpl>',
+			'</tpl>'
+		);
 
-    var capabilities = {
-        xtype: 'panel',
-        itemId: 'capabilities',
-        title: 'Capabilities',
-        layout: 'hbox',
-        autoScroll: true,
-        bodyPadding: 10,
-        tpl: capabilities_tpl,
-        listeners:{
-            'afterrender':function(comp){
-                comp.update('Select a Group');
-            }
-        }
-    };
+		config = Ext.apply({
+			title: 'Effective Security',
+			items: [{
+				xtype: 'component',
+				width: '80%',
+				itemId: 'effectiveTitle',
+				autoEl: 'div',
+				html: '',
+			}, {
+				xtype: 'component',
+				itemId: 'effective',
+				width: '80%',
+				autoEl: 'div',
+				html: 'Please Select A Group'
+			}],
+			listeners: {
+				activate: function(tab) {
+					me.refreshWidget(tab);
+					me.updateTitle();
+				}
+			}
+		}, config);
 
-    var effective = {
-        xtype: 'panel',
-        itemId: 'effective',
-        title: 'Effective Security',
-        layout: 'hbox',
-        autoScroll: true,
-        bodyPadding: 10,
-        items:[
-          capabilities
-        ]
-    };
-
-    config = Ext.apply({
-      title:'Effective Security',
-      items:[
-        effective
-      ],
-      listeners:{
-        activate: function(tab){
-          self.refreshWidget(tab);
-          self.updateTitle();
-        }
-      }
-
-    }, config);
-
-    this.callParent([config]);
-  }
+		this.callParent([config]);
+	}
 });

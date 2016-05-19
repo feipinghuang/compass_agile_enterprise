@@ -11,7 +11,9 @@ module ErpBaseErpSvcs
             extend HasTrackedStatus::SingletonMethods
             include HasTrackedStatus::InstanceMethods
 
-            has_many :status_applications, :as => :status_application_record, :dependent => :destroy
+            has_many :status_applications, :as => :status_application_record
+
+            before_destroy :destroy_status_applications
 
             scope :with_status, lambda { |status_type_iids|
                                 joins(:status_applications => :tracked_status_type).
@@ -86,7 +88,7 @@ module ErpBaseErpSvcs
                                              end
 
                                              unless status_ids.empty?
-                                               statement = statement.where(TrackedStatusType.arel_table[:id].in status_ids)
+                                               statement = statement.where(TrackedStatusType.arel_table[:id].not_in status_ids)
                                              end
                                            end
 
@@ -99,6 +101,12 @@ module ErpBaseErpSvcs
         end
 
         module InstanceMethods
+
+          def destroy_status_applications
+            self.status_applications.each do |status_application|
+              status_application.destroy
+            end
+          end
 
           # does this status match the current_status?
           def has_status?(tracked_status_iid)
@@ -153,11 +161,10 @@ module ErpBaseErpSvcs
             self.current_status_type.internal_identifier unless self.current_status_type.nil?
           end
 
-          #set current status of entity.
-          #takes a TrackedStatusType internal_identifier and creates a StatusApplication
-          #with from_date set to today and tracked_status_type set to passed TrackedStatusType internal_identifier
-          #optionally can passed from_date and thru_date to manually set these
-          #it will set the thru_date on the current StatusApplication to now
+          # set current status of entity.
+          #
+          # @param args [String, TrackedStatusType, Array] This can be a string of the internal identifier of the
+          # TrackedStatusType to set, a TrackedStatusType instance, or three params the status, options and party_id
           def current_status=(args)
             options = {}
 

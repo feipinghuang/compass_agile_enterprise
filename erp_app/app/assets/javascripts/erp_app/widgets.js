@@ -14,83 +14,109 @@
 
 Compass.ErpApp.Utility.createNamespace("Compass.ErpApp.Widgets");
 
-Compass.ErpApp.Widgets = {
-    setup: function (uuid, name, action, params, addToLoaded) {
-        var widgetParams = {
-            widget_params: JSON.stringify(params),
-            authenticity_token: Compass.ErpApp.AuthentictyToken
-        };
+Compass.ErpApp.Widgets = function(){
+    window.onbeforeunload = function () {
+        return Compass.ErpApp.Widgets.clearWidgets();
+    };
 
-        $.ajax({
-            url: '/erp_app/widgets/' + name + '/' + action + '/' + uuid,
-            type: 'GET',
-            data: widgetParams,
-            success:function(data, textStatus, xhr){
-                var $widgetDiv = $('#' + uuid);
+    return {
+        setup: function (uuid, name, action, params, addToLoaded) {
+            var widgetParams = {
+                widget_params: JSON.stringify(params),
+                authenticity_token: Compass.ErpApp.AuthentictyToken
+            };
 
-                $widgetDiv.html(data.html);
-                Compass.ErpApp.JQuerySupport.setupHtmlReplace();
-                if (addToLoaded)
-                    Compass.ErpApp.Widgets.LoadedWidgets.push({
-                        id: uuid,
-                        name: name,
-                        action: action,
-                        params: params
-                    });
-            },
-            error: function(){
-                //ALERT?
-            }
-        });
-    },
+            $.ajax({
+                url: '/erp_app/widgets/' + name + '/' + action + '/' + uuid,
+                type: 'GET',
+                data: widgetParams,
+                success: function (data, textStatus, xhr) {
+                    var $widgetDiv = $('#' + uuid);
 
-    refreshWidgets: function () {
-        $.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget){
-            Compass.ErpApp.Widgets.setup(widget.id, widget.name, widget.action, widget.params, false);
-        });
-    },
+                    $widgetDiv.html(data.html);
+                    Compass.ErpApp.JQuerySupport.setupHtmlReplace();
+                    if (addToLoaded)
+                        Compass.ErpApp.Widgets.LoadedWidgets.push({
+                            id: uuid,
+                            name: name,
+                            action: action,
+                            params: params
+                        });
+                },
+                error: function () {
+                    //ALERT?
+                }
+            });
+        },
 
-    refreshWidget: function (name, action) {
-        $.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget){
-            if (widget.name == name && widget.action == action) {
+        refreshWidgets: function () {
+            $.each(Compass.ErpApp.Widgets.LoadedWidgets, function (index, widget) {
                 Compass.ErpApp.Widgets.setup(widget.id, widget.name, widget.action, widget.params, false);
-            }
-        });
-    },
+            });
+        },
 
-    setupAjaxNavigation: function (css_class, home_url) {
-        $.address.value('nav?url=' + home_url);
-
-        var bindCss = 'a.' + css_class;
-        var anchor = null;
-        $(bindCss).bind('click', function () {
-            anchor = $(this);
-            var href = anchor.attr('href');
-            $.address.value('nav?url=' + href + '&key=' + Compass.ErpApp.Utility.randomString(10));
-            anchor.closest('div.compass_ae-widget').mask("Loading....");
-
-            return false;
-        });
-
-        $.address.change(function (event) {
-            try {
-                if (!Ext.isEmpty(event.parameters.url)) {
-                    $.ajax({
-                        url: event.parameters.url,
-                        success: Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse
-                    });
+        refreshWidget: function (name, action) {
+            $.each(Compass.ErpApp.Widgets.LoadedWidgets, function (index, widget) {
+                if (widget.name == name && widget.action == action) {
+                    Compass.ErpApp.Widgets.setup(widget.id, widget.name, widget.action, widget.params, false);
                 }
-            }
-            catch (exception) {
-                if (console) {
-                    console.log(exception);
+            });
+        },
+
+        setupAjaxNavigation: function (css_class, home_url) {
+            $.address.value('nav?url=' + home_url);
+
+            var bindCss = 'a.' + css_class;
+            var anchor = null;
+            $(bindCss).bind('click', function () {
+                anchor = $(this);
+                var href = anchor.attr('href');
+                $.address.value('nav?url=' + href + '&key=' + Compass.ErpApp.Utility.randomString(10));
+                anchor.closest('div.compass_ae-widget').mask("Loading....");
+
+                return false;
+            });
+
+            $.address.change(function (event) {
+                try {
+                    if (!Ext.isEmpty(event.parameters.url)) {
+                        $.ajax({
+                            url: event.parameters.url,
+                            success: Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse
+                        });
+                    }
                 }
+                catch (exception) {
+                    if (console) {
+                        console.log(exception);
+                    }
+                }
+            });
+        },
+
+        clearWidgets: function(){
+            var uuids = Compass.ErpApp.Widgets.LoadedWidgets.collect('id');
+
+            if(uuids.length > 0){
+                $.ajax({
+                    url: '/erp_app/widgets/clear',
+                    type: 'DELETE',
+                    data:{
+                        uuids: uuids.join(',')
+                    },
+                    success: function (data, textStatus, xhr) {
+                        // DO NOTHING
+                    },
+                    error: function () {
+                        // DO NOTHING
+                    }
+                });
             }
-        });
-    },
+        },
 
-    LoadedWidgets: [],
+        LoadedWidgets: [],
 
-    AvailableWidgets: []
-};
+        AvailableWidgets: []
+    };
+}();
 

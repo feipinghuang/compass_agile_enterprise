@@ -8,9 +8,11 @@
 class EmailAddress < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-  has_contact
+  is_contact_mechanism
 
-  validates_format_of :email_address, :with => /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\z/, :message => "Must be a valid email address"
+  validates_format_of :email_address,
+                      with: /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\z/,
+                      message: "Must be a valid email address"
 
   def summary_line
     "#{description} : #{email_address}"

@@ -16,7 +16,6 @@ module ErpTechSvcs
                     :file_storage,
                     :s3_cache_expires_in_minutes,
                     :session_expires_in_hours,
-                    :compass_logger_path,
                     :notification_job_delay
 
       def init!
@@ -34,7 +33,6 @@ module ErpTechSvcs
           :@s3_protocol => 'https', # Can be either 'http' or 'https'
           :@file_storage => :filesystem, # Can be either :s3 or :filesystem
           :@session_expires_in_hours => 12, # this is used by DeleteExpiredSessionsJob to purge inactive sessions from database
-          :@compass_logger_path => "#{Rails.root}/log",
           :@notification_job_delay => '2 minutes from now'
         }
       end
@@ -52,6 +50,11 @@ module ErpTechSvcs
       def configure!
         @configure_blk.call(self) if @configure_blk
       end
+
+      def installation_url
+        "#{self.file_protocol}://#{self.installation_domain}"
+      end
+
     end
     init!
     reset!

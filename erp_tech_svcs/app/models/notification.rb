@@ -61,6 +61,7 @@ class Notification < ActiveRecord::Base
 
   # Delivers notification, called by the notifications delayed job
   # this is a template method and should be overridden by sub class
+  #
   def deliver_notification
   end
 

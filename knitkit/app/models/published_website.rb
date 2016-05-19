@@ -1,3 +1,19 @@
+# create_table :published_websites do |t|
+#   t.references :website
+#   t.text :comment
+#   t.decimal :version, :precision => 18, :scale => 6
+#   t.boolean :active
+#   t.integer :published_by_id
+#
+#   t.timestamps
+# end
+#
+# #indexes
+# add_index :published_websites, :website_id
+# add_index :published_websites, :version
+# add_index :published_websites, :active
+# add_index :published_websites, :published_by_id
+
 class PublishedWebsite < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 

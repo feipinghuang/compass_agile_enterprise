@@ -13,6 +13,10 @@ class UpdateTaxationForInvoices < ActiveRecord::Migration
       add_column :invoice_items, :taxed, :boolean
     end
 
+    if column_exists? :invoice_items, :taxable
+      remove_column :invoice_items, :taxable
+    end
+
     unless column_exists? :invoices, :sales_tax
       add_column :invoices, :sales_tax, :decimal, precision: 8, scale: 2
     end
@@ -31,6 +35,10 @@ class UpdateTaxationForInvoices < ActiveRecord::Migration
 
     if column_exists? :invoice_items, :taxed
       remove_column :invoice_items, :taxed
+    end
+
+    unless column_exists? :invoice_items, :taxable
+      add_column :invoice_items, :taxable, :boolean
     end
 
     if column_exists? :invoices, :sales_tax

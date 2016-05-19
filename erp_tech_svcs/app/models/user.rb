@@ -19,11 +19,14 @@ class User < ActiveRecord::Base
   validates :password, :presence => true, :password_strength => true, :if => :password
 
   #email validations
-  validates :email, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false}
+  validates :email, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false,
+                                                                                  message: "In use by another user"}
+
   validates_format_of :email, :with => /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/
 
   #username validations
-  validates :username, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false}
+  validates :username, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false,
+                                                                                     message: "In use by another user"}
 
   validate :email_cannot_match_username_of_other_user
 
@@ -109,43 +112,72 @@ class User < ActiveRecord::Base
 
   alias :remove_all_security_roles :remove_all_roles
 
-  # user lives on FROM side of relationship
-  def group_relationships
-    role_type = RoleType.find_by_internal_identifier('group_member')
-    PartyRelationship.where(:party_id_from => self.party.id, :role_type_id_from => role_type.id)
-  end
-
-  def join_party_relationships
-    role_type = RoleType.find_by_internal_identifier('group_member')
-    "party_relationships ON party_id_from = #{self.party.id} AND party_id_to = parties.id AND role_type_id_from=#{role_type.id}"
-  end
-
   # party records for the groups this user belongs to
   def group_parties
-    Party.joins("JOIN #{join_party_relationships}")
+    Party.joins("JOIN #{group_member_join}")
   end
 
   # groups this user belongs to
   def groups
-    Group.joins(:party).joins("JOIN #{join_party_relationships}")
+    Group.joins(:party).joins("JOIN #{group_member_join}")
   end
 
   # groups this user does NOT belong to
   def groups_not
-    Group.joins(:party).joins("LEFT JOIN #{join_party_relationships}").where("party_relationships.id IS NULL")
+    Group.joins(:party).joins("LEFT JOIN #{group_member_join}").where("party_relationships.id IS NULL")
   end
 
   # roles assigned to the groups this user belongs to
   def group_roles
     SecurityRole.joins(:parties).
-        where(:parties => {:business_party_type => 'Group'}).
-        where("parties.business_party_id IN (#{groups.select('groups.id').to_sql})")
+      where(:parties => {:business_party_type => 'Group'}).
+      where("parties.business_party_id IN (#{groups.select('groups.id').to_sql})")
+  end
+
+  # Add a group to this user
+  #
+  # @param group [Group] Group to add
+  def add_group(group)
+    group.add_user(self)
+  end
+
+  # Add multiple groups to this user
+  #
+  # @param _groups [Array] Groups to add
+  def add_groups(_groups)
+    _groups.each do |group|
+      add_group(group)
+    end
+  end
+
+  # Remove a group from this user
+  #
+  # @param group [Group] Group to remove
+  def remove_group(group)
+    group.remove_user(self)
+  end
+
+  # Remove multiple groups from this user
+  #
+  # @param _groups [Array] Groups to remove
+  def remove_groups(_groups)
+    _groups.each do |group|
+      remove_group(group)
+    end
+  end
+
+  # Remove all current groups from this user
+  #
+  def remove_all_groups
+    groups.each do |group|
+      remove_group(group)
+    end
   end
 
   # composite roles for this user
   def all_roles
     SecurityRole.joins(:parties).joins("LEFT JOIN users ON parties.id=users.party_id").
-        where("(parties.business_party_type='Group' AND
+    where("(parties.business_party_type='Group' AND
               parties.business_party_id IN (#{groups.select('groups.id').to_sql})) OR 
              (users.id=#{self.id})")
   end
@@ -156,19 +188,19 @@ class User < ActiveRecord::Base
 
   def group_capabilities
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-        where(:capability_accessors => {:capability_accessor_record_type => "Group"}).
-        where("capability_accessor_record_id IN (#{groups.select('groups.id').to_sql})")
+      where(:capability_accessors => {:capability_accessor_record_type => "Group"}).
+      where("capability_accessor_record_id IN (#{groups.select('groups.id').to_sql})")
   end
 
   def role_capabilities
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-        where(:capability_accessors => {:capability_accessor_record_type => "SecurityRole"}).
-        where("capability_accessor_record_id IN (#{all_roles.select('security_roles.id').to_sql})")
+      where(:capability_accessors => {:capability_accessor_record_type => "SecurityRole"}).
+      where("capability_accessor_record_id IN (#{all_roles.select('security_roles.id').to_sql})")
   end
 
   def all_capabilities
     Capability.includes(:capability_type).joins(:capability_type).joins(:capability_accessors).
-        where("(capability_accessors.capability_accessor_record_type = 'Group' AND
+    where("(capability_accessors.capability_accessor_record_type = 'Group' AND
                   capability_accessor_record_id IN (#{groups.select('groups.id').to_sql})) OR
                  (capability_accessors.capability_accessor_record_type = 'SecurityRole' AND
                   capability_accessor_record_id IN (#{all_roles.select('security_roles.id').to_sql})) OR
@@ -201,29 +233,29 @@ class User < ActiveRecord::Base
 
   def class_capabilities_to_hash
     all_uniq_class_capabilities.map { |capability|
-      {:capability_type_iid => capability.capability_type.internal_identifier,
-       :capability_resource_type => capability.capability_resource_type
-      }
+      { :capability_type_iid => capability.capability_type.description,
+        :capability_resource_type => capability.capability_resource_type
+        }
     }.compact
   end
 
   def to_data_hash
     data = to_hash(only: [
-                       :auth_token,
-                       :id,
-                       :username,
-                       :email,
-                       :activation_state,
-                       :last_login_at,
-                       :last_activity_at,
-                       :failed_logins_count,
-                       :created_at,
-                       :updated_at
+                     :auth_token,
+                     :id,
+                     :username,
+                     :email,
+                     :activation_state,
+                     :last_login_at,
+                     :last_activity_at,
+                     :failed_logins_count,
+                     :created_at,
+                     :updated_at
                    ],
                    display_name: party.description,
                    is_admin: party.has_security_role?('admin'),
                    party: party.to_data_hash
-    )
+                   )
 
     # add first name and last name if this party is an Individual
     if self.party.business_party.is_a?(Individual)
@@ -232,6 +264,13 @@ class User < ActiveRecord::Base
     end
 
     data
+  end
+
+  protected
+
+  def group_member_join
+    role_type = RoleType.find_by_internal_identifier('group_member')
+    "party_relationships ON party_id_from = #{self.party.id} AND party_id_to = parties.id AND role_type_id_from=#{role_type.id}"
   end
 
 end

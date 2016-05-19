@@ -34,47 +34,29 @@ module Api
 =end
 
       def index
+        query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
         work_efforts = WorkEffort.where("work_efforts.parent_id is null")
 
-        # if project is passed scope by project
-        if params[:project_id].present?
-          work_efforts = work_efforts.scope_by_project(params[:project_id])
-        end
-
-        # if status is passed scope by status
-        if params[:status].present?
-          work_efforts = work_efforts.with_current_status(params[:status].split(','))
-        end
-
-        # if parties is passed scope by parties
-        if params[:parties].present?
-          data = JSON.parse(params[:parties])
-          party_ids = data['party_ids']
-          role_types = data['role_types']
-
-          work_efforts = work_efforts.scope_by_party(party_ids.split(','), {role_types: RoleType.where('internal_identifier' => role_types.split(','))})
-        end
-
-        # if filters are passed apply filters
-        if params[:query_filter].present?
-          work_efforts = WorkEffort.apply_filters(JSON.parse(params[:query_filter]).symbolize_keys, work_efforts)
-        end
-
-        # scope by user if present
-        if params[:scope_by_user].present? and params[:scope_by_user].to_bool
+        # scope by user if that option is passed and no parties are passed to filter by
+        if query_filter[:parties].blank? and params[:scope_by_user].present? and params[:scope_by_user].to_bool
           work_efforts = work_efforts.scope_by_user(current_user, {role_types: [RoleType.iid('work_resource')]})
+
+          # scope by dba organization if we are not scoping by user or filtering by parties
+        elsif query_filter[:parties].blank?
+          dba_organizations = [current_user.party.dba_organization]
+          dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
+          work_efforts = work_efforts.scope_by_dba_organization(dba_organizations)
         end
 
-        # scope by dba organization
-        work_efforts = work_efforts.scope_by_dba_organization(current_user.party.dba_organization)
+        # apply filters
+        work_efforts = WorkEffort.apply_filters(query_filter, work_efforts)
 
-        work_efforts = work_efforts.order("sequence ASC")
+        work_efforts = work_efforts.order("sequence ASC").uniq
 
         render :json => {success: true,
                          total: work_efforts.count,
                          work_efforts: work_efforts.map { |work_effort| work_effort.to_data_hash }}
-
       end
 
 =begin
@@ -292,6 +274,13 @@ module Api
         end
       end
 
+      def time_entries_allowed
+        work_effort = WorkEffort.find(params[:id])
+        party = params[:party_id].blank? ? current_user.party : Party.find(params[:party_id])
+
+        render json: {success: true, allowed: work_effort.time_entries_allowed?(party)}
+      end
+
       protected
 
       def create_work_effort(data)
@@ -341,12 +330,14 @@ module Api
         end
 
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
         end
 
         if data[:work_effort_type].present?
           work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
+
+        work_effort.created_by_party = current_user.party
 
         work_effort.save!
 
@@ -415,12 +406,14 @@ module Api
         end
 
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.find_by_ancestor_iids(['task_statuses', data[:status][:tracked_status_type][:internal_identifier]])
+          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
         end
 
         if data[:work_effort_type].present?
           work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
         end
+
+        work_effort.updated_by_party = current_user.party
 
         work_effort.save!
 

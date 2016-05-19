@@ -1,8 +1,9 @@
 class Contact < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   has_and_belongs_to_many :contact_purposes
-  belongs_to :party
   belongs_to :contact_mechanism, :polymorphic => true, :dependent => :destroy
   belongs_to :contact_record, :polymorphic => true
 
@@ -17,6 +18,18 @@ class Contact < ActiveRecord::Base
     @description=d
   end
 
+  def party
+    if self.contact_record_type == 'Party'
+      self.contact_record
+    else
+      nil
+    end
+  end
+
+  def party=(party)
+    self.contact_record = party
+  end
+
   #delegate our need to provide a label to scaffolds to the implementer of
   #the -contact_mechanism- interface.
 
@@ -27,7 +40,7 @@ class Contact < ActiveRecord::Base
   def summary_line
     "#{contact_mechanism.summary_line}"
   end
-  
+
   def is_primary?
     self.is_primary
   end

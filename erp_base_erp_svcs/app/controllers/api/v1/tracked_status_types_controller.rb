@@ -137,10 +137,10 @@ module Api
             tracked_status_type.move_to_child_of(parent)
           end
 
-          render :json => {success: true, tracked_status_type: traced_status_type.to_data_hash}
+          render :json => {success: true, tracked_status_type: tracked_status_type.to_data_hash}
         end
       end
 
-    end # TrackedStatusTypesContoller
+    end # TrackedStatusTypesController
   end # V1
 end # Api

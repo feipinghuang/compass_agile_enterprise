@@ -16,7 +16,7 @@
 class PostalAddress < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-  has_contact
+  is_contact_mechanism
 
   belongs_to :geo_country
   belongs_to :geo_zone

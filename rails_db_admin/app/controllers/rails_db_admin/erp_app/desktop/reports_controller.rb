@@ -4,7 +4,7 @@ module RailsDbAdmin
       class ReportsController < QueriesController
 
         before_filter :set_file_support
-        
+
         def index
           if params[:node] == 'root_node'
             setup_tree
@@ -20,83 +20,104 @@ module RailsDbAdmin
         end
 
         def create
-          if params[:report_data].present?
-            Report.import(params[:report_data])
-            render :inline => {:success => true}.to_json
-          else
-            name = params[:name]
-            internal_identifier = params[:internal_identifier]
-            report = Report.new(:name => name, :internal_identifier => internal_identifier)
-            if report.save
-              render :json => {:success => true}
-            else
-              render :json => {:success => false, :msg => 'Error creating report'}
-            end
-          end
-        end
+          begin
+            ActiveRecord::Base.transaction do
 
-        def edit
-          id  = params[:id]
+              if params[:report_data].present?
+                Report.import(params[:report_data])
+                render :inline => {:success => true}.to_json
+              else
+                name = params[:name]
+                internal_identifier = params[:internal_identifier]
+                report = Report.new(:name => name, :internal_identifier => internal_identifier)
 
-          report = Report.find(id)
+                report.save!
 
-          if report
-            render :json => {
-                     success: true,
-                     report: {
-                       title: report.name,
-                       id: report.id,
-                       query: report.query,
-                       internalIdentifier: report.internal_identifier,
-                       template: report.template,
-                       params: report.meta_data['params'] || [],
-                       roles: report.role_types.pluck(:internal_identifier).join(',')
-                     }
-                   }
-          else
-            render :json => {success: false}
-          end
-        end
-
-        def update
-          id = params[:id]
-          report = Report.find(id)
-
-          if report
-            report.meta_data['print_page_size'] = params[:page_size].strip if params[:page_size] 
-            report.meta_data['print_margin_top'] = params[:margin_top].strip if params[:margin_top]
-            report.meta_data['print_margin_right'] = params[:margin_right].strip if params[:margin_right]
-            report.meta_data['print_margin_bottom'] = params[:margin_bottom].strip if params[:margin_bottom]
-            report.meta_data['print_margin_left'] = params[:margin_left].strip if params[:margin_left]
-
-            if params[:report_params].present?
-              report.meta_data['params'] = params[:report_params]
-            end
-
-            report_roles = params[:report_roles]
-            if report_roles
-              available_role_types = report.role_types.pluck(:internal_identifier)
-              # delete all roles associated with the report
-              report.entity_party_roles.destroy_all
-
-              # assign report roles
-              report_roles.split(',').each do |role_type|
-                report.add_party_with_role(
-                  current_user.party,
-                  RoleType.iid(role_type)
-                ) unless available_role_types.include?(role_type.to_sym)
+                render :json => {:success => true}
               end
 
             end
-            
-            render :json => {success: report.save}
-          else
-            render :json => {success: false}
+          rescue ActiveRecord::RecordInvalid => invalid
+            Rails.logger.error invalid.record.errors.full_messages
+
+            render json: {success: false, message: invalid.record.errors.full_messages.join('</br>')}
+
+          rescue StandardError => ex
+            Rails.logger.error ex.message
+            Rails.logger.error ex.backtrace.join("\n")
+
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+            render json: {success: false, message: 'Error creating report'}
+
+          end
+        end
+
+        def query
+          render :json => {success: true, query: Report.find(params[:id]).query}
+        end
+
+        def update
+          begin
+            ActiveRecord::Base.transaction do
+              report = Report.find(params[:id])
+
+              report.meta_data['print_page_size'] = params[:print_page_size].strip if params[:print_page_size]
+              report.meta_data['print_margin_top'] = params[:print_margin_top].strip if params[:print_margin_top]
+              report.meta_data['print_margin_right'] = params[:print_margin_right].strip if params[:print_margin_right]
+              report.meta_data['print_margin_bottom'] = params[:print_margin_bottom].strip if params[:print_margin_bottom]
+              report.meta_data['print_margin_left'] = params[:print_margin_left].strip if params[:print_margin_left]
+              report.meta_data['print_orientation'] = params[:print_orientation].strip if params[:print_orientation]
+              report.meta_data['auto_execute'] = params['auto_execute'] == 'on'
+
+              unless params[:report_name].blank?
+                report.name = params[:report_name].squish
+              end
+
+              unless params[:report_iid].blank?
+                report.internal_identifier = params[:report_iid].squish
+              end
+
+              if params.key?(:report_params)
+                report.meta_data['params'] = params[:report_params].nil? ? [] : params[:report_params]
+              end
+
+              report_roles = params[:report_roles]
+              if report_roles
+                available_role_types = report.role_types.pluck(:internal_identifier)
+                # delete all roles associated with the report
+                report.entity_party_roles.destroy_all
+
+                # assign report roles
+                report_roles.split(',').each do |role_type|
+                  report.add_party_with_role(
+                      current_user.party,
+                      RoleType.iid(role_type)
+                  ) unless available_role_types.include?(role_type.to_sym)
+                end
+              end
+
+              render json: {success: report.save!}
+
+            end
+          rescue ActiveRecord::RecordInvalid => invalid
+            Rails.logger.error invalid.record.errors.full_messages
+
+            render json: {success: false, message: invalid.record.errors.full_messages.join('</br>')}
+
+          rescue StandardError => ex
+            Rails.logger.error ex.message
+            Rails.logger.error ex.backtrace.join("\n")
+
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+            render json: {success: false, message: 'Could not save report'}
+
           end
         end
 
         def save
-          id  = params[:id]
+          id = params[:id]
           query = params[:query]
           template = params[:template]
 
@@ -113,7 +134,7 @@ module RailsDbAdmin
         end
 
         def save_query
-          id  = params[:id]
+          id = params[:id]
           query = params[:query]
 
           report = Report.find(id)
@@ -167,13 +188,12 @@ module RailsDbAdmin
           end
         end
 
-
         def update_file
           begin
             path = File.join(@file_support.root, params[:node])
             content = params[:content]
             @file_support.update_file(path, content)
-            nodes =  params[:node].split('/')
+            nodes = params[:node].split('/')
             if nodes.last == 'base.html.erb'
               report = Report.iid(nodes[nodes.index("compass_ae_reports") + 1])
               report.template = content
@@ -316,37 +336,29 @@ module RailsDbAdmin
         def setup_tree
           tree = []
           Report.all.collect do |report|
-            report_hash = {
-              :text => report.name,
-              :reportName => report.name,
-              :id => report.id,
-              :uniqueName => report.internal_identifier,
-              :iconCls => 'icon-content',
-              :isReport => true,
-              :handleContextMenu => true,
-              :children => [],
-              :reportMetaData => report.meta_data || {}
-            }
+            report_data = build_report_data(report)
 
-            ['stylesheets', 'images', 'templates','javascripts','query'].each do |resource_folder|
-              report_hash[:children] << {
+            ['stylesheets', 'images', 'templates', 'javascripts', 'query'].each do |resource_folder|
+              report_data[:children] << {
                   :reportId => report.id,
                   :reportName => report.name,
                   :reportIid => report.internal_identifier,
                   :text => resource_folder.titleize,
                   :iconCls => case resource_folder
-                              when 'query'
-                                'icon-query'
-                              else
-                                'icon-content'
+                                when 'query'
+                                  'icon-query'
+                                else
+                                  'icon-content'
                               end,
                   :id => "#{report.url}/#{resource_folder}",
                   :leaf => (resource_folder == 'query'),
                   :handleContextMenu => (resource_folder == 'query') || (resource_folder == 'preview_report')
               }
-              tree << report_hash
             end
+
+            tree << report_data
           end
+
           render :json => tree
         end
 
@@ -355,6 +367,7 @@ module RailsDbAdmin
           path = path[reports_index..path.length]
           report_name = path.split('/')[1]
           @report = Report.iid(report_name)
+
           @report
         end
 
@@ -368,7 +381,29 @@ module RailsDbAdmin
           @file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
         end
 
-      end #QueriesController
-    end #Desktop
-  end #ErpApp
-end #RailsDbAdmin
+        private
+
+        def build_report_data(report)
+          meta_data = report.meta_data || {}
+          meta_data.merge!({
+                               params: report.meta_data['params'] || [],
+                               roles: report.role_types.pluck(:internal_identifier).join(','),
+                           })
+
+          {
+              text: report.name,
+              reportName: report.name,
+              reportId: report.id,
+              internalIdentifier: report.internal_identifier,
+              iconCls: 'icon-content',
+              isReport: true,
+              handleContextMenu: true,
+              children: [],
+              reportMetaData: meta_data
+          }
+        end
+
+      end # ReportsController
+    end # Desktop
+  end # ErpApp
+end # RailsDbAdmin

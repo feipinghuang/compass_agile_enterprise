@@ -10,7 +10,11 @@ module ErpTechSvcs
       end
 
       def perform
-        logger = Logger.new(File.join(Rails.root,"log/#{Rails.env}-notifications_job.log"), "weekly")
+        unless Dir.exists?(File.join(Rails.root, 'log/delayed_jobs'))
+          Dir.mkdir(File.join(Rails.root, 'log/delayed_jobs'))
+        end
+
+        logger = Logger.new(File.join(Rails.root,"log/delayed_jobs/#{Rails.env}-notifications_job.log"), "weekly")
         logger.level = Logger::INFO
 
         time = Benchmark.measure do

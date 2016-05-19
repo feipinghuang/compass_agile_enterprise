@@ -11,6 +11,8 @@
 class ProductFeature < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :product_feature_type
   belongs_to :product_feature_value
   has_many :product_feature_applicabilities, dependent: :destroy

@@ -1,7 +1,7 @@
 module ErpTxnsAndAccts
-	module Extensions
-		module ActiveRecord
-			module ActsAsBizTxnEvent
+  module Extensions
+    module ActiveRecord
+      module ActsAsBizTxnEvent
 
         def self.included(base)
           base.extend(ClassMethods)
@@ -21,20 +21,34 @@ module ErpTxnsAndAccts
             belongs_to :biz_txn_acct_root
 
             #from BizTxnEvent
-            [:txn_type,:txn_type=,
-              :txn_type_iid,:txn_type_iid=,
-              :biz_txn_type_id,:biz_txn_type_id=,
-              :external_id_source,:external_id_source=,
-              :external_identifier,:external_identifier=,
-              :description,:description=,
-              :post_date,:post_date=,
-              :created_at,:created_at=,
-              :updated_at,:updated_at=,
-              :create_dependent_txns,:account].each { |m| delegate m, :to => :biz_txn_event }
+            [:txn_type, :txn_type=,
+             :txn_type_iid, :txn_type_iid=,
+             :biz_txn_type_id, :biz_txn_type_id=,
+             :external_id_source, :external_id_source=,
+             :external_identifier, :external_identifier=,
+             :description, :description=,
+             :post_date, :post_date=,
+             :created_at, :created_at=,
+             :updated_at, :updated_at=,
+             :create_dependent_txns, :account,
+             #
+             # has_tracked_status delegations
+             #
+             :has_status?, :had_status?, :has_had_status?, :get_status_for_date_time,
+             :get_statuses_for_date_time_range, :current_status_application, :current_status_type,
+             :current_status, :current_status=, :previous_status, :add_status
+            ].each { |m| delegate m, :to => :biz_txn_event }
           end
         end
 
         module SingletonMethods
+          def with_current_status(status)
+            self.joins(:biz_txn_event).where("biz_txn_events.id in (#{BizTxnEvent.select('biz_txn_events.id').with_current_status(status).to_sql})")
+          end
+
+          def without_current_status(status)
+            self.joins(:biz_txn_event).where("biz_txn_events.id in (#{BizTxnEvent.select('biz_txn_events.id').without_current_status(status).to_sql})")
+          end
         end
 
         module InstanceMethods
@@ -65,8 +79,8 @@ module ErpTxnsAndAccts
           end
 
           def destroy_biz_txn_event
-					  self.biz_txn_event.destroy if (self.biz_txn_event && !self.biz_txn_event.frozen?)
-					end
+            self.biz_txn_event.destroy if (self.biz_txn_event && !self.biz_txn_event.frozen?)
+          end
         end
 
       end

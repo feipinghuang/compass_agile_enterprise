@@ -5,7 +5,13 @@ module ErpApp
     protected
 
     def not_authenticated
-      session[:return_to_url] = request.env['REQUEST_URI']
+      # if they requested the desktop or organizer store it so we can pre-select it on the login page	
+      if request.fullpath == '/erp_app/desktop'
+        session[:app_container] = :desktop
+      elsif request.fullpath == ('/erp_app/organizer' || '/erp_app/csr')
+      	session[:app_container] = :organizer
+      end
+
       redirect_to '/erp_app/login', :notice => "Please login first."
     end
     

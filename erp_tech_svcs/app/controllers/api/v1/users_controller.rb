@@ -41,21 +41,37 @@ module Api
         render :json => {total_count: total_count, users: users.uniq.collect(&:to_data_hash)}
       end
 
+      def user_by_party
+        party = Party.find(params[:id])
+
+        user = party.user
+
+        if user
+          render json: {success: true, user: user.to_data_hash}
+        else
+          render json: {success: true, user: nil}
+        end
+      end
+
       def create
-        response = {}
         begin
           ActiveRecord::Base.connection.transaction do
             current_user.with_capability(:create, 'User') do
 
               user = User.new(
-                  :email => params[:email],
-                  :username => params[:username],
-                  :password => params[:password],
-                  :password_confirmation => params[:password_confirmation]
+                :email => params[:email],
+                :username => params[:username],
+                :password => params[:password],
+                :password_confirmation => params[:password_confirmation]
               )
 
               # set this to tell activation where to redirect_to for login and temp password
               login_url = params[:login_url] || '/erp_app/login'
+
+              # if a website was selected then set it so we can use the any templates in that website
+              unless params['website_id'].blank?
+                user.add_instance_attribute(:website_id, params['website_id'])
+              end
 
               #set this to tell activation where to redirect_to for login and temp password
               user.add_instance_attribute(:login_url, login_url)
@@ -65,16 +81,23 @@ module Api
                 user.skip_activation_email = true
               end
 
-              if user.save!
-                if params[:auto_activate] == 'yes'
-                  user.activate!
-                end
+              user.save!
+              if params[:auto_activate] == 'yes'
+                user.activate!
+              end
 
+              if params[:party_id]
+                user.party = Party.find(params[:party_id])
+                user.save!
+              else
                 individual = Individual.create(:gender => params[:gender],
                                                :current_first_name => params[:first_name],
                                                :current_last_name => params[:last_name])
                 user.party = individual.party
                 user.save
+
+                user.party.created_by_party = current_user.party
+                user.party.save!
 
                 # add employee role to party
                 party = individual.party
@@ -86,18 +109,9 @@ module Api
                 party.create_relationship(relationship_type.description,
                                           current_user.party.dba_organization.id,
                                           relationship_type)
-
-                response = {:success => true}
-              else
-                message = "<ul>"
-                user.errors.collect do |e, m|
-                  message << "<li>#{e} #{m}</li>"
-                end
-                message << "</ul>"
-                response = {:success => false, :message => message, :user => user.to_data_hash}
               end
 
-              render :json => response
+              render :json => {:success => true, user: user.to_data_hash}
             end
           end
         rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
@@ -105,7 +119,13 @@ module Api
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors
 
-          render :json => {:success => false, :message => invalid.record.errors, :user => nil}
+          message = "<ul>"
+          invalid.record.errors.collect do |e, m|
+            message << "<li>#{e} #{m}</li>"
+          end
+          message << "</ul>"
+
+          render :json => {:success => false, :message => message, :user => nil}
         rescue StandardError => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")
@@ -120,8 +140,19 @@ module Api
         begin
           ActiveRecord::Base.transaction do
 
-            user = current_user
-            party = user.party
+            if params[:party_id]
+              party = Party.find(params[:party_id])
+              user = party.user
+            elsif params[:id]
+              user = User.find(params[:id])
+              party = user.party
+            else
+              user = current_user
+              party = user.party
+            end
+
+            update_user(user)
+
             business_party = party.business_party
 
             # update business party information
@@ -133,15 +164,8 @@ module Api
               business_party.last_name = params[:last_name].strip
             end
 
-            # update password if passed
-            if params[:password].present?
-              user.password = params[:password].strip
-              user.password_confirmation = params[:password].strip
-            end
-
-            user.email = params[:email].strip
-
-            user.save!
+            user.party.updated_by_party = current_user.party
+            user.party.save!
 
             render :json => {:success => true, :message => 'User updated', :user => user.to_data_hash}
 
@@ -189,6 +213,82 @@ module Api
         party.destroy
 
         render :json => {:success => true}
+      end
+
+      def effective_security
+        user = User.find(params[:id])
+
+        render :json => {:success => true, :capabilities => user.class_capabilities_to_hash}
+      end
+
+
+      def effective_security_by_party
+        user = Party.find(params[:id]).user
+
+        render :json => {:success => true, :capabilities => user.class_capabilities_to_hash}
+      end
+
+      def update_security
+        update_security(User.find(params[:id]))
+      end
+
+      def update_security_by_party
+        update_security(Party.find(params[:id]).user)
+      end
+
+      protected
+
+      def update_security(user)
+        begin
+          ActiveRecord::Base.transaction do
+            user.remove_all_security_roles
+            user.add_security_roles(params[:security_role_iids].split(','))
+
+            user.remove_all_groups
+            user.add_groups(params[:group_ids].split(',').map{|group_id| Group.find(group_id)})
+
+            user.remove_all_capabilities
+            user.add_capabilities(params[:capability_ids].split(',').map{|capability_id| Capability.find(capability_id)})
+
+            render json: {success: true}
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors.full_messages, :user => nil}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {:success => false, :message => 'Error updating security', :user => nil}
+        end
+      end
+
+      def update_user(user)
+        if params[:password].present?
+          user.password = params[:password].strip
+          if params[:password_confirmation].present?
+            user.password_confirmation = params[:password_confirmation].strip
+          else
+            user.password_confirmation = params[:password].strip
+          end
+        end
+
+        if params[:username].present?
+          user.username = params[:username].strip
+        end
+
+        if params[:status]
+          user.activation_state = params[:status]
+        end
+
+        if params[:email].present?
+          user.email = params[:email].strip
+        end
+
+        user.save!
       end
 
     end # UsersController

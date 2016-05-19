@@ -39,6 +39,7 @@ Party.class_eval do
   #
 
   class << self
+
     # scope by project
     #
     # @param project [Integer | Project | Array] either a id of Project record, a Project record, an array of Project records
@@ -167,6 +168,10 @@ Party.class_eval do
   # end relationship helpers
   #
 
+  def transportation_routes
+    TransportationRoute.scope_by_party(self)
+  end
+
   # Get array of assigned WorkEfforts
   #
   # @param role_types [Array] (['work_resource']) Array of role types to scope by
@@ -174,8 +179,8 @@ Party.class_eval do
   def assigned_work_efforts(role_types=['work_resource'])
     role_types = RoleType.find_child_role_types(role_types)
 
-    WorkEffort.joins(:work_effort_party_assignments)
-        .where(work_effort_party_assignments: {role_type_id: role_types})
+    WorkEffort.joins(work_effort_party_assignments: :role_type)
+        .where(role_types: {id: role_types})
         .where(work_effort_party_assignments: {party_id: self.id})
   end
 
@@ -183,7 +188,14 @@ Party.class_eval do
   #
   # @return [TimeEntry] TimeEntry if present nil if not
   def open_time_entry
-    self.time_entries.open.first
+    self.time_entries.open_entries.first
+  end
+
+  # Returns the current Task this Party is working on if this is on, nil if not
+  #
+  # @return [WorkEffort] WorkEffort if present nil if not
+  def current_work_effort
+    self.time_entries.open_entries.try(:first).try(:work_effort)
   end
 
   # Returns True if there is an open TimeEntry, false if there is not

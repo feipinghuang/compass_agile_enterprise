@@ -1,6 +1,8 @@
 class Note < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :note_type
   belongs_to :noted_record, :polymorphic => true
   belongs_to :created_by, :class_name => 'Party', :foreign_key => 'created_by_id'

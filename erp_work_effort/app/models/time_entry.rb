@@ -16,11 +16,13 @@
 class TimeEntry < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :timesheet
   belongs_to :work_effort
 
   class << self
-    def open
+    def open_entries
       where(TimeEntry.arel_table[:from_datetime].not_eq(nil))
           .where(thru_datetime: nil)
           .where(TimeEntry.arel_table[:manual_entry].eq(nil).or(TimeEntry.arel_table[:manual_entry].eq(false)))
@@ -68,11 +70,13 @@ class TimeEntry < ActiveRecord::Base
       end
 
       if opts[:start]
-        statement = statement.where(time_entry_arel_tbl[:from_datetime].gteq(opts[:start]))
+        statement = statement.where(time_entry_arel_tbl[:from_datetime].gteq(opts[:start].utc).
+                                        or(time_entry_arel_tbl[:manual_entry_start_date].gteq(opts[:start].utc)))
       end
 
       if opts[:end]
-        statement = statement.where(time_entry_arel_tbl[:from_datetime].lteq(opts[:end]))
+        statement = statement.where(time_entry_arel_tbl[:from_datetime].lteq(opts[:end].utc).
+                                        or(time_entry_arel_tbl[:manual_entry_start_date].lteq(opts[:end].utc)))
       end
 
       statement.each do |time_entry|
@@ -221,6 +225,36 @@ class TimeEntry < ActiveRecord::Base
             updated_at: (updated_at.nil? ? nil : updated_at.utc.iso8601),
             created_at: (created_at.nil? ? nil : created_at.utc.iso8601)
     )
+  end
+
+  # Sets the current status of the WorkEffort to In Progress
+  #
+  # @param status [String] Internal Identifier of TrackedStatusType to set
+  def update_task_status(status)
+    # make sure this TimeEntry is related to a WorkEffort
+    if self.work_effort
+      work_effort.current_status = status
+    end
+  end
+
+  # Sets the current status of the WorkEffortAssignment to In Progress
+  #
+  # @param status [String] Internal Identifier of TrackedStatusType to set
+  def update_task_assignment_status(status)
+    # make sure this TimeEntry is related to a WorkEffort
+    if self.work_effort
+      work_resource_role_types = RoleType.find_child_role_types(['work_resource'])
+
+      # find the party with work_resource related to this TimeEntry
+      work_resource_party = self.find_party_by_role(work_resource_role_types)
+
+      assignment = work_effort.work_effort_party_assignments.where(party_id: work_resource_party)
+                       .where(role_type_id: work_resource_role_types).first
+
+      if assignment
+        assignment.current_status = status
+      end
+    end
   end
 
 end

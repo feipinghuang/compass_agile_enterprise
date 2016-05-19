@@ -39,8 +39,6 @@ class OrderTxn < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   acts_as_biz_txn_event
-  has_tracked_status
-
 
   belongs_to :order_txn_record, :polymorphic => true
   has_many :order_line_items, :dependent => :destroy
@@ -53,7 +51,63 @@ class OrderTxn < ActiveRecord::Base
   validates :order_number, {uniqueness: true, :allow_nil => true}
 
   class << self
-    #find a order by given biz txn party role iid and party
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      unless statement
+        statement = OrderTxn
+      end
+
+      if filters[:user_id]
+        statement = statement.joins(biz_txn_event: :biz_txn_party_roles)
+                        .where(biz_txn_party_roles: {party_id: User.find(filters[:user_id]).party}).uniq
+      end
+
+      statement
+    end
+
+    #
+    # scoping helpers
+    #
+
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      role_type_parent = BizTxnPartyRoleType.iid('order_roles')
+      biz_txn_party_role_type = BizTxnPartyRoleType.find_or_create('order_roles_dba_org',
+                                                                   'Doing Business As Organization',
+                                                                   role_type_parent)
+
+      scope_by_party(dba_organization, {role_types: [biz_txn_party_role_type]})
+    end
+
+    # scope by party
+    #
+    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
+    # or an array of Party ids
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party(party, options={})
+      statement = joins(biz_txn_event: :biz_txn_party_roles)
+          .where(biz_txn_party_roles: {party_id: party}).uniq
+
+      if options[:role_types]
+        statement = statement.where(biz_txn_party_roles: {biz_txn_party_role_type_id: options[:role_types]})
+      end
+
+      statement
+    end
+
+    # find a order by given biz txn party role iid and party
+    #
     def find_by_party_role(biz_txn_party_role_type_iid, party)
       BizTxnPartyRole.where('party_id = ? and biz_txn_party_role_type_id = ?', party.id, BizTxnPartyRoleType.find_by_internal_identifier(biz_txn_party_role_type_iid).id).all.collect { |item| item.biz_txn_event.biz_txn_record }
     end
@@ -176,12 +230,13 @@ class OrderTxn < ActiveRecord::Base
   # calculates tax for each line item and save to sales_tax
   def calculate_tax(ctx)
     tax = 0
-    order_line_items.select { |line_item| line_item.taxable? }.each do |line_item|
+    order_line_items.select { |line_item| line_item.taxed? }.each do |line_item|
       tax += line_item.calculate_tax(ctx)
     end
 
     # only get charges that are USD currency
-    charge_lines.joins(:money).joins(:charge_type)
+    charge_lines.joins(:money)
+        .joins(:charge_type)
         .where('money.currency_id' => Currency.usd)
         .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
       tax += charge_line.calculate_tax(ctx)
@@ -195,7 +250,6 @@ class OrderTxn < ActiveRecord::Base
 
   #add product_type or product_instance line item
   def add_line_item(object, reln_type = nil, to_role = nil, from_role = nil)
-    class_name = object.class.name
     if object.is_a?(Array)
       class_name = object.first.class.name
     else
@@ -363,6 +417,20 @@ class OrderTxn < ActiveRecord::Base
     end
   end
 
+  # Get shipping info formatted for HTML
+  #
+  def shipping_info
+    info = %(#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1})
+
+    if ship_to_address_line_2.present?
+      info << "<br>#{ship_to_address_line_2}"
+    end
+
+    info << %(<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country})
+
+    info
+  end
+
   def set_billing_info(party)
     self.email = party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).email_address unless party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).nil?
     self.phone_number = party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).phone_number unless party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).nil?
@@ -380,6 +448,20 @@ class OrderTxn < ActiveRecord::Base
       # self.bill_to_country_name = billing_address.country_name
       self.bill_to_country = billing_address.country
     end
+  end
+
+  # Get billing info formatted for HTML
+  #
+  def billing_info
+    info = %(#{bill_to_first_name} #{bill_to_last_name}<br>#{bill_to_address_line_1}<br>)
+
+    if bill_to_address_line_2.present?
+      info << "<br>#{bill_to_address_line_2}"
+    end
+
+    info << %(<br>#{bill_to_city} #{bill_to_state} #{bill_to_postal_code}<br>#{bill_to_country})
+
+    info
   end
 
   def determine_txn_party_roles
@@ -605,5 +687,19 @@ class OrderTxn < ActiveRecord::Base
 
   def to_label
     self.order_number
+  end
+
+  def to_data_hash
+    {
+        id: id,
+        description: description,
+        order_number: order_number,
+        amount: total_amount,
+        status: current_status_application.try(:tracked_status_type).try(:description)
+    }
+  end
+
+  def to_mobile_hash
+    to_data_hash
   end
 end

@@ -29,8 +29,18 @@ module Api
           parties = parties.where(where_clause)
         end
 
+        unless params[:id].blank?
+          parties = parties.where(id: params[:id].split(','))
+        end
+
         unless role_types.blank?
-          parties = parties.joins(:party_roles).where('party_roles.role_type_id' => RoleType.find_child_role_types(role_types.split(',')))
+          if params[:include_child_roles]
+            role_types = RoleType.find_child_role_types(role_types.split(',')).collect{|role_type| role_type.internal_identifier}
+          else
+            role_types = role_types.split(',')
+          end
+
+          parties = parties.joins(party_roles: :role_type).where('role_types.internal_identifier' => role_types)
         end
 
         # scope by dba organization
@@ -38,7 +48,7 @@ module Api
           dba_organization = [current_user.party.dba_organization]
           dba_organization.concat(current_user.party.dba_organization.child_dba_organizations)
 
-          parties.scope_by_dba_organization(dba_organization)
+          parties = parties.scope_by_dba_organization(dba_organization)
         else
           parties = parties.scope_by_dba_organization(current_user.party.dba_organization)
         end
@@ -80,6 +90,9 @@ module Api
                                                        dba_organization.id,
                                                        relationship_type)
             end
+
+            business_party.party.created_by_party = current_user.party
+            business_party.party.save!
 
             render :json => {success: true, party: business_party.party.to_data_hash}
           end
@@ -150,7 +163,8 @@ module Api
               PartyRole.create(party: party, role_type: role_type)
             end
 
-            # add a new relationship to the root dba_org with this role type
+            party.updated_by_party = current_user.party
+            party.save!
 
             render :json => {success: true}
 

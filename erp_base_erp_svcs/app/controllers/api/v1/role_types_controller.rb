@@ -3,7 +3,12 @@ module Api
     class RoleTypesController < BaseController
 
       def index
-        if params[:parent]
+        if params[:party_id]
+          party = Party.find(params[:party_id])
+
+          render :json => {success: true, role_types: party.role_types.collect{|role_type| role_type.to_data_hash}}
+
+        elsif params[:parent]
           parent = nil
           # create parent if it doesn't exist
           # if the parent param is a comma seperated string then
@@ -39,30 +44,32 @@ module Api
               role_type = RoleType.iid(id)
             end
 
-            respond_to do |format|
-              format.tree do
-                data = role_type.to_hash({
+            if role_type
+              respond_to do |format|
+                format.tree do
+                  data = role_type.to_hash({
                                              only: [:id, :parent_id, :internal_identifier],
                                              leaf: role_type.leaf?,
                                              text: role_type.to_label,
                                              children: []
-                                         })
+                  })
 
-                parent = nil
-                role_types.each do |role_type_hash|
-                  if role_type_hash[:id] == data[:parent_id]
-                    parent = role_type_hash
+                  parent = nil
+                  role_types.each do |role_type_hash|
+                    if role_type_hash[:id] == data[:parent_id]
+                      parent = role_type_hash
+                    end
+                  end
+
+                  if parent
+                    parent[:children].push(data)
+                  else
+                    role_types.push(data)
                   end
                 end
-
-                if parent
-                  parent[:children].push(data)
-                else
-                  role_types.push(data)
+                format.json do
+                  role_types.push(role_type.to_hash(only: [:id, :description, :internal_identifier]))
                 end
-              end
-              format.json do
-                role_types.push(role_type.to_hash(only: [:id, :description, :internal_identifier]))
               end
             end
 
@@ -113,18 +120,24 @@ module Api
       def create
         description = params[:description].strip
 
-        ActiveRecord::Base.transaction do
-          role_type = RoleType.create(description: description, internal_identifier: description.to_iid)
+        begin
+          ActiveRecord::Base.transaction do
+            role_type = RoleType.create!(description: description, internal_identifier: description.to_iid)
 
-          if params[:parent] != 'No Parent'
-            parent = RoleType.iid(params[:parent])
-            role_type.move_to_child_of(parent)
-          elsif params[:default_parent]
-            parent = RoleType.iid(params[:default_parent])
-            role_type.move_to_child_of(parent)
+            if params[:parent] != 'No Parent'
+              parent = RoleType.iid(params[:parent])
+              role_type.move_to_child_of(parent)
+            elsif params[:default_parent]
+              parent = RoleType.iid(params[:default_parent])
+              role_type.move_to_child_of(parent)
+            end
+
+            render :json => {success: true, role_type: role_type.to_hash(only: [:id, :description, :internal_identifier])}
           end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors.full_messages
 
-          render :json => {success: true, role_type: role_type.to_hash(only: [:id, :description, :internal_identifier])}
+          render :json => {:success => false, :message => invalid.record.errors.full_messages.join('</br>')}
         end
       end
 

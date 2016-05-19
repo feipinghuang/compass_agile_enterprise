@@ -16,7 +16,16 @@ class Content < ActiveRecord::Base
 
   acts_as_taggable
   acts_as_commentable
-  acts_as_versioned :table_name => :content_versions
+  acts_as_versioned :table_name => :content_versions do
+    def excerpt_html
+      if attributes['excerpt_html'].blank?
+        HTML_Truncator.truncate(attributes['body_html'], 25)
+      else
+        attributes['excerpt_html']
+      end
+    end
+  end
+
   can_be_published
 
   has_many :website_section_contents, :dependent => :destroy
@@ -47,7 +56,7 @@ class Content < ActiveRecord::Base
     end
 
     predicate = predicate.where("(UPPER(contents.title) LIKE UPPER('%#{options[:query]}%')
-                      OR UPPER(contents.excerpt_html) LIKE UPPER('%#{options[:query]}%') 
+                      OR UPPER(contents.excerpt_html) LIKE UPPER('%#{options[:query]}%')
                       OR UPPER(contents.body_html) LIKE UPPER('%#{options[:query]}%') )").order("contents.created_at DESC")
 
     if options[:page]

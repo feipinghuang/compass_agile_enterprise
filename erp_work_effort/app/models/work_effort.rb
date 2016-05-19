@@ -42,12 +42,27 @@
 class WorkEffort < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  cattr_accessor :task_status_complete_iid
+  cattr_accessor :task_status_in_progress_iid
+  cattr_accessor :task_resource_status_complete_iid
+
+  @@task_status_complete_iid = 'task_status_complete'
+  @@task_status_in_progress_iid = 'task_status_in_progress'
+  @@task_resource_status_complete_iid = 'task_resource_status_complete'
+
   acts_as_nested_set
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   has_tracked_status
 
   ## How is this Work Effort related to business parties, requestors, workers, approvers
   has_party_roles
+
+  tracks_created_by_updated_by
+
+  after_save :roll_up
+  before_move :update_parent_status_before_move!
+  after_move :update_parent_status!
+  after_destroy :update_parent_status!
 
   belongs_to :work_effort_item, :polymorphic => true
 
@@ -91,6 +106,8 @@ class WorkEffort < ActiveRecord::Base
   belongs_to :facility
 
   has_many :time_entries
+  has_many :associated_transportation_routes, as: :associated_record
+  has_many :transportation_routes, through: :associated_transportation_routes
 
   class << self
 
@@ -132,13 +149,21 @@ class WorkEffort < ActiveRecord::Base
         work_effort_party_assignments_tbl = WorkEffortPartyAssignment.arel_table
 
         statement = statement.joins(:work_effort_party_assignments)
-                        .where(work_effort_party_assignments_tbl[:role_type_id].in(RoleType.find_child_role_types([RoleType.work_resource]).collect(&:id)))
-                        .where(work_effort_party_assignments_tbl[:party_id].in(filters[:assigned_to_ids]))
+        .where(work_effort_party_assignments_tbl[:role_type_id].in(RoleType.find_child_role_types([RoleType.work_resource]).collect(&:id)))
+        .where(work_effort_party_assignments_tbl[:party_id].in(filters[:assigned_to_ids]))
       end
 
       # filter by project
       unless filters[:project_ids].blank?
         statement = statement.where(work_efforts_tbl[:project_id].in(filters[:project_ids]))
+      end
+
+      # filter by parties
+      unless filters[:parties].blank?
+        data = JSON.parse(filters[:parties])
+
+        statement = statement.scope_by_party(data['party_ids'].split(','),
+                                             {role_types: RoleType.where('internal_identifier' => data['role_types'].split(','))})
       end
 
       statement
@@ -180,15 +205,17 @@ class WorkEffort < ActiveRecord::Base
     def scope_by_party(party, options={})
       table_alias = String.random
 
-      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = work_efforts.id
-                         and \"#{table_alias}\".entity_record_type = 'WorkEffort'")
-                      .where("#{table_alias}.party_id" => party).uniq
-
       if options[:role_types]
-        statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
-      end
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'WorkEffort'
+                                     and #{table_alias}.entity_record_id = work_efforts.id and
+                                     #{table_alias}.role_type_id in (#{RoleType.find_child_role_types(options[:role_types]).collect(&:id).join(',')})
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
 
-      statement
+      else
+        joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_type = 'WorkEffort'
+                                     and #{table_alias}.entity_record_id = work_efforts.id
+                                     and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
+      end
     end
 
     # scope by work efforts assigned to the passed user
@@ -199,8 +226,18 @@ class WorkEffort < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_user(user, options={})
-      statement = joins("join work_effort_party_assignments wepa on wepa.work_effort_id = work_efforts.id and wepa.party_id = #{user.party.id}")
+      scope_by_party_assignment(user.party, options)
+    end
 
+    # scope by work efforts assigned to the passed party
+    #
+    # @param party [Party] party to look for assignments
+    # @param options [Hash] options to apply to this scope
+    # @option options [Array] :role_types role types to include in the scope
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_party_assignment(party, options={})
+      statement = joins("join work_effort_party_assignments wepa on wepa.work_effort_id = work_efforts.id and wepa.party_id = #{party.id}")
 
       if options[:role_types]
         statement = statement.where("wepa.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
@@ -210,23 +247,16 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  def dba_organization
-    find_party_with_role(RoleType.dba_org)
+  def to_s
+    self.description
   end
 
-  # override for comparison of a work_effort
-  #
-  # @param an_other [WorkEffort] other work_effort
-  # @return [Integer] order
-  def <=>(an_other)
-    case an_other.current_status
-      when 'pending'
-        1
-      when 'complete'
-        2
-      else
-        3
-    end
+  def to_label
+    self.description
+  end
+
+  def dba_organization
+    find_party_with_role(RoleType.dba_org)
   end
 
   # Get assigned parties by role type
@@ -236,9 +266,20 @@ class WorkEffort < ActiveRecord::Base
   def assigned_parties(role_types=['work_resource'])
     role_types = RoleType.find_child_role_types(role_types)
 
-    Party.joins(:work_effort_party_assignments)
-        .where(work_effort_party_assignments: {role_type_id: role_types})
-        .where(work_effort_party_assignments: {party_id: self.id})
+    Party.joins(work_effort_party_assignments: :role_type)
+    .where(role_types: {id: role_types})
+    .where(work_effort_party_assignments: {work_effort_id: self.id})
+  end
+
+  # Returns true if the party is assigned to WorkEffort
+  #
+  # @param party [Party] Party to check if it is assigned
+  # @param role_types [Array] Array of role types to check the assignments for
+  def party_assigned?(party, role_types=['work_resource'])
+    !WorkEffort.joins(work_effort_party_assignments: :role_type)
+    .where(role_types: {id: RoleType.find_child_role_types(role_types)})
+    .where(work_effort_party_assignments: {work_effort_id: self.id})
+    .where(work_effort_party_assignments: {party_id: party.id}).first.nil?
   end
 
   # Get comma sepeated description of all Parties assigned
@@ -286,6 +327,22 @@ class WorkEffort < ActiveRecord::Base
     completed?
   end
 
+  # Check if a party is allowed to enter time aganist this Work Effort
+  #
+  # @param party [Party] Party to test aganist
+  # @return [Boolean] If time entries are allowed
+  def time_entries_allowed?(party)
+    self.party_assigned?(party) and self.current_status != @@task_status_complete_iid
+  end
+
+  def has_time_entries?
+    self.time_entries.count != 0
+  end
+
+  def has_assigned_parties?
+    self.work_effort_party_assignments.count != 0
+  end
+
   # start work effort with initial_status (string)
   #
   # @param initial_status [String] status to start at
@@ -305,30 +362,149 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  # set status to complete
+  # set current status of entity.
   #
-  def finish
-    complete
+  # This is overriding the default method to update the task assignments as well if the status is set to
+  # complete
+  #
+  # @param args [String, TrackedStatusType, Array] This can be a string of the internal identifier of the
+  # TrackedStatusType to set, a TrackedStatusType instance, or three params the status, options and party_id
+  def current_status=(args)
+    super(args)
+
+    if args.is_a?(Array)
+      status = args[0]
+    else
+      status = args
+    end
+
+    if status.is_a? TrackedStatusType
+      status = status.internal_identifier
+    end
+
+    if status == @@task_status_complete_iid
+      complete!
+    else
+      update_parent_status!
+    end
   end
 
-  # completes work effort by setting finished at to Time.now and calculates
-  # actual_completion_time in minutes
+  # Check if all this WorkEfforts descendants are complete.
+  # An optional ignored_id can be passed for a node that you don't want to check if
+  # it is complete
   #
-  def complete
-    self.end_at = Time.now
-    self.actual_completion_time = time_diff_in_minutes(self.end_at.to_time, self.start_at.to_time)
-    self.save
+  # @param ingored_id [Integer] Id of WorkEffort to ingnore it's status
+  def descendants_complete?(ignored_id=nil)
+    all_complete = true
+
+    descendants.each do |node|
+      unless node.id == ignored_id
+        if !node.is_complete?
+          all_complete = false
+          break
+        end
+      end
+    end
+
+    all_complete
+  end
+
+  def is_complete?
+    (current_status == @@task_status_complete_iid)
   end
 
   # get total hours for this WorkEffort by TimeEntries
   #
   def total_hours_in_seconds
-    time_entries.sum(:regular_hours_in_seconds)
+    if leaf?
+      time_entries.sum(:regular_hours_in_seconds)
+    else
+      descendants.collect(&:total_hours_in_seconds)
+    end
   end
 
   # get total hours for this WorkEffort by TimeEntries
   def total_hours
-    time_entries.all.sum { |time_entry| time_entry.hours }
+    if self.leaf?
+      time_entries.all.sum { |time_entry| time_entry.hours }
+    else
+      self.descendants.collect(&:total_hours)
+    end
+  end
+
+  # Calculate totals for children
+  #
+  def calculate_children_totals
+    self.start_at = self.descendants.order('start_at asc').first.start_at
+    self.end_at = self.descendants.order('end_at desc').last.end_at
+
+    lowest_duration_unit = nil
+    duration_total = nil
+    percent_done_total = 0.0
+    self.descendants.collect do |child|
+      if child.leaf?
+        if child.duration and child.duration > 0
+          duration_total = 0.0 if duration_total.nil?
+
+          duration_in_hours = ErpWorkEffort::Services::UnitConverter.convert_unit(child.duration.to_f, child.duration_unit.to_sym, :h)
+
+          percent_done_total += (duration_in_hours.to_f * (child.percent_done.to_f / 100))
+
+          if lowest_duration_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_duration_unit) > child.duration_unit.to_sym
+            lowest_duration_unit = child.duration_unit.to_sym
+          end
+
+          duration_total += duration_in_hours
+        end
+      end
+    end
+
+    if duration_total
+      self.duration_unit = lowest_duration_unit.to_s
+      if lowest_duration_unit != :h
+        self.duration = ErpWorkEffort::Services::UnitConverter.convert_unit(duration_total.to_f, :h, lowest_duration_unit)
+      else
+        self.duration = duration_total
+      end
+
+      self.percent_done = (((percent_done_total / duration_total.to_f).round(2)) * 100)
+    end
+
+    lowest_effort_unit = nil
+    effort_total = nil
+    self.descendants.collect do |child|
+      if child.leaf?
+        if child.effort and child.effort > 0
+          effort_total = 0.0 if effort_total.nil?
+
+          if lowest_effort_unit.nil? || ErpWorkEffort::Services::UnitConverter.new(lowest_effort_unit) > child.effort_unit.to_sym
+            lowest_effort_unit = child.effort_unit.to_sym
+          end
+
+          effort_total += ErpWorkEffort::Services::UnitConverter.convert_unit(child.effort.to_f, child.effort_unit.to_sym, :h)
+        end
+      end
+    end
+
+    if effort_total
+      self.effort_unit = lowest_effort_unit.to_s
+      if lowest_effort_unit != :h
+        self.effort = ErpWorkEffort::Services::UnitConverter.convert_unit(effort_total.to_f, :h, lowest_effort_unit)
+      else
+        self.effort = effort_total
+      end
+    end
+
+    self.save!
+  end
+
+  # Roll up totals to parents
+  #
+  def roll_up
+    if self.parent
+      self.parent.calculate_children_totals
+      self.parent.roll_up
+    end
   end
 
   # converts this record a hash data representation
@@ -336,24 +512,24 @@ class WorkEffort < ActiveRecord::Base
   # @return [Hash] data of record
   def to_data_hash
     data = to_hash(only: [
-                       :id,
-                       {leaf?: :leaf},
-                       :parent_id,
-                       :description,
-                       :start_at,
-                       :end_at,
-                       :percent_done,
-                       :duration,
-                       :duration_unit,
-                       :effort,
-                       :effort_unit,
-                       :comments,
-                       :sequence,
-                       :created_at,
-                       :updated_at,
-                       :current_status
+                     :id,
+                     {leaf?: :leaf},
+                     :parent_id,
+                     :description,
+                     :start_at,
+                     :end_at,
+                     :percent_done,
+                     :duration,
+                     :duration_unit,
+                     :effort,
+                     :effort_unit,
+                     :comments,
+                     :sequence,
+                     :created_at,
+                     :updated_at,
+                     :current_status
                    ]
-    )
+                   )
 
     data[:status] = self.try(:current_status_application).try(:to_data_hash)
     data[:work_effort_type] = self.try(:work_effort_type).try(:to_data_hash)
@@ -371,4 +547,63 @@ class WorkEffort < ActiveRecord::Base
   def time_diff_in_minutes (time_one, time_two)
     (((time_one - time_two).round) / 60)
   end
+
+  private
+
+  # completes work effort by setting finished at to Time.now and calculates
+  # actual_completion_time in minutes
+  #
+  def complete!
+    self.end_at = Time.now
+    self.save
+
+    self.work_effort_party_assignments.each do |assignment|
+      assignment.current_status = @@task_resource_status_complete_iid
+    end
+
+    # close all open time entries
+    time_entries.open_entries.each do |time_entry|
+      time_entry.thru_datetime = Time.now
+
+      time_entry.calculate_regular_hours_in_seconds!
+
+      time_entry.update_task_assignment_status(@@task_resource_status_complete_iid)
+    end
+
+    update_parent_status!
+  end
+
+  # Update the parent statues based on it's child nodes
+  #
+  def update_parent_status!
+    if parent
+      _parent = parent
+      while _parent
+        if _parent.descendants_complete?
+          _parent.current_status = @@task_status_complete_iid
+        elsif _parent.current_status == @@task_status_complete_iid
+          _parent.current_status = @@task_status_in_progress_iid
+        end
+        _parent = _parent.parent
+      end
+    end
+  end
+
+  # Update the parent statues based on it's child nodes before a node is moved
+  # ingnoring the node that is being moved
+  #
+  def update_parent_status_before_move!
+    if parent
+      _parent = parent
+      while _parent
+        if _parent.descendants_complete?(self.id)
+          _parent.current_status = @@task_status_complete_iid
+        elsif _parent.current_status == @@task_status_complete_iid
+          _parent.current_status = @@task_status_in_progress_iid
+        end
+        _parent = _parent.parent
+      end
+    end
+  end
+
 end

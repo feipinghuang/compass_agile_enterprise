@@ -20,7 +20,7 @@ module Widgets
 
         if website_inquiry.save
           if website.email_inquiries?
-            WebsiteInquiryMailer.inquiry(website_inquiry).deliver
+            WebsiteInquiryMailer.inquiry(website_inquiry, website.dba_organization).deliver
           end
           render :update => {:id => "#{@uuid}_result", :view => :success}
 

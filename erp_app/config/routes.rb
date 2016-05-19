@@ -3,7 +3,17 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :applications
+      resources :applications, defaults: { :format => 'json' }
+
+      resources :parties, defaults: { :format => 'json' } do
+
+        resources :applications, defaults: { :format => 'json' } do
+          collection do
+            put 'install'
+          end
+        end
+
+      end
     end
   end
 
@@ -116,6 +126,7 @@ ErpApp::Engine.routes.draw do
 
   #widget proxy
   match '/widgets/:widget_name/:widget_action/:uuid(/:id)' => "widget_proxy#index", :as => :widget
+  delete '/widgets/clear' => "widget_proxy#clear"
 
   #shared
   match '/shared/configuration/(/:action(/:id(/:category_id)))' => "shared/configuration"

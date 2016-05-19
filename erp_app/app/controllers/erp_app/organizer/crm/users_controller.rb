@@ -26,6 +26,10 @@ module ErpApp
             sort_hash['property'] = 'activation_state'
           elsif sort_hash['property'] == 'lastLoginAt'
             sort_hash['property'] = 'last_login_at'
+          elsif sort_hash['property'] == 'lastLogoutAt'
+            sort_hash['property'] = 'last_logout_at'
+          elsif sort_hash['property'] == 'lastActivityAt'
+            sort_hash['property'] = 'last_activity_at'
           end
 
           order_by = sort_hash['property'] || 'created_at'
@@ -73,6 +77,8 @@ module ErpApp
                                              [:id, :username,
                                               :email,
                                               :last_login_at,
+                                              :last_logout_at,
+                                              :last_activity_at,
                                               :created_at,
                                               :updated_at,
                                               :activation_state],

@@ -137,9 +137,9 @@ module ErpApp
           message = params[:message].strip
           cc_email = params[:cc_email].blank? ? nil : params[:cc_email].strip
 
-          CrmMailer.send_message(send_to.email_address, subject, message).deliver
+          CrmMailer.send_message(send_to.email_address, subject, message, current_user.party.dba_organization).deliver
 
-          CrmMailer.send_message(cc_email, subject, message).deliver if cc_email
+          CrmMailer.send_message(cc_email, subject, message, current_user.party.dba_organization).deliver if cc_email
 
           render :json => {:success => true}
         end

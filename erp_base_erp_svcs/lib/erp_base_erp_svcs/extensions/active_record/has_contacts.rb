@@ -219,11 +219,11 @@ module ErpBaseErpSvcs
             primary_contact_mechanism = get_primary_contact(contact_mechanism_class)
             if primary_contact_mechanism
               primary_contact_mechanism.is_primary = false
-              primary_contact_mechanism.save
+              primary_contact_mechanism.save!
             end
 
             contact_mechanism_instance.is_primary = true
-            contact_mechanism_instance.save
+            contact_mechanism_instance.save!
 
             contact_mechanism_instance
           end
@@ -303,8 +303,7 @@ module ErpBaseErpSvcs
             query
           end
 
-          # looks for contacts matching on value and purpose
-          # if a contact exists, it updates, if not, it adds it
+          # Adds contact
           def add_contact(contact_mechanism_class, contact_mechanism_args={}, contact_purposes=[])
             is_primary = contact_mechanism_args['is_primary']
             contact_purposes = [contact_purposes] if !contact_purposes.kind_of?(Array) # gracefully handle a single purpose not in an array
@@ -319,8 +318,8 @@ module ErpBaseErpSvcs
                 contact_mechanism.contact.contact_purposes << contact_purpose
               end
             end
-            contact_mechanism.contact.save
-            contact_mechanism.save
+            contact_mechanism.contact.save!
+            contact_mechanism.save!
 
             set_primary_contact(contact_mechanism_class, contact_mechanism) if is_primary
 
@@ -349,7 +348,8 @@ module ErpBaseErpSvcs
           def update_contact(contact_mechanism_class, contact, contact_mechanism_args)
             set_primary_contact(contact_mechanism_class, contact.contact_mechanism) if contact_mechanism_args[:is_primary] == true
 
-            contact_mechanism_class.update(contact.contact_mechanism, contact_mechanism_args)
+            contact_mechanism_args.delete_if { |k, v| ['client_utc_offset'].include? k.to_s }
+            contact.contact_mechanism.update_attributes!(contact_mechanism_args)
 
             contact.contact_mechanism
           end

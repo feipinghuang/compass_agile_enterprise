@@ -1,6 +1,8 @@
 class ProductOffer < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  tracks_created_by_updated_by
+
   belongs_to :product_offer_record, :polymorphic => true
 
   def valid_from=(date)

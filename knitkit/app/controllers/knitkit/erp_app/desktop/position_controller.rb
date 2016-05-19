@@ -3,85 +3,72 @@ module Knitkit
     module Desktop
       class PositionController < Knitkit::ErpApp::Desktop::AppController
 
-        def change_section_parent
-          begin
-            current_user.with_capability('drag_item', 'WebsiteTree') do
-
-              new_parent = WebsiteSection.where('id = ?', params[:parent_id]).first
-              website_section = WebsiteSection.find(params[:section_id])
-
-              if new_parent
-                website_section.move_to_child_of(new_parent)
-              else
-                website_section.move_to_root
-              end
-
-              render :json => {:success => true}
-
-            end
-          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
-            render :json => {:success => false, :message => ex.message}
-          end
-        end
+        around_filter :wrap_in_transaction
 
         def update_section_position
-          begin
-            current_user.with_capability('drag_item', 'WebsiteTree') do
+          params[:position_array].each do |position|
+            website_section = WebsiteSection.find(position['id'])
 
-              params[:position_array].each do |position|
-                model = WebsiteSection.find(position['id'])
-                model.position = position['position'].to_i
-                model.save
-              end
-
-              render :json => {:success => true}
-
+            if position['parent_id'].blank? || position['parent_id'] == 'root'
+              website_section.move_to_root
+            else
+              website_section.move_to_child_of(WebsiteSection.find(position['parent_id']))
             end
-          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
-            render :json => {:success => false, :message => ex.message}
+
+            website_section.position = position['position'].to_i
+
+            website_section.save
           end
+
+          render :json => {:success => true}
         end
 
         def update_menu_item_position
-          begin
-            current_user.with_capability('drag_item', 'WebsiteTree') do
-
-              params[:position_array].each do |position|
-                model = WebsiteNavItem.find(position['id'])
-                model.position = position['position'].to_i
-                model.save
-              end
-
-              render :json => {:success => true}
-
-            end
-          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
-            render :json => {:success => false, :message => ex.message}
+          params[:position_array].each do |position|
+            website_nav_item = WebsiteNavItem.find(position['id'])
+            website_nav_item.position = position['position'].to_i
+            website_nav_item.save
           end
+
+          render :json => {:success => true}
         end
 
         def update_article_position
+          website_section = WebsiteSection.find(params[:section_id])
+
+          params[:position_array].each do |position|
+            article = website_section.website_section_contents.where('content_id = ?', position['id']).first
+            article.position = position['position'].to_i
+            article.save
+          end
+
+          render :json => {:success => true}
+        end
+
+        private
+
+        def wrap_in_transaction
           begin
-            current_user.with_capability('drag_item', 'WebsiteTree') do
-
-              website_section = WebsiteSection.find(params[:section_id])
-
-              params[:position_array].each do |position|
-                model = website_section.website_section_contents.where('content_id = ?', position['id']).first
-                model.position = position['position'].to_i
-                model.save
+            ActiveRecord::Base.transaction do
+              current_user.with_capability('drag_item', 'WebsiteTree') do
+                yield
               end
-
-              render :json => {:success => true}
-
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
             render :json => {:success => false, :message => ex.message}
+
+          rescue => ex
+            Rails.logger.error ex.message + "\n"
+            Rails.logger.error ex.backtrace.join("\n")
+
+            # email notification
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+            render :json => {success: false, message: 'Could not process request'}
           end
         end
 
-      end #PositionController
-    end #Desktop
-  end #ErpApp
-end #Knitkit
-
+      end # PositionController
+    end # Desktop
+  end # ErpApp
+end # Knitkit

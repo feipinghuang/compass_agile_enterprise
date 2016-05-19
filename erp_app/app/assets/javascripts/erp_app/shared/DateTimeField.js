@@ -1,46 +1,77 @@
 /**
- * @author wangzilong
+ * @author Russell Holmes
  */
 
 Ext.define('Ext.ux.form.DateTimeField', {
-    extend: 'Ext.form.field.Date',
-    alias: 'widget.datetimefield',
+	extend: "Ext.form.FieldContainer",
+	alias: 'widget.datetimefield',
 
-    initComponent: function () {
-        this.format = this.format + ' ' + 'H:i:s';
-        this.callParent();
-    },
-    // overwrite
-    createPicker: function () {
-        var me = this,
-            format = Ext.String.format;
+	mixins: {
+		field: 'Ext.form.field.Field'
+	},
+	layout: 'hbox',
+	items: [{
+		xtype: 'datefield',
+		flex: 1,
+		itemId: 'date'
+	}, {
+		xtype: 'timefield',
+		increment: 30,
+		flex: 1,
+		itemId: 'time'
+	}],
 
-        return Ext.create('Ext.ux.DateTimePicker', {
-            ownerCt: me.ownerCt,
-            renderTo: document.body,
-            floating: true,
-            hidden: true,
-            focusOnShow: true,
-            minDate: me.minValue,
-            maxDate: me.maxValue,
-            disabledDatesRE: me.disabledDatesRE,
-            disabledDatesText: me.disabledDatesText,
-            disabledDays: me.disabledDays,
-            disabledDaysText: me.disabledDaysText,
-            format: me.format,
-            showToday: me.showToday,
-            startDay: me.startDay,
-            minText: format(me.minText, me.formatDate(me.minValue)),
-            maxText: format(me.maxText, me.formatDate(me.maxValue)),
-            listeners: {
-                scope: me,
-                select: me.onSelect
-            },
-            keyNavConfig: {
-                esc: function () {
-                    me.collapse();
-                }
-            }
-        });
-    }
+	format: 'c',
+
+	initComponent: function() {
+		var me = this;
+
+		me.callParent(arguments);
+
+		me.dateField = me.down('#date');
+		me.timeField = me.down('#time');
+
+		me.dateField.allowBlank = me.allowBlank;
+		me.timeField.allowBlank = me.allowBlank;
+	},
+
+	getValue: function() {
+		var me = this;
+		var value = null;
+
+		if (me.dateField.getValue()) {
+			value = me.timeField.getValue();
+			var dateValue = me.dateField.getValue();
+
+			value.setMonth(dateValue.getMonth());
+			value.setFullYear(dateValue.getFullYear());
+			value.setDate(dateValue.getDate());
+		}
+
+		return value;
+	},
+
+	getSubmitData: function() {
+		var me = this,
+			data = null,
+			format = this.submitFormat || this.format,
+			value = this.getValue();
+
+		value = value ? Ext.Date.format(value, format) : '';
+
+		if (!me.disabled && me.submitValue) {
+			data = {};
+			data[me.getName()] = '' + value;
+		}
+		return data;
+	},
+
+	setValue: function(value) {
+		var me = this;
+
+		if (value) {
+			me.dateField.setValue(value);
+			me.timeField.setValue(Ext.Date.format(value, 'g:i A'));
+		}
+	}
 });

@@ -73,7 +73,7 @@ class Application < ActiveRecord::Base
 
       statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = applications.id
                          and \"#{table_alias}\".entity_record_type = 'Application'")
-                      .where("#{table_alias}.party_id" => party).uniq
+      .where("#{table_alias}.party_id" => party).uniq
 
       if options[:role_types]
         statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
@@ -96,6 +96,7 @@ class Application < ActiveRecord::Base
     to_hash(only: [:id,
                    :description,
                    :internal_identifier,
+                   :icon,
                    :created_at,
                    :updated_at])
   end

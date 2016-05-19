@@ -29,7 +29,7 @@ Ext.define ('Ext.ux.panel.UploadPanel',
 	,	DragDropAvailable		: 'Drag & Drop files here'
 	,	noDragDropAvailable		: 'This Browser doesn\'t support drag&drop.'
 	,	emptyTextTpl			: '<div style="color:#808080; margin:0 auto; text-align:center; top:48%; position:relative;">{0}</div>'
-	,	cols				: ["File", "Size", "State", "Mesage"]
+	,	cols				: ["File", "Size", "State", "Message"]
 	,	addButtonText			: 'Add file'
 	,	uploadButtonText		: 'Upload'
 	,	cancelButtonText		: 'Cancel'

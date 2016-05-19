@@ -26,9 +26,13 @@
 #   t.column  :cylindrical,              :boolean
 #   t.column  :taxable                   :boolean
 #   t.column  :available_on_web          :boolean
+#   t.references :unit_of_measurement
+#   t.references :biz_txn_acct_root
 #
 #   t.timestamps
 # end
+#
+# add_index :product_types, :biz_txn_acct_root_id
 
 class ProductType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
@@ -37,21 +41,43 @@ class ProductType < ActiveRecord::Base
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   acts_as_taggable
 
+  tracks_created_by_updated_by
   has_file_assets
   is_describable
 
-  is_json :custom_fields
-
   belongs_to :product_type_record, polymorphic: true
-  has_one :product_instance
   belongs_to :unit_of_measurement
+  belongs_to :biz_txn_acct_root
+
+  has_one :product_instance
   has_many :product_type_pty_roles, dependent: :destroy
   has_many :simple_product_offers, dependent: :destroy
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
 
+  alias :gl_account :biz_txn_acct_root
+
   class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      unless statement
+        statement = ProductType
+      end
+
+      if filters[:category_id]
+        statement = statement.joins("inner join category_classifications on category_classifications.classification_type = 'ProductType'
+                         and category_classifications.classification_id = product_types.id")
+        statement = statement.where('category_classifications.category_id' => filters[:category_id])
+      end
+
+      statement
+    end
+
     #
     # scoping helpers
     #
@@ -127,15 +153,18 @@ class ProductType < ActiveRecord::Base
   end
 
   def to_data_hash
-    data = to_hash(only: [
-                       :id,
-                       :description,
-                       :sku,
-                       :comment,
-                       :created_at,
-                       :updated_at
-                   ],
-                   unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash))
+    to_hash(only: [
+                :id,
+                :description,
+                :internal_identifier,
+                :sku,
+                :comment,
+                :created_at,
+                :updated_at
+            ],
+            unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
+            price: try(:get_current_simple_plan).try(:money_amount),
+            gl_account: try(:gl_account).try(:to_data_hash))
   end
 
   def to_display_hash
@@ -147,6 +176,19 @@ class ProductType < ActiveRecord::Base
         offer_long_description: find_descriptions_by_view_type('long_description').first.try(:description),
         offer_base_price: get_current_simple_amount_with_currency,
         images: images.pluck(:id)
+    }
+  end
+
+  def to_mobile_hash
+    {
+        id: id,
+        description: description,
+        offer_list_description: find_description_by_view_type('list_description').try(:description),
+        offer_short_description: find_description_by_view_type('short_description').try(:description),
+        offer_long_description: find_description_by_view_type('long_description').try(:description),
+        offer_base_price: get_current_simple_amount_with_currency,
+        img_url: images.first.try(:fully_qualified_url),
+        vendor: find_party_with_role_type(RoleType.iid('vendor')).try(:description)
     }
   end
 
@@ -168,6 +210,14 @@ class ProductType < ActiveRecord::Base
     end
 
     ProductTypePtyRole.create(party: party, role_type: role_type, product_type: self)
+  end
+
+  def find_party_with_role_type(role_type)
+    if role_type.is_a?(String)
+      role_type = RoleType.iid(role_type)
+    end
+
+    product_type_pty_roles.where(role_type_id: role_type).first.try(:party)
   end
 
   def has_dimensions?

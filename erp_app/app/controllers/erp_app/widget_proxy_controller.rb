@@ -1,7 +1,9 @@
 module ErpApp
-	class WidgetProxyController < ErpApp::ApplicationController
-	  
+  class WidgetProxyController < ErpApp::ApplicationController
+
     attr_accessor :performed_redirect
+
+    protect_from_forgery :except => :clear
 
     def index
       @widget_name = params[:widget_name]
@@ -27,6 +29,18 @@ module ErpApp
         render :inline => result
       end
     end
-    
-	end #WidgetProxyController
-end #ErpApp
+
+    def clear
+      unless params[:uuids].blank?
+        params[:uuids].split(',').each do |uuid|
+          if session[:widgets] and session[:widgets][uuid]
+            session[:widgets].delete(uuid)
+          end
+        end
+      end
+
+      render json: {success: true}
+    end
+
+  end # WidgetProxyController
+end # ErpApp

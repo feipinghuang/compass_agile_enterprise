@@ -13,7 +13,7 @@
 
 class Capability < ActiveRecord::Base
   attr_protected :created_at, :updated_at
-  
+
   belongs_to :scope_type
   belongs_to :capability_type
   belongs_to :capability_resource, :polymorphic => true
@@ -26,7 +26,7 @@ class Capability < ActiveRecord::Base
   def update_description
     if description.blank?
       desc = "#{capability_type.description} #{capability_resource_type}"
-      case scope_type 
+      case scope_type
       when ScopeType.find_by_internal_identifier('class')
         self.description = "#{desc}"
       when ScopeType.find_by_internal_identifier('instance')
@@ -42,7 +42,7 @@ class Capability < ActiveRecord::Base
     SecurityRole.joins("LEFT JOIN capability_accessors ON capability_accessors.capability_id = #{self.id}
                         AND capability_accessors.capability_accessor_record_type = 'SecurityRole' 
                         AND capability_accessors.capability_accessor_record_id = security_roles.id").
-                where("capability_accessors.id IS NULL")
+      where("capability_accessors.id IS NULL")
   end
 
   def remove_all_roles
@@ -57,7 +57,7 @@ class Capability < ActiveRecord::Base
     User.joins("LEFT JOIN capability_accessors ON capability_accessors.capability_id = #{self.id}
                         AND capability_accessors.capability_accessor_record_type = 'User' 
                         AND capability_accessors.capability_accessor_record_id = users.id").
-        where("capability_accessors.id IS NULL")
+      where("capability_accessors.id IS NULL")
   end
 
   def users
@@ -68,11 +68,14 @@ class Capability < ActiveRecord::Base
     Group.joins("LEFT JOIN capability_accessors ON capability_accessors.capability_id = #{self.id}
                         AND capability_accessors.capability_accessor_record_type = 'Group' 
                         AND capability_accessors.capability_accessor_record_id = groups.id").
-          where("capability_accessors.id IS NULL")
+      where("capability_accessors.id IS NULL")
   end
 
   def groups
     Group.joins(:capability_accessors).where(:capability_accessors => {:capability_id => self.id })
   end
 
+  def to_data_hash
+    to_hash(only: [:id, :description])
+  end
 end

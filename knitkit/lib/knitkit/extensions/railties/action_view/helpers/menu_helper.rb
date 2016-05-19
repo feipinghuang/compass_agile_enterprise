@@ -5,6 +5,11 @@ module Knitkit
         module Helpers
           module MenuHelper
 
+            def menu_active?(section, selected_section_parent)
+              (!@website_section.nil? && section.id == @website_section.id) or 
+              (!selected_section_parent.nil? and selected_section_parent.id == section.id)
+            end
+
             def menu_item_selected(menu_item)
               result = request.env['REQUEST_PATH'] == menu_item.path
               unless result

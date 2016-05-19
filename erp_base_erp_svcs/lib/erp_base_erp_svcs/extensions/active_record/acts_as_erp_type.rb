@@ -27,7 +27,7 @@ module ErpBaseErpSvcs
 							
             if ::ActiveRecord::Base.connection.tables.include?(self.table_name)
               # find each valid value for the domain type (erp_type) in question
-              # we will then create a class method with the name of the internal indentifier
+              # we will then create a class method with the name of the internal identifier
               # for that type
               valid_values = self.all
 							
@@ -70,7 +70,26 @@ module ErpBaseErpSvcs
 							
 				  def iid( internal_identifier_string )
             where('internal_identifier = ?', internal_identifier_string.to_s).first
-				  end
+          end
+
+          def generate_unique_iid(name)
+            iid = name.to_iid
+
+            iid_exists = true
+            iid_test = iid
+            iid_counter = 1
+            while iid_exists
+              if self.where(internal_identifier: iid_test).first
+                iid_test = "#{iid}_#{iid_counter}"
+                iid_counter += 1
+              else
+                iid_exists = false
+                iid = iid_test
+              end
+            end
+
+            iid
+          end
 						
 				end
 
@@ -130,16 +149,26 @@ module ErpBaseErpSvcs
 							
             where(fk_str + ' in (?)', in_clause_array)
 							
-				  end			
-				end
+          end
+
+        end
 
 					
 				# Adds instance methods.
 				module ActsAsInstanceMethods
-						
-				  # def instance_method_for_acts_as
-				  #   puts "Instance with ID #{self.id}"
-				  # end
+
+          def to_s
+            self.try(:description) ? self.try(:description) : self.try(:id)
+          end
+
+          # Alias for to_s
+          def to_label
+            to_s
+          end
+
+          def to_data_hash
+            to_hash(only: [:id, :description, :internal_identifier, :created_at, :updated_at])
+          end
 					  
 				end
 

@@ -39,33 +39,34 @@ module Api
               biz_txn_type = BizTxnType.iid(id)
             end
 
-            respond_to do |format|
-              format.tree do
-                data = biz_txn_type.to_hash({
-                                             only: [:id, :parent_id, :internal_identifier, :description],
-                                             leaf: biz_txn_type.leaf?,
-                                             text: biz_txn_type.to_label,
-                                             children: []
-                                         })
+            if biz_txn_type
+              respond_to do |format|
+                format.tree do
+                  data = biz_txn_type.to_hash({
+                                                only: [:id, :parent_id, :internal_identifier, :description],
+                                                leaf: biz_txn_type.leaf?,
+                                                text: biz_txn_type.to_label,
+                                                children: []
+                  })
 
-                parent = nil
-                biz_txn_types.each do |biz_txn_type_hash|
-                  if biz_txn_type_hash[:id] == data[:parent_id]
-                    parent = biz_txn_type_hash
+                  parent = nil
+                  biz_txn_types.each do |biz_txn_type_hash|
+                    if biz_txn_type_hash[:id] == data[:parent_id]
+                      parent = biz_txn_type_hash
+                    end
+                  end
+
+                  if parent
+                    parent[:children].push(data)
+                  else
+                    biz_txn_types.push(data)
                   end
                 end
-
-                if parent
-                  parent[:children].push(data)
-                else
-                  biz_txn_types.push(data)
+                format.json do
+                  biz_txn_types.push(biz_txn_type.to_hash(only: [:id, :description, :internal_identifier]))
                 end
               end
-              format.json do
-                biz_txn_types.push(biz_txn_type.to_hash(only: [:id, :description, :internal_identifier]))
-              end
             end
-
           end
 
           render :json => {success: true, biz_txn_types: biz_txn_types}
@@ -95,18 +96,33 @@ module Api
       def create
         description = params[:description].strip
 
-        ActiveRecord::Base.transaction do
-          biz_txn_type = BizTxnType.create(description: description, internal_identifier: description.to_iid)
+        begin
 
-          if !params[:parent].blank? and params[:parent] != 'No Parent'
-            parent = BizTxnType.iid(params[:parent])
-            biz_txn_type.move_to_child_of(parent)
-          elsif !params[:default_parent].blank?
-            parent = BizTxnType.iid(params[:default_parent])
-            biz_txn_type.move_to_child_of(parent)
+          ActiveRecord::Base.transaction do
+            biz_txn_type = BizTxnType.create(description: description, internal_identifier: description.to_iid)
+
+            if !params[:parent].blank? and params[:parent] != 'No Parent'
+              parent = BizTxnType.iid(params[:parent])
+              biz_txn_type.move_to_child_of(parent)
+            elsif !params[:default_parent].blank?
+              parent = BizTxnType.iid(params[:default_parent])
+              biz_txn_type.move_to_child_of(parent)
+            end
+
+            render :json => {success: true, biz_txn_type: biz_txn_type.to_hash(only: [:id, :description, :internal_identifier])}
           end
 
-          render :json => {success: true, biz_txn_type: biz_txn_type.to_hash(only: [:id, :description, :internal_identifier])}
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors.full_messages
+
+          {:success => false, :message => invalid.record.errors.full_messages.join('</br>')}
+        rescue => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          {:success => false, :message => "Error creating record"}
         end
       end
 

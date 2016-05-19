@@ -41,19 +41,35 @@ User.class_eval do
   end
 
   def get_application_resource_paths(application_type, type)
-    config = Rails.application.config
-
     if application_type == :desktop
-      desktop_applications.collect do |app|
+      paths = desktop_applications.collect do |app|
+        paths = []
+
         if Rails.application.assets.find_asset File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "app.#{type.to_s}")
-          File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "app")
+          paths.push File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "app")
         end
+
+        # look for overrides
+        if Rails.application.assets.find_asset File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "overrides.#{type.to_s}")
+          paths.push File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "overrides")
+        end
+
+        paths
       end.flatten.compact
     else
       apps.collect do |app|
+        paths = []
+
         if Rails.application.assets.find_asset File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "app.#{type.to_s}")
-          File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "app")
+          paths.push File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "app")
         end
+
+        # look for overrides
+        if Rails.application.assets.find_asset File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "overrides.#{type.to_s}")
+          paths.push File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "overrides")
+        end
+
+        paths
       end.flatten.compact
     end
   end

@@ -10,8 +10,8 @@ require 'rails_db_admin/query_params'
 require 'rails_db_admin/erp_string_parser'
 require 'rails_db_admin/query_support'
 require 'rails_db_admin/table_support'
-require "rails_db_admin/engine"
-require "rails_db_admin/extensions/action_controller/report_support/acts_as_report_controller"
+require 'rails_db_admin/engine'
+require 'rails_db_admin/services/report_helper'
 
 module RailsDbAdmin
 end

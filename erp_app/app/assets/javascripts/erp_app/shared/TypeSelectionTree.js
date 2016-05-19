@@ -1,490 +1,501 @@
-Ext.define('TreeReader', {
-    extend: 'Ext.data.reader.Json',
-    alias: 'reader.treereader',
-
-    buildExtractors: function () {
-        var me = this,
-            metaProp = me.metaProperty;
-
-        me.callParent(arguments);
-
-        me.getRoot = function (node) {
-            // Special cases
-            if (node['children']) {
-                return node['children'];
-            }
-            else {
-                return node[me.root]
-            }
-        };
-    }
-});
-
 Ext.define('Compass.ErpApp.Shared.TypeSelectionModel', {
-    extend: 'Ext.data.Model',
-    fields: [
-        // ExtJs node fields
-        {name: 'text', type: 'string'},
-        {name: 'leaf', type: 'boolean'},
-        {name: 'checked', type: 'boolean'},
-        {name: 'children'},
-        // Custom fields
-        {name: 'internalIdentifier', type: 'string', mapping: 'internal_identifier'}
-    ]
+	extend: 'Ext.data.Model',
+	fields: [
+		// ExtJs node fields
+		{
+			name: 'text',
+			type: 'string'
+		}, {
+			name: 'leaf',
+			type: 'boolean'
+		}, {
+			name: 'checked',
+			type: 'boolean'
+		}, {
+			name: 'children'
+		},
+		// Custom fields
+		{
+			name: 'internalIdentifier',
+			type: 'string',
+			mapping: 'internal_identifier'
+		}
+	]
 });
 
 Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
-    extend: "Ext.tree.Panel",
-    alias: 'widget.typeselectiontree',
+	extend: "Ext.tree.Panel",
+	alias: 'widget.typeselectiontree',
 
-    title: 'Select Types',
-    width: '100%',
-    minHeight: 200,
-    rootVisible: false,
-    cascadeSelectionUp: false,
-    cascadeSelectionDown: false,
-    canCreate: false,
-    mixins: {
-        field: 'Ext.form.field.Field'
-    },
+	title: 'Select Types',
+	width: '100%',
+	minHeight: 200,
+	height: 200,
+	rootVisible: false,
+	cascadeSelectionUp: false,
+	cascadeSelectionDown: false,
+	canCreate: false,
+	mixins: {
+		field: 'Ext.form.field.Field'
+	},
 
-    createNewText: 'Create New',
+	createNewText: 'Create New',
 
-    /**
-     * @cfg {Array} availableTypes
-     * Array of types that can be selected
-     */
-    availableTypes: null,
+	/**
+	 * @cfg {Array} availableTypes
+	 * Array of types that can be selected
+	 */
+	availableTypes: null,
 
-    /**
-     * @cfg {Array} selectedTypes
-     * Array of currently selected types
-     */
-    selectedTypes: [],
+	/**
+	 * @cfg {Array} selectedTypes
+	 * Array of currently selected types
+	 */
+	selectedTypes: [],
 
-    /**
-     * @cfg {String} typesUrl
-     * Url to load types from.
-     */
-    typesUrl: null,
+	/**
+	 * @cfg {String} typesUrl
+	 * Url to load types from.
+	 */
+	typesUrl: null,
 
-    /**
-     * @cfg {String} typesRoot
-     * Root attribute for types returned from the server.
-     */
-    typesRoot: null,
+	/**
+	 * @cfg {String} typesRoot
+	 * Root attribute for types returned from the server.
+	 */
+	typesRoot: null,
 
-    /**
-     * @cfg {Boolean} defaultParentType
-     * default parent type if no parent is selected
-     */
-    defaultParentType: null,
+	/**
+	 * @cfg {Boolean} defaultParentType
+	 * default parent type if no parent is selected
+	 */
+	defaultParentType: null,
 
-    /**
-     * @cfg {String} disabledNodeMessage
-     * Message to display when a disabled type is clicked
-     */
-    disabledNodeMessage: 'This item can not be unselected',
+	/**
+	 * @cfg {String} disabledNodeMessage
+	 * Message to display when a disabled type is clicked
+	 */
+	disabledNodeMessage: 'This item can not be unselected',
 
-    /**
-     * @cfg {Array} unSelectableTypes
-     * Array of types that can not be selected
-     */
-    unSelectableTypes: null,
+	/**
+	 * @cfg {Array} unSelectableTypes
+	 * Array of types that can not be selected
+	 */
+	unSelectableTypes: null,
 
-    listeners: {
-        'beforecellclick': function (grid) {
-            grid.ownerCt.suspendLayouts();
-        },
-        'checkchange': function (node, checked) {
-            var me = this;
+	initComponent: function() {
+		var me = this;
 
-            if (me.unSelectableTypes && Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
-                Ext.Msg.warning('Warning', me.disabledNodeMessage);
+		if (me.availableTypes && me.availableTypes.length > 0 && me.availableTypes.first()['text']) {
+			me.store = Ext.create('Ext.data.TreeStore', {
+				model: 'Compass.ErpApp.Shared.TypeSelectionModel',
+				folderSort: true,
+				sorters: [{
+					property: 'text',
+					direction: 'ASC'
+				}]
+			});
 
-                node.set('checked', !checked);
+			me.store.setRootNode({
+				text: '',
+				children: me.availableTypes
+			});
 
-                return false;
-            }
+			if (me.selectedTypes) {
+				me.setSelectedTypes(me.selectedTypes);
+			}
+		} else {
+			me.store = Ext.create('Ext.data.TreeStore', {
+				model: 'Compass.ErpApp.Shared.TypeSelectionModel',
+				tree: me,
+				folderSort: true,
+				proxy: {
+					type: 'ajax',
+					url: me.typesUrl + '.tree',
+					reader: {
+						type: 'treereader',
+						root: me.typesRoot
+					}
+				},
+				sorters: [{
+					property: 'text',
+					direction: 'ASC'
+				}]
+			});
 
-            if (me.cascadeSelectionUp) {
-                var rootNode = me.getRootNode();
-                var parentNode = node;
-                var childChecked = false;
+			if (me.availableTypes) {
+				me.store.load({
+					params: {
+						ids: me.availableTypes.join(',')
+					},
+					callback: function() {
+						if (me.selectedTypes) {
+							me.setSelectedTypes(me.selectedTypes);
+						}
+					}
+				});
+			} else {
+				me.store.load({
+					callback: function() {
+						if (me.selectedTypes) {
+							me.setSelectedTypes(me.selectedTypes);
+						}
+					}
+				});
+			}
+		}
 
-                while (parentNode != rootNode) {
-                    childChecked = false;
+		toolbarItems = [{
+			xtype: 'button',
+			text: 'Select All',
+			iconCls: 'icon-info',
+			handler: function(btn) {
+				btn.up('typeselectiontree').toggleChecked(btn, true);
+			}
+		}];
 
-                    parentNode.eachChild(function (child) {
-                        if (child.get('checked')) {
-                            childChecked = true;
-                        }
-                    });
+		if (me.canCreate) {
+			toolbarItems.push({
+				xtype: 'button',
+				text: me.createNewText,
+				iconCls: 'icon-add',
+				handler: function() {
+					me.showCreateType();
+				}
+			});
+		}
 
-                    if (!checked && !childChecked) {
-                        parentNode.set('checked', checked);
-                    }
+		me.dockedItems = [{
+			xtype: 'toolbar',
+			items: toolbarItems
+		}];
 
-                    if (!checked && childChecked) {
-                        parentNode.set('checked', !checked);
-                    }
+		me.callParent(arguments);
 
-                    if (checked && childChecked) {
-                        parentNode.set('checked', checked);
-                    }
+		me.addListener('beforecellclick', function(grid) {
+			grid.ownerCt.suspendLayouts();
+		});
 
-                    parentNode = parentNode.parentNode;
-                }
-            }
+		me.addListener('checkchange', function(node, checked) {
+			var me = this;
 
-            if (me.cascadeSelectionDown) {
-                if (node.get('checked')) {
-                    node.cascadeBy(function (childNode) {
-                        childNode.set('checked', true);
-                    });
-                }
-            }
+			if (me.unSelectableTypes && Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
+				Ext.Msg.warning('Warning', me.disabledNodeMessage);
 
-            node.getOwnerTree().resumeLayouts();
-        }
-    },
+				node.set('checked', !checked);
 
-    initComponent: function () {
-        var me = this;
+				return false;
+			}
 
-        if (me.availableTypes) {
-            me.store = Ext.create('Ext.data.TreeStore', {
-                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
-                folderSort: true,
-                sorters: [
-                    {
-                        property: 'text',
-                        direction: 'ASC'
-                    }
-                ]
-            });
+			if (me.cascadeSelectionUp) {
+				var rootNode = me.getRootNode();
+				var parentNode = node;
+				var childChecked = false;
 
-            me.store.setRootNode({text: '', children: me.availableTypes});
-        }
-        else {
-            me.store = Ext.create('Ext.data.TreeStore', {
-                model: 'Compass.ErpApp.Shared.TypeSelectionModel',
-                folderSort: true,
-                proxy: {
-                    type: 'ajax',
-                    url: me.typesUrl + '.tree',
-                    reader: {
-                        type: 'treereader',
-                        root: me.typesRoot
-                    }
-                },
-                sorters: [
-                    {
-                        property: 'text',
-                        direction: 'ASC'
-                    }
-                ]
-            });
+				while (parentNode != rootNode) {
+					childChecked = false;
 
-            me.store.load();
-        }
+					parentNode.eachChild(function(child) {
+						if (child.get('checked')) {
+							childChecked = true;
+						}
+					});
 
-        toolbarItems = [{
-            xtype: 'button',
-            text: 'Select All',
-            iconCls: 'icon-info',
-            handler: function (btn) {
-                btn.up('typeselectiontree').toggleChecked(btn, true);
-            }
-        }];
+					if (!checked && !childChecked) {
+						parentNode.set('checked', checked);
+					}
 
-        if (me.canCreate) {
-            toolbarItems.push({
-                xtype: 'button',
-                text: me.createNewText,
-                iconCls: 'icon-add',
-                handler: function () {
-                    me.showCreateType();
-                }
-            });
-        }
+					if (!checked && childChecked) {
+						parentNode.set('checked', !checked);
+					}
 
-        me.dockedItems = [
-            {
-                xtype: 'toolbar',
-                items: toolbarItems
-            }
-        ];
+					if (checked && childChecked) {
+						parentNode.set('checked', checked);
+					}
 
-        me.callParent(arguments);
+					parentNode = parentNode.parentNode;
+				}
+			}
 
-        me.collapseAll();
+			if (me.cascadeSelectionDown) {
+				if (node.get('checked')) {
+					node.cascadeBy(function(childNode) {
+						childNode.set('checked', true);
+					});
+				}
+			}
 
-        if (me.selectedTypes) {
-            me.setSelectedTypes(me.selectedTypes);
-        }
-    },
+			node.getOwnerTree().resumeLayouts();
+			node.getOwnerTree().fireEvent('typesselected', node.getOwnerTree());
+		});
 
-    showCreateType: function () {
-        var me = this;
+		me.collapseAll();
+	},
 
-        var window = Ext.widget('window', {
-            title: me.createNewText,
-            modal: true,
-            layout: 'fit',
-            plain: true,
-            buttonAlign: 'center',
-            items: [
-                {
-                    xtype: 'form',
-                    url: me.typesUrl,
-                    defaults: {
-                        width: 375,
-                        xtype: 'textfield'
-                    },
-                    bodyStyle: 'padding:5px 5px 0',
-                    items: [
-                        {
-                            xtype: 'combo',
-                            name: 'parent',
-                            itemId: 'parentType',
-                            emptyText: 'No Parent',
-                            width: 320,
-                            loadingText: 'Retrieving Types...',
-                            store: Ext.create("Ext.data.Store", {
-                                proxy: {
-                                    type: 'ajax',
-                                    url: me.typesUrl + '.json',
-                                    reader: {
-                                        type: 'json',
-                                        root: me.typesRoot
-                                    },
-                                    extraParams: {
-                                        parent: me.defaultParentType
-                                    }
-                                },
-                                fields: [
-                                    {
-                                        name: 'internal_identifier'
-                                    },
-                                    {
-                                        name: 'description'
+	showCreateType: function() {
+		var me = this;
 
-                                    }
-                                ]
-                            }),
-                            forceSelection: true,
-                            allowBlank: true,
-                            editable: false,
-                            fieldLabel: 'Parent',
-                            mode: 'remote',
-                            displayField: 'description',
-                            valueField: 'internal_identifier',
-                            triggerAction: 'all',
-                            listConfig: {
-                                tpl: '<div class="my-boundlist-item-menu">No Parent</div><tpl for="."><div class="x-boundlist-item">{description}</div></tpl>',
-                                listeners: {
-                                    el: {
-                                        delegate: '.my-boundlist-item-menu',
-                                        click: function () {
-                                            window.down('#parentType').clearValue();
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            fieldLabel: 'Name',
-                            allowBlank: false,
-                            name: 'description'
-                        }
-                    ]
-                }
-            ],
-            buttons: [
-                {
-                    text: 'Submit',
-                    listeners: {
-                        'click': function (button) {
-                            var window = button.findParentByType('window');
-                            var formPanel = window.down('form');
+		var window = Ext.widget('window', {
+			title: me.createNewText,
+			modal: true,
+			layout: 'fit',
+			plain: true,
+			buttonAlign: 'center',
+			items: [{
+				xtype: 'form',
+				url: me.typesUrl,
+				defaults: {
+					width: 375,
+					xtype: 'textfield'
+				},
+				bodyStyle: 'padding:5px 5px 0',
+				items: [{
+					xtype: 'combo',
+					name: 'parent',
+					itemId: 'parentType',
+					emptyText: 'No Parent',
+					width: 320,
+					loadingText: 'Retrieving Types...',
+					store: Ext.create("Ext.data.Store", {
+						proxy: {
+							type: 'ajax',
+							url: me.typesUrl + '.json',
+							reader: {
+								type: 'json',
+								root: me.typesRoot
+							},
+							extraParams: {
+								parent: me.defaultParentType
+							}
+						},
+						fields: [{
+							name: 'internal_identifier'
+						}, {
+							name: 'description'
 
-                            if (formPanel.isValid()) {
-                                formPanel.getForm().submit({
-                                    timeout: 30000,
-                                    waitMsg: 'Creating type...',
-                                    params: {
-                                        default_parent: me.defaultParentType
-                                    },
-                                    success: function (form, action) {
-                                        var responseObj = Ext.decode(action.response.responseText);
+						}]
+					}),
+					forceSelection: true,
+					allowBlank: true,
+					editable: false,
+					fieldLabel: 'Parent',
+					mode: 'remote',
+					displayField: 'description',
+					valueField: 'internal_identifier',
+					triggerAction: 'all',
+					listConfig: {
+						tpl: '<div class="my-boundlist-item-menu">No Parent</div><tpl for="."><div class="x-boundlist-item">{description}</div></tpl>',
+						listeners: {
+							el: {
+								delegate: '.my-boundlist-item-menu',
+								click: function() {
+									window.down('#parentType').clearValue();
+								}
+							}
+						}
+					}
+				}, {
+					fieldLabel: 'Name',
+					allowBlank: false,
+					name: 'description'
+				}]
+			}],
+			buttons: [{
+				text: 'Submit',
+				listeners: {
+					'click': function(button) {
+						var window = button.findParentByType('window');
+						var formPanel = window.down('form');
 
-                                        if (responseObj.success) {
-                                            var values = formPanel.getValues();
-                                            var parentNode = me.getRootNode();
+						if (formPanel.isValid()) {
+							formPanel.getForm().submit({
+								timeout: 30000,
+								waitMsg: 'Creating type...',
+								params: {
+									default_parent: me.defaultParentType
+								},
+								success: function(form, action) {
+									var responseObj = Ext.decode(action.response.responseText);
 
-                                            if (!Ext.isEmpty(values.parent)) {
-                                                parentNode = parentNode.findChildBy(function (node) {
-                                                    if (node.data.internalIdentifier == values.parent) {
-                                                        return true;
-                                                    }
-                                                }, this, true);
-                                            }
+									if (responseObj.success) {
+										var values = formPanel.getValues();
+										var parentNode = me.getRootNode();
 
-                                            parentNode.set('leaf', false);
-                                            parentNode.appendChild({
-                                                text: responseObj[me.typesRoot.singularize()].description,
-                                                internalIdentifier: responseObj[me.typesRoot.singularize()].internal_identifier,
-                                                checked: false,
-                                                leaf: true,
-                                                children: []
-                                            });
+										if (!Ext.isEmpty(values.parent)) {
+											parentNode = parentNode.findChildBy(function(node) {
+												if (node.data.internalIdentifier == values.parent) {
+													return true;
+												}
+											}, this, true);
+										}
 
-                                            window.close();
-                                        }
-                                        else {
-                                            Ext.Msg.alert("Error", responseObj.message);
-                                        }
-                                    },
-                                    failure: function (form, action) {
-                                        Compass.ErpApp.Utility.handleFormFailure(action);
-                                    }
-                                });
-                            }
-                        }
-                    }
-                },
-                {
-                    text: 'Close',
-                    handler: function (btn) {
-                        btn.up('window').close();
-                    }
-                }
-            ]
-        });
-        window.show();
-    },
+										parentNode.set('leaf', false);
+										parentNode.appendChild({
+											text: responseObj[me.typesRoot.singularize()].description,
+											internalIdentifier: responseObj[me.typesRoot.singularize()].internal_identifier,
+											checked: true,
+											leaf: true,
+											children: []
+										});
 
-    getSelectedTypes: function () {
-        var me = this;
-        var types = [];
+										window.close();
+									} else {
+										Ext.Msg.alert("Error", responseObj.message);
+									}
+								},
+								failure: function(form, action) {
+									Compass.ErpApp.Utility.handleFormFailure(action);
+								}
+							});
+						}
+					}
+				}
+			}, {
+				text: 'Close',
+				handler: function(btn) {
+					btn.up('window').close();
+				}
+			}]
+		});
+		window.show();
+	},
 
-        me.getRootNode().cascadeBy(function (node) {
-            if (me.cascadeSelectionUp) {
-                var childChecked = false;
-                node.eachChild(function (child) {
-                    if (child.get('checked')) {
-                        childChecked = true;
-                    }
-                });
-                if (node.get('checked') && !childChecked) {
-                    types.push(node.get('internalIdentifier'));
-                }
-            }
-            else {
-                if (node.get('checked')) {
-                    types.push(node.get('internalIdentifier'));
-                }
-            }
-        });
-        return Ext.Array.clean(types);
-    },
+	getSelectedRecords: function() {
+		var me = this;
+		var records = [];
 
-    setAvailableTypes: function (types) {
-        var me = this;
+		me.getRootNode().cascadeBy(function(node) {
+			if (me.cascadeSelectionUp) {
+				var childChecked = false;
+				node.eachChild(function(child) {
+					if (child.get('checked')) {
+						childChecked = true;
+					}
+				});
+				if (node.get('checked') && !childChecked) {
+					records.push(node);
+				}
+			} else {
+				if (node.get('checked')) {
+					records.push(node);
+				}
+			}
+		});
+		return Ext.Array.clean(records);
+	},
 
-        me.store.setRootNode({text: '', children: types});
-    },
+	getSelectedTypes: function() {
+		var me = this;
+		var types = [];
 
-    setSelectedTypes: function (types) {
-        var me = this;
+		Ext.Array.forEach(me.getSelectedRecords(), function(record) {
+			types.push(record.get('internalIdentifier'));
+		});
 
-        types = Ext.Array.clean(types.split(','));
+		return Ext.Array.clean(types);
+	},
 
-        me.getRootNode().cascadeBy(function (node) {
-            if (Ext.Array.contains(types, node.get('internalIdentifier'))) {
-                node.set('checked', true);
-                var parentNode = node.parentNode;
+	setAvailableTypes: function(types) {
+		var me = this;
 
-                if (me.cascadeSelectionUp) {
-                    while (parentNode != me.getRootNode()) {
-                        parentNode.set('checked', true);
-                        parentNode.expand();
-                        parentNode = parentNode.parentNode;
-                    }
-                }
+		me.store.setRootNode({
+			text: '',
+			children: types
+		});
+	},
 
-                // expand nodes
-                while (parentNode != me.getRootNode()) {
-                    parentNode.expand();
-                    parentNode = parentNode.parentNode;
-                }
-            }
-        });
-    },
+	setSelectedTypes: function(types) {
+		var me = this;
 
-    setUnSelectableTypes: function (types) {
-        var me = this;
+		types = Ext.Array.clean(types.split(','));
 
-        me.unSelectableTypes = types;
-    },
+		me.getRootNode().cascadeBy(function(node) {
+			if (Ext.Array.contains(types, node.get('internalIdentifier'))) {
+				node.set('checked', true);
+				var parentNode = node.parentNode;
 
-    toggleChecked: function (btn, checked) {
-        var me = this;
+				if (me.cascadeSelectionUp) {
+					while (parentNode != me.getRootNode()) {
+						parentNode.set('checked', true);
+						parentNode.expand();
+						parentNode = parentNode.parentNode;
+					}
+				}
 
-        me.getRootNode().cascadeBy(function (node) {
-            if (!me.unSelectableTypes || !Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
-                node.set('checked', checked);
-            }
-        });
+				// expand nodes
+				while (parentNode != me.getRootNode()) {
+					parentNode.expand();
+					parentNode = parentNode.parentNode;
+				}
+			}
+		});
+	},
 
-        if(checked){
-            btn.setText('Unselect All');
-        }
-        else{
-            btn.setText('Select All');
-        }
+	setUnSelectableTypes: function(types) {
+		var me = this;
 
-        btn.setHandler(function () {
-            me.toggleChecked(btn, !checked);
-        });
-    },
+		me.unSelectableTypes = types;
+	},
 
-    /*
-     * Field methods
-     */
+	toggleChecked: function(btn, checked) {
+		var me = this;
 
-    getValue: function () {
-        var me = this;
+		me.getRootNode().cascadeBy(function(node) {
+			if (!me.unSelectableTypes || !Ext.Array.contains(me.unSelectableTypes.split(','), node.get('internalIdentifier'))) {
+				node.set('checked', checked);
+			}
+		});
 
-        return me.getSelectedTypes().join(',');
-    },
+		if (checked) {
+			btn.setText('Unselect All');
+		} else {
+			btn.setText('Select All');
+		}
 
-    setValue: function (value) {
-        var me = this;
+		btn.setHandler(function() {
+			me.toggleChecked(btn, !checked);
+		});
+	},
 
-        if (value) {
-            me.setSelectedTypes(value);
-        }
-    },
+	/*
+	 * Field methods
+	 */
 
-    getSubmitData: function () {
-        var me = this,
-            data = null;
-        if (!me.disabled && me.submitValue) {
-            data = {};
-            data[me.getName()] = me.getValue();
-        }
-        return data;
-    },
+	getValue: function() {
+		var me = this;
 
-    validate: function () {
-        if (this.initialConfig.allowBlank !== true && Ext.isEmpty(this.getSelectedTypes())) {
-            Ext.Msg.warning('Warning', 'At least one type must be selected');
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
+		return me.getSelectedTypes().join(',');
+	},
+
+	setValue: function(value) {
+		var me = this;
+
+		if (value) {
+			me.setSelectedTypes(value);
+		}
+	},
+
+	getSubmitData: function() {
+		var me = this,
+			data = null;
+		if (!me.disabled && me.submitValue) {
+			data = {};
+			data[me.getName()] = me.getValue();
+		}
+		return data;
+	},
+
+	validate: function() {
+		if (this.initialConfig.allowBlank !== true && Ext.isEmpty(this.getSelectedTypes())) {
+			if (this.getEl())
+				this.getEl().setStyle('border', 'solid 1px red');
+
+			return false;
+		} else {
+			if (this.getEl())
+				this.getEl().setStyle('border', '');
+
+			return true;
+		}
+	}
 });

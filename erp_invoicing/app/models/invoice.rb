@@ -23,6 +23,8 @@ class Invoice < ActiveRecord::Base
 
   acts_as_document
   can_be_generated
+  has_tracked_status
+  tracks_created_by_updated_by
 
   belongs_to :billing_account
   belongs_to :invoice_type
@@ -58,6 +60,29 @@ class Invoice < ActiveRecord::Base
 
   class << self
 
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      if statement.nil?
+        statement = self
+      end
+
+      unless filters[:status].blank?
+        if filters[:status] == 'open'
+          statement = statement.open
+        end
+
+        if filters[:status] == 'closed'
+          statement = statement.closed
+        end
+      end
+
+      statement
+    end
+
     # generate an invoice from a order_txn
     # options include
     # message - Message to display on Invoice
@@ -87,14 +112,14 @@ class Invoice < ActiveRecord::Base
 
         invoice.save
 
+        invoice.current_status = 'invoice_statuses_open'
+
         # add customer relationship
-        party = order_txn.find_party_by_role('customer')
+        party = order_txn.find_party_by_role('order_roles_customer')
         invoice.add_party_with_role_type(party, RoleType.customer)
 
-        # add dba_org relationship if present
-        if options[:dba_organization]
-          invoice.add_party_with_role_type(options[:dba_organization], RoleType.dba_org)
-        end
+        dba_organization = options[:dba_organization] || order_txn.find_party_by_role(RoleType.iid('dba_org'))
+        invoice.add_party_with_role_type(dba_organization, RoleType.dba_org)
 
         order_txn.order_line_items.each do |line_item|
           invoice_item = InvoiceItem.new
@@ -107,7 +132,8 @@ class Invoice < ActiveRecord::Base
           invoice_item.quantity = line_item.quantity
           invoice_item.unit_price = line_item.sold_price
           invoice_item.amount = (line_item.quantity * line_item.sold_price)
-          invoice_item.taxed = line_item.taxed
+          invoice_item.taxed = line_item.taxed?
+          invoice_item.biz_txn_acct_root = charged_item.try(:biz_txn_acct_root)
           invoice_item.add_invoiced_record(charged_item)
 
           invoice.invoice_items << invoice_item
@@ -129,7 +155,7 @@ class Invoice < ActiveRecord::Base
             invoice_item.unit_price = charged_item.sold_price
             invoice_item.amount = charged_item.sold_amount
             invoice_item.add_invoiced_record(charged_item.line_item_record)
-            invoice_item.taxed = charged_item.taxed
+            invoice_item.taxed = charged_item.taxed?
           elsif charged_item.is_a?(OrderTxn)
             invoice_item.quantity = 1
             invoice_item.unit_price = charge_line.money.amount
@@ -152,8 +178,8 @@ class Invoice < ActiveRecord::Base
             shipping_invoice_item.quantity = 1
             shipping_invoice_item.amount = shipping_invoice_item.unit_price.nil? ? charge_line.money.amount : shipping_invoice_item.unit_price + charge_line.money.amount
             shipping_invoice_item.unit_price = shipping_invoice_item.unit_price.nil? ? charge_line.money.amount : shipping_invoice_item.unit_price + charge_line.money.amount
-            shipping_invoice_item.taxed = charge_line.taxed
-            shipping_invoice_item.add_invoiced_record(find_or_create_shipping_product_type)
+            shipping_invoice_item.taxed = charge_line.taxed?
+            shipping_invoice_item.add_invoiced_record(charge_line)
 
             invoice.invoice_items << shipping_invoice_item
           end
@@ -163,20 +189,12 @@ class Invoice < ActiveRecord::Base
         invoice.generated_by = order_txn
 
         # calculate taxes
-        invoice.calculate_tax(options[:taxation])
+        if options[:taxation]
+          invoice.calculate_tax(options[:taxation])
+        end
 
         invoice
       end
-    end
-
-    def find_or_create_shipping_product_type
-      product_type = ProductType.find_by_internal_identifier('shipping')
-      unless product_type
-        product_type = ProductType.create(internal_identifier: 'shipping', description: 'Shipping', available_on_web: false, taxable: true)
-        product_type.pricing_plans.new(money_amount: 0, is_simple_amount: true)
-        product_type.save
-      end
-      product_type
     end
 
     def next_invoice_number
@@ -200,6 +218,21 @@ class Invoice < ActiveRecord::Base
       "Inv-#{max_id}"
     end
 
+    def open
+      Invoice.with_current_status(['invoice_statuses_open'])
+    end
+
+    def closed
+      Invoice.with_current_status(['invoice_statuses_closed'])
+    end
+
+    def hold
+      Invoice.with_current_status(['invoice_statuses_hold'])
+    end
+
+    def sent
+      Invoice.with_current_status(['invoice_statuses_sent'])
+    end
   end
 
   def has_invoice_items?
@@ -233,7 +266,11 @@ class Invoice < ActiveRecord::Base
 
   def sub_total
     if items.empty?
-      self.balance_record.amount
+      if self.balance_record
+        self.balance_record.amount
+      else
+        0
+      end
     else
       self.items.all.sum(&:sub_total).round(2)
     end
@@ -241,7 +278,11 @@ class Invoice < ActiveRecord::Base
 
   def total_amount
     if items.empty?
-      self.balance_record.amount
+      if self.balance_record
+        self.balance_record.amount
+      else
+        0
+      end
     else
       self.items.all.sum(&:total_amount).round(2)
     end
@@ -277,6 +318,7 @@ class Invoice < ActiveRecord::Base
   # calculates tax for each line item and save to sales_tax
   def calculate_tax(ctx={})
     tax = 0
+
     self.invoice_items.each do |line_item|
       tax += line_item.calculate_tax(ctx)
     end
@@ -352,7 +394,11 @@ class Invoice < ActiveRecord::Base
   end
 
   def dba_organization
-    find_parties_by_role_type('dba_org')
+    find_parties_by_role_type('dba_org').first
+  end
+
+  def to_data_hash
+    to_hash(only: [:id, :created_at, :updated_at, :description, :invoice_number, :invoice_date, :due_date])
   end
 
   private

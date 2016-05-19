@@ -90,7 +90,6 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
 
     constructor: function (config) {
         var self = this;
-
         var rootConfig = {
             text: config['rootText'] || 'Files',
             id: 'root_node',
@@ -252,7 +251,7 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                 e.stopEvent();
                 if (record.data['contextMenuDisabled']) return false;
                 if (record.data['handleContextMenu'] || (record.isRoot() && self.handleRootContextMenu)) {
-                    self.fireEvent('handleContextMenu', this, record, e);
+                    self.fireEvent('handleContextMenu', this, record, item, index, e);
                     return false;
                 }
 
@@ -570,7 +569,6 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                                 params: self.extraPostData,
                                                 success: function (response) {
                                                     msg.hide();
-
                                                     if(!record.isExpanded() && !record.isLoaded()){
                                                         record.expand();
                                                     }

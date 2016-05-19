@@ -4,7 +4,7 @@ module ErpApp
   class Engine < Rails::Engine
     isolate_namespace ErpApp
 
-    Mime::Type.register "tree", :tree
+    Mime::Type.register "all_representation", :all_representation
 
     config.erp_app = ErpApp::Config
 
