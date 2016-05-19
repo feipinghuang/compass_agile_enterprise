@@ -13,6 +13,8 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
 
+      post "generate_auth_token" => 'base#generate_auth_token'
+
       resources :parties, defaults: { :format => 'json' } do
         member do
           get :user, controller: 'users', action: 'user_by_party'

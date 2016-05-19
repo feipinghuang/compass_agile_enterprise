@@ -13,3 +13,4 @@ require 'erp_tech_svcs/extensions/active_record/scoped_by'
 
 #sorcery
 require 'erp_tech_svcs/extensions/sorcery/user_activation'
+require 'erp_tech_svcs/extensions/sorcery/controller'
