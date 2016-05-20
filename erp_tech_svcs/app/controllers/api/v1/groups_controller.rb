@@ -3,9 +3,7 @@ module Api
     class GroupsController < BaseController
 
       def index
-        if params[:party_id].present?
-          groups = Party.find(params[:party_id]).user.groups
-        elsif params[:user_id].present?
+        if params[:user_id].present?
           groups = User.find(params[:user_id]).groups
         else
           groups = Group

@@ -107,7 +107,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
 
 		me.initialConfig.tabPanel.add({
 			xtype: 'partylogininfopanel',
-			partyId: partyId
+			user: user.data,
+			partyId: partyId,
+			userId: user.get('id')
 		});
 
 		me.initialConfig.tabPanel.add({
@@ -118,13 +120,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
 
 		me.initialConfig.tabPanel.add({
 			xtype: 'partyappsinstalledpanel',
-			partyId: partyId,
+			userId: user.get('id'),
 			fieldSetHeights: 400
 		});
 
 		me.initialConfig.tabPanel.add({
 			xtype: 'partysecuritypanel',
-			partyId: partyId,
+			userId: user.get('id'),
 			fieldSetHeights: 400
 		});
 

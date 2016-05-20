@@ -41,18 +41,6 @@ module Api
         render :json => {total_count: total_count, users: users.uniq.collect(&:to_data_hash)}
       end
 
-      def user_by_party
-        party = Party.find(params[:id])
-
-        user = party.user
-
-        if user
-          render json: {success: true, user: user.to_data_hash}
-        else
-          render json: {success: true, user: nil}
-        end
-      end
-
       def create
         begin
           ActiveRecord::Base.connection.transaction do
@@ -140,10 +128,7 @@ module Api
         begin
           ActiveRecord::Base.transaction do
 
-            if params[:party_id]
-              party = Party.find(params[:party_id])
-              user = party.user
-            elsif params[:id]
+            if params[:id]
               user = User.find(params[:id])
               party = user.party
             else
@@ -151,7 +136,28 @@ module Api
               party = user.party
             end
 
-            update_user(user)
+            if params[:password].present?
+              user.password = params[:password].strip
+              if params[:password_confirmation].present?
+                user.password_confirmation = params[:password_confirmation].strip
+              else
+                user.password_confirmation = params[:password].strip
+              end
+            end
+
+            if params[:username].present?
+              user.username = params[:username].strip
+            end
+
+            if params[:status]
+              user.activation_state = params[:status]
+            end
+
+            if params[:email].present?
+              user.email = params[:email].strip
+            end
+
+            user.save!
 
             business_party = party.business_party
 
@@ -221,26 +227,11 @@ module Api
         render :json => {:success => true, :capabilities => user.class_capabilities_to_hash}
       end
 
-
-      def effective_security_by_party
-        user = Party.find(params[:id]).user
-
-        render :json => {:success => true, :capabilities => user.class_capabilities_to_hash}
-      end
-
       def update_security
-        update_security(User.find(params[:id]))
-      end
-
-      def update_security_by_party
-        update_security(Party.find(params[:id]).user)
-      end
-
-      protected
-
-      def update_security(user)
         begin
           ActiveRecord::Base.transaction do
+            user = User.find(params[:id])
+
             user.remove_all_security_roles
             user.add_security_roles(params[:security_role_iids].split(','))
 
@@ -264,31 +255,6 @@ module Api
 
           render :json => {:success => false, :message => 'Error updating security', :user => nil}
         end
-      end
-
-      def update_user(user)
-        if params[:password].present?
-          user.password = params[:password].strip
-          if params[:password_confirmation].present?
-            user.password_confirmation = params[:password_confirmation].strip
-          else
-            user.password_confirmation = params[:password].strip
-          end
-        end
-
-        if params[:username].present?
-          user.username = params[:username].strip
-        end
-
-        if params[:status]
-          user.activation_state = params[:status]
-        end
-
-        if params[:email].present?
-          user.email = params[:email].strip
-        end
-
-        user.save!
       end
 
     end # UsersController

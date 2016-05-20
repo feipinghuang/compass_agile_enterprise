@@ -15,14 +15,10 @@ Rails.application.routes.draw do
 
       resources :parties, defaults: { :format => 'json' } do
         member do
-          get :user, controller: 'users', action: 'user_by_party'
-          get :effective_security, controller: 'users', action: 'effective_security_by_party'
-          put :update_security, controller: 'users', action: 'update_security_by_party'
+          get :user
         end
 
-        resources :security_roles, defaults: { :format => 'json' }
-        resources :groups, defaults: { :format => 'json' }
-        resources :capabilities, defaults: { :format => 'json' }
+        resources :users, defaults: { :format => 'json'}, only: [:create]
       end
 
       resources :users, defaults: { :format => 'json' } do

@@ -31,8 +31,6 @@ module Api
           end
 
           security_roles = SecurityRole.where(id: security_roles.collect(&:id))
-        elsif params[:party_id].present?
-          security_roles = Party.find(params[:party_id]).security_roles
         elsif params[:user_id].present?
           security_roles = User.find(params[:user_id]).party.security_roles
         else

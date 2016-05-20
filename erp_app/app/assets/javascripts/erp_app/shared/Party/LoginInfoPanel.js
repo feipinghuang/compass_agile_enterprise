@@ -5,9 +5,10 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 	layout: 'hbox',
 	title: 'Login Info',
 
-	partyId: null,
+	userId: null,
 	loginPath: null,
 	websiteId: null,
+	partyId: null,
 	user: null,
 	autoScroll: true,
 	fieldSetHeights: 250,
@@ -27,12 +28,34 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 	initComponent: function() {
 		var me = this;
 
+		me.addEvents(
+			/*
+			 * @event userinformationloaded
+			 * Fires when user information is loaded
+			 * @param {CompassAE.ErpApp.Shared.Party.LoginInfoPanel} this panel
+			 * @param {Object} User information
+			 */
+			'userinformationloaded'
+		);
+
 		me.on('render', function() {
-			me.load();
+			if (me.user) {
+				me.setFields();
+			} else if (me.userId) {
+				me.load();
+			} else {
+				me.setupForNewUser();
+			}
 		});
 
 		me.on('activate', function() {
-			me.load();
+			if (me.user) {
+				me.setFields();
+			} else if (me.userId) {
+				me.load();
+			} else {
+				me.setupForNewUser();
+			}
 		});
 
 		me.items = [{
@@ -110,6 +133,32 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 		me.callParent(arguments);
 	},
 
+	setupForNewUser: function() {
+		var me = this;
+
+		me.down('#password').allowBlank = false;
+		me.down('#passwordConfirmation').allowBlank = false;
+		if (!me.down('#autoActivate')) {
+			me.down('#loginInfoFieldSet').add({
+				xtype: 'radiogroup',
+				fieldLabel: 'Auto Activate?',
+				labelWrap: true,
+				itemId: 'autoActivate',
+				columns: [75, 75],
+				items: [{
+					boxLabel: 'Yes',
+					name: 'auto_activate',
+					inputValue: 'yes',
+					checked: true
+				}, {
+					boxLabel: 'No',
+					name: 'auto_activate',
+					inputValue: 'no'
+				}]
+			});
+		}
+	},
+
 	save: function(btn) {
 		var me = this;
 
@@ -123,12 +172,12 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 			mask.show();
 
 			Compass.ErpApp.Utility.ajaxRequest({
-				url: (me.user ? ('/api/v1/users/' + me.user.id) : '/api/v1/users'),
+				url: (me.user ? '/api/v1/users' : ('/api/v1/parties/' + me.partyId + '/users')),
 				method: (me.user ? 'PUT' : 'POST'),
 				params: Ext.apply({
 					login_url: me.loginPath,
 					website_id: me.websiteId,
-					party_id: me.partyId
+					userId: me.userId
 				}, me.getValues()),
 				errorMessage: 'Could not save Login Info',
 				success: function(response) {
@@ -136,6 +185,8 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 					me.setFields();
 					btn.enable();
 					mask.hide();
+
+					me.fireEvent('userinformationloaded', me, me.user);
 				},
 				failure: function() {
 					btn.enable();
@@ -155,39 +206,16 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 		mask.show();
 
 		Compass.ErpApp.Utility.ajaxRequest({
-			url: '/api/v1/parties/' + me.partyId + '/user',
+			url: '/api/v1/users/' + me.userId,
 			method: 'GET',
 			errorMessage: 'Could not load Login Info',
 			success: function(response) {
 				if (response.user) {
 					me.user = response.user;
 					me.setFields();
-				} else {
-					me.down('#password').allowBlank = false;
-					me.down('#passwordConfirmation').allowBlank = false;
-					me.down('#loginInfoFieldSet').add({
-						xtype: 'radiogroup',
-						fieldLabel: 'Auto Activate?',
-						labelWrap: true,
-						itemId: 'autoActivate',
-						defaultType: 'radiofield',
-						submitValue: false,
-						allowBlank: false,
-						columns: [75, 75],
-						items: [{
-							boxLabel: 'Yes',
-							name: 'auto_activate',
-							inputValue: 'yes',
-							submitValue: false,
-							checked: true
-						}, {
-							boxLabel: 'No',
-							name: 'auto_activate',
-							submitValue: false,
-							inputValue: 'no'
-						}]
-					});
 				}
+
+				me.fireEvent('userinformationloaded', me, me.user);
 
 				mask.hide();
 			},
