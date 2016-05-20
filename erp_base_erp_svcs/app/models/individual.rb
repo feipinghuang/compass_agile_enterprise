@@ -14,7 +14,7 @@ class Individual < ActiveRecord::Base
   end
 
   alias :social_security_number= :ssn=
-  alias :social_security_number :ssn
+    alias :social_security_number :ssn
 
   def formatted_ssn_label
     (self.ssn_last_four.blank?) ? "" : "XXX-XX-#{self.ssn_last_four}"
@@ -47,10 +47,11 @@ class Individual < ActiveRecord::Base
   end
 
   def save_party
-    if self.party.description.blank? && (!current_first_name.blank? && !current_last_name.blank?)
-      self.party.description = [current_personal_title, current_first_name, current_last_name].join(' ').strip
-      self.party.save
-    end
+    # TODO revisit this later, a lot of complaints about the description not getting updated
+    #if self.party.description.blank? && (!current_first_name.blank? && !current_last_name.blank?)
+    self.party.description = [current_personal_title, current_first_name, current_last_name].join(' ').strip
+    self.party.save
+    #end
   end
 
   def destroy_party

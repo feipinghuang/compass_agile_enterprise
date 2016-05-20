@@ -8,11 +8,11 @@ Sorcery::Controller::InstanceMethods.class_eval do
   def require_login
     if params[:current_user_id].present? and params[:auth_token].present?
       @current_user = User.find(params[:current_user_id])
-      unless @current_user and @current_user.auth_token == params[:auth_token]
+      unless @current_user and @current_user.auth_token_valid?(params[:auth_token], request.ip)
         Rails.logger.info("*************************************************************************************")
         Rails.logger.info("#{Time.now} - Invalid AuthToken for user")
-        Rails.logger.info("AuthToken: #{params[:auth_token]} UserId: #{params[:current_user_id]}")
-        Rails.logger.info("UserId: #{params[:user_id]}")
+        Rails.logger.info("AuthToken: #{params[:auth_token]}")
+        Rails.logger.info("UserId: #{params[:current_user_id]}")
         Rails.logger.info("*************************************************************************************")
 
         render :json => {:success => false, :invalid_auth_token => true, :message => 'Connection is no longer valid'}

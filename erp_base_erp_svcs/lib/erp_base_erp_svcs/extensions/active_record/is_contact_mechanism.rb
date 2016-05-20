@@ -29,6 +29,14 @@ module ErpBaseErpSvcs
         module SingletonMethods
           # return all contact mechanism instances for parties
           #
+          # @param party [Party] Party to get contacts for
+          # @param contact_purposes [Array] Array of ContactPurposes to look up
+          def for_party(party, contact_purposes=[])
+            for_parties([party], contact_purposes)
+          end
+
+          # return all contact mechanism instances for parties
+          #
           # @param parties [Array] Array of parties to get contacts for
           # @param contact_purposes [Array] Array of ContactPurposes to look up
           def for_parties(parties, contact_purposes=[])

@@ -1,3 +1,56 @@
+# create_table :users do |t|
+#   t.string :username
+#   t.string :email
+#   t.references :party
+#   t.string :type
+#   t.string :salt, :default => nil
+#   t.string :crypted_password, :default => nil
+#
+#   #activity logging
+#   t.datetime :last_login_at, :default => nil
+#   t.datetime :last_logout_at, :default => nil
+#   t.datetime :last_activity_at, :default => nil
+#
+#   #brute force protection
+#   t.integer :failed_logins_count, :default => 0
+#   t.datetime :lock_expires_at, :default => nil
+#
+#   #remember me
+#   t.string :remember_me_token, :default => nil
+#   t.datetime :remember_me_token_expires_at, :default => nil
+#
+#   #reset password
+#   t.string :reset_password_token, :default => nil
+#   t.datetime :reset_password_token_expires_at, :default => nil
+#   t.datetime :reset_password_email_sent_at, :default => nil
+#
+#   #user activation
+#   t.string :activation_state, :default => nil
+#   t.string :activation_token, :default => nil
+#   t.datetime :activation_token_expires_at, :default => nil
+#
+#   t.string :security_question_1
+#   t.string :security_answer_1
+#   t.string :security_question_2
+#   t.string :security_answer_2
+#
+#   t.string :unlock_token, :default => nil
+#   t.string :last_login_from_ip_address, :default => nil
+#
+#   t.string :auth_token
+#   t.datetime :auth_token_expires_at
+#
+#   t.timestamps
+# end
+#
+# add_index :users, :email, :unique => true
+# add_index :users, :username, :unique => true
+# add_index :users, [:last_logout_at, :last_activity_at], :name => 'activity_idx'
+# add_index :users, :remember_me_token
+# add_index :users, :reset_password_token
+# add_index :users, :activation_token
+# add_index :users, :party_id, :name => 'users_party_id_idx'
+
 class User < ActiveRecord::Base
   include ErpTechSvcs::Utils::CompassAccessNegotiator
   include ActiveModel::Validations
@@ -5,6 +58,7 @@ class User < ActiveRecord::Base
   attr_accessor :password_validator, :skip_activation_email
 
   belongs_to :party
+  has_many :auth_tokens
 
   attr_accessible :email, :password, :password_confirmation
 
@@ -36,11 +90,39 @@ class User < ActiveRecord::Base
     end
   end
 
+  # Revoke any valid auth tokens for this User
+  #
+  def revoke_all_auth_tokens
+    auth_tokens.valid.destroy_all
+  end
+
+  # Revoke any current valid auth token by the requested ip
+  #
+  def revoke_auth_token(request_ip)
+    # destroy any valid current tokens for the request_ip
+    current_token = auth_tokens.by_request_ip(request_ip).valid.first
+    if current_token
+      current_token.destroy
+    end
+  end
+
   # auth token used for mobile app security
-  def generate_auth_token!
-    self.auth_token = SecureRandom.uuid
-    self.auth_token_expires_at = Time.now + 30.days
-    self.save
+  #
+  def generate_auth_token!(request_ip, expires_at=(Time.now + 30.days))
+    # destroy any valid current tokens for the request_ip
+    current_token = auth_tokens.by_request_ip(request_ip).valid.first
+    if current_token
+      current_token.destroy
+    end
+
+    self.auth_tokens << AuthToken.generate(request_ip, expires_at)
+    self.save!
+  end
+
+  # Check if token is valid for the given request ip
+  #
+  def auth_token_valid?(token, request_ip)
+    !auth_tokens.by_request_ip(request_ip).valid.first.nil?
   end
 
   # This allows the disabling of the activation email sent via the sorcery user_activation submodule
@@ -239,9 +321,8 @@ class User < ActiveRecord::Base
     }.compact
   end
 
-  def to_data_hash
+  def to_data_hash(reqeust_ip=nil)
     data = to_hash(only: [
-                     :auth_token,
                      :id,
                      :username,
                      :email,
@@ -256,6 +337,15 @@ class User < ActiveRecord::Base
                    is_admin: party.has_security_role?('admin'),
                    party: party.to_data_hash
                    )
+
+    # add the auth token for the given ip if it is passed
+    if reqeust_ip
+      auth_token = self.auth_tokens.by_request_ip(ip).first
+      if auth_token
+        data[:auth_token] = auth_token.token
+        data[:auth_token_expires_at] = auth_token.expires_at
+      end
+    end
 
     # add first name and last name if this party is an Individual
     if self.party.business_party.is_a?(Individual)
