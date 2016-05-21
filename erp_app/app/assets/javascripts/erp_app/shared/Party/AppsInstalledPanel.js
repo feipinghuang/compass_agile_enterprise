@@ -33,7 +33,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.AppsInstalledPanel", {
 	title: 'Apps Installed',
 	autoScroll: true,
 
-	partyId: null,
+	userId: null,
 	availableTools: [],
 	availableApps: [],
 	fieldSetHeights: 250,
@@ -67,189 +67,174 @@ Ext.define("CompassAE.ErpApp.Shared.Party.AppsInstalledPanel", {
 
 		me.callParent(arguments);
 
-		me.on('boxready', function() {
-			var mask = new Ext.LoadMask({
-				msg: 'Please wait...',
-				target: me
-			});
-			mask.show();
-
-			me.add({
-				xtype: 'fieldset',
-				width: 450,
-				title: 'Admin & Dev Tools',
-				itemId: 'tools',
-				style: {
-					marginLeft: '10px',
-					marginRight: '10px',
-					padding: '5px'
-				},
-				items: [{
-					xtype: 'treepanel',
-					height: me.fieldSetHeights,
-					itemId: 'toolsTree',
-					store: {
-						autoLoad: false,
-						model: 'Compass.ErpApp.Shared.Party.ApplicationModel',
-						proxy: {
-							type: 'ajax',
-							url: '/api/v1/applications.tree',
-							root: 'applications',
-							extraParams: {
-								types: 'tool'
-							},
-							reader: {
-								root: 'applications'
-							}
+		me.add({
+			xtype: 'fieldset',
+			width: 450,
+			title: 'Admin & Dev Tools',
+			itemId: 'tools',
+			style: {
+				marginLeft: '10px',
+				marginRight: '10px',
+				padding: '5px'
+			},
+			items: [{
+				xtype: 'treepanel',
+				height: me.fieldSetHeights,
+				itemId: 'toolsTree',
+				store: {
+					autoLoad: false,
+					model: 'Compass.ErpApp.Shared.Party.ApplicationModel',
+					proxy: {
+						type: 'ajax',
+						url: '/api/v1/applications.tree',
+						root: 'applications',
+						extraParams: {
+							types: 'tool'
 						},
-						root: {
-							expanded: false
+						reader: {
+							root: 'applications'
 						}
 					},
-					rootVisible: false,
-					animate: false,
-					autoScroll: true,
-					containerScroll: true,
-					border: false,
-					frame: false
-				}]
-			}, {
-				xtype: 'fieldset',
-				width: 450,
-				title: 'End User Apps',
-				itemId: 'apps',
-				style: {
-					marginLeft: '10px',
-					marginRight: '10px',
-					padding: '5px'
+					root: {
+						expanded: false
+					}
 				},
-				items: [{
-					xtype: 'treepanel',
-					height: me.fieldSetHeights,
-					itemId: 'userAppsTree',
-					store: {
-						autoLoad: false,
-						model: 'Compass.ErpApp.Shared.Party.ApplicationModel',
-						proxy: {
-							type: 'ajax',
-							url: '/api/v1/applications.tree',
-							root: 'applications',
-							extraParams: {
-								types: 'app'
-							},
-							reader: {
-								root: 'applications'
-							}
+				rootVisible: false,
+				animate: false,
+				autoScroll: true,
+				containerScroll: true,
+				border: false,
+				frame: false
+			}]
+		}, {
+			xtype: 'fieldset',
+			width: 450,
+			title: 'End User Apps',
+			itemId: 'apps',
+			style: {
+				marginLeft: '10px',
+				marginRight: '10px',
+				padding: '5px'
+			},
+			items: [{
+				xtype: 'treepanel',
+				height: me.fieldSetHeights,
+				itemId: 'userAppsTree',
+				store: {
+					autoLoad: false,
+					model: 'Compass.ErpApp.Shared.Party.ApplicationModel',
+					proxy: {
+						type: 'ajax',
+						url: '/api/v1/applications.tree',
+						root: 'applications',
+						extraParams: {
+							types: 'app'
 						},
-						root: {
-							text: 'Applications',
-							expanded: false
+						reader: {
+							root: 'applications'
 						}
 					},
-					rootVisible: false,
-					animate: false,
-					autoScroll: true,
-					containerScroll: true,
-					border: false,
-					frame: false
-				}]
-			});
-
-			me.setDbaOrganizationOnApplications();
-
-			var loadTools = function() {
-				var dfd = Ext.create('Ext.ux.Deferred');
-				me.down('#toolsTree').getRootNode().expand(false,
-					function(records, operation, success) {
-						dfd.resolve(records);
-					});
-				return dfd.promise();
-			};
-
-			var loadApps = function() {
-				var dfd = Ext.create('Ext.ux.Deferred');
-				me.down('#userAppsTree').getRootNode().expand(false,
-					function(records, operation, success) {
-						dfd.resolve(records);
-					});
-				return dfd.promise();
-			};
-
-			var loadCurrentTools = function() {
-				var dfd = Ext.create('Ext.ux.Deferred');
-
-				Compass.ErpApp.Utility.ajaxRequest({
-					url: '/api/v1/parties/' + me.partyId + '/applications',
-					method: 'GET',
-					params: {
-						types: 'tool'
-					},
-					errorMessage: 'Could not load installed Applications',
-					success: function(response) {
-						var applicationIids = Ext.Array.pluck(response.applications, 'internal_identifier');
-
-						me.down('#toolsTree').getRootNode().cascadeBy(function(node) {
-							if (Ext.Array.contains(applicationIids, node.get('internalIdentifier'))) {
-								node.set('checked', true);
-							}
-						});
-
-						dfd.resolve();
-					},
-					failure: function() {
-						dfd.reject();
+					root: {
+						text: 'Applications',
+						expanded: false
 					}
+				},
+				rootVisible: false,
+				animate: false,
+				autoScroll: true,
+				containerScroll: true,
+				border: false,
+				frame: false
+			}]
+		});
+
+		me.setDbaOrganizationOnApplications();
+
+		me.down('#toolsTree').getRootNode().expand(false);
+		me.down('#userAppsTree').getRootNode().expand(false);
+
+		me.on('activate', function() {
+			if (me.userId) {
+				var mask = new Ext.LoadMask({
+					msg: 'Please wait...',
+					target: me
 				});
+				mask.show();
 
-				return dfd.promise();
-			};
+				var loadCurrentTools = function() {
+					var dfd = Ext.create('Ext.ux.Deferred');
 
-			var loadCurrentApps = function() {
-				var dfd = Ext.create('Ext.ux.Deferred');
+					Compass.ErpApp.Utility.ajaxRequest({
+						url: '/api/v1/users/' + me.userId + '/applications',
+						method: 'GET',
+						params: {
+							types: 'tool'
+						},
+						errorMessage: 'Could not load installed Applications',
+						success: function(response) {
+							var applicationIids = Ext.Array.pluck(response.applications, 'internal_identifier');
 
-				Compass.ErpApp.Utility.ajaxRequest({
-					url: '/api/v1/parties/' + me.partyId + '/applications',
-					method: 'GET',
-					params: {
-						types: 'app'
-					},
-					errorMessage: 'Could not load installed Applications',
-					success: function(response) {
-						var applicationIids = Ext.Array.pluck(response.applications, 'internal_identifier');
-
-						me.down('#userAppsTree').getRootNode().cascadeBy(function(node) {
-							if (Ext.Array.contains(applicationIids, node.get('internalIdentifier'))) {
-								node.set('checked', true);
+							if (me.down('#toolsTree')) {
+								me.down('#toolsTree').getRootNode().cascadeBy(function(node) {
+									if (Ext.Array.contains(applicationIids, node.get('internalIdentifier'))) {
+										node.set('checked', true);
+									}
+								});
 							}
-						});
 
-						dfd.resolve();
-					},
-					failure: function() {
-						dfd.reject();
-					}
-				});
+							dfd.resolve();
+						},
+						failure: function() {
+							dfd.reject();
+						}
+					});
 
-				return dfd.promise();
-			};
+					return dfd.promise();
+				};
 
-			Ext.ux.Deferred.when(
-					loadTools,
-					loadApps)
-				.then(
-					loadCurrentTools,
-					function() {
+				var loadCurrentApps = function() {
+					var dfd = Ext.create('Ext.ux.Deferred');
+
+					Compass.ErpApp.Utility.ajaxRequest({
+						url: '/api/v1/users/' + me.userId + '/applications',
+						method: 'GET',
+						params: {
+							types: 'app'
+						},
+						errorMessage: 'Could not load installed Applications',
+						success: function(response) {
+							var applicationIids = Ext.Array.pluck(response.applications, 'internal_identifier');
+
+							if (me.down('#userAppsTree')) {
+								me.down('#userAppsTree').getRootNode().cascadeBy(function(node) {
+									if (Ext.Array.contains(applicationIids, node.get('internalIdentifier'))) {
+										node.set('checked', true);
+									}
+								});
+							}
+
+							dfd.resolve();
+						},
+						failure: function() {
+							dfd.reject();
+						}
+					});
+
+					return dfd.promise();
+				};
+
+				Ext.ux.Deferred.when(
+						loadCurrentTools)
+					.then(loadCurrentApps,
+						function() {
+							mask.hide();
+						})
+					.then(function(results) {
 						mask.hide();
-					})
-				.then(loadCurrentApps,
-					function() {
+					}, function(errors) {
 						mask.hide();
-					})
-				.then(function(results) {
-					mask.hide();
-				}, function(errors) {
-					mask.hide();
-				});
+					});
+			}
 		});
 	},
 
@@ -280,7 +265,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.AppsInstalledPanel", {
 		mask.show();
 
 		Compass.ErpApp.Utility.ajaxRequest({
-			url: '/api/v1/parties/' + me.partyId + '/applications/install',
+			url: '/api/v1/users/' + me.userId + '/applications/install',
 			method: 'PUT',
 			params: {
 				application_iids: selectedApplicationIids.join(',')

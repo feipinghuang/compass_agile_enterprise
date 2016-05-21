@@ -3,12 +3,11 @@ module Api
     class ApplicationsController < BaseController
 
       def index
-
         # scope by dba_organization
         if params[:dba_organization_id].present?
           applications = Application.scope_by_dba(params[:dba_organization_id])
-        elsif params[:party_id].present?
-          applications = Party.find(params[:party_id]).user.applications
+        elsif params[:user_id].present?
+          applications = User.find(params[:user_id]).applications
         else
           applications = Application.scope_by_dba(current_user.party.dba_organization)
         end
@@ -53,9 +52,7 @@ module Api
       def install
         begin
           ActiveRecord::Base.connection.transaction do
-            if params[:party_id].present?
-              user = Party.find(params[:party_id]).user
-            elsif params[:user_id].present?
+            if params[:user_id].present?
               user = User.find(params[:user_id])
             end
 

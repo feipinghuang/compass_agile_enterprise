@@ -3,9 +3,7 @@ module Api
     class CapabilitiesController < BaseController
 
       def index
-        if params[:party_id].present?
-          capabilities = Party.find(params[:party_id]).user.capabilities
-        elsif params[:user_id].present?
+        if params[:user_id].present?
           capabilities = User.find(params[:user_id]).capabilities
         else
           capabilities = Capability
