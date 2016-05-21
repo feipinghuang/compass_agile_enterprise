@@ -9,6 +9,8 @@ class CreateDesktopAppConsole
     admin_user = User.find_by_username('admin')
     admin_user.desktop_applications << app
     admin_user.save
+
+    app.add_party_with_role(admin_user.party.dba_organization, RoleType.iid('dba_org'))
   end
 
   def self.down

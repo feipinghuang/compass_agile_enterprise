@@ -29,7 +29,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 	autoScroll: true,
 
 	includeAdmin: false,
-	partyId: null,
+	userId: null,
 	parentSecurityRole: null,
 	fieldSetHeights: 250,
 
@@ -72,192 +72,160 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 
 		me.callParent(arguments);
 
-		me.on('boxready', function() {
-			var mask = new Ext.LoadMask({
-				msg: 'Please wait...',
-				target: me
-			});
-			mask.show();
-
-			me.add({
-				xtype: 'fieldset',
-				width: 250,
-				title: 'Security Roles',
-				itemId: 'securityRolesFieldSet',
-				style: {
-					marginLeft: '10px',
-					marginRight: '10px',
-					padding: '5px'
-				},
-				items: [{
-					xtype: 'treepanel',
-					height: me.fieldSetHeights,
-					itemId: 'securityRolesTree',
-					store: {
-						model: 'Compass.ErpApp.Shared.Party.SecurityTree',
-						autoLoad: false,
-						proxy: {
-							type: 'ajax',
-							url: '/api/v1/security_roles.tree',
-							extraParams: securityRolesExtraParams,
-							reader: {
-								type: 'treereader',
-								root: 'security_roles'
-							}
-						},
-						root: {
-							expanded: false
+		me.add({
+			xtype: 'fieldset',
+			width: 250,
+			title: 'Security Roles',
+			itemId: 'securityRolesFieldSet',
+			style: {
+				marginLeft: '10px',
+				marginRight: '10px',
+				padding: '5px'
+			},
+			items: [{
+				xtype: 'treepanel',
+				height: me.fieldSetHeights,
+				itemId: 'securityRolesTree',
+				store: {
+					model: 'Compass.ErpApp.Shared.Party.SecurityTree',
+					autoLoad: false,
+					proxy: {
+						type: 'ajax',
+						url: '/api/v1/security_roles.tree',
+						extraParams: securityRolesExtraParams,
+						reader: {
+							type: 'treereader',
+							root: 'security_roles'
 						}
 					},
-					rootVisible: false,
-					animate: false,
-					autoScroll: true,
-					containerScroll: true,
-					border: false,
-					frame: false
-				}]
-			}, {
-				xtype: 'fieldset',
-				width: 250,
-				title: 'User Groups',
-				itemId: 'userGroupsFieldSet',
-				style: {
-					marginLeft: '10px',
-					marginRight: '10px',
-					padding: '5px'
+					root: {
+						expanded: false
+					}
 				},
-				items: [{
-					xtype: 'treepanel',
-					height: me.fieldSetHeights,
-					itemId: 'userGroupsTree',
-					store: {
-						autoLoad: false,
-						model: 'Compass.ErpApp.Shared.Party.SecurityTree',
-						proxy: {
-							type: 'ajax',
-							url: '/api/v1/groups.tree',
-							reader: {
-								type: 'treereader',
-								root: 'groups'
-							}
-						},
-						root: {
-							expanded: false
+				rootVisible: false,
+				animate: false,
+				autoScroll: true,
+				containerScroll: true,
+				border: false,
+				frame: false
+			}]
+		}, {
+			xtype: 'fieldset',
+			width: 250,
+			title: 'User Groups',
+			itemId: 'userGroupsFieldSet',
+			style: {
+				marginLeft: '10px',
+				marginRight: '10px',
+				padding: '5px'
+			},
+			items: [{
+				xtype: 'treepanel',
+				height: me.fieldSetHeights,
+				itemId: 'userGroupsTree',
+				store: {
+					autoLoad: false,
+					model: 'Compass.ErpApp.Shared.Party.SecurityTree',
+					proxy: {
+						type: 'ajax',
+						url: '/api/v1/groups.tree',
+						reader: {
+							type: 'treereader',
+							root: 'groups'
 						}
 					},
-					rootVisible: false,
-					animate: false,
-					autoScroll: true,
-					containerScroll: true,
-					border: false,
-					frame: false
-				}]
-			}, {
-				xtype: 'fieldset',
-				width: 250,
-				title: 'Capabilities',
-				itemId: 'capabilitiesFieldSet',
-				style: {
-					marginLeft: '10px',
-					marginRight: '10px',
-					padding: '5px'
+					root: {
+						expanded: false
+					}
 				},
-				items: [{
-					xtype: 'treepanel',
-					height: me.fieldSetHeights,
-					itemId: 'capabilitiesTree',
-					store: {
-						autoLoad: false,
-						model: 'Compass.ErpApp.Shared.Party.SecurityTree',
-						proxy: {
-							type: 'ajax',
-							url: '/api/v1/capabilities.tree',
-							reader: {
-								type: 'treereader',
-								root: 'capabilities'
-							}
-						},
-						root: {
-							expanded: false
+				rootVisible: false,
+				animate: false,
+				autoScroll: true,
+				containerScroll: true,
+				border: false,
+				frame: false
+			}]
+		}, {
+			xtype: 'fieldset',
+			width: 250,
+			title: 'Capabilities',
+			itemId: 'capabilitiesFieldSet',
+			style: {
+				marginLeft: '10px',
+				marginRight: '10px',
+				padding: '5px'
+			},
+			items: [{
+				xtype: 'treepanel',
+				height: me.fieldSetHeights,
+				itemId: 'capabilitiesTree',
+				store: {
+					autoLoad: false,
+					model: 'Compass.ErpApp.Shared.Party.SecurityTree',
+					proxy: {
+						type: 'ajax',
+						url: '/api/v1/capabilities.tree',
+						reader: {
+							type: 'treereader',
+							root: 'capabilities'
 						}
 					},
-					rootVisible: false,
-					animate: false,
-					autoScroll: true,
-					containerScroll: true,
-					border: false,
-					frame: false
-				}]
-			}, {
-				xtype: 'fieldset',
-				width: 250,
-				height: (me.fieldSetHeights + 30),
-				title: 'Effective Security',
-				itemId: 'effectiveSecurityFieldSet',
-				style: {
-					marginLeft: '10px',
-					marginRight: '10px'
-				}
-			});
+					root: {
+						expanded: false
+					}
+				},
+				rootVisible: false,
+				animate: false,
+				autoScroll: true,
+				containerScroll: true,
+				border: false,
+				frame: false
+			}]
+		}, {
+			xtype: 'fieldset',
+			width: 250,
+			height: (me.fieldSetHeights + 30),
+			title: 'Effective Security',
+			itemId: 'effectiveSecurityFieldSet',
+			style: {
+				marginLeft: '10px',
+				marginRight: '10px'
+			}
+		});
 
-			var loadSecurityRoles = function() {
-				var dfd = Ext.create('Ext.ux.Deferred');
-				me.down('#securityRolesTree').getRootNode().expand(false,
-					function(records, operation, success) {
-						dfd.resolve(records);
-					});
-				return dfd.promise();
-			};
+		me.down('#securityRolesTree').getRootNode().expand(false);
 
-			var loadUserGroups = function() {
-				var dfd = Ext.create('Ext.ux.Deferred');
-				me.down('#userGroupsTree').getRootNode().expand(false,
-					function(records, operation, success) {
-						dfd.resolve(records);
-					});
-				return dfd.promise();
-			};
+		me.down('#userGroupsTree').getRootNode().expand(false);
 
-			var loadCapabilities = function() {
-				var dfd = Ext.create('Ext.ux.Deferred');
-				me.down('#capabilitiesTree').getRootNode().expand(false,
-					function(records, operation, success) {
-						dfd.resolve(records);
-					});
-				return dfd.promise();
-			};
+		me.down('#capabilitiesTree').getRootNode().expand(false);
 
-			// set global window variable for this panel
-			window.securityPanel = me;
+		me.on('activate', function() {
+			if (me.userId) {
+				var mask = new Ext.LoadMask({
+					msg: 'Please wait...',
+					target: me
+				});
+				mask.show();
 
-			Ext.ux.Deferred.when(loadUserGroups,
-					loadCapabilities,
-					loadSecurityRoles,
-					me.load)
-				.then(function(results) {
-					mask.hide();
-					// clear global window variable for this panel
-					window.securityPanel = null;
-				}, function(errors) {
-					// clear global window variable for this panel
-					window.securityPanel = null;
+				me.load(function() {
 					mask.hide();
 				});
+			}
 		});
 	},
 
-	load: function() {
-		var me = window.securityPanel;
-		var dfd = Ext.create('Ext.ux.Deferred');
+	load: function(callback) {
+		var me = this;
+		window.securityPanel = me;
 
 		Ext.ux.Deferred.when(me.loadEffectiveSecurityDefered, me.loadCurrentSecurity)
 			.then(function(results) {
-				dfd.resolve();
+				window.securityPanel = null;
+				callback();
 			}, function(errors) {
-				dfd.reject();
+				window.securityPanel = null;
+				callback();
 			});
-
-		return dfd.promise();
 	},
 
 	loadCurrentSecurity: function() {
@@ -267,25 +235,28 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 		var loadSecurityRoles = function() {
 			var dfd = Ext.create('Ext.ux.Deferred');
 			Compass.ErpApp.Utility.ajaxRequest({
-				url: '/api/v1/parties/' + me.partyId + '/security_roles',
+				url: '/api/v1/users/' + me.userId + '/security_roles',
 				method: 'GET',
 				errorMessage: 'Could not load Security Roles',
 				success: function(response) {
 					var securityRoles = Ext.Array.pluck(response.security_roles, 'internal_identifier');
 					var tree = me.down('#securityRolesTree');
-					var rootNode = tree.getRootNode();
 
-					rootNode.cascadeBy(function(node) {
-						if (Ext.Array.contains(securityRoles, node.get('internalIdentifier'))) {
-							node.set('checked', true);
+					if (tree) {
+						var rootNode = tree.getRootNode();
 
-							var parent = node.parentNode;
-							while (parent.internalId != rootNode.internalId) {
-								parent.expand();
-								parent = parent.parentNode;
+						rootNode.cascadeBy(function(node) {
+							if (Ext.Array.contains(securityRoles, node.get('internalIdentifier'))) {
+								node.set('checked', true);
+
+								var parent = node.parentNode;
+								while (parent.internalId != rootNode.internalId) {
+									parent.expand();
+									parent = parent.parentNode;
+								}
 							}
-						}
-					}, true);
+						}, true);
+					}
 
 					dfd.resolve();
 				},
@@ -300,18 +271,20 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 		var loadGroups = function() {
 			var dfd = Ext.create('Ext.ux.Deferred');
 			Compass.ErpApp.Utility.ajaxRequest({
-				url: '/api/v1/parties/' + me.partyId + '/groups',
+				url: '/api/v1/users/' + me.userId + '/groups',
 				method: 'GET',
 				errorMessage: 'Could not load User Groups',
 				success: function(response) {
 					var groups = Ext.Array.pluck(response.groups, 'id');
 					var tree = me.down('#userGroupsTree');
 
-					tree.getRootNode().cascadeBy(function(node) {
-						if (Ext.Array.contains(groups, parseInt(node.get('internalIdentifier'), 10))) {
-							node.set('checked', true);
-						}
-					}, true);
+					if (tree) {
+						tree.getRootNode().cascadeBy(function(node) {
+							if (Ext.Array.contains(groups, parseInt(node.get('internalIdentifier'), 10))) {
+								node.set('checked', true);
+							}
+						}, true);
+					}
 
 					dfd.resolve();
 				},
@@ -325,17 +298,19 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 		var loadCapabilities = function() {
 			var dfd = Ext.create('Ext.ux.Deferred');
 			Compass.ErpApp.Utility.ajaxRequest({
-				url: '/api/v1/parties/' + me.partyId + '/capabilities',
+				url: '/api/v1/users/' + me.userId + '/capabilities',
 				method: 'GET',
 				errorMessage: 'Could not load Capabilities',
 				success: function(response) {
 					var capabilities = Ext.Array.pluck(response.capabilities, 'id');
 
-					me.down('#capabilitiesTree').getRootNode().cascadeBy(function(node) {
-						if (Ext.Array.contains(capabilities, parseInt(node.get('internalIdentifier'), 10))) {
-							node.set('checked', true);
-						}
-					}, true);
+					if (me.down('#capabilitiesTree')) {
+						me.down('#capabilitiesTree').getRootNode().cascadeBy(function(node) {
+							if (Ext.Array.contains(capabilities, parseInt(node.get('internalIdentifier'), 10))) {
+								node.set('checked', true);
+							}
+						}, true);
+					}
 
 					dfd.resolve();
 				},
@@ -372,33 +347,35 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 		me = this;
 
 		Compass.ErpApp.Utility.ajaxRequest({
-			url: '/api/v1/parties/' + me.partyId + '/effective_security',
+			url: '/api/v1/users/' + me.userId + '/effective_security',
 			method: 'GET',
 			errorMessage: 'Could not load effective security',
 			success: function(response) {
-				var capabilities = Ext.widget('box', {
-					xtype: 'panel',
-					itemId: 'capabilities',
-					title: 'Capabilities',
-					height: 250,
-					autoScroll: true,
-					tpl: new Ext.XTemplate(
-						'<ul>',
-						'<tpl for=".">',
-						'<li>{capability_type_iid} {capability_resource_type}</li>',
-						'</tpl>',
-						'</ul>'
-					)
-				});
+				if (me.down('#effectiveSecurityFieldSet')) {
+					var capabilities = Ext.widget('box', {
+						xtype: 'panel',
+						itemId: 'capabilities',
+						title: 'Capabilities',
+						height: 250,
+						autoScroll: true,
+						tpl: new Ext.XTemplate(
+							'<ul>',
+							'<tpl for=".">',
+							'<li>{capability_type_description} {capability_resource_type}</li>',
+							'</tpl>',
+							'</ul>'
+						)
+					});
 
-				if (response.capabilities.length > 0) {
-					capabilities.update(response.capabilities);
-				} else {
-					capabilities.update("No capabilities.");
+					if (response.capabilities.length > 0) {
+						capabilities.update(response.capabilities);
+					} else {
+						capabilities.update("No capabilities.");
+					}
+
+					me.down('#effectiveSecurityFieldSet').removeAll();
+					me.down('#effectiveSecurityFieldSet').add(capabilities);
 				}
-
-				me.down('#effectiveSecurityFieldSet').removeAll();
-				me.down('#effectiveSecurityFieldSet').add(capabilities);
 
 				if (success)
 					success();
@@ -447,7 +424,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 		mask.show();
 
 		Compass.ErpApp.Utility.ajaxRequest({
-			url: '/api/v1/parties/' + me.partyId + '/update_security',
+			url: '/api/v1/users/' + me.userId + '/update_security',
 			method: 'PUT',
 			params: {
 				security_role_iids: selectedSecurityRoles.join(','),

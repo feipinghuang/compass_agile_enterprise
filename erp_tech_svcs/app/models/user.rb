@@ -230,8 +230,9 @@ class User < ActiveRecord::Base
 
   def class_capabilities_to_hash
     all_uniq_class_capabilities.map { |capability|
-      { :capability_type_iid => capability.capability_type.internal_identifier,
-        :capability_resource_type => capability.capability_resource_type
+      { capability_type_iid: capability.capability_type.internal_identifier,
+        capability_type_description: capability.capability_type.description,
+        capability_resource_type: capability.capability_resource_type
         }
     }.compact
   end
