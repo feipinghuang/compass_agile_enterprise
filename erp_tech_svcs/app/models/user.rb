@@ -329,6 +329,7 @@ class User < ActiveRecord::Base
                      :email,
                      :activation_state,
                      :last_login_at,
+                     :last_logout_at,
                      :last_activity_at,
                      :failed_logins_count,
                      :created_at,
