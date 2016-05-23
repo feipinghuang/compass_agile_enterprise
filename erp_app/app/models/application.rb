@@ -89,6 +89,7 @@ class Application < ActiveRecord::Base
     def desktop_applications
       where('type = ?', 'DesktopApplication')
     end
+    
     alias tools desktop_applications
   end
 
