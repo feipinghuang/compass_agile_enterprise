@@ -163,11 +163,11 @@ module Api
 
             # update business party information
             if params[:first_name].present?
-              business_party.first_name = params[:first_name].strip
+              business_party.current_first_name = params[:first_name].strip
             end
 
             if params[:last_name].present?
-              business_party.last_name = params[:last_name].strip
+              business_party.current_last_name = params[:last_name].strip
             end
 
             user.party.updated_by_party = current_user.party
