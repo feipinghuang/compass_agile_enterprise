@@ -53,6 +53,8 @@ class ProductType < ActiveRecord::Base
   has_many :product_type_pty_roles, dependent: :destroy
   has_many :simple_product_offers, dependent: :destroy
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
+  has_one :category_classification, as: :classification, dependent: :destroy
+  has_one :category, through: :category_classification
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
 
