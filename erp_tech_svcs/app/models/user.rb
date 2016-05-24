@@ -322,7 +322,7 @@ class User < ActiveRecord::Base
     }.compact
   end
 
-  def to_data_hash(reqeust_ip=nil)
+  def to_data_hash(request_ip=nil)
     data = to_hash(only: [
                      :id,
                      :username,
@@ -341,8 +341,8 @@ class User < ActiveRecord::Base
                    )
 
     # add the auth token for the given ip if it is passed
-    if reqeust_ip
-      auth_token = self.auth_tokens.by_request_ip(ip).first
+    if request_ip
+      auth_token = self.auth_tokens.by_request_ip(request_ip).first
       if auth_token
         data[:auth_token] = auth_token.token
         data[:auth_token_expires_at] = auth_token.expires_at
