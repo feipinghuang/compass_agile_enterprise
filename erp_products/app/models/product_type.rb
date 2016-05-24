@@ -189,6 +189,7 @@ class ProductType < ActiveRecord::Base
         offer_short_description: find_description_by_view_type('short_description').try(:description),
         offer_long_description: find_description_by_view_type('long_description').try(:description),
         offer_base_price: get_current_simple_amount_with_currency,
+        unit_of_measurement: try(:unit_of_measurement).try(:description),
         img_url: images.first.try(:fully_qualified_url),
         vendor: find_party_with_role_type(RoleType.iid('vendor')).try(:description)
     }

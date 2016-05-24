@@ -54,7 +54,7 @@ module Api
 
         postal_addresses = postal_addresses.uniq.order("#{sort} #{dir}")
 
-        render :json => {total_count: total_count, postal_addresses: postal_addresses.all.collect(&:to_data_hash)}
+        render :json => {success: true, total_count: total_count, postal_addresses: postal_addresses.all.collect(&:to_data_hash)}
       end
 
 =begin

@@ -54,7 +54,7 @@ module Api
 
         phone_numbers = phone_numbers.uniq.order("#{sort} #{dir}")
 
-        render :json => {total_count: total_count, phone_numbers: phone_numbers.all.collect(&:to_data_hash)}
+        render :json => {success: true, total_count: total_count, phone_numbers: phone_numbers.all.collect(&:to_data_hash)}
       end
 
 =begin
