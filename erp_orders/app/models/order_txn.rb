@@ -694,7 +694,7 @@ class OrderTxn < ActiveRecord::Base
         id: id,
         description: description,
         order_number: order_number,
-        amount: total_amount,
+        #amount: total_amount,
         status: current_status_application.try(:tracked_status_type).try(:description)
     }
   end

@@ -56,6 +56,7 @@ class WorkEffort < ActiveRecord::Base
 
   ## How is this Work Effort related to business parties, requestors, workers, approvers
   has_party_roles
+  has_contacts
 
   tracks_created_by_updated_by
 
@@ -63,6 +64,7 @@ class WorkEffort < ActiveRecord::Base
   before_move :update_parent_status_before_move!
   after_move :update_parent_status!
   after_destroy :update_parent_status!
+  before_destroy :check_work_order_item_fulfillments
 
   belongs_to :work_effort_item, :polymorphic => true
 
@@ -244,6 +246,16 @@ class WorkEffort < ActiveRecord::Base
       end
 
       statement
+    end
+  end
+
+  # Destroy any OrderLineItems that are only related to this WorkEffort
+  #
+  def check_work_order_item_fulfillments
+    order_line_items.each do |order_line_item|
+      if order_line_item.order_txn_id.nil? && order_line_item.work_efforts.empty?
+        order_line_item.destroy
+      end
     end
   end
 
