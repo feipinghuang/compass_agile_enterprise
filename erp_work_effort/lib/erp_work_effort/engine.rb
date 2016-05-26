@@ -9,5 +9,9 @@ module ErpWorkEffort
 
     ErpBaseErpSvcs.register_as_compass_ae_engine(config, self)
 
+    initializer "erp_work_effort.merge_public" do |app|
+      app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
+    end
+
   end
 end

@@ -11,6 +11,10 @@ module ErpBaseErpSvcs
 
     config.erp_base_erp_svcs = ErpBaseErpSvcs::Config
 
+    initializer "erp_base_erp_svcs.merge_public" do |app|
+      app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
+    end
+
     ActiveSupport.on_load(:active_record) do
       include ErpBaseErpSvcs::Extensions::ActiveRecord::IsDescribable
       include ErpBaseErpSvcs::Extensions::ActiveRecord::HasNotes
