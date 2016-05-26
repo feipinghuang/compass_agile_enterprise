@@ -149,7 +149,6 @@ class OrderTxn < ActiveRecord::Base
       currency = Currency.send(currency)
     end
 
-
     charges = {"USD" => {amount: 0}}
     # get any charges directly on this order_txn or on order_line_items
     charge_lines.each do |charge|
@@ -694,7 +693,7 @@ class OrderTxn < ActiveRecord::Base
         id: id,
         description: description,
         order_number: order_number,
-        #amount: total_amount,
+        amount: total_amount,
         status: current_status_application.try(:tracked_status_type).try(:description)
     }
   end
