@@ -3,9 +3,7 @@ module ErpApp
     module Railties
       module ActionView
         module Helpers
-          module TagHelper
-            include ::ActionView::Helpers::UrlHelper
-            include ::ActionView::Helpers::TagHelper
+          module RemoteTagHelper
 
             def link_to_remote(name, url, options={})
               #add ajax_replace class
@@ -30,9 +28,9 @@ module ErpApp
               end
             end
 
-          end #TagHelper
-        end #Helpers
-      end #ActionView
-    end #Railties
-  end #Extensions
-end #ErpApp
+          end # RemoteTagHelper
+        end # Helpers
+      end # ActionView
+    end # Railties
+  end # Extensions
+end # ErpApp

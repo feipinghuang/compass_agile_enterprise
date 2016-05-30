@@ -5,6 +5,8 @@ end
 
 ActionView::Base.class_eval do
   include ErpApp::Extensions::Railties::ActionView::Helpers::IncludeHelper
-  include ErpApp::Extensions::Railties::ActionView::Helpers::TagHelper
-  include ErpApp::Extensions::Railties::ActionView::Helpers::ActiveExtHelper
+end
+
+ActionView::Helpers::TagHelper.class_eval do
+  include ErpApp::Extensions::Railties::ActionView::Helpers::RemoteTagHelper
 end
