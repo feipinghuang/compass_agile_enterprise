@@ -247,7 +247,7 @@ Compass.ErpApp.Utility.setupErpAppLogoutRedirect = function() {
 	}
 };
 
-Compass.ErpApp.Utility.handleFormFailure = function(action) {
+Compass.ErpApp.Utility.handleFormFailure = function(action, message) {
 	if (window['Ext']) {
 		switch (action.failureType) {
 			case Ext.form.action.Action.CLIENT_INVALID:
@@ -257,7 +257,7 @@ Compass.ErpApp.Utility.handleFormFailure = function(action) {
 				Ext.Msg.error('Failure', 'Ajax communication failed');
 				break;
 			case Ext.form.action.Action.SERVER_INVALID:
-				Ext.Msg.error('Failure', (action.result.msg || action.result.message));
+				Ext.Msg.error('Failure', (action.result.msg || action.result.message || message));
 		}
 	}
 };

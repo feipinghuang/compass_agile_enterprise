@@ -116,10 +116,10 @@ class Invoice < ActiveRecord::Base
 
         # add customer relationship
         party = order_txn.find_party_by_role('order_roles_customer')
-        invoice.add_party_with_role_type(party, RoleType.customer)
+        invoice.add_party_with_role(party, RoleType.customer)
 
         dba_organization = options[:dba_organization] || order_txn.find_party_by_role(RoleType.iid('dba_org'))
-        invoice.add_party_with_role_type(dba_organization, RoleType.dba_org)
+        invoice.add_party_with_role(dba_organization, RoleType.dba_org)
 
         order_txn.order_line_items.each do |line_item|
           invoice_item = InvoiceItem.new
@@ -376,7 +376,7 @@ class Invoice < ActiveRecord::Base
     transactions.sort_by { |item| [item[:date]] }
   end
 
-  def add_party_with_role_type(party, role_type)
+  def add_party_with_role(party, role_type)
     self.invoice_party_roles << InvoicePartyRole.create(:party => party, :role_type => convert_role_type(role_type))
     self.save
   end
@@ -385,7 +385,7 @@ class Invoice < ActiveRecord::Base
     self.invoice_party_roles.where('role_type_id = ?', convert_role_type(role_type).id).all.collect(&:party)
   end
 
-  def find_party_by_role_type(role_type)
+  def find_party_by_role(role_type)
     parties = find_parties_by_role_type(role_type)
 
     unless parties.empty?

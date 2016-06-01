@@ -73,7 +73,7 @@ module ErpBaseErpSvcs
             entity_party_roles.where(role_type_id: role_type.id).collect(&:party)
           end
 
-          def find_party_with_role(role_type)
+          def find_party_by_role(role_type)
             if role_type.is_a?(String)
               role_type = RoleType.iid(role_type)
             end

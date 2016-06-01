@@ -268,7 +268,7 @@ class WorkEffort < ActiveRecord::Base
   end
 
   def dba_organization
-    find_party_with_role(RoleType.dba_org)
+    find_party_by_role(RoleType.dba_org)
   end
 
   # Get assigned parties by role type

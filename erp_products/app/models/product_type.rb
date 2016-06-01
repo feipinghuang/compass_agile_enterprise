@@ -191,7 +191,7 @@ class ProductType < ActiveRecord::Base
         offer_base_price: get_current_simple_amount_with_currency,
         unit_of_measurement: try(:unit_of_measurement).try(:description),
         img_url: images.first.try(:fully_qualified_url),
-        vendor: find_party_with_role_type(RoleType.iid('vendor')).try(:description)
+        vendor: find_party_by_role(RoleType.iid('vendor')).try(:description)
     }
   end
 
@@ -207,7 +207,7 @@ class ProductType < ActiveRecord::Base
     dba_orgs.uniq
   end
 
-  def add_party_with_role_type(party, role_type)
+  def add_party_with_role(party, role_type)
     if role_type.is_a?(String)
       role_type = RoleType.iid(role_type)
     end
@@ -215,7 +215,7 @@ class ProductType < ActiveRecord::Base
     ProductTypePtyRole.create(party: party, role_type: role_type, product_type: self)
   end
 
-  def find_party_with_role_type(role_type)
+  def find_party_by_role(role_type)
     if role_type.is_a?(String)
       role_type = RoleType.iid(role_type)
     end

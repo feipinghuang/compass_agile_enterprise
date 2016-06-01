@@ -20,7 +20,7 @@ describe Invoice do
   end
 
   it "should allow you add parties by role_Type" do
-    @invoice.add_party_with_role_type(@customer.party, @payor_role_type)
+    @invoice.add_party_with_role(@customer.party, @payor_role_type)
     parties = @invoice.find_parties_by_role_type(@payor_role_type)
     parties.count.should eq 1
     parties.first.id.should eq @customer.party.id

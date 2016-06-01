@@ -45,6 +45,17 @@ Ext.override(Ext.Msg, {
 			fn: fn,
 			scope: scope
 		});
+	},
+
+	success: function(title, msg, fn, scope) {
+		Ext.Msg.show({
+			title: title,
+			msg: msg,
+			buttons: Ext.Msg.OK,
+			icon: Ext.MessageBox.INFO,
+			fn: fn,
+			scope: scope
+		});
 	}
 });
 

@@ -31,6 +31,7 @@ module ErpTxnsAndAccts
              :created_at, :created_at=,
              :updated_at, :updated_at=,
              :create_dependent_txns, :account,
+             :add_party_with_role, :find_party_by_role,
              #
              # has_tracked_status delegations
              #

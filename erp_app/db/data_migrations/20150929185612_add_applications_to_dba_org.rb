@@ -7,7 +7,7 @@ class AddApplicationsToDbaOrg
       role_type = RoleType.iid('dba_org')
 
       Application.all.each do |application|
-        unless application.find_party_with_role(role_type) == dba_org
+        unless application.find_party_by_role(role_type) == dba_org
           application.add_party_with_role(dba_org, role_type)
         end
       end

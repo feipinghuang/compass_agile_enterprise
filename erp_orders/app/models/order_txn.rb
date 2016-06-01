@@ -86,6 +86,7 @@ class OrderTxn < ActiveRecord::Base
 
       scope_by_party(dba_organization, {role_types: [biz_txn_party_role_type]})
     end
+    alias scope_by_dba scope_by_dba_organization
 
     # scope by party
     #
@@ -387,17 +388,6 @@ class OrderTxn < ActiveRecord::Base
 
   def get_line_item_for_simple_product_offer(simple_product_offer)
     line_items.detect { |oli| oli.product_offer.product_offer_record == simple_product_offer }
-  end
-
-  def find_party_by_role(role_type_iid)
-    party = nil
-
-    tpr = self.root_txn.biz_txn_party_roles.includes(:biz_txn_party_role_type)
-              .where('biz_txn_party_role_types.internal_identifier = ?', role_type_iid).first
-
-    party = tpr.party unless tpr.nil?
-
-    party
   end
 
   def set_shipping_info(party)

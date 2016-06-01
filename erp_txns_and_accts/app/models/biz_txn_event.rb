@@ -194,14 +194,31 @@ class BizTxnEvent < ActiveRecord::Base
   #
   # @param role_type [BizTxnPartyRoleType | String] BizTxnPartyRoleType or internal identifier of BizTxnPartyRoleType
   # @return [Party | nil]
-  def find_party_by_role_type(role_type)
+  def find_party_by_role(role_type)
     role_type = role_type.is_a?(String) ? BizTxnPartyRoleType.iid(role_type) : role_type
 
-    biz_txn_party_role = biz_txn_party_roles.where(:biz_txn_party_role_type_id => role_type.id).first
+    biz_txn_party_role = biz_txn_party_roles.where(biz_txn_party_role_type_id: role_type.id).first
 
     if biz_txn_party_role
       biz_txn_party_role.party
     end
+  end
+
+  # Add a party with the passed BizTxnPartyRoleType
+  #
+  # @param [Party] party BizTxnPartyRoleType or internal identifier of BizTxnPartyRoleType
+  # @param [BizTxnPartyRoleType | String] role_type BizTxnPartyRoleType or internal identifier of BizTxnPartyRoleType
+  # @return [BizTxnPartyRole]
+  def add_party_with_role(party, role_type)
+    role_type = role_type.is_a?(String) ? BizTxnPartyRoleType.iid(role_type) : role_type
+
+    biz_txn_party_role = biz_txn_party_roles.where(biz_txn_party_role_type_id: role_type.id, party_id: party.id).first
+
+    unless biz_txn_party_role
+      biz_txn_party_role = biz_txn_party_roles.create(biz_txn_party_role_type: role_type, party: party)
+    end
+
+    biz_txn_party_role
   end
 
   # returns description of this BizTxnEvent
