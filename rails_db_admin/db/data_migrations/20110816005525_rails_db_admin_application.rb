@@ -12,7 +12,7 @@ class RailsDbAdminApplication
       admin_user.desktop_applications << rails_db_admin_app
       admin_user.save
 
-      app.add_party_with_role(admin_user.party.dba_organization, RoleType.iid('dba_org'))
+      rails_db_admin_app.add_party_with_role(admin_user.party.dba_organization, RoleType.iid('dba_org'))
     end
   end
 

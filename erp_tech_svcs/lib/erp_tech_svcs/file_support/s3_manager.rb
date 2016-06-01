@@ -106,7 +106,7 @@ module ErpTechSvcs
           options = (file.nil? ? {} : {:acl => acl})
           path = path.sub(%r{^/}, '')
           new_path = new_path.sub(%r{^/}, '')
-#          Rails.logger.info "renaming from #{path} to #{new_path}"
+
           old_object = bucket.objects[path]
           if new_object = old_object.move_to(new_path, options)
             message = "#{old_name} was renamed to #{name} successfully"

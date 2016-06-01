@@ -17,7 +17,6 @@
 //= require ./knitkit/jquery.validate.min
 //= require ./knitkit/additional-methods.min
 //= require ./knitkit/js.cookie
+//= require ./knitkit/captcha
 //= require moment
 //= require bootstrap-datetimepicker
-
-

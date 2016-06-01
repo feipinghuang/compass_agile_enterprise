@@ -18,4 +18,8 @@ class Note < ActiveRecord::Base
     (content.length > 20) ? "#{content[0..20]}..." : content
   end
 
+  def to_s
+    summary
+  end
+
 end

@@ -22,6 +22,11 @@ Rails.application.routes.draw do
     end
   end
 
+  get '/captcha/start/:how_many' => 'captcha#start'
+  get '/captcha/audio(/:type)' => 'captcha#audio'
+  get '/captcha/image/:index' => 'captcha#image'
+  put '/captcha/validate' => 'captcha#validate'
+
 end
 
 Knitkit::Engine.routes.draw do

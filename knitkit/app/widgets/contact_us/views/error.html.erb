@@ -1,8 +1,12 @@
 <div class="alert alert-danger">
   <strong>An Error Occurred</strong>
   <ul>
-    <% @errors.each do |k, v| %>
-        <li><%= v %></li>
+    <% @errors.each do |error| %>
+        <li><%= error %></li>
     <% end %>
   </ul>
 </div>
+
+<script type="text/javascript">
+Captcha.refresh();
+</script>
