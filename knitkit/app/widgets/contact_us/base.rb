@@ -1,31 +1,41 @@
 module Widgets
   module ContactUs
     class Base < ErpApp::Widgets::Base
+
       include ActionView::Helpers::SanitizeHelper
+      include Knitkit::Extensions::Railties::ActionController::CaptchaHelper
 
       def index
         render
       end
 
       def new
-        website = Website.find_by_host(request.host_with_port)
+        if captcha_valid?
 
-        website_inquiry = WebsiteInquiry.new
-        website_inquiry.created_by = current_user unless current_user.nil?
-        website_inquiry.website = website
-        website_inquiry.first_name = params[:first_name].strip
-        website_inquiry.last_name = params[:last_name].strip
-        website_inquiry.message = params[:message].strip
-        website_inquiry.email = params[:email].strip
+          website = Website.find_by_host(request.host_with_port)
 
-        if website_inquiry.save
-          if website.email_inquiries?
-            WebsiteInquiryMailer.inquiry(website_inquiry, website.dba_organization).deliver
+          website_inquiry = WebsiteInquiry.new
+          website_inquiry.created_by = current_user unless current_user.nil?
+          website_inquiry.website = website
+          website_inquiry.first_name = params[:first_name].strip
+          website_inquiry.last_name = params[:last_name].strip
+          website_inquiry.message = params[:message].strip
+          website_inquiry.email = params[:email].strip
+       
+          if website_inquiry.save
+            if website.email_inquiries?
+              WebsiteInquiryMailer.inquiry(website_inquiry, website.dba_organization).deliver
+            end
+            render :update => {:id => "container", :view => :success}
+
+          else
+            @errors = website_inquiry.errors.full_messages
+            render :update => {:id => "#{@uuid}_result", :view => :error}
+
           end
-          render :update => {:id => "#{@uuid}_result", :view => :success}
-
         else
-          @errors = @website_inquiry.errors.full_messages
+          @errors = ['Captcha Invalid']
+
           render :update => {:id => "#{@uuid}_result", :view => :error}
 
         end

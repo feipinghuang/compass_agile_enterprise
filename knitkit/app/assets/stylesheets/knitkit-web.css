@@ -11,5 +11,6 @@
  *= require ./knitkit/bootstrap.min
  *= require ./knitkit/inline_editing
  *= require ./knitkit/submenu.css
+ *= require ./knitkit/captcha.css
  *= require bootstrap-datetimepicker
  */

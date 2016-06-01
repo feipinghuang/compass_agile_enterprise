@@ -20,3 +20,5 @@ require 'knitkit/extensions/action_mailer/theme_support/acts_as_themed_mailer'
 
 #willpaginate
 require 'knitkit/extensions/will_paginate/link_renderer'
+
+require 'knitkit/extensions/railties/action_controller/captcha_helper'

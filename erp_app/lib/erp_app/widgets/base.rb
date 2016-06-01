@@ -23,7 +23,8 @@ module ErpApp
                           model_name use_dynamic_form authenticity_token is_html_form commit utf8}
 
       delegate :redirect_to, :config, :params, :session, :request, :logger, :logged_in?, :current_user, :login,
-               :flash, :update_div_id, :update_html, :current_theme_paths, :request, :cookies, :to => :proxy_controller
+               :flash, :update_div_id, :update_html, :current_theme_paths, :request, :cookies,
+               :protect_against_forgery?, :form_authenticity_token, :to => :proxy_controller
 
       attr_reader   :state_name
       attr_accessor :proxy_controller, :name, :div_id,:html, :view, :uuid, :widget_params
