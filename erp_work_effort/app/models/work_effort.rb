@@ -253,7 +253,7 @@ class WorkEffort < ActiveRecord::Base
   #
   def check_work_order_item_fulfillments
     order_line_items.each do |order_line_item|
-      if order_line_item.order_txn_id.nil? && order_line_item.work_efforts.empty?
+      if order_line_item.order_txn_id.nil? && order_line_item.work_efforts.count == 1
         order_line_item.destroy
       end
     end

@@ -1,15 +1,15 @@
 # create_table :order_line_items do |t|
-#   t.integer  	  :order_txn_id
-#   t.integer  	  :order_line_item_type_id
+#   t.integer     :order_txn_id
+#   t.integer     :order_line_item_type_id
 #   t.integer     :product_offer_id
 #   t.string      :product_offer_description
 #   t.integer     :product_instance_id,
 #   t.string      :product_instance_description
 #   t.integer     :product_type_id
 #   t.string      :product_type_description
-#   t.decimal  	  :sold_price, :precision => 8, :scale => 2
-#   t.integer	    :sold_price_uom
-#   t.integer  	  :sold_amount
+#   t.decimal     :sold_price, :precision => 8, :scale => 2
+#   t.integer     :sold_price_uom
+#   t.integer     :sold_amount
 #   t.integer     :sold_amount_uom
 #   t.integer     :quantity
 #   t.integer     :unit_of_measurement_id
@@ -75,7 +75,7 @@ class OrderLineItem < ActiveRecord::Base
     charges = {}
 
     # get sold price
-    # TODO currency will eventually need to be accounted for here.  Solid price should probably be a money record
+    # TODO currency will eventually need to be accounted for here.  Sold price should probably be a money record
     if self.sold_price
       charges["USD"] ||= {amount: 0}
       charges["USD"][:amount] += (self.sold_price * (self.quantity || 1))
@@ -86,9 +86,10 @@ class OrderLineItem < ActiveRecord::Base
       charge_money = charge.money
 
       total_by_currency = charges[charge_money.currency.internal_identifier]
+
       unless total_by_currency
         total_by_currency = {
-            amount: 0
+          amount: 0
         }
       end
 
@@ -97,7 +98,12 @@ class OrderLineItem < ActiveRecord::Base
       charges[charge_money.currency.internal_identifier] = total_by_currency
     end
 
-    # if currency was based only return that amount
+    # if there was no sold price and no charges set a default of USD = 0
+    if charges.empty?
+      charges["USD"] = {amount: 0}
+    end
+
+    # if currency was passed only return that amount
     # if there is only one currency then return that amount
     # if there is more than once currency return the hash
     if currency
@@ -115,14 +121,14 @@ class OrderLineItem < ActiveRecord::Base
     if self.taxed?
       tax = taxation.calculate_tax(self,
                                    ctx.merge({
-                                                 amount: (self.sold_price * (self.quantity || 1))
-                                             }))
+                                               amount: (self.sold_price * (self.quantity || 1))
+      }))
     end
 
     # only get charges that are USD currency
     charge_lines.joins(:money).joins(:charge_type)
-        .where('money.currency_id' => Currency.usd)
-        .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
+    .where('money.currency_id' => Currency.usd)
+    .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
       tax += charge_line.calculate_tax(ctx)
     end
 
@@ -169,9 +175,9 @@ class OrderLineItem < ActiveRecord::Base
 
   def to_data_hash
     data = {
-        id: id,
-        sold_price: sold_price,
-        quantity: quantity
+      id: id,
+      sold_price: sold_price,
+      quantity: quantity
     }
 
     data[:product_type] = line_item_record.to_data_hash
@@ -181,9 +187,9 @@ class OrderLineItem < ActiveRecord::Base
 
   def to_mobile_hash
     data = {
-        id: id,
-        sold_price: sold_price,
-        quantity: quantity
+      id: id,
+      sold_price: sold_price,
+      quantity: quantity
     }
 
     data[:product_type] = line_item_record.to_mobile_hash
