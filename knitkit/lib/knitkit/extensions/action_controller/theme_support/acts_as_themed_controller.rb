@@ -56,7 +56,7 @@ module Knitkit
                                  path = "#{theme[:path]}/templates"
                                  cached_resolver = ThemeSupport::Cache.theme_resolvers.find { |cached_resolver| cached_resolver.to_path == path }
                                  if cached_resolver.nil?
-                                   resolver = ActionView::ThemeFileResolver.new(path)
+                                   resolver = ActionView::CompassAeFileResolver.new(path)
                                    ThemeSupport::Cache.theme_resolvers << resolver
                                    resolver
                                  else
