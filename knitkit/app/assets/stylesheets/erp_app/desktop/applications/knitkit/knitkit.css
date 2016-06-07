@@ -2,16 +2,6 @@
     opacity: 0.8;
 }
 
-.icon-knitkit, .icon-palette {
-    background-image: url(/assets/icons/knitkit/knitkit_16x16.png) !important;
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/knitkit/knitkit_16x16.png', sizingMethod='crop');
-}
-
-.icon-knitkit-light {
-    background-image: url(/assets/icons/knitkit/knitkit_light_16x16.png) !important;
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/knitkit/knitkit_16x16.png', sizingMethod='crop');
-}
-
 .x-column-header-wysiwyg {
     background: url(/assets/icons/code/code_16x16.png) center no-repeat !important;
 }

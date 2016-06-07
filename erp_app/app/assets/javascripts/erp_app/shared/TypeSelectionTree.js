@@ -105,6 +105,14 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 				me.setSelectedTypes(me.selectedTypes);
 			}
 		} else {
+			var params = {};
+
+			if (!Ext.isEmpty(me.parentType)) {
+				params['parent'] = me.parentType;
+			} else if (!Ext.isEmpty(me.parentType)) {
+				params['parent'] = me.defaultParentType;
+			}
+
 			me.store = Ext.create('Ext.data.TreeStore', {
 				model: 'Compass.ErpApp.Shared.TypeSelectionModel',
 				tree: me,
@@ -136,6 +144,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 				});
 			} else {
 				me.store.load({
+					params: params,
 					callback: function() {
 						if (me.selectedTypes) {
 							me.setSelectedTypes(me.selectedTypes);

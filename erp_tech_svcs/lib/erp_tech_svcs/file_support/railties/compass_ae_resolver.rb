@@ -1,5 +1,5 @@
 module ActionView
-  class ThemeFileResolver < OptimizedFileSystemResolver
+  class CompassAeFileResolver < OptimizedFileSystemResolver
     def cached(key, path_info, details, locals) #:nodoc:
       name, prefix, partial = path_info
       locals = locals.map { |x| x.to_s }.sort!
