@@ -4,7 +4,6 @@ require 'knitkit/extensions/core/array'
 #railties
 require 'knitkit/extensions/railties/action_view/base'
 require 'knitkit/extensions/railties/theme_support/asset_tag_helper'
-require 'knitkit/extensions/railties/theme_support/theme_file_resolver'
 
 #active_record extensions
 require 'knitkit/extensions/active_record/acts_as_publishable'

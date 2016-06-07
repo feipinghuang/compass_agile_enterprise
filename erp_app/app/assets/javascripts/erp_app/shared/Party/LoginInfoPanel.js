@@ -38,7 +38,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 			'userinformationloaded'
 		);
 
-		me.on('render', function() {
+		me.on('afterrender', function() {
 			if (me.user) {
 				me.setFields();
 			} else if (me.userId) {

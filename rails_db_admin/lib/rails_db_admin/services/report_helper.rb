@@ -191,7 +191,7 @@ module RailsDbAdmin
                        path = "#{report_path[:path]}/templates"
                        cached_resolver = ReportHelper::Cache.report_resolvers.find { |cached_resolver| cached_resolver.to_path == path }
                        if cached_resolver.nil?
-                         resolver = ActionView::ThemeFileResolver.new(path)
+                         resolver = ActionView::CompassAeFileResolver.new(path)
                          ReportHelper::Cache.report_resolvers << resolver
                          resolver
                        else

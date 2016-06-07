@@ -65,7 +65,7 @@ end
         path = File.join(theme[:path],'widgets',self.name,'views')
         cached_resolver = ErpApp::Widgets::Base.view_resolver_cache.find{|cached_resolver| cached_resolver.to_path == path}
         if cached_resolver.nil?
-          resolver = ActionView::ThemeFileResolver.new(path)
+          resolver = ActionView::CompassAeFileResolver.new(path)
           ErpApp::Widgets::Base.view_resolver_cache << resolver
           resolver
         else
