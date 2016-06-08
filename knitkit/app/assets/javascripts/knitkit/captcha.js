@@ -71,6 +71,7 @@ Captcha = {
 
 	showImages: function() {
 		Captcha.showingImages = true;
+		Captcha.showingAudio = false;
 		Captcha.container.empty();
 
 		captchaOptionsContainer = $('<div class="captcha-options"></div>');
@@ -94,6 +95,7 @@ Captcha = {
 
 	showAudio: function() {
 		Captcha.showingAudio = true;
+		Captcha.showingImages = false;
 		Captcha.container.empty();
 
 		var formGroup = $('<div class="form-group"></div>');
