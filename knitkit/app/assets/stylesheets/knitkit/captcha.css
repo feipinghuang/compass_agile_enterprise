@@ -19,6 +19,10 @@
 	margin: 5px;
 }
 
+.captcha-options{
+	padding: 5px 0 5px 0;
+}
+
 .captcha-img{
 	cursor:pointer;
 	border-style: dashed;
@@ -45,6 +49,7 @@
 	border-color: #000;
 	border-width: 1px;
 	border-style: solid;
+	margin-left: 5px;
 }
 
 .captcha-audio-input {

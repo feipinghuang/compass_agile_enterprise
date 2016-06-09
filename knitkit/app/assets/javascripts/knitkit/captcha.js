@@ -71,26 +71,31 @@ Captcha = {
 
 	showImages: function() {
 		Captcha.showingImages = true;
+		Captcha.showingAudio = false;
 		Captcha.container.empty();
+
+		captchaOptionsContainer = $('<div class="captcha-options"></div>');
 
 		for (var i = 0; i < Captcha.numberOfImages; i++) {
 			var img = $('<img class="captcha-img" data-img-value="' + Captcha.imageValues[i] + '" src="' + Captcha.buildImgUrl(i) + '" />').click(Captcha.onImgSelect);
 
-			Captcha.container.append(img);
+			captchaOptionsContainer.append(img);
 		}
 
 		var refresh = $('<a class="captcha-refresh"><img src="/assets/icons/refresh/refresh_16x16.png" /></a>').click(Captcha.onRefresh);
-		Captcha.container.append(refresh);
+		captchaOptionsContainer.append(refresh);
 
 		var audio = $('<a class="captcha-audio"><img src="/assets/icons/audio/audio_16x16.png" /></a>').click(Captcha.showAudio);
-		Captcha.container.append(audio);
+		captchaOptionsContainer.append(audio);
 
+		Captcha.container.append(captchaOptionsContainer);
 		Captcha.container.append('<input type="hidden" name="' + Captcha.imageFieldName + '" />');
 		Captcha.container.prepend('<div class="captcha-instructions">Captcha: Click or touch the <span class="image-name">' + Captcha.imageName + '</span></div>');
 	},
 
 	showAudio: function() {
 		Captcha.showingAudio = true;
+		Captcha.showingImages = false;
 		Captcha.container.empty();
 
 		var formGroup = $('<div class="form-group"></div>');
@@ -99,7 +104,7 @@ Captcha = {
 		var refresh = $('<a class="captcha-refresh"><img src="/assets/icons/refresh/refresh_16x16.png" /></a>').click(Captcha.onRefresh);
 		formGroup.append(refresh);
 
-		var audio = $('<a class="captcha-audio"><img src="/assets/icons/audio/audio_16x16.png" /></a>');
+		var audio = $('<a class="captcha-audio"><img src="/assets/icons/audio/audio_16x16.png" /></a>').click(Captcha.playAudio);
 		formGroup.append(audio);
 
 		Captcha.container.append(formGroup);
@@ -109,6 +114,10 @@ Captcha = {
 
 	onRefresh: function() {
 		Captcha.refresh();
+	},
+
+	playAudio: function() {
+		Captcha.container.append('<audio autoplay="autoplay" src="/captcha/audio" />');
 	},
 
 	validate: function(successCallback, failureCallback) {
@@ -134,7 +143,7 @@ Captcha = {
 	},
 
 	onImgSelect: function() {
-		Captcha.container.children('img.captcha-img-selected').removeClass('captcha-img-selected').addClass('captcha-img');
+		Captcha.container.children('div.captcha-options').children('img.captcha-img-selected').removeClass('captcha-img-selected').addClass('captcha-img');
 		$(this).removeClass('captcha-img').addClass('captcha-img-selected');
 		$('input[name=' + Captcha.imageFieldName + ']').val($(this).data('img-value'));
 	},
