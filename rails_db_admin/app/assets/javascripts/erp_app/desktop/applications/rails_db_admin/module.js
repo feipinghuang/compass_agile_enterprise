@@ -2,23 +2,23 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
     extend: "Ext.ux.desktop.Module",
     id: 'rails_db_admin-win',
 
-    getWindow: function () {
+    getWindow: function() {
         return this.app.getDesktop().getWindow('rails_db_admin');
     },
 
-    queriesTreePanel: function () {
+    queriesTreePanel: function() {
         return this.accordion.down('.railsdbadmin_queriestreemenu');
     },
 
-    setWindowStatus: function (status) {
+    setWindowStatus: function(status) {
         this.getWindow().setStatus(status);
     },
 
-    clearWindowStatus: function () {
+    clearWindowStatus: function() {
         this.getWindow().clearStatus();
     },
 
-    getTableData: function (table) {
+    getTableData: function(table) {
         var self = this,
             id = 'ext-' + table + '-data';
 
@@ -43,7 +43,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 },
                 grid_listeners: {
                     validateedit: {
-                        fn: function (editor, e) {
+                        fn: function(editor, e) {
                             this.store.proxy.setOldModel(e.record);
                         }
                     }
@@ -51,16 +51,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 proxy: {
                     type: 'rest',
                     url: '/rails_db_admin/erp_app/desktop/base/table_data/' + table,
-                    //private var to store the previous model in an
-                    //update operation
-                    oldModel: null,
-                    setOldModel: function (old_model) {
-                        this.oldModel = old_model.copy();
-                    },
-                    update: function (operation, callback, scope) {
-                        operation.records.push(this.oldModel);
-                        Ext.data.proxy.Rest.superclass.update.call(this, operation, callback, scope);
-                    },
                     reader: {
                         type: 'json',
                         successProperty: 'success',
@@ -73,7 +63,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                         root: 'data'
                     },
                     listeners: {
-                        exception: function (proxy, response, operation) {
+                        exception: function(proxy, response, operation) {
                             var msg;
                             if (operation.getError() === undefined) {
                                 var responseObject = Ext.JSON.decode(response.responseText);
@@ -98,7 +88,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         self.container.setActiveTab(grid);
     },
 
-    selectTopFifty: function (table) {
+    selectTopFifty: function(table) {
         this.setWindowStatus('Selecting Top 50 from ' + table + '...');
         var self = this;
 
@@ -108,7 +98,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
             params: {
                 database: self.getDatabase()
             },
-            success: function (responseObject) {
+            success: function(responseObject) {
                 self.clearWindowStatus();
                 var response = Ext.decode(responseObject.responseText);
                 var sql = response.sql;
@@ -140,14 +130,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 //queryPanel.gridContainer.add(readOnlyDataGrid);
                 //queryPanel.gridContainer.getLayout().setActiveItem(0);
             },
-            failure: function () {
+            failure: function() {
                 self.clearWindowStatus();
                 Ext.Msg.alert('Status', 'Error loading grid');
             }
         });
     },
 
-    addConsolePanel: function () {
+    addConsolePanel: function() {
         this.container.add({
             xtype: 'compass_ae_console_panel',
             module: this
@@ -156,7 +146,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
     },
 
-    addNewQueryTab: function () {
+    addNewQueryTab: function() {
         this.container.add({
             xtype: 'railsdbadmin_querypanel',
             module: this
@@ -164,7 +154,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         this.container.setActiveTab(this.container.items.length - 1);
     },
 
-    connectToDatabase: function () {
+    connectToDatabase: function() {
         var database = this.getDatabase();
         var tablestreePanelStore = this.accordion.down('.railsdbadmin_tablestreemenu').store;
         var queriesTreePanelStore = this.accordion.down('.railsdbadmin_queriestreemenu').store;
@@ -188,17 +178,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         queriesTreePanelStore.load();
     },
 
-    getDatabase: function () {
+    getDatabase: function() {
         return Ext.getCmp('databaseCombo').getValue();
     },
 
-    deleteQuery: function (queryName) {
+    deleteQuery: function(queryName) {
         var self = this;
-        Ext.MessageBox.confirm('Confirm', 'Are you sure you want to delete this query?', function (btn) {
+        Ext.MessageBox.confirm('Confirm', 'Are you sure you want to delete this query?', function(btn) {
             if (btn === 'no') {
                 return false;
-            }
-            else if (btn === 'yes') {
+            } else if (btn === 'yes') {
                 self.setWindowStatus('Deleting ' + queryName + '...');
                 var database = self.getDatabase();
                 Ext.Ajax.request({
@@ -207,7 +196,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                         database: database,
                         query_name: queryName
                     },
-                    success: function (responseObject) {
+                    success: function(responseObject) {
                         self.clearWindowStatus();
                         var response = Ext.decode(responseObject.responseText);
                         if (response.success) {
@@ -221,13 +210,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                                 }
                             });
                             queriesTreePanelStore.load();
-                        }
-                        else {
+                        } else {
                             Ext.Msg.alert('Error', response.exception);
                         }
 
                     },
-                    failure: function () {
+                    failure: function() {
                         self.clearWindowStatus();
                         Ext.Msg.alert('Status', 'Error deleting query');
                     }
@@ -236,7 +224,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         });
     },
 
-    displayAndExecuteQuery: function (queryName) {
+    displayAndExecuteQuery: function(queryName) {
         this.setWindowStatus('Executing ' + queryName + '...');
         var self = this;
         var database = this.getDatabase();
@@ -246,7 +234,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 database: database,
                 query_name: queryName
             },
-            success: function (responseObject) {
+            success: function(responseObject) {
                 var response = Ext.decode(responseObject.responseText);
                 var query = response.query;
 
@@ -277,8 +265,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
                     self.container.add(queryPanel);
                     self.container.setActiveTab(queryPanel.id);
-                }
-                else {
+                } else {
                     Ext.Msg.alert('Error', response.exception);
                     queryPanel = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
                         module: self,
@@ -291,7 +278,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 }
 
             },
-            failure: function () {
+            failure: function() {
                 self.clearWindowStatus();
                 Ext.Msg.alert('Status', 'Error loading query');
             }
@@ -300,7 +287,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
     //************ Reporting ************************************************
 
-    editQuery: function (report, query) {
+    editQuery: function(report, query) {
         var self = this;
         var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
         var itemId = report.get('internalIdentifier') + '-query';
@@ -323,7 +310,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         centerRegion.setActiveTab(item);
     },
 
-    showImage: function (node, reportId) {
+    showImage: function(node, reportId) {
         var self = this;
         var centerRegion = self.container;
         var itemId = Compass.ErpApp.Utility.Encryption.MD5(node.data.id);
@@ -343,7 +330,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         self.container.setActiveTab(item);
     },
 
-    loadReport: function(report){
+    loadReport: function(report) {
         var me = this;
 
         me.eastRegion.show();
@@ -354,7 +341,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
     //***********************************************************************
 
-    init: function () {
+    init: function() {
         this.launcher = {
             text: 'Database Tools',
             iconCls: 'icon-rails_db_admin',
@@ -363,7 +350,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         };
     },
 
-    displayQuery: function (queryName) {
+    displayQuery: function(queryName) {
         this.setWindowStatus('Retrieving ' + queryName + '...');
         var self = this;
         var database = this.getDatabase();
@@ -373,7 +360,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 database: database,
                 query_name: queryName
             },
-            success: function (responseObject) {
+            success: function(responseObject) {
                 var response = Ext.decode(responseObject.responseText);
                 var query = response.query;
                 var queryPanel = null;
@@ -394,8 +381,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                         centerRegion.add(item);
                     }
                     centerRegion.setActiveTab(item);
-                }
-                else {
+                } else {
                     Ext.Msg.alert('Error', response.exception);
                     queryPanel = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
                         module: self,
@@ -408,14 +394,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 }
 
             },
-            failure: function () {
+            failure: function() {
                 self.clearWindowStatus();
                 Ext.Msg.alert('Status', 'Error loading query');
             }
         });
     },
 
-    openIframeInTab: function (title, url) {
+    openIframeInTab: function(title, url) {
         var self = this;
 
         var item = Ext.create('Ext.panel.Panel', {
@@ -431,7 +417,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         self.container.setActiveTab(item);
     },
 
-    createWindow: function () {
+    createWindow: function() {
         var me = this;
         var desktop = this.app.getDesktop();
         var win = desktop.getWindow('rails_db_admin');
@@ -444,16 +430,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 border: false,
                 minsize: 300,
                 listeners: {
-                    beforetabchange: function(tabPanel, newPanel, oldPanel, eOpts){
+                    beforetabchange: function(tabPanel, newPanel, oldPanel, eOpts) {
                         var isActivatingReportPanel =
-                                oldPanel &&
-                                newPanel.isXType('railsdbadmin_querypanel') &&
-                                newPanel.isReportQuery;
+                            oldPanel &&
+                            newPanel.isXType('railsdbadmin_querypanel') &&
+                            newPanel.isReportQuery;
 
                         // the panel to be activated is the report panel show the query params panel in the east region else hide the east region
-                        if(isActivatingReportPanel){
+                        if (isActivatingReportPanel) {
                             me.loadReport(newPanel.report);
-                        }else{
+                        } else {
                             me.eastRegion.hide();
                         }
                     }
@@ -461,21 +447,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
             });
 
             this.accordion = Ext.create('Ext.panel.Panel', {
-                dockedItems: [
-                    {
-                        xtype: 'toolbar',
-                        dock: 'top',
-                        items: [
-                            {
-                                text: 'Database:'
-                            },
-                            {
-                                xtype: 'railsdbadmin_databasecombo',
-                                module: self
-                            }
-                        ]
-                    }
-                ],
+                dockedItems: [{
+                    xtype: 'toolbar',
+                    dock: 'top',
+                    items: [{
+                        text: 'Database:'
+                    }, {
+                        xtype: 'railsdbadmin_databasecombo',
+                        module: self
+                    }]
+                }],
                 ui: 'rounded-panel',
                 region: 'west',
                 margins: '0 0 0 0',
@@ -485,20 +466,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 header: false,
                 split: true,
                 layout: 'accordion',
-                items: [
-                    {
-                        xtype: 'railsdbadmin_tablestreemenu',
-                        module: this
-                    },
-                    {
-                        xtype: 'railsdbadmin_queriestreemenu',
-                        module: this
-                    },
-                    {
-                        xtype: 'railsdbadmin_reportstreepanel',
-                        module: this
-                    }
-                ]
+                items: [{
+                    xtype: 'railsdbadmin_tablestreemenu',
+                    module: this
+                }, {
+                    xtype: 'railsdbadmin_queriestreemenu',
+                    module: this
+                }, {
+                    xtype: 'railsdbadmin_reportstreepanel',
+                    module: this
+                }]
             });
 
             this.eastRegion = Ext.create('Ext.panel.Panel', {
@@ -513,17 +490,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 split: true,
                 layout: 'accordion',
                 hidden: true,
-                items: [
-                    {
-                        xtype: 'railsdbadminreportssettings'
-                    },
-                    {
-                        xtype: 'railsdbadminreportsparamsmanager'
-                    },
-                    {
-                        xtype: 'railsdbadminreportsrolespanel'
-                    }
-                ]
+                items: [{
+                    xtype: 'railsdbadminreportssettings'
+                }, {
+                    xtype: 'railsdbadminreportsparamsmanager'
+                }, {
+                    xtype: 'railsdbadminreportsrolespanel'
+                }]
             });
 
 
@@ -545,7 +518,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 ]
             });
 
-            win.addListener('render', function (win) {
+            win.addListener('render', function(win) {
                 win.down('#centerRegion').add({
                     xtype: 'railsdbadmin_splash_screen',
                     module: self,
@@ -562,7 +535,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
     extend: "Ext.form.ComboBox",
     alias: 'widget.booleancolumneditor',
-    initComponent: function () {
+    initComponent: function() {
         this.store = Ext.create('Ext.data.ArrayStore', {
             fields: ['display', 'value'],
             data: [
@@ -573,7 +546,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
 
         this.callParent(arguments);
     },
-    constructor: function (config) {
+    constructor: function(config) {
         config = Ext.apply({
             valueField: 'value',
             displayField: 'display',
@@ -586,6 +559,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
     }
 });
 
-Compass.ErpApp.Desktop.Applications.RailsDbAdmin.renderBooleanColumn = function (v) {
+Compass.ErpApp.Desktop.Applications.RailsDbAdmin.renderBooleanColumn = function(v) {
     return (v == 1) ? "True" : "False";
 };

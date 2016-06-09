@@ -130,15 +130,15 @@ module RailsDbAdmin
 
           if @table_support.primary_key?(table)
             id = @table_support.primary_key(table)
-            id[1] = params[:data][0][id[0]]
-            params[:data][0].delete(id[0])
+            id[1] = params[:data]['id']
+            params[:data].delete('id')
 
-            @table_support.update_table(table, id, params[:data][0])
+            @table_support.update_table(table, id, params[:data])
             record = @json_data_builder.get_row_data(table, id)
           else
-            fake_id = params[:data][0]['fake_id']
+            fake_id = params[:data]['fake_id']
             @table_support.update_table_without_id(table, params[:data])
-            record = @json_data_builder.get_row_data_no_id(table, params[:data][0])
+            record = @json_data_builder.get_row_data_no_id(table, params[:data])
             record['fake_id'] = fake_id
           end
 
