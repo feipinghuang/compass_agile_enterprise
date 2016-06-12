@@ -54,7 +54,7 @@ class Category < ActiveRecord::Base
 
       # filter by parent
       if filters[:parent]
-        if filters[:parent].is_integer?
+        if filters[:parent].is_a? Fixnum || filters[:parent].is_integer?
           statement = statement.where(categories: {parent_id: filters[:parent]})
         else
           statement = statement.where(categories: {parent_id: Category.iid(filters[:parent])})

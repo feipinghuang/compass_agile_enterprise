@@ -195,7 +195,11 @@ module ErpTechSvcs
           children: self.children.collect { |child| child.to_tree_hash(options) }
         }.merge(options)
 
-        self.to_hash(options)
+        if self.respond_to?(:to_data_hash)
+          self.to_hash(options).merge(to_data_hash)
+        else
+          self.to_hash(options)
+        end
       end
 
       def children_to_tree_hash(options={})
