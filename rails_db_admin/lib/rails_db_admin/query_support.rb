@@ -19,10 +19,10 @@ module RailsDbAdmin
       columns = []
  
       if @connection.class == ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
-        columns = pg_result.fields
+        columns = result.fields
 
-        if pg_result && pg_result.count > 0
-          pg_result.each do |row|
+        if result && result.count > 0
+          result.each do |row|
             values << HashWithIndifferentAccess.new(row)
           end
         end
