@@ -10,16 +10,25 @@ module RailsDbAdmin
 
     def execute_sql(sql)
       begin
-        pg_result = @connection.execute(sql)
+        result = @connection.execute(sql)
       rescue => ex
         return nil, nil, ex.message
       end
 
       values = []
-      columns = pg_result.fields
+      columns = []
+ 
+      if @connection.class == ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
+        columns = result.fields
 
-      if pg_result && pg_result.count > 0
-        pg_result.each do |row|
+        if result && result.count > 0
+          result.each do |row|
+            values << HashWithIndifferentAccess.new(row)
+          end
+        end
+      else
+        columns = result[0].keys
+        result.each do |row|
           values << HashWithIndifferentAccess.new(row)
         end
       end

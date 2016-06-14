@@ -172,12 +172,11 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 			mask.show();
 
 			Compass.ErpApp.Utility.ajaxRequest({
-				url: (me.user ? '/api/v1/users' : ('/api/v1/parties/' + me.partyId + '/users')),
+				url: (me.user ? ('/api/v1/users/' + me.userId) : '/api/v1/users'),
 				method: (me.user ? 'PUT' : 'POST'),
 				params: Ext.apply({
 					login_url: me.loginPath,
-					website_id: me.websiteId,
-					userId: me.userId
+					website_id: me.websiteId
 				}, me.getValues()),
 				errorMessage: 'Could not save Login Info',
 				success: function(response) {
