@@ -237,15 +237,7 @@ module Api
             party.business_party.save!
 
             if params[:role_types].present?
-              # remove current party roles
-              party.party_roles.destroy_all
-
-              # assign new roles
-              params[:role_types].split(',').each do |role_type_iid|
-                role_type = RoleType.iid(role_type_iid)
-
-                PartyRole.create(party: party, role_type: role_type)
-              end
+              update_roles_and_relationships(params[:role_types].split(','), party)
             end
 
             party.updated_by_party = current_user.party
@@ -303,18 +295,7 @@ module Api
             party = Party.find(params[:id])
             role_type_iids = params[:role_type_iids].split(',')
 
-            # remove current party roles
-            party.party_roles.destroy_all
-
-            # assign new roles
-            role_type_iids.each do |role_type_iid|
-              role_type = RoleType.iid(role_type_iid)
-
-              PartyRole.create(party: party, role_type: role_type)
-            end
-
-            party.updated_by_party = current_user.party
-            party.save!
+            update_roles_and_relationships(role_type_iids, party)
 
             render :json => {success: true}
 
@@ -325,6 +306,75 @@ module Api
             render :json => {success: false}
           end # begin
         end # transaction
+      end
+
+      private
+
+      def update_roles_and_relationships(role_type_iids, party)
+        current_role_type_iids = party.party_roles.collect(&:role_type).collect(&:internal_identifier)
+
+        # add new roles
+        role_type_iids.each do |role_type_iid|
+          unless party.has_role_type?(role_type_iid)
+            ::PartyRole.create(:party => party, :role_type => ::RoleType.iid(role_type_iid))
+          end
+        end
+
+        # remove roles no longer assigned
+        ::PartyRole.where(party_id: party.id).each do |party_role|
+          # do not remove the dba_org role
+          unless role_type_iids.include?(party_role.role_type.internal_identifier)
+            party_role.destroy
+          end
+        end
+
+        #
+        # If we removed roles then we need to remove that party from any relationships where he was playing that
+        # role.  TODO show warning message to user that this will happen.
+        #
+
+        # Determine roles to add and delete
+        role_iids_to_add = role_type_iids - current_role_type_iids
+        role_iids_to_remove = current_role_type_iids - role_type_iids
+
+        #
+        # Make relationship to dba_org for all role types selected
+        #
+
+        dba_org = party.dba_organization
+        dba_org_role_type = RoleType.iid('dba_org')
+
+        #
+        # Add new relationships
+        #
+
+        role_iids_to_add.each do |role_type_iid|
+          role_type = ::RoleType.iid(role_type_iid)
+
+          reln_type = ::RelationshipType.find_or_create(role_type, dba_org_role_type)
+          PartyRelationship.create(
+            description: reln_type.description,
+            from_party: party,
+            to_party: dba_org,
+            from_role: role_type,
+            to_role: dba_org_role_type,
+            relationship_type: reln_type
+          )
+        end
+
+        #
+        # Remove old relationships
+        #
+
+        role_iids_to_remove.each do |role_type_iid|
+          role_type = ::RoleType.iid(role_type_iid)
+
+          ::PartyRelationship.where('party_id_to = ? or party_id_from = ?', party.id, party.id)
+          .where('role_type_id_to = ? or role_type_id_from = ?', role_type.id, role_type.id).all.each do |reln|
+            reln.destroy
+          end
+        end
+
       end
 
     end # PartiesController
