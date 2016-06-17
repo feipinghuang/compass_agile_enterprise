@@ -1,0 +1,23 @@
+# create_table :product_option_applicabilities do |t|
+#   t.references :optioned_record, :polymorphic => true
+#   t.references :product_option
+#   t.boolean :required
+#   t.boolean :multi_optional
+#
+#   t.references :created_by
+#   t.references :updated_by
+#
+#   t.timestamps
+# end
+#
+# add_index :product_option_applicabilities, [:optioned_record_type, :optioned_record_id], :name => 'prod_opt_appl_optioned_record_idx'
+# add_index :product_option_applicabilities, :product_option_id, :name => 'prod_opt_appl_opt_idx'
+
+class ProductOptionApplicability < ActiveRecord::Base
+  attr_protected :created_at, :updated_at
+
+  tracks_created_by_updated_by
+
+  belongs_to :optioned_record, polymorphic: true
+  belongs_to :product_option
+end
