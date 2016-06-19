@@ -1,8 +1,8 @@
 Party.class_eval do
 
-  has_many :biz_txn_acct_party_roles
-	has_many :biz_txn_acct_roots, :through => :biz_txn_acct_party_roles, :dependent => :destroy
-  has_many :biz_txn_party_roles
+  has_many :biz_txn_acct_party_roles, dependent: :destroy
+	has_many :biz_txn_acct_roots, :through => :biz_txn_acct_party_roles
+  has_many :biz_txn_party_roles, dependent: :destroy
 
 	# has_many :entity_content_assignments, :as => :da_assignment
 	# has_many :credit_cards, :class_name => "CreditCard", :foreign_key => "cardholder_id"
