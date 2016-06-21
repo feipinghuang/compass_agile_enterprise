@@ -40,9 +40,9 @@ class OrderTxn < ActiveRecord::Base
 
   acts_as_biz_txn_event
 
-  belongs_to :order_txn_record, :polymorphic => true
-  has_many :order_line_items, :dependent => :destroy
-  has_many :charge_lines, :as => :charged_item, :dependent => :destroy
+  belongs_to :order_txn_record, polymorphic: true
+  has_many :order_line_items, dependent: :destroy
+  has_many :charge_lines, as: :charged_item, dependent: :destroy
 
   alias :line_items :order_line_items
 
@@ -199,7 +199,6 @@ class OrderTxn < ActiveRecord::Base
     else
       amount
     end
-
   end
 
   # gets total amount due (total_amount - total_payments)
@@ -248,8 +247,16 @@ class OrderTxn < ActiveRecord::Base
     tax
   end
 
-  #add product_type or product_instance line item
-  def add_line_item(object, reln_type = nil, to_role = nil, from_role = nil)
+  # add product_type or product_instance line item
+  #
+  # @param [ProductType|ProductInstance|SimpleProductOffer] object the record being added
+  # @param [Hash] opts the options for the item being added
+  # @option opts [] :reln_type type of relationship to create if the item being added is a package of products
+  # @option opts [] :to_role to role of relationship to create if the item being added is a package of products
+  # @option opts [] :from_role from role of relationship to create if the item being added is a package of products
+  # @option opts [] :selected_options product options selected for the item being added
+  # @return [OrderLineItem]
+  def add_line_item(object, opts={})
     if object.is_a?(Array)
       class_name = object.first.class.name
     else
@@ -258,12 +265,41 @@ class OrderTxn < ActiveRecord::Base
 
     case class_name
     when 'ProductType'
-      add_product_type_line_item(object, reln_type, to_role, from_role)
+      line_item = add_product_type_line_item(object, opts[:reln_type], opts[:to_role], opts[:from_role])
     when 'ProductInstance'
-      add_product_instance_line_item(object, reln_type, to_role, from_role)
+      line_item = add_product_instance_line_item(object, opts[:reln_type], opts[:to_role], opts[:from_role])
     when 'SimpleProductOffer'
-      add_simple_product_offer_line_item(object)
+      line_item = add_simple_product_offer_line_item(object)
     end
+
+    # handle selected product options
+    if opts[:selected_product_options]
+      opts[:selected_product_options].each do |selected_product_option_hash|
+        selected_product_option = line_item.selected_product_options.create(product_option_applicability_id: selected_product_option_hash[:product_option_applicability_id])
+        selected_product_option_hash[:selected_options].each do |selected_option|
+          product_option = ProductOption.find(selected_option[:id])
+
+          selected_product_option.product_options << product_option
+
+          if selected_option[:price]
+            charge_line = line_item.charge_lines.create!(description: product_option.description)
+            charge_line.money = Money.create!(amount: selected_option[:price] * (opts[:quantity] || 1), currency: Currency.usd)
+            charge_line.save!
+          end
+
+        end
+
+        selected_product_option.save!
+      end
+    end
+
+    if opts[:quantity]
+      line_item.quantity = opts[:quantity]
+    end
+
+    line_item.save!
+
+    line_item
   end
 
   def add_simple_product_offer_line_item(simple_product_offer)
@@ -394,7 +430,7 @@ class OrderTxn < ActiveRecord::Base
     self.ship_to_first_name = party.business_party.current_first_name
     self.ship_to_last_name = party.business_party.current_last_name
     shipping_address = party.find_contact_with_purpose(PostalAddress, ContactPurpose.shipping) || party.find_contact_with_purpose(PostalAddress, ContactPurpose.default)
-    
+
     unless shipping_address.nil?
       shipping_address = shipping_address.contact_mechanism
       self.ship_to_address_line_1 = shipping_address.address_line_1
@@ -410,286 +446,284 @@ class OrderTxn < ActiveRecord::Base
   # Get shipping info formatted for HTML
   #
   def shipping_info
-    info = %(#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1})
+    info = "#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1})"
 
-             if ship_to_address_line_2.present?
-               info << "<br>#{ship_to_address_line_2}"
-             end
+    if ship_to_address_line_2.present?
+      info << "<br>#{ship_to_address_line_2}"
+    end
 
-             info << %(<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country})
+    info << "<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country})"
 
-                       info
-                       end
+    info
+  end
 
-                       def set_billing_info(party)
-                         self.email = party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).email_address unless party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).nil?
-                         self.phone_number = party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).phone_number unless party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).nil?
+  def set_billing_info(party)
+    self.email = party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).email_address unless party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.billing).nil?
+    self.phone_number = party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).phone_number unless party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing).nil?
 
-                         self.bill_to_first_name = party.business_party.current_first_name
-                         self.bill_to_last_name = party.business_party.current_last_name
-                         billing_address = party.find_contact_with_purpose(PostalAddress, ContactPurpose.billing) || party.find_contact_with_purpose(PostalAddress, ContactPurpose.default)
-                         unless billing_address.nil?
-                           billing_address = billing_address.contact_mechanism
-                           self.bill_to_address_line_1 = billing_address.address_line_1
-                           self.bill_to_address_line_2 = billing_address.address_line_2
-                           self.bill_to_city = billing_address.city
-                           self.bill_to_state = billing_address.state
-                           self.bill_to_postal_code = billing_address.zip
-                           # self.bill_to_country_name = billing_address.country_name
-                           self.bill_to_country = billing_address.country
-                         end
-                       end
+    self.bill_to_first_name = party.business_party.current_first_name
+    self.bill_to_last_name = party.business_party.current_last_name
+    billing_address = party.find_contact_with_purpose(PostalAddress, ContactPurpose.billing) || party.find_contact_with_purpose(PostalAddress, ContactPurpose.default)
+    unless billing_address.nil?
+      billing_address = billing_address.contact_mechanism
+      self.bill_to_address_line_1 = billing_address.address_line_1
+      self.bill_to_address_line_2 = billing_address.address_line_2
+      self.bill_to_city = billing_address.city
+      self.bill_to_state = billing_address.state
+      self.bill_to_postal_code = billing_address.zip
+      # self.bill_to_country_name = billing_address.country_name
+      self.bill_to_country = billing_address.country
+    end
+  end
 
-                       # Get billing info formatted for HTML
-                       #
-                       def billing_info
-                         info = %(#{bill_to_first_name} #{bill_to_last_name}<br>#{bill_to_address_line_1}<br>)
+  # Get billing info formatted for HTML
+  #
+  def billing_info
+    info = "#{bill_to_first_name} #{bill_to_last_name}<br>#{bill_to_address_line_1}<br>"
 
-                                  if bill_to_address_line_2.present?
-                                    info << "<br>#{bill_to_address_line_2}"
-                                  end
+    if bill_to_address_line_2.present?
+      info << "<br>#{bill_to_address_line_2}"
+    end
 
-                                  info << %(<br>#{bill_to_city} #{bill_to_state} #{bill_to_postal_code}<br>#{bill_to_country})
+    info << "<br>#{bill_to_city} #{bill_to_state} #{bill_to_postal_code}<br>#{bill_to_country}"
 
-                                            info
-                                            end
+    info
+  end
 
-                                            def determine_txn_party_roles
-                                              #Template Method
-                                            end
+  def determine_txn_party_roles
+    #Template Method
+  end
 
-                                            def determine_charge_elements
-                                              #Template Method
-                                            end
+  def determine_charge_elements
+    #Template Method
+  end
 
-                                            def determine_charge_accounts
-                                              #Template Method
-                                            end
+  def determine_charge_accounts
+    #Template Method
+  end
 
-                                            ###############################################################################
-                                            #BizTxnEvent Overrides
-                                            ###############################################################################
-                                            def create_dependent_txns
-                                              #Template Method
-                                            end
+  #
+  # BizTxnEvent Overrides
+  #
 
-                                            ################################################################
-                                            ################################################################
-                                            # Payment methods
-                                            # these methods are used to capture payments on orders
-                                            ################################################################
-                                            ################################################################
+  def create_dependent_txns
+    #Template Method
+  end
 
-                                            def authorize_payments(financial_txns, credit_card, gateway, gateway_options={}, use_delayed_jobs=true)
-                                              all_txns_authorized = true
-                                              authorized_txns = []
-                                              gateway_message = nil
+  #
+  # Payment methods
+  # these methods are used to capture payments on orders
+  #
 
-                                              #check if we are using delayed jobs or not
-                                              unless use_delayed_jobs
-                                                financial_txns.each do |financial_txn|
-                                                  financial_txn.authorize(credit_card, gateway, gateway_options)
-                                                  if financial_txn.payments.empty?
-                                                    all_txns_authorized = false
-                                                    gateway_message = 'Unknown Gateway Error'
-                                                    break
-                                                  elsif !financial_txn.payments.first.success
-                                                    all_txns_authorized = false
-                                                    gateway_message = financial_txn.payments.first.payment_gateways.first.response
-                                                    break
-                                                  else
-                                                    authorized_txns << financial_txn
-                                                  end
-                                                end
-                                              else
-                                                financial_txns.each do |financial_txn|
-                                                  #push into delayed job so we can fire off more payments if needed
-                                                  ErpTxnsAndAccts::DelayedJobs::PaymentGatewayJob.start(financial_txn, gateway, :authorize, gateway_options, credit_card)
-                                                end
-                                                #wait till all payments are complete
-                                                #wait a max of 120 seconds 2 minutes
-                                                wait_counter = 0
-                                                while !all_payment_jobs_completed?(financial_txns, :authorized)
-                                                  break if wait_counter == 40
-                                                  sleep 3
-                                                  wait_counter += 1
-                                                end
+  def authorize_payments(financial_txns, credit_card, gateway, gateway_options={}, use_delayed_jobs=true)
+    all_txns_authorized = true
+    authorized_txns = []
+    gateway_message = nil
 
-                                                result, gateway_message, authorized_txns = all_payment_jobs_successful?(financial_txns)
+    #check if we are using delayed jobs or not
+    unless use_delayed_jobs
+      financial_txns.each do |financial_txn|
+        financial_txn.authorize(credit_card, gateway, gateway_options)
+        if financial_txn.payments.empty?
+          all_txns_authorized = false
+          gateway_message = 'Unknown Gateway Error'
+          break
+        elsif !financial_txn.payments.first.success
+          all_txns_authorized = false
+          gateway_message = financial_txn.payments.first.payment_gateways.first.response
+          break
+        else
+          authorized_txns << financial_txn
+        end
+      end
+    else
+      financial_txns.each do |financial_txn|
+        #push into delayed job so we can fire off more payments if needed
+        ErpTxnsAndAccts::DelayedJobs::PaymentGatewayJob.start(financial_txn, gateway, :authorize, gateway_options, credit_card)
+      end
+      #wait till all payments are complete
+      #wait a max of 120 seconds 2 minutes
+      wait_counter = 0
+      while !all_payment_jobs_completed?(financial_txns, :authorized)
+        break if wait_counter == 40
+        sleep 3
+        wait_counter += 1
+      end
 
-                                                unless result
-                                                  all_txns_authorized = false
-                                                end
-                                              end
-                                              return all_txns_authorized, authorized_txns, gateway_message
-                                            end
+      result, gateway_message, authorized_txns = all_payment_jobs_successful?(financial_txns)
 
-                                            def capture_payments(authorized_txns, credit_card, gateway, gateway_options={}, use_delayed_jobs=true)
-                                              all_txns_captured = true
-                                              gateway_message = nil
+      unless result
+        all_txns_authorized = false
+      end
+    end
+    return all_txns_authorized, authorized_txns, gateway_message
+  end
 
-                                              #check if we are using delayed jobs or not
-                                              unless use_delayed_jobs
-                                                authorized_txns.each do |financial_txn|
-                                                  result = financial_txn.capture(credit_card, gateway, gateway_options)
-                                                  unless (result[:success])
-                                                    all_txns_captured = false
-                                                    gateway_message = result[:gateway_message]
-                                                    break
-                                                  end
-                                                end
-                                              else
-                                                authorized_txns.each do |financial_txn|
-                                                  #push into delayed job so we can fire off more payments if needed
-                                                  ErpTxnsAndAccts::DelayedJobs::PaymentGatewayJob.start(financial_txn, gateway, :capture, gateway_options, credit_card)
-                                                end
+  def capture_payments(authorized_txns, credit_card, gateway, gateway_options={}, use_delayed_jobs=true)
+    all_txns_captured = true
+    gateway_message = nil
 
-                                                #wait till all payments are complete
-                                                #wait a max of 120 seconds 2 minutes
-                                                wait_counter = 0
-                                                while !all_payment_jobs_completed?(authorized_txns, :captured)
-                                                  break if wait_counter == 40
-                                                  sleep 3
-                                                  wait_counter += 1
-                                                end
+    #check if we are using delayed jobs or not
+    unless use_delayed_jobs
+      authorized_txns.each do |financial_txn|
+        result = financial_txn.capture(credit_card, gateway, gateway_options)
+        unless (result[:success])
+          all_txns_captured = false
+          gateway_message = result[:gateway_message]
+          break
+        end
+      end
+    else
+      authorized_txns.each do |financial_txn|
+        #push into delayed job so we can fire off more payments if needed
+        ErpTxnsAndAccts::DelayedJobs::PaymentGatewayJob.start(financial_txn, gateway, :capture, gateway_options, credit_card)
+      end
 
-                                                result, gateway_message, authorized_txns = all_payment_jobs_successful?(authorized_txns)
+      #wait till all payments are complete
+      #wait a max of 120 seconds 2 minutes
+      wait_counter = 0
+      while !all_payment_jobs_completed?(authorized_txns, :captured)
+        break if wait_counter == 40
+        sleep 3
+        wait_counter += 1
+      end
 
-                                                unless result
-                                                  all_txns_captured = false
-                                                end
-                                              end
+      result, gateway_message, authorized_txns = all_payment_jobs_successful?(authorized_txns)
 
-                                              return all_txns_captured, gateway_message
-                                            end
+      unless result
+        all_txns_captured = false
+      end
+    end
 
-                                            def rollback_authorizations(authorized_txns, credit_card, gateway, gateway_options={}, use_delayed_jobs=true)
-                                              all_txns_rolledback = true
+    return all_txns_captured, gateway_message
+  end
 
-                                              #check if we are using delayed jobs or not
-                                              unless use_delayed_jobs
-                                                authorized_txns.each do |financial_txn|
-                                                  result = financial_txn.reverse_authorization(credit_card, gateway, gateway_options)
-                                                  unless (result[:success])
-                                                    all_txns_rolledback = false
-                                                  end
-                                                end
-                                              else
-                                                authorized_txns.each do |financial_txn|
-                                                  #push into delayed job so we can fire off more payments if needed
-                                                  ErpTxnsAndAccts::DelayedJobs::PaymentGatewayJob.start(financial_txn, gateway, :reverse_authorization, gateway_options, credit_card)
-                                                end
+  def rollback_authorizations(authorized_txns, credit_card, gateway, gateway_options={}, use_delayed_jobs=true)
+    all_txns_rolledback = true
 
-                                                #wait till all payments are complete
-                                                #wait a max of 120 seconds 2 minutes
-                                                wait_counter = 0
-                                                while !all_payment_jobs_completed?(authorized_txns, :authorization_reversed)
-                                                  break if wait_counter == 40
-                                                  sleep 3
-                                                  wait_counter += 1
-                                                end
+    #check if we are using delayed jobs or not
+    unless use_delayed_jobs
+      authorized_txns.each do |financial_txn|
+        result = financial_txn.reverse_authorization(credit_card, gateway, gateway_options)
+        unless (result[:success])
+          all_txns_rolledback = false
+        end
+      end
+    else
+      authorized_txns.each do |financial_txn|
+        #push into delayed job so we can fire off more payments if needed
+        ErpTxnsAndAccts::DelayedJobs::PaymentGatewayJob.start(financial_txn, gateway, :reverse_authorization, gateway_options, credit_card)
+      end
 
-                                                result, gateway_message, authorized_txns = all_payment_jobs_successful?(authorized_txns)
+      #wait till all payments are complete
+      #wait a max of 120 seconds 2 minutes
+      wait_counter = 0
+      while !all_payment_jobs_completed?(authorized_txns, :authorization_reversed)
+        break if wait_counter == 40
+        sleep 3
+        wait_counter += 1
+      end
 
-                                                unless result
-                                                  all_txns_rolledback = false
-                                                end
-                                              end
+      result, gateway_message, authorized_txns = all_payment_jobs_successful?(authorized_txns)
 
-                                              all_txns_rolledback
-                                            end
+      unless result
+        all_txns_rolledback = false
+      end
+    end
 
-                                            def all_payment_jobs_completed?(financial_txns, state)
-                                              result = true
+    all_txns_rolledback
+  end
 
-                                              #check the financial txns as they come back
-                                              financial_txns.each do |financial_txn|
-                                                payments = financial_txn.payments(true)
-                                                if payments.empty? || payments.first.current_state.to_sym != state
-                                                  result = false
-                                                  break
-                                                end
-                                              end
+  def all_payment_jobs_completed?(financial_txns, state)
+    result = true
 
-                                              result
-                                            end
+    #check the financial txns as they come back
+    financial_txns.each do |financial_txn|
+      payments = financial_txn.payments(true)
+      if payments.empty? || payments.first.current_state.to_sym != state
+        result = false
+        break
+      end
+    end
 
-                                            def all_payment_jobs_successful?(financial_txns)
-                                              result = true
-                                              message = nil
-                                              authorized_txns = []
+    result
+  end
 
-                                              #check the financial txns to see all were successful, if not get message
-                                              financial_txns.each do |financial_txn|
-                                                payments = financial_txn.payments(true)
-                                                if payments.empty? || !payments.first.success
-                                                  result = false
-                                                  unless payments.empty?
-                                                    message = financial_txn.payments.first.payment_gateways.first.response
-                                                  else
-                                                    message = "Unknown Protobase Error"
-                                                  end
-                                                else
-                                                  authorized_txns << financial_txn
-                                                end
-                                              end
+  def all_payment_jobs_successful?(financial_txns)
+    result = true
+    message = nil
+    authorized_txns = []
 
-                                              return result, message, authorized_txns
-                                            end
+    #check the financial txns to see all were successful, if not get message
+    financial_txns.each do |financial_txn|
+      payments = financial_txn.payments(true)
+      if payments.empty? || !payments.first.success
+        result = false
+        unless payments.empty?
+          message = financial_txn.payments.first.payment_gateways.first.response
+        else
+          message = "Unknown Protobase Error"
+        end
+      else
+        authorized_txns << financial_txn
+      end
+    end
 
-                                            def clone
-                                              ActiveRecord::Base.transaction do
-                                                order_txn_dup = dup
-                                                order_txn_dup.order_txn_record_id = nil
-                                                order_txn_dup.order_txn_record_type = nil
-                                                order_txn_dup.order_number = OrderTxn.next_order_number
-                                                order_txn_dup.error_message = nil
-                                                order_txn_dup.payment_gateway_txn_id = nil
-                                                order_txn_dup.credit_card_id = nil
-                                                order_txn_dup.initialize_biz_txn_event
-                                                order_txn_dup.biz_txn_event.description = self.biz_txn_event.description
+    return result, message, authorized_txns
+  end
 
-                                                # add a relationship describing the original and the clone
-                                                biz_txn_rel_type = BizTxnRelType.find_or_create('cloned_from', 'Cloned From', nil)
-                                                BizTxnRelationship.create(txn_event_to: self.root_txn,
-                                                                          txn_event_from: order_txn_dup.root_txn,
-                                                                          biz_txn_rel_type: biz_txn_rel_type)
+  def clone
+    ActiveRecord::Base.transaction do
+      order_txn_dup = dup
+      order_txn_dup.order_txn_record_id = nil
+      order_txn_dup.order_txn_record_type = nil
+      order_txn_dup.order_number = OrderTxn.next_order_number
+      order_txn_dup.error_message = nil
+      order_txn_dup.payment_gateway_txn_id = nil
+      order_txn_dup.credit_card_id = nil
+      order_txn_dup.initialize_biz_txn_event
+      order_txn_dup.biz_txn_event.description = self.biz_txn_event.description
+
+      # add a relationship describing the original and the clone
+      biz_txn_rel_type = BizTxnRelType.find_or_create('cloned_from', 'Cloned From', nil)
+      BizTxnRelationship.create(txn_event_to: self.root_txn,
+                                txn_event_from: order_txn_dup.root_txn,
+                                biz_txn_rel_type: biz_txn_rel_type)
 
 
-                                                order_line_item_rel_type = OrderLineItemRelType.find_or_create('cloned_from', 'Cloned From', nil)
+      order_line_item_rel_type = OrderLineItemRelType.find_or_create('cloned_from', 'Cloned From', nil)
 
-                                                self.order_line_items.each do |order_line_item|
-                                                  order_line_item_clone = order_line_item.clone
-                                                  order_txn_dup.order_line_items << order_line_item_clone
+      self.order_line_items.each do |order_line_item|
+        order_line_item_clone = order_line_item.clone
+        order_txn_dup.order_line_items << order_line_item_clone
 
-                                                  OrderLineItemRelationship.create(order_line_item_from: order_line_item_clone,
-                                                                                   order_line_item_to: order_line_item,
-                                                                                   order_line_item_rel_type: order_line_item_rel_type)
+        OrderLineItemRelationship.create(order_line_item_from: order_line_item_clone,
+                                         order_line_item_to: order_line_item,
+                                         order_line_item_rel_type: order_line_item_rel_type)
 
-                                                end
-                                                order_txn_dup.save!
-                                                order_txn_dup.current_status = self.current_status
+      end
+      order_txn_dup.save!
+      order_txn_dup.current_status = self.current_status
 
-                                                order_txn_dup
-                                              end
+      order_txn_dup
+    end
+  end
 
-                                            end
+  def to_label
+    self.order_number
+  end
 
-                                            def to_label
-                                              self.order_number
-                                            end
+  def to_data_hash
+    {
+      id: id,
+      description: description,
+      order_number: order_number,
+      amount: total_amount,
+      status: current_status_application.try(:tracked_status_type).try(:description)
+    }
+  end
 
-                                            def to_data_hash
-                                              {
-                                                id: id,
-                                                description: description,
-                                                order_number: order_number,
-                                                amount: total_amount,
-                                                status: current_status_application.try(:tracked_status_type).try(:description)
-                                              }
-                                            end
-
-                                            def to_mobile_hash
-                                              to_data_hash
-                                            end
-                                            end
+  def to_mobile_hash
+    to_data_hash
+  end
+end

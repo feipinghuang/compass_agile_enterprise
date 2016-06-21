@@ -6,17 +6,17 @@
 #   #which is implemented using a standard relationship structure.
 #   #
 #   #This is to allow quick construction of highly nested product types.
-#   t.column  	:parent_id,              :integer
-#   t.column  	:lft,                    :integer
-#   t.column  	:rgt,                    :integer
+#   t.column    :parent_id,              :integer
+#   t.column    :lft,                    :integer
+#   t.column    :rgt,                    :integer
 #
 #   #custom columns go here
 #   t.column  :description,              :string
 #   t.column  :product_type_record_id,   :integer
 #   t.column  :product_type_record_type, :string
-#   t.column 	:external_identifier, 	   :string
+#   t.column  :external_identifier,      :string
 #   t.column  :internal_identifier,      :string
-#   t.column 	:external_id_source, 	     :string
+#   t.column  :external_id_source,       :string
 #   t.column  :default_image_url,        :string
 #   t.column  :list_view_image_id,       :integer
 #   t.column  :length,                   :decimal
@@ -55,6 +55,8 @@ class ProductType < ActiveRecord::Base
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
   has_one :category_classification, as: :classification, dependent: :destroy
   has_one :category, through: :category_classification
+
+  has_many :product_option_applicabilities, dependent: :destroy, as: :optioned_record
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
 
@@ -119,9 +121,9 @@ class ProductType < ActiveRecord::Base
   # @return [ProductTypePtyRole] newly created relationship
   def add_party_with_role(party, role_type)
     ProductTypePtyRole.create(
-        product_type: self,
-        party: party,
-        role_type: role_type
+      product_type: self,
+      party: party,
+      role_type: role_type
     )
   end
 
@@ -156,13 +158,13 @@ class ProductType < ActiveRecord::Base
 
   def to_data_hash
     to_hash(only: [
-                :id,
-                :description,
-                :internal_identifier,
-                :sku,
-                :comment,
-                :created_at,
-                :updated_at
+              :id,
+              :description,
+              :internal_identifier,
+              :sku,
+              :comment,
+              :created_at,
+              :updated_at
             ],
             unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
             price: try(:get_current_simple_plan).try(:money_amount),
@@ -171,34 +173,38 @@ class ProductType < ActiveRecord::Base
 
   def to_display_hash
     {
-        id: id,
-        description: description,
-        offer_list_description: find_descriptions_by_view_type('list_description').first.try(:description),
-        offer_short_description: find_descriptions_by_view_type('short_description').first.try(:description),
-        offer_long_description: find_descriptions_by_view_type('long_description').first.try(:description),
-        offer_base_price: get_current_simple_amount_with_currency,
-        images: images.pluck(:id)
+      id: id,
+      description: description,
+      offer_list_description: find_descriptions_by_view_type('list_description').first.try(:description),
+      offer_short_description: find_descriptions_by_view_type('short_description').first.try(:description),
+      offer_long_description: find_descriptions_by_view_type('long_description').first.try(:description),
+      offer_base_price: get_current_simple_amount_with_currency,
+      images: images.pluck(:id)
     }
   end
 
   def to_mobile_hash
-    {
-        id: id,
-        description: description,
-        offer_list_description: find_description_by_view_type('list_description').try(:description),
-        offer_short_description: find_description_by_view_type('short_description').try(:description),
-        offer_long_description: find_description_by_view_type('long_description').try(:description),
-        offer_base_price: get_current_simple_amount_with_currency,
-        unit_of_measurement: try(:unit_of_measurement).try(:description),
-        img_url: images.first.try(:fully_qualified_url),
-        vendor: find_party_by_role(RoleType.iid('vendor')).try(:description)
+    data = {
+      id: id,
+      description: description,
+      offer_list_description: find_description_by_view_type('list_description').try(:description),
+      offer_short_description: find_description_by_view_type('short_description').try(:description),
+      offer_long_description: find_description_by_view_type('long_description').try(:description),
+      offer_base_price: get_current_simple_amount_with_currency,
+      unit_of_measurement: try(:unit_of_measurement).try(:description),
+      img_url: images.first.try(:fully_qualified_url),
+      vendor: find_party_by_role(RoleType.iid('vendor')).try(:description)
     }
+
+    data[:options] = product_option_applicabilities.collect{|item| item.to_data_hash({include_options: true})}
+
+    data
   end
 
   def parent_dba_organizations(dba_orgs=[])
     ProductTypePtyRole.
-        where('product_type_id = ?', id).
-        where('role_type_id' => RoleType.iid('dba_org').id).each do |prod_party_reln|
+      where('product_type_id = ?', id).
+    where('role_type_id' => RoleType.iid('dba_org').id).each do |prod_party_reln|
 
       dba_orgs.push(prod_party_reln.party)
       prod_party_reln.party.parent_dba_organizations(dba_orgs)

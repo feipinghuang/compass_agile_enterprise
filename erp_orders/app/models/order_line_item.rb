@@ -47,6 +47,8 @@ class OrderLineItem < ActiveRecord::Base
   ## Allow for polymorphic subtypes of this class
   belongs_to :order_line_record, :polymorphic => true
 
+  has_many :selected_product_options, as: :selected_option_record, dependent: :destroy
+
   before_destroy :destroy_order_line_item_relationships
 
   def taxed?
@@ -177,6 +179,7 @@ class OrderLineItem < ActiveRecord::Base
     data = {
       id: id,
       sold_price: sold_price,
+      total_amount: total_amount,
       quantity: quantity
     }
 
@@ -186,13 +189,9 @@ class OrderLineItem < ActiveRecord::Base
   end
 
   def to_mobile_hash
-    data = {
-      id: id,
-      sold_price: sold_price,
-      quantity: quantity
-    }
+    data = to_data_hash
 
-    data[:product_type] = line_item_record.to_mobile_hash
+    data[:selected_product_options] = self.selected_product_options.collect(&:to_mobile_data_hash)
 
     data
   end

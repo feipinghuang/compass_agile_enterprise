@@ -3,8 +3,15 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
 
-      resources :product_types, defaults: { :format => 'json' }
-
+      resources :product_types, defaults: { :format => 'json' } do
+        resources :product_option_applicabilities, defaults: { :format => 'json' }
+      end
+      resources :product_option_types, defaults: { :format => 'json' } do
+      	resources :product_options, defaults: { :format => 'json' }
+      end
+      resources :product_option_applicabilities, defaults: { :format => 'json' }
+      resources :product_options, defaults: { :format => 'json' }
+      resources :selected_product_options, defaults: { :format => 'json' }
     end
   end
 

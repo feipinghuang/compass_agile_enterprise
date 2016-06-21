@@ -100,5 +100,21 @@ namespace :compass_ae do
 
     end
 
+    task :v2 => :environment do
+      puts "Upgrading CompassAE"
+
+      # loop through engines looking for upgrade tasks to run
+      Rails.application.config.erp_base_erp_svcs.compass_ae_engines.collect { |e| "#{e.name.split("::").first.underscore}" }.each do |engine|
+
+        if Rake::Task.task_defined?("#{engine}:upgrade:v2")
+          puts "Upgrading #{engine}"
+
+          Rake.application["#{engine}:upgrade:v2"].reenable
+          Rake.application["#{engine}:upgrade:v2"].invoke
+        end
+      end
+
+    end
+
   end # upgrade
 end # compass_ae

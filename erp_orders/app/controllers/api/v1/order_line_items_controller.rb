@@ -2,6 +2,18 @@ module Api
   module V1
     class OrderLineItemsController < BaseController
 
+=begin
+
+  @api {get} /api/v1/order_line_items Index
+  @apiVersion 1.0.0
+  @apiName GetOrderLineItems
+  @apiGroup OrderLineItem
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} order_line_items OrderLineItem records
+
+=end
+
       def index
         sort = nil
         dir = nil

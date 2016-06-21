@@ -2,6 +2,18 @@ module Api
   module V1
     class OrderTxnsController < BaseController
 
+=begin
+
+  @api {get} /api/v1/order_txns Index
+  @apiVersion 1.0.0
+  @apiName GetOrderTxn
+  @apiGroup OrderTxn
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} order_txns OrderTxn records
+
+=end
+
       def index
         sort = nil
         dir = nil
@@ -55,12 +67,35 @@ module Api
 
       end
 
+=begin
+
+  @api {get} /api/v1/order_txns/:id Show
+  @apiVersion 1.0.0
+  @apiName ShowOrderTxn
+  @apiGroup OrderTxn
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} order_txn OrderTxn record
+
+=end
+
       def show
         order_txn = OrderTxn.find(params[:id])
 
         render :json => {success: true,
                          order_txn: order_txn.to_data_hash}
       end
+
+=begin
+
+  @api {delete} /api/v1/order_txns/:id Delete
+  @apiVersion 1.0.0
+  @apiName DeleteOrderTxn
+  @apiGroup OrderTxn
+
+  @apiSuccess {Boolean} success True if the request was successful
+
+=end
 
       def destroy
         OrderTxn.find(params[:id]).destroy
