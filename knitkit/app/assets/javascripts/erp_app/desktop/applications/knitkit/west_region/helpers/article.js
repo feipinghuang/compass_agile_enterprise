@@ -114,8 +114,10 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addArticleOptions = function (self, 
                                                     record.set('text', values.title);
                                                     record.set('display_title', !Ext.isEmpty(values.display_title));
                                                     record.set('content_area', values.content_area);
-                                                    if (formPanel.getForm().findField('tag_list')) {
-                                                        var tag_list = formPanel.getForm().findField('tag_list').getValue();
+                                                    record.set('internal_identifier', values.internal_identifier);
+
+                                                    if (formPanel.getForm().findField('tags')) {
+                                                        var tag_list = formPanel.getForm().findField('tags').getValue();
                                                         record.set('tag_list', tag_list);
                                                     }
                                                     window.close();

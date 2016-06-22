@@ -190,14 +190,19 @@ module Api
       def create
         begin
           ActiveRecord::Base.connection.transaction do
-            security_role = SecurityRole.create(description: params[:description].strip,
+            security_role = SecurityRole.create!(description: params[:description].strip,
                                                 internal_identifier: params[:internal_identifier].strip)
+
 
             if params[:parent]
               security_role.move_to_child_of(SecurityRole.iid(params[:parent]))
             end
 
-            render json: {success: true, security_role: security_role.to_data_hash}
+            render :json => {
+                     success: true,
+                     security_role: security_role.to_data_hash,
+                     message: 'Role created successfully'
+                   }
           end
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors
@@ -212,7 +217,7 @@ module Api
         rescue StandardError => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")
-
+          
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
           render :json => {:success => false, :message => 'Error creating Security Role'}
@@ -223,8 +228,7 @@ module Api
         begin
           ActiveRecord::Base.connection.transaction do
             security_role = SecurityRole.find(params[:id])
-
-            security_role.description = params[:descrition].strip
+            security_role.description = params[:description].strip
             security_role.internal_identifier = params[:internal_identifier].strip
 
             security_role.save!
