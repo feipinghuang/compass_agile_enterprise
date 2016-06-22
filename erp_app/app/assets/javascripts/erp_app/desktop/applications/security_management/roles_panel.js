@@ -287,7 +287,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.RolesPanel", 
 				success: function(response) {
 				    var json_response = Ext.decode(response.responseText);
 				    if (json_response.success) {
+                                        var southPanel = Ext.ComponentQuery.query('security_management_southpanel').first(),
+                                            activeTabPanel = southPanel.down('tabpanel').getActiveTab();
+
 					self.unsetRole();
+                                        activeTabPanel.clearWidget();
 					var all_roles = self.down('#all_roles').down('gridview');
 					all_roles.getStore().load();
 				    } else {

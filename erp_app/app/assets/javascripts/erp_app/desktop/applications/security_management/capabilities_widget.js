@@ -1,34 +1,14 @@
 Ext.define("Compass.ErpApp.Desktop.Applications.SecurityManagement.CapabilitiesWidget", {
     extend: "Ext.panel.Panel",
     alias: 'widget.security_management_capabilitieswidget',
+    mixins: [
+        'Compass.ErpApp.Desktop.Applications.SecurityManagement.Mixins.Widget'
+    ],
 
     updateTitle: function() {
 	if (this.assign_to_description) {
 	    this.down('#assignment').setTitle('Assign Capabilities to ' + this.assign_to + ' ' + this.assign_to_description);
 	}
-    },
-
-    refreshWidget: function(tab) {
-	if (tab === undefined) tab = this;
-
-        var available_grid = tab.down('#available');
-        var selected_grid = tab.down('#selected');
-        if (tab.assign_to_id) {
-            var extraParams = {
-                type: tab.assign_to,
-                id: tab.assign_to_id
-            };
-
-            available_grid.getStore().getProxy().extraParams = extraParams;
-            available_grid.getStore().load();
-
-            selected_grid.getStore().getProxy().extraParams = extraParams;
-            selected_grid.getStore().load();
-        } else {
-            available_grid.getStore().getProxy().extraParams = {};
-            selected_grid.getStore().getProxy().extraParams = {};
-        }
-
     },
 
     constructor: function(config) {
