@@ -1,10 +1,10 @@
 class BizTxnType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-	acts_as_nested_set
-	include ErpTechSvcs::Utils::DefaultNestedSetMethods
-	acts_as_erp_type
-
+  acts_as_erp_type
+  acts_as_nested_set
+  include ErpTechSvcs::Utils::DefaultNestedSetMethods
+	
   belongs_to_erp_type :parent, :class_name => "BizTxnType"
 
   # this method handles default behavior for find by type and subtype

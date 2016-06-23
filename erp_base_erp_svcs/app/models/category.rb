@@ -24,13 +24,12 @@
 #   add_index :categories, :rgt, :name => 'categories_rgt_idx'
 # end
 
-
 class Category < ActiveRecord::Base
-  acts_as_nested_set
+  
   has_party_roles
-
-  include ErpTechSvcs::Utils::DefaultNestedSetMethods
   acts_as_erp_type
+  acts_as_nested_set
+  include ErpTechSvcs::Utils::DefaultNestedSetMethods
 
   has_file_assets
 

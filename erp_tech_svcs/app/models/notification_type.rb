@@ -15,4 +15,5 @@ class NotificationType < ActiveRecord::Base
   has_many :notifications
 
   validates :internal_identifier, uniqueness: {message: "Internal Identifiers should be unique"}
+
 end
