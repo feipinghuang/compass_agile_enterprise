@@ -6,13 +6,17 @@ module ErpCommerce
   module Extensions
     module ProductOptionExtension
 
+      def price
+        self.get_default_price ? self.get_default_price.money.amount : nil
+      end
+
       # Override from base class, converts model to data hash
       #
       # @return [Hash] Data hash for this model
       def to_data_hash
         data = super
 
-        data[:price] = self.get_default_price ? self.get_default_price.money.amount : nil
+        data[:price] = self.price
 
         data
       end
