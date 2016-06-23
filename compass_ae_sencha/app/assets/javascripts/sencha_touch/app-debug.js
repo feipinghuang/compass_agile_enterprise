@@ -11,3 +11,4 @@
 // GO AFTER THE REQUIRES BELOW.
 //
 //= require ./sencha-touch-all-debug
+//= requrie ./Deferred.js
