@@ -122,7 +122,7 @@ class User < ActiveRecord::Base
   # Check if token is valid for the given request ip
   #
   def auth_token_valid?(token, request_ip)
-    !auth_tokens.by_request_ip(request_ip).valid.first.nil?
+    !auth_tokens.where('request_ip = ?', request_ip).where('token = ?', token).valid.first.nil?
   end
 
   # This allows the disabling of the activation email sent via the sorcery user_activation submodule
