@@ -63,14 +63,14 @@ class InvoiceItem < ActiveRecord::Base
   end
 
   # calculates tax and save to sales_tax
-  def calculate_tax(ctx={})
+  def calculate_tax!(ctx={})
     tax = 0
 
     # see if anything is taxed
     if invoiced_records.collect { |item| item.taxed? }.include?(true)
-      taxation = ErpOrders::Taxation.new
+      taxation = ErpOrders::Services::Taxation.new
 
-      tax += taxation.calculate_tax(self,
+      tax += taxation.calculate_tax!(self,
                                     ctx.merge({
                                                   amount: (self.unit_price * (self.quantity || 1))
                                               }))

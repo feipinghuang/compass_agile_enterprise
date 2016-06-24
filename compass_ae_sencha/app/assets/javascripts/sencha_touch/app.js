@@ -11,4 +11,5 @@
 // GO AFTER THE REQUIRES BELOW.
 //
 //= require ./sencha-touch-all
-//= requrie ./Deferred.js
+//= require ./Promise.js
+//= require ./Deferred.js

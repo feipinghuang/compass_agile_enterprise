@@ -29,10 +29,10 @@ class ChargeLine < ActiveRecord::Base
   end
 
   # calculates tax and save to sales_tax
-  def calculate_tax(ctx={})
-    taxation = ErpOrders::Taxation.new
+  def calculate_tax!(ctx={})
+    taxation = ErpOrders::Services::Taxation.new
 
-    self.sales_tax = taxation.calculate_tax(self,ctx.merge({amount: money.amount}))
+    self.sales_tax = taxation.calculate_tax!(self,ctx.merge({amount: money.amount}))
   end
 
 end

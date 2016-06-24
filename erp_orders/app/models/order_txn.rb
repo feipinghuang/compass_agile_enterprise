@@ -227,10 +227,10 @@ class OrderTxn < ActiveRecord::Base
   end
 
   # calculates tax for each line item and save to sales_tax
-  def calculate_tax(ctx)
+  def calculate_tax!(ctx)
     tax = 0
     order_line_items.select { |line_item| line_item.taxed? }.each do |line_item|
-      tax += line_item.calculate_tax(ctx)
+      tax += line_item.calculate_tax!(ctx)
     end
 
     # only get charges that are USD currency
@@ -238,7 +238,7 @@ class OrderTxn < ActiveRecord::Base
     .joins(:charge_type)
     .where('money.currency_id' => Currency.usd)
     .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
-      tax += charge_line.calculate_tax(ctx)
+      tax += charge_line.calculate_tax!(ctx)
     end
 
     self.sales_tax = tax

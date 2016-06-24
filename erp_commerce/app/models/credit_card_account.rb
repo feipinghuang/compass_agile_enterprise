@@ -52,6 +52,20 @@ class CreditCardAccount < ActiveRecord::Base
     result
   end
 
+  # purchase with credit card associated to this CreditCardAccount
+  def authorize_with_existing_card(financial_txn, gateway_wrapper, gateway_options={})
+    result = gateway_wrapper.authorize_with_existing_card(self.credit_card, financial_txn.money.amount, gateway_options)
+
+    unless result[:payment].nil?
+      result[:payment].financial_txn = financial_txn
+      result[:payment].save
+      financial_txn.payments << result[:payment]
+      financial_txn.save
+    end
+
+    result
+  end
+
   #params
   #financial_txn
   #cvv

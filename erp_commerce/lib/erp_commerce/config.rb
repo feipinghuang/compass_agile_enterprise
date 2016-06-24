@@ -1,11 +1,13 @@
 module ErpCommerce
   module Config
     class << self
-      attr_accessor :encryption_key
+      
+      attr_accessor :encryption_key, :capture_payments
 
       def init!
         @defaults = {
-          :@encryption_key => 'cd6fae94-9c2f-11e4-89d3-123b93f75cba'
+          :@encryption_key => 'cd6fae94-9c2f-11e4-89d3-123b93f75cba',
+          :@capture_payments => true
         }
       end
 

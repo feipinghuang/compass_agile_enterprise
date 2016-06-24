@@ -190,7 +190,7 @@ class Invoice < ActiveRecord::Base
 
         # calculate taxes
         if options[:taxation]
-          invoice.calculate_tax(options[:taxation])
+          invoice.calculate_tax!(options[:taxation])
         end
 
         invoice
@@ -316,11 +316,11 @@ class Invoice < ActiveRecord::Base
   end
 
   # calculates tax for each line item and save to sales_tax
-  def calculate_tax(ctx={})
+  def calculate_tax!(ctx={})
     tax = 0
 
     self.invoice_items.each do |line_item|
-      tax += line_item.calculate_tax(ctx)
+      tax += line_item.calculate_tax!(ctx)
     end
 
     self.sales_tax = tax

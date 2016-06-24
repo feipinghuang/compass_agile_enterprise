@@ -116,22 +116,19 @@ class OrderLineItem < ActiveRecord::Base
   end
 
   # calculates tax and save to sales_tax
-  def calculate_tax(ctx={})
-    taxation = ErpOrders::Taxation.new
+  def calculate_tax!(ctx={})
+    taxation = ErpOrders::Services::Taxation.new
     tax = 0
 
     if self.taxed?
-      tax = taxation.calculate_tax(self,
-                                   ctx.merge({
-                                               amount: (self.sold_price * (self.quantity || 1))
-      }))
+      tax = taxation.calculate_tax!(self, ctx.merge({amount: (self.sold_price * (self.quantity || 1))}))
     end
 
     # only get charges that are USD currency
     charge_lines.joins(:money).joins(:charge_type)
     .where('money.currency_id' => Currency.usd)
     .where('charge_types.taxable' => true).readonly(false).each do |charge_line|
-      tax += charge_line.calculate_tax(ctx)
+      tax += charge_line.calculate_tax!(ctx)
     end
 
     self.sales_tax = tax
