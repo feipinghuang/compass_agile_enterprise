@@ -122,7 +122,7 @@ module Api
           end
         rescue ActiveRecord::RecordInvalid => invalid
 
-          render :json => {success: false, message: invalid.record.errors.messages}
+          render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}
         rescue => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")
@@ -207,7 +207,7 @@ module Api
           end
         rescue ActiveRecord::RecordInvalid => invalid
 
-          render :json => {success: false, message: invalid.record.errors.messages}
+          render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}
         rescue => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")
