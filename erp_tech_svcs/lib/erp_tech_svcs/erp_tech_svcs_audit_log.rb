@@ -9,21 +9,23 @@ module ErpTechSvcs
           user = User.find(user)
         end
 
-        AuditLog.create(
+        AuditLog.create!(
             :party_id => user.party.id,
             :event_record => user,
             :audit_log_type => AuditLogType.find_by_type_and_subtype_iid('application','successful_logout'),
-            :description => "User #{user.username} successfully logged out."
+            :description => "User #{user.username} successfully logged out.",
+            :tenant_id => user.party.dba_organization.id
         )
       end
 
       #log when a user logs out
       def successful_login(user)
-        AuditLog.create(
+        AuditLog.create!(
             :party_id => user.party.id,
             :event_record => user,
             :audit_log_type => AuditLogType.find_by_type_and_subtype_iid('application','successful_login'),
-            :description => "User #{user.username} successfully logged in."
+            :description => "User #{user.username} successfully logged in.",
+            :tenant_id => user.party.dba_organization.id
         )
       end
 
