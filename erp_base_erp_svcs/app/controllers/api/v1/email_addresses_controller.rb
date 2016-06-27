@@ -109,7 +109,12 @@ module Api
               end
             end
 
+            if params[:is_primary].present?
+              email_address.contact.is_primary = (params[:is_primary].to_bool === true)
+            end
+
             email_address.created_by_party = current_user.party
+            email_address.contact.save!
             email_address.save!
 
             render :json => {success: true, email_address: email_address.to_data_hash}
@@ -164,6 +169,10 @@ module Api
               params[:contact_purposes].split(',').each do |contact_purpose_iid|
                 email_address.contact.contact_purposes << ContactPurpose.iid(contact_purpose_iid)
               end
+            end
+
+            if params[:is_primary].present?
+              email_address.contact.is_primary = (params[:is_primary].to_bool === true)
             end
 
             email_address.contact.save!

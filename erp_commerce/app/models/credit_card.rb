@@ -26,14 +26,20 @@ class CreditCard < ActiveRecord::Base
   has_one :credit_card_account_party_role, :dependent => :destroy
 
   #validates :card_type, :presence => {:message => 'Card type cannot be blank.'}
-  validates :expiration_month, :presence => {:message => 'Expiration month cannot be blank.'}
-  validates :expiration_year, :presence => {:message => 'Expiration year cannot be blank.'}
-  validates :crypted_private_card_number, :presence => {:message => 'Card number cannot be blank.'}
+  validates :expiration_month, presence: true
+  validates :expiration_year, presence: true
+  validates :crypted_private_card_number, presence: true
 
-  #the function EncryptionKey.get_key is meant to be overridden to provide a means for implementations to specify their 
+  #the function EncryptionKey.get_key is meant to be overridden to provide a means for implementations to specify their
   #own encryption schemes and locations. It will default to a simple string for development and testing
   attr_encrypted :private_card_number, :key => Rails.application.config.erp_commerce.encryption_key, :attribute => :crypted_private_card_number
   attr_encrypted :private_cvc, :key => Rails.application.config.erp_commerce.encryption_key, :attribute => :crypted_private_cvc
+
+  class << self
+    def mask_number(number)
+      'XXXX-XXXX-XXXX-' + number[number.length-4..number.length]
+    end
+  end
 
   # These methods are exposed for the purposes of displaying a version of the card number
   # string containing the last four digits of the card number. The idea is to make it
@@ -93,13 +99,8 @@ class CreditCard < ActiveRecord::Base
     self.credit_card_token = token.cc_token.strip
   end
 
-  class << self
-    def mask_number(number)
-      'XXXX-XXXX-XXXX-' + number[number.length-4..number.length]
-    end
+  def to_data_hash
+    to_hash(only: [:id, :expiration_month, :expiration_year], methods: [:last_4])
   end
 
 end
-
-
-

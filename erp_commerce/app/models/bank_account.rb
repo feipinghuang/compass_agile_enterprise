@@ -20,9 +20,9 @@ class BankAccount < ActiveRecord::Base
 
   belongs_to :bank_account_type
 
-  validates :routing_number, :presence => {:message => 'Routing number cannot be blank.'}
-  validates :name_on_account, :presence => {:message => 'Name on account cannot be blank.'}
-  validates :crypted_private_account_number, :presence => {:message => 'Account number cannot be blank.'}
+  validates :routing_number, presence: true
+  validates :name_on_account, presence: true
+  validates :crypted_private_account_number, presence: true
 
   alias :account_type :bank_account_type
 

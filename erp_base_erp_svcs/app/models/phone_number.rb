@@ -35,8 +35,8 @@ class PhoneNumber < ActiveRecord::Base
               :phone_number,
               :description,
               :created_at,
-              :updated_at
-    ])
+              :updated_at],
+              is_primary: self.try(:contact).try(:is_primary))
   end
 
 end

@@ -109,7 +109,12 @@ module Api
               end
             end
 
+            if params[:is_primary].present?
+              phone_number.contact.is_primary = (params[:is_primary].to_bool === true)
+            end
+
             phone_number.created_by_party = current_user.party
+            phone_number.contact.save!
             phone_number.save!
 
             render :json => {success: true, phone_number: phone_number.to_data_hash}
@@ -164,6 +169,10 @@ module Api
               params[:contact_purposes].split(',').each do |contact_purpose_iid|
                 phone_number.contact.contact_purposes << ContactPurpose.iid(contact_purpose_iid)
               end
+            end
+
+            if params[:is_primary].present?
+              phone_number.contact.is_primary = (params[:is_primary].to_bool === true)
             end
 
             phone_number.contact.save!

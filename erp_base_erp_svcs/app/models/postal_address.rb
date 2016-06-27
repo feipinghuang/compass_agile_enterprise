@@ -54,7 +54,8 @@ class PostalAddress < ActiveRecord::Base
               :created_at,
               :updated_at
             ],
-            name: self.try(:contact).try(:party).try(:description)
+            name: self.try(:contact).try(:party).try(:description),
+            is_primary: self.try(:contact).try(:is_primary)
             )
   end
 
