@@ -7,7 +7,7 @@ class BaseTxnsAndAccts < ActiveRecord::Migration
 	t.column :biz_txn_acct_root_id, :integer
 	t.column :biz_txn_type_id, :integer
 	t.column :entered_date, :date
-	t.column :post_date, :datetime
+	t.column :post_date, :date
 	t.column :biz_txn_record_id, :integer
 	t.column :biz_txn_record_type, :string
 	t.column :external_identifier, :string
