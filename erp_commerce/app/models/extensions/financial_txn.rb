@@ -5,6 +5,10 @@ FinancialTxn.class_eval do
     has_payments? and self.payments.last.current_state == 'captured'
   end
 
+  def has_authorized_payment?
+    has_payments? and self.payments.last.current_state == 'authorized'
+  end
+
   def has_pending_payment?
     has_payments? and self.payments.last.current_state == 'pending'
   end
@@ -25,11 +29,48 @@ FinancialTxn.class_eval do
     Payment.order('created_at DESC').where('financial_txn_id = ?', self.id).first
   end
 
+  def capture(gateway_wrapper, gateway_options={})
+    begin
+      ActiveRecord::Base.transaction do
+        # make sure we have payments and they are authorized
+        if has_authorized_payment?
+          result = {success: true}
+
+          if txn_type.internal_identifier == 'credit_card_payment'
+            result = CreditCardAccount.new.capture(self, gateway_wrapper, gateway_options)
+
+          else
+            payment = most_recent_payment
+            payment.capture
+            payment.save
+
+            result[:message] = 'Payment Captured'
+          end
+
+          # if the capture was a success apply the payments
+          if result[:success]
+            payment_applications.each do |payment_application|
+              payment_application.apply_payment
+            end
+          end
+
+          result
+
+        end
+      end
+    rescue => ex
+      Rails.logger.error(ex.message)
+      Rails.logger.error(ex.backtrace.join("\n"))
+
+      {success: false, message: 'Could not refund'}
+    end
+  end
+
   def refund(gateway_wrapper, gateway_options={})
     begin
       ActiveRecord::Base.transaction do
         # make sure we have payments and they are captured
-        if has_payments? && has_captured_payment?
+        if has_captured_payment?
           result = {success: true}
 
           if txn_type.internal_identifier == 'credit_card_payment'

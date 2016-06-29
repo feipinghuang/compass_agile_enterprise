@@ -103,7 +103,8 @@ class CreditCardAccount < ActiveRecord::Base
     result
   end
 
-  # purchase with credit card associated to this CreditCardAccount
+  # refund a FinancialTxn
+  #
   def refund(financial_txn, gateway_wrapper, gateway_options={}, amount=nil)
     if amount.nil?
       amount = financial_txn.money.amount
@@ -112,25 +113,14 @@ class CreditCardAccount < ActiveRecord::Base
     gateway_wrapper.refund(financial_txn.most_recent_payment, amount, gateway_options)
   end
 
-  #params
-  #financial_txn
-  #cvv
-  #gateway_wrapper
+  # capture a FinancialTxn
   #
-  #Optional
-  #gateway_options
-  #credit_card_to_use
-  def capture(financial_txn, cvv, gateway_wrapper, gateway_options={}, credit_card_to_use=nil)
-    credit_card_to_use = self.credit_card unless credit_card_to_use
-
-    result = {:success => true}
-    payment = Payment.where("current_state = ? and success = ? and financial_txn_id = ?",'authorized', 1, financial_txn.id).order('created_at desc').first
-    #only capture this payment if it was authorized
-    if !payment.nil? && payment.current_state.to_sym == :authorized
-      gateway_options[:debug] = true
-      result = gateway_wrapper.capture(credit_card_to_use, payment, cvv, gateway_options)
+  def capture(financial_txn, gateway_wrapper, gateway_options={}, amount=nil)
+    if amount.nil?
+      amount = financial_txn.money.amount
     end
-    result
+
+    gateway_wrapper.capture(financial_txn.most_recent_payment, amount, gateway_options)
   end
 
   #params
@@ -148,7 +138,7 @@ class CreditCardAccount < ActiveRecord::Base
     payment = Payment.where("current_state = ? and success = ? and financial_txn_id = ?",'authorized', 1, financial_txn.id).order('created_at desc').first
     #only reverse this payment if it was authorized
     if !payment.nil? && payment.current_state.to_sym == :authorized
-      gateway_options[:debug] = true
+      gateway_options[:debug] = (Rails.env == 'development')
       gateway_options[:amount] = financial_txn.money.amount
       result = gateway_wrapper.full_reverse_of_authorization(credit_card_to_use, payment, cvv, gateway_options)
     end
@@ -175,7 +165,7 @@ class CreditCardAccount < ActiveRecord::Base
       money_amount = financial_txn.money.amount
     end
     payment = Payment.where("reference_number = ? and financial_txn_id = ?",gateway_options[:ReferenceNumber], financial_txn.id).order('created_at desc').first
-    gateway_options[:debug] = true
+    gateway_options[:debug] = (Rails.env == 'development')
     result = gateway_wrapper.void_or_return(credit_card_to_use, payment, money_amount, gateway_options)
 
     result
