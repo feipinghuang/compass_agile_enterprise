@@ -274,11 +274,44 @@ module Api
         end
       end
 
+=begin
+
+  @api {get} /api/v1/work_efforts/:id/time_entries_allowed TimeEntriesAllowed
+  @apiVersion 1.0.0
+  @apiName WorkEffortTimeEntriesAllowed
+  @apiGroup WorkEffort
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Boolean} allowed True if time entries are allowed
+
+=end
+
       def time_entries_allowed
         work_effort = WorkEffort.find(params[:id])
         party = params[:party_id].blank? ? current_user.party : Party.find(params[:party_id])
 
         render json: {success: true, allowed: work_effort.time_entries_allowed?(party)}
+      end
+
+=begin
+
+  @api {put} /api/v1/order_txns/:id/update_status UpdateStatus
+  @apiVersion 1.0.0
+  @apiName UpdateWorkEffortStatus
+  @apiGroup WorkEffort
+
+  @apiParam {String} status Internal identifier of status that should be set
+
+  @apiSuccess {Boolean} success True if the request was successful
+
+=end
+
+      def update_status
+        work_effort = WorkEffort.find(params[:id])
+
+        work_effort.current_status = params[:status]
+
+        render :json => {:success => true}
       end
 
       protected

@@ -15,4 +15,8 @@ class Currency < ActiveRecord::Base
   def self.blank
     new
   end
+
+  def to_data_hash
+    to_hash(only: [:id, :internal_identifier])
+  end
 end

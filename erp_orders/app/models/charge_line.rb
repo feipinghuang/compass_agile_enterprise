@@ -35,4 +35,12 @@ class ChargeLine < ActiveRecord::Base
     self.sales_tax = taxation.calculate_tax!(self,ctx.merge({amount: money.amount}))
   end
 
+  def to_data_hash
+    data = to_hash(only: [:id, :description])
+
+    data[:money] = money.to_data_hash
+
+    data
+  end
+
 end

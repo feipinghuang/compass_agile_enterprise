@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       resources :work_efforts, :defaults => {:format => 'json'} do
         member do
           get :time_entries_allowed
+          put :update_status
         end
 
         resources :work_effort_party_assignments, :defaults => {:format => 'json'}

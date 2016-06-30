@@ -103,6 +103,27 @@ module Api
         render :json => {:success => true}
       end
 
+=begin
+
+  @api {put} /api/v1/order_txns/:id/update_status UpdateStatus
+  @apiVersion 1.0.0
+  @apiName UpdateOrdetTxnStatus
+  @apiGroup OrderTxn
+
+  @apiParam {String} status Internal identifier of status that should be set
+
+  @apiSuccess {Boolean} success True if the request was successful
+
+=end
+
+      def update_status
+        order_txn = OrderTxn.find(params[:id])
+
+        order_txn.current_status = params[:status]
+
+        render :json => {:success => true}
+      end
+
     end # OrderTxnsController
   end # V1
 end # Api
