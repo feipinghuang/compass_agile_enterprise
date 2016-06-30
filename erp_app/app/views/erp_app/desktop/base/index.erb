@@ -42,16 +42,6 @@
       background-image: url("/assets/icons/database/database_105x105_active.png");
     }
 
-    .control-panel-win-shortcut {
-      background-image: url("/assets/icons/control_panel/control_panel_105x105.png");
-      height: 105px;
-      width: 105px;
-    }
-
-    .control-panel-win-shortcut:hover {
-      background-image: url("/assets/icons/control_panel/control_panel_105x105_active.png");
-    }
-
     .web-navigator-win-shortcut {
       background-image: url("/assets/icons/globe/globe_105x105.png");
       height: 64px;
@@ -119,7 +109,7 @@
   <%= load_shared_application_resources(:javascripts) %>
   <!-- end shared application resources -->
 
-  <%= javascript_include_tag("erp_app/desktop/applications/control_panel/app", "erp_app/desktop/applications/web_navigator/app") %>
+  <%= javascript_include_tag("erp_app/desktop/applications/web_navigator/app") %>
 
   <%= static_javascript_include_tag("ckeditor/ckeditor.js") %>
 
@@ -166,7 +156,6 @@
 
     getModules: function () {
       return [
-        new Compass.ErpApp.Desktop.Applications.ControlPanel(),
         new Compass.ErpApp.Desktop.Applications.WebNavigator(),
         <%=raw @user.desktop_applications.collect{|app| "new Compass.ErpApp.Desktop.Applications.#{app.internal_identifier.classify}()"}.join(",").to_s%>
       ]
@@ -174,14 +163,7 @@
     getDesktopConfig: function () {
       var b = this, a = b.callParent();
       return Ext.apply(a, {
-        contextMenuItems: [
-          {
-            text: "Control Panel",
-            handler: b.onControlPanel,
-            iconCls: "icon-control_panel",
-            scope: b
-          }
-        ],
+        contextMenuItems: [],
         shortcuts: Ext.create("Ext.data.Store", {
           model: "Ext.ux.desktop.ShortcutModel",
           data: [
@@ -234,14 +216,7 @@
     getTaskbarConfig: function () {
       var a = this.callParent();
       return Ext.apply(a, {
-        quickStart: [
-          {
-            ui: 'buttonclean',
-            name: "Control Panel",
-            iconCls: "icon-control_panel",
-            module: "control-panel-win"
-          }
-        ],
+        quickStart: [],
         trayItems: [
           {
             ui: 'buttonclean',
@@ -295,10 +270,6 @@
         tpl: tpl,
         data: compassAeInstance
       }).show();
-    },
-    onControlPanel: function () {
-      var controlPanel = window.compassDesktop.getModule('control-panel-win');
-      controlPanel.createWindow();
     }
   });
 
