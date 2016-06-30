@@ -294,11 +294,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.Reports.ParamWindow
 				proxy: {
 					type: 'ajax',
 					method: 'GET',
-					url: '/erp_app/desktop/application_management/applications',
+					url: '/api/v1/applications',
 					reader: {
 						type: 'json',
 						root: 'applications'
-					}
+					},
+					extraParams: {
+						types: 'app'
+					},
 				},
 				fields: [
 					'description',
