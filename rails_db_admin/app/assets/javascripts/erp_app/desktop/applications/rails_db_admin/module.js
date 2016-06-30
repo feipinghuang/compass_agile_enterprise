@@ -149,6 +149,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
     addNewQueryTab: function() {
         this.container.add({
             xtype: 'railsdbadmin_querypanel',
+            isNewQuery: true,
             module: this
         });
         this.container.setActiveTab(this.container.items.length - 1);
@@ -198,9 +199,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                     },
                     success: function(responseObject) {
                         self.clearWindowStatus();
+                        var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion'),
+                            itemId = Compass.ErpApp.Utility.Encryption.MD5(queryName),
+                            item = centerRegion.down('#' + itemId);
+
+                        if (!Compass.ErpApp.Utility.isBlank(item)) {
+                            centerRegion.remove(item);
+                        }
+
                         var response = Ext.decode(responseObject.responseText);
                         if (response.success) {
-                            Ext.Msg.alert('Error', 'Query deleted');
                             var queriesTreePanelStore = self.accordion.down('.railsdbadmin_queriestreemenu').store;
                             queriesTreePanelStore.setProxy({
                                 type: 'ajax',
@@ -226,8 +234,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
     displayAndExecuteQuery: function(queryName) {
         this.setWindowStatus('Executing ' + queryName + '...');
-        var self = this;
-        var database = this.getDatabase();
+        var self = this,
+            database = this.getDatabase(),
+            itemId = Compass.ErpApp.Utility.Encryption.MD5(queryName);
+
         Ext.Ajax.request({
             url: '/rails_db_admin/erp_app/desktop/queries/open_and_execute_query/',
             params: {
@@ -235,36 +245,60 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 query_name: queryName
             },
             success: function(responseObject) {
-                var response = Ext.decode(responseObject.responseText);
-                var query = response.query;
-
-                var queryPanel = null;
+                var response = Ext.decode(responseObject.responseText),
+                    query = response.query,
+                    queryPanel = null;
 
                 if (response.success) {
                     self.clearWindowStatus();
                     var columns = response.columns;
                     var fields = response.fields;
                     var data = response.data;
+                    var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
+                    var item = centerRegion.down('#' + itemId);
 
-                    var readOnlyDataGrid = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReadOnlyTableDataGrid', {
-                        region: 'south',
-                        columns: columns,
-                        fields: fields,
-                        data: data,
-                        collapseDirection: 'bottom',
-                        height: '50%',
-                        collapsible: true
-                    });
+                    if (Compass.ErpApp.Utility.isBlank(item)) {
+                        var readOnlyDataGrid = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReadOnlyTableDataGrid', {
+                            region: 'south',
+                            columns: columns,
+                            fields: fields,
+                            data: data,
+                            collapseDirection: 'bottom',
+                            height: '50%',
+                            collapsible: true
+                        });
+                        item = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
+                            module: self,
+                            title: queryName,
+                            itemId: itemId,
+                            sqlQuery: query,
+                            southRegion: readOnlyDataGrid,
+                            closable: true
+                        });
+                        self.container.add(item);
+                    } else {
+                        if (!Ext.isEmpty(item.down('railsdbadmin_readonlytabledatagrid'))) {
+                            var jsonStore = new Ext.data.JsonStore({
+                                fields: fields,
+                                data: data
+                            });
 
-                    queryPanel = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
-                        module: self,
-                        sqlQuery: query,
-                        southRegion: readOnlyDataGrid,
-                        closable: true
-                    });
+                            item.down('railsdbadmin_readonlytabledatagrid').reconfigure(jsonStore, columns);
+                        } else {
+                            var readOnlyDataGrid = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.ReadOnlyTableDataGrid', {
+                                layout: 'fit',
+                                columns: columns,
+                                fields: fields,
+                                data: data
+                            });
 
-                    self.container.add(queryPanel);
-                    self.container.setActiveTab(queryPanel.id);
+                            var cardPanel = item.down('#resultCardPanel');
+                            cardPanel.removeAll(true);
+                            cardPanel.add(readOnlyDataGrid);
+                            cardPanel.getLayout().setActiveItem(readOnlyDataGrid);
+                        }
+                    }
+                    self.container.setActiveTab(item);
                 } else {
                     Ext.Msg.alert('Error', response.exception);
                     queryPanel = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
@@ -368,7 +402,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 if (response.success) {
                     var centerRegion = Ext.getCmp('rails_db_admin').down('#centerRegion');
                     var itemId = Compass.ErpApp.Utility.Encryption.MD5(queryName);
-                    var item = centerRegion.getComponent(itemId);
+                    var item = centerRegion.down('#' + itemId);
+
                     self.clearWindowStatus();
                     if (Compass.ErpApp.Utility.isBlank(item)) {
                         var item = Ext.create('Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel', {
@@ -454,7 +489,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                         text: 'Database:'
                     }, {
                         xtype: 'railsdbadmin_databasecombo',
-                        module: self
+                        module: this
                     }]
                 }],
                 ui: 'rounded-panel',
