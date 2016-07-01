@@ -21,6 +21,6 @@ Gem::Specification.new do |s|
   s.add_dependency "ruleby", "~> 0.8"
 
   #compass dependencies
-  s.add_dependency "erp_txns_and_accts", "~> 4.1"
-  s.add_development_dependency "erp_dev_svcs", "~> 4.1"
+  s.add_dependency "erp_txns_and_accts", "~> 4.2"
+  s.add_development_dependency "erp_dev_svcs", "~> 4.2"
 end

@@ -21,8 +21,8 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   #compass dependencies
-  s.add_dependency 'erp_app', "~> 4.1"
-  s.add_development_dependency 'erp_dev_svcs', "~> 4.1"
+  s.add_dependency 'erp_app', "~> 4.2"
+  s.add_development_dependency 'erp_dev_svcs', "~> 4.2"
 
   s.add_dependency 'momentjs-rails', '~> 2.8'
   s.add_dependency 'bootstrap3-datetimepicker-rails', '~> 4.7.14'
