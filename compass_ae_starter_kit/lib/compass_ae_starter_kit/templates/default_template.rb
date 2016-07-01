@@ -26,13 +26,13 @@ CompassAeStarterKit::FileSupport.patch_file 'app/assets/javascripts/application.
 
 CompassAeStarterKit::FileSupport.append_file 'Gemfile',
                                              "
-gem 'erp_base_erp_svcs', '~> 4.1'
-gem 'erp_tech_svcs', '~> 4.1'
-gem 'compass_ae_sencha', '~> 2.1'
-gem 'erp_app', '~> 4.1'
-gem 'knitkit', '~> 3.1'
-gem 'rails_db_admin', '~> 3.1'
-gem 'compass_ae_console', '~> 3.1'
+gem 'erp_base_erp_svcs', '~> 4.2'
+gem 'erp_tech_svcs', '~> 4.2'
+gem 'compass_ae_sencha', '~> 2.2'
+gem 'erp_app', '~> 4.2'
+gem 'knitkit', '~> 3.2'
+gem 'rails_db_admin', '~> 3.2'
+gem 'compass_ae_console', '~> 3.2'
 "
 puts <<-end
 

@@ -165,6 +165,11 @@ class ErpAppSetup
         :job_name => 'Delete Expired Sessions',
         :job_klass => 'ErpTechSvcs::Sessions::DeleteExpiredSessionsJob'
     )
+
+    #
+    # Create Note Type
+    #
+    NoteType.create(description: 'Basic Note', internal_identifier: 'basic_note')
   end
 
   def self.down

@@ -222,6 +222,8 @@ module ErpApp
             params.delete(:tax_id_number)
           end
 
+          params.delete(:client_utc_offset)
+
           # clean up data
           business_party_data.each do |k, v|
             business_party_data[k] = business_party_data[k].strip
@@ -287,6 +289,8 @@ module ErpApp
                 params.delete(:description)
                 params.delete(:tax_id_number)
               end
+
+              params.delete(:client_utc_offset)
 
               # clean up data
               params.each do |k, v|

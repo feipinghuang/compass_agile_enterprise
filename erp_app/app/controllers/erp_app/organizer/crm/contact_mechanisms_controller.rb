@@ -51,6 +51,7 @@ module ErpApp
           params.delete(:party_id)
           params.delete(:contact_type)
           params.delete(:contact_purpose)
+          params.delete(:client_utc_offset)
 
           contact_mechanism_class = contact_type.constantize
           party = Party.find(party_id)
@@ -86,6 +87,7 @@ module ErpApp
           params.delete(:contact_purpose)
           params.delete(:updated_at)
           params.delete(:created_at)
+          params.delete(:client_utc_offset)
 
           klass = contact_type.constantize
 
