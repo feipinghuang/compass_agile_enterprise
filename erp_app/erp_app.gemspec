@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
   s.add_dependency('inflection-js-rails', '0.1.1')
 
   #compass dependencies
-  s.add_dependency 'compass_ae_sencha', "~> 2.1"
-  s.add_dependency 'erp_tech_svcs', "~> 4.1"
-  s.add_development_dependency 'erp_dev_svcs', "~> 4.1"
+  s.add_dependency 'compass_ae_sencha', "~> 2.2"
+  s.add_dependency 'erp_tech_svcs', "~> 4.2"
+  s.add_development_dependency 'erp_dev_svcs', "~> 4.2"
 end

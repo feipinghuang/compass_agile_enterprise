@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "savon", "~> 2.5.0"
 
   #compass dependencies
-  s.add_dependency "erp_tech_svcs", "~> 4.1"
-  s.add_dependency "erp_inventory", "~> 4.1"
-  s.add_development_dependency "erp_dev_svcs", "~> 4.1"
+  s.add_dependency "erp_tech_svcs", "~> 4.2"
+  s.add_dependency "erp_inventory", "~> 4.2"
+  s.add_development_dependency "erp_dev_svcs", "~> 4.2"
 end
