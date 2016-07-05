@@ -7,4 +7,7 @@ class PartyRelationship < ActiveRecord::Base
   belongs_to :to_role, :class_name => "RoleType", :foreign_key => "role_type_id_to"
   belongs_to :relationship_type, :class_name => "RelationshipType"
 
+  belongs_to :created_by_party, :class_name => "Party"
+  belongs_to :updated_by_party, :class_name => "Party"
+
 end
