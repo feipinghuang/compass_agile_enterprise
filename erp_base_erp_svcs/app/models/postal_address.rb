@@ -42,7 +42,7 @@ class PostalAddress < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(only: [
+    data = to_hash(only: [
               :id,
               :address_line_1,
               :address_line_2,

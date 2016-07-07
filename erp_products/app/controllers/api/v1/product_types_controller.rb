@@ -16,14 +16,14 @@ module Api
           start = params[:start] || 0
         end
 
-        query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
-        context = params[:context].blank? ? {} : JSON.parse(params[:context]).symbolize_keys
+        query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
+        context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
 
         # hook method to apply any scopes passed via parameters to this api
         product_types = ProductType.apply_filters(query_filter)
 
         # scope by dba_organizations if there are no parties passed as filters
-        unless query_filter[:parties]
+        unless query_filter[:party]
           dba_organizations = [current_user.party.dba_organization]
           dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
           product_types = product_types.scope_by_dba_organization(dba_organizations)

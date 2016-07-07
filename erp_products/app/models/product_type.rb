@@ -79,6 +79,14 @@ class ProductType < ActiveRecord::Base
         statement = statement.where('category_classifications.category_id' => filters[:category_id])
       end
 
+      if filters[:party]
+        if filters[:party].is_a? Hash
+          statement = statement.scope_by_party(filters[:party][:id], {role_types: filters[:party][:role_types].split(',')})
+        else
+          statement = statement.scope_by_party(filters[:party])
+        end
+      end
+
       statement
     end
 

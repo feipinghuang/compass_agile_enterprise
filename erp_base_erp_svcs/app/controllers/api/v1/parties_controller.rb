@@ -30,7 +30,10 @@ module Api
         start = params[:start] || 0
         role_types = params[:role_types]
 
-        parties = Party
+        query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
+ 
+        # hook method to apply any scopes passed via parameters to this api
+        parties = Party.apply_filters(query_filter)
 
         unless query.blank?
           parties_tbl = Party.arel_table
@@ -77,7 +80,21 @@ module Api
         total_count = parties.count
         parties = parties.offset(start).limit(limit)
 
-        render :json => {total_count: total_count, parties: parties.collect(&:to_data_hash)}
+        data = parties.collect do |party|
+          data_hash = party.to_data_hash(include_email: params[:include_email],
+                                         email_purposes: params[:email_purposes],
+                                         include_phone_number: params[:include_phone_number],
+                                         phone_number_purposes: params[:phone_number_purposes],
+                                         include_postal_address: params[:include_postal_address],
+                                         postal_address_purposes: params[:postal_address_purposes]
+                                         )
+
+          data_hash[:custom_fields] = party.custom_fields
+
+          data_hash
+        end
+
+        render :json => {success: true, total_count: total_count, parties: data}
       end
 
 =begin
@@ -96,34 +113,13 @@ module Api
       def show
         party = Party.find(params[:id])
 
-        data = party.to_data_hash
-
-        if params[:include_email]
-          if params[:email_purposes].present?
-            contact_purposes = params[:email_purposes].split(',')
-            data[:email_addresses] = party.email_addresses_to_hash(contact_purposes)
-          else
-            data[:email_addresses] = party.email_addresses_to_hash
-          end
-        end
-
-        if params[:include_phone_number]
-          if params[:phone_number_purposes].present?
-            contact_purposes = params[:phone_number_purposes].split(',')
-            data[:phone_numbers] = party.phone_numbers_to_hash(contact_purposes)
-          else
-            data[:phone_numbers] = party.phone_numbers_to_hash
-          end
-        end
-
-        if params[:include_postal_address]
-          if params[:postal_address_purposes].present?
-            contact_purposes = params[:postal_address_purposes].split(',')
-            data[:postal_addresses] = party.postal_addresses_to_hash(contact_purposes)
-          else
-            data[:postal_addresses] = party.postal_addresses_to_hash
-          end
-        end
+        data = party.to_data_hash(include_email: params[:include_email],
+                                  email_purposes: params[:email_purposes],
+                                  include_phone_number: params[:include_phone_number],
+                                  phone_number_purposes: params[:phone_number_purposes],
+                                  include_postal_address: params[:include_postal_address],
+                                  postal_address_purposes: params[:postal_address_purposes]
+                                  )
 
         data[:custom_fields] = party.custom_fields
 

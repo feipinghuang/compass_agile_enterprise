@@ -19,6 +19,15 @@ class Party < ActiveRecord::Base
   attr_writer :create_relationship
 
   class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      self
+    end
+
     # scope by dba organization
     #
     # @param dba_organization [Party, Array] dba organization to scope by or Array of dba organizations to
@@ -186,7 +195,14 @@ class Party < ActiveRecord::Base
 
   # convert party record to hash of data
   #
-  def to_data_hash
+  # @param opts [Hash] Options for converting to data hash
+  # @option opts [Boolean] :include_email true to include email address
+  # @option opts [String] :email_purposes comma sperated list of contact purposes of emails to include
+  # @option opts [Boolean] :include_phone_number true to include phone numbers
+  # @option opts [String] :phone_number_purposes comma sperated list of contact purposes of phone numbers to include
+  # @option opts [Boolean] :include_postal_address true to include postal addresses
+  # @option opts [String] :postal_address_purposes comma sperated list of contact purposes of postal addresses to include
+  def to_data_hash(opts={})
     data = to_hash(only: [
                      :id,
                      :description,
@@ -209,6 +225,33 @@ class Party < ActiveRecord::Base
         data.merge!({
                       tax_id_number: business_party.tax_id_number
         })
+      end
+    end
+
+    if opts[:include_email]
+      if opts[:email_purposes].present?
+        contact_purposes = opts[:email_purposes].split(',')
+        data[:email_addresses] = email_addresses_to_hash(contact_purposes)
+      else
+        data[:email_addresses] = email_addresses_to_hash
+      end
+    end
+
+    if opts[:include_phone_number]
+      if opts[:phone_number_purposes].present?
+        contact_purposes = opts[:phone_number_purposes].split(',')
+        data[:phone_numbers] = phone_numbers_to_hash(contact_purposes)
+      else
+        data[:phone_numbers] = phone_numbers_to_hash
+      end
+    end
+
+    if opts[:include_postal_address]
+      if opts[:postal_address_purposes].present?
+        contact_purposes = opts[:postal_address_purposes].split(',')
+        data[:postal_addresses] = postal_addresses_to_hash(contact_purposes)
+      else
+        data[:postal_addresses] = postal_addresses_to_hash
       end
     end
 
