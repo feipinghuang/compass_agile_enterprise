@@ -23,14 +23,9 @@ class AuthToken < ActiveRecord::Base
     where(AuthToken.arel_table[:expires_at].gteq(Time.now))
   end
 
-  def self.by_request_ip(request_ip)
-    where(AuthToken.arel_table[:request_ip].eq(request_ip))
-  end
-
-  def self.generate(request_ip, expires_at)
+  def self.generate(expires_at)
     self.create(
       token: SecureRandom.uuid,
-      request_ip: request_ip,
       expires_at: expires_at
     )
   end
