@@ -56,7 +56,7 @@ module ErpTechSvcs
         files = model.files.where('directory like ?', starting_path + '%')
 
         node_tree = [{:text => root, :leaf => false, :id => root, :children => []}]
-        
+
         paths = files.collect{|file| File.join(file.directory,file.name)}
 
         node_tree.first[:children] << {:id => starting_path,
@@ -64,7 +64,7 @@ module ErpTechSvcs
                                        leaf: true,
                                        iconCls: 'icon-document',
                                        :children => []} if paths.select{|path| path.split('/')[1] == starting_path.split('/')[1]}.empty?
-        
+
         nesting_depth = paths.collect{|item| item.split('/').count}.max
         unless nesting_depth.nil?
           levels = []
@@ -93,7 +93,7 @@ module ErpTechSvcs
               path = File.join(parent[:id], item[:text]).gsub(root, '')
               icon_cls = File.extname(item[:text]).blank? ? 'icon-content' : 'icon-document'
               child_hash = {:text => item[:text], :downloadPath => parent[:id], :iconCls => icon_cls, :leaf => !File.extname(item[:text]).blank?, :id => path, :children => []}
-              
+
               #attempt set security if this file is a file_asset model
               file = files.find{|file| file.directory == parent[:id].gsub(root,'') and file.name == item[:text]}
               unless file.nil?
@@ -112,32 +112,43 @@ module ErpTechSvcs
           end
         end
 
-        insert_folders(node_tree.first[:children])
-
+        insert_folders(find_node_in_tree(starting_path,node_tree))
+        
         node_tree
       end
 
-      def insert_folders(file_asset_nodes)
-        file_asset_nodes.each do |child_asset_node|
-          node = find_node(File.join(self.root,child_asset_node[:id]))
-          unless node.nil?
-            if node[:leaf]
-              folders = []
-            else
-              folders = node[:children].select{|item| !item[:leaf]}
-            end
-
-            child_asset_node[:children] = [] if child_asset_node[:children].nil? && !folders.empty?
-            folders.each do |folder|
-              folder[:id].gsub!(self.root,'')
-              child_asset_node[:children] << folder unless child_asset_node[:children].collect{|child_node| child_node[:text] }.include?(folder[:text])
-            end
-            insert_folders(child_asset_node[:children])
+      def insert_folders(file_asset_node)
+        node = find_node(File.join(self.root, file_asset_node[:id]))
+        unless node.nil?
+          if node[:leaf]
+            folders = []
+          else
+            folders = node[:children].select{|item| !item[:leaf]}
           end
-        end unless file_asset_nodes.nil?
+
+          file_asset_node[:children] = [] if file_asset_node[:children].nil? && !folders.empty?
+          folders.each do |folder|
+            folder[:id].gsub!(self.root,'')
+            file_asset_node[:children] << folder unless file_asset_node[:children].collect{|child_node| child_node[:text] }.include?(folder[:text])
+          end
+        end
       end
 
       private
+
+      def find_node_in_tree(node_id, tree)
+        tree.each do |node|
+          if node[:id] == node_id
+            return node
+          end
+
+          if node[:children]
+            if node = find_node_in_tree(node_id, node[:children])
+              return node
+            end
+          end
+        end
+      end
 
       def sync_node(node, model)
         leaves = get_all_leaves(node)
