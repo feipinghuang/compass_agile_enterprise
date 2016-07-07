@@ -96,11 +96,10 @@ class User < ActiveRecord::Base
     auth_tokens.valid.destroy_all
   end
 
-  # Revoke any current valid auth token by the requested ip
+  # Revoke any auth token
   #
-  def revoke_auth_token(request_ip)
-    # destroy any valid current tokens for the request_ip
-    current_token = auth_tokens.by_request_ip(request_ip).valid.first
+  def revoke_auth_token(token)
+    current_token = auth_tokens.valid.where(token: token).first
     if current_token
       current_token.destroy
     end
@@ -108,21 +107,19 @@ class User < ActiveRecord::Base
 
   # auth token used for mobile app security
   #
-  def generate_auth_token!(request_ip, expires_at=(Time.now + 30.days))
-    # destroy any valid current tokens for the request_ip
-    current_token = auth_tokens.by_request_ip(request_ip).valid.first
-    if current_token
-      current_token.destroy
-    end
+  def generate_auth_token!(expires_at=(Time.now + 30.days))
+    auth_token = AuthToken.generate(expires_at)
 
-    self.auth_tokens << AuthToken.generate(request_ip, expires_at)
+    self.auth_tokens << auth_token
     self.save!
+
+    auth_token
   end
 
-  # Check if token is valid for the given request ip
+  # Check if token is valid
   #
-  def auth_token_valid?(token, request_ip)
-    !auth_tokens.where('request_ip = ?', request_ip).where('token = ?', token).valid.first.nil?
+  def auth_token_valid?(token)
+    !auth_tokens.where('token = ?', token).valid.first.nil?
   end
 
   # This allows the disabling of the activation email sent via the sorcery user_activation submodule
@@ -322,7 +319,7 @@ class User < ActiveRecord::Base
     }.compact
   end
 
-  def to_data_hash(request_ip=nil)
+  def to_data_hash
     data = to_hash(only: [
                      :id,
                      :username,
@@ -339,15 +336,6 @@ class User < ActiveRecord::Base
                    is_admin: party.has_security_role?('admin'),
                    party: party.to_data_hash
                    )
-
-    # add the auth token for the given ip if it is passed
-    if request_ip
-      auth_token = self.auth_tokens.by_request_ip(request_ip).first
-      if auth_token
-        data[:auth_token] = auth_token.token
-        data[:auth_token_expires_at] = auth_token.expires_at
-      end
-    end
 
     # add first name and last name if this party is an Individual
     if self.party.business_party.is_a?(Individual)
