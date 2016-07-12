@@ -4,7 +4,6 @@ OrderTxn.class_eval do
     # TODO this needs to account for inventory at more than one location
 
     order_line_items.each do |order_line_item|
-
       if order_line_item.line_item_record.is_a? ProductType
         inventory_entry = order_line_item.line_item_record.inventory_entries.first
 
@@ -24,8 +23,11 @@ OrderTxn.class_eval do
 
       if inventory_entry
         inventory_txn = InventoryTxn.create!(
-          quantity: order_line_item.quantity,
-          inventory_entry: inventory_entry
+          quantity: (0 - order_line_item.quantity),
+          is_sell: true,
+          comments: 'Online Sale',
+          inventory_entry: inventory_entry,
+          tenant_id: self.find_party_by_role('order_roles_dba_org').id
         )
 
         inventory_txn.associate_to_order(self)

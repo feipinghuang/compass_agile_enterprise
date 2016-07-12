@@ -41,7 +41,7 @@ class InventoryTxn < ActiveRecord::Base
     end
 
     if is_sell?
-      inventory_entry.number_sold += self.quantity
+      inventory_entry.number_sold += (0 - self.quantity)
       inventory_entry.save!
     end
   end
@@ -55,7 +55,7 @@ class InventoryTxn < ActiveRecord::Base
     end
 
     if is_sell?
-      inventory_entry.number_sold -= self.quantity
+      inventory_entry.number_sold -= (0 - self.quantity)
       inventory_entry.save!
     end
   end
@@ -89,7 +89,7 @@ class InventoryTxn < ActiveRecord::Base
     end
 
     if is_sell?
-      inventory_entry.number_sold -= self.quantity
+      inventory_entry.number_sold -= (0 - self.quantity)
       inventory_entry.save!
     end
 
