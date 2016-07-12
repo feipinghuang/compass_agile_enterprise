@@ -389,17 +389,6 @@ class BaseWorkEfforts < ActiveRecord::Migration
       add_index :work_effort_party_assignments, :party_id
     end
 
-    unless table_exists?(:work_effort_inventory_assignments)
-      create_table :work_effort_inventory_assignments do |t|
-        #foreign key references
-        t.references :work_effort
-        t.references :inventory_entry
-
-        t.timestamps
-      end
-      add_index :work_effort_inventory_assignments, [:work_effort_id, :inventory_entry_id], :name => "work_effort_inv_assignment_idx"
-    end
-
     unless table_exists?(:work_effort_fixed_asset_assignments)
       create_table :work_effort_fixed_asset_assignments do |t|
         #foreign key references
@@ -487,18 +476,6 @@ class BaseWorkEfforts < ActiveRecord::Migration
     ##********************************************************************************************
     ## Work Effort Results
     ##********************************************************************************************
-    unless table_exists?(:work_effort_inventory_produced)
-      create_table :work_effort_inventory_produced do |t|
-        #foreign key references
-        t.references :work_effort
-        t.references :inventory_entry
-
-        t.timestamps
-      end
-      add_index :work_effort_inventory_produced, :work_effort_id
-      add_index :work_effort_inventory_produced, :inventory_entry_id
-    end
-
     unless table_exists?(:work_effort_deliverable_produced)
       create_table :work_effort_deliverable_produced do |t|
         #foreign key references
@@ -792,7 +769,6 @@ class BaseWorkEfforts < ActiveRecord::Migration
 
         #assignments
         :work_effort_party_assignments,
-        :work_effort_inventory_assignments,
         :work_effort_fixed_asset_assignments,
 
         ##standards
@@ -802,7 +778,6 @@ class BaseWorkEfforts < ActiveRecord::Migration
         :work_effort_good_standards,
 
         ##results
-        :work_effort_inventory_produced,
         :work_effort_deliverable_produced,
         :work_effort_fixed_asset_serviced,
 

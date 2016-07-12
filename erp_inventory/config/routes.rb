@@ -1,3 +1,21 @@
+Rails.application.routes.draw do
+
+  namespace :api do
+    namespace :v1 do
+
+      resources :inventory_entries, defaults: { :format => 'json' }
+      resources :inventory_txns, defaults: { :format => 'json' } do
+        member do
+          put :apply
+          put :unapply
+        end
+      end
+
+    end
+  end
+
+end
+
 ErpInventory::Engine.routes.draw do
 
   # Routes for default Inventory Management Applications
