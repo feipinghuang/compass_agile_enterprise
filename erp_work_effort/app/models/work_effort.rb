@@ -88,10 +88,6 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  ## What Inventory Items are used in the execution of this Work Effort
-  has_many :work_effort_inventory_assignments, :dependent => :destroy
-  has_many :inventory_entries, :through => :work_effort_inventory_assignments
-
   ## What Fixed Assets (tools, equipment) are used in the execution of this Work Effort
   has_many :work_effort_fixed_asset_assignments, :dependent => :destroy
   has_many :fixed_assets, :through => :work_effort_fixed_asset_assignments
