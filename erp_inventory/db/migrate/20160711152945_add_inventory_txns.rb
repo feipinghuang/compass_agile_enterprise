@@ -10,6 +10,7 @@ class AddInventoryTxns < ActiveRecord::Migration
         t.decimal :quantity
         t.decimal :acutal_quantity
         t.text :comments
+        t.boolean :is_sell, default: false
         t.boolean :applied, default: false
         t.datetime :applied_at
 

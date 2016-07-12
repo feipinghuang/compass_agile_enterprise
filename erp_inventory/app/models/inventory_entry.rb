@@ -51,7 +51,9 @@ class InventoryEntry < ActiveRecord::Base
   end
 
   def current_storage_facility
-    inventory_entry_locations.last.facility
+    unless inventory_entry_locations.empty?
+      inventory_entry_locations.last.facility
+    end
   end
 
   def current_storage_facility=(facility)
