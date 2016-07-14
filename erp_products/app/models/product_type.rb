@@ -235,7 +235,9 @@ class ProductType < ActiveRecord::Base
 
   def find_party_by_role(role_type)
     if role_type.is_a?(String)
-      role_type = RoleType.iid(role_type)
+      role_type = RoleType.find_child_role_types([role_type])
+    else
+      role_type = RoleType.find_child_role_types([role_type.iid])
     end
 
     product_type_pty_roles.where(role_type_id: role_type).first.try(:party)

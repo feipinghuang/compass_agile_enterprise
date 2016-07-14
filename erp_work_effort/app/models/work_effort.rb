@@ -378,22 +378,35 @@ class WorkEffort < ActiveRecord::Base
   # @param args [String, TrackedStatusType, Array] This can be a string of the internal identifier of the
   # TrackedStatusType to set, a TrackedStatusType instance, or three params the status, options and party_id
   def current_status=(args)
-    super(args)
-
     if args.is_a?(Array)
       status = args[0]
     else
       status = args
     end
 
-    if status.is_a? TrackedStatusType
-      status = status.internal_identifier
-    end
+    tracked_status_type = status.is_a?(TrackedStatusType) ? status : TrackedStatusType.find_by_internal_identifier(status.to_s)
+    raise "TrackedStatusType does not exist #{status.to_s}" unless tracked_status_type
 
-    if status == @@task_status_complete_iid
-      complete!
-    else
-      update_parent_status!
+    # if passed status is current status then do nothing
+    unless self.current_status_type && (self.current_status_type.id == tracked_status_type.id)
+
+      super(args)
+
+      if args.is_a?(Array)
+        status = args[0]
+      else
+        status = args
+      end
+
+      if status.is_a? TrackedStatusType
+        status = status.internal_identifier
+      end
+
+      if status == @@task_status_complete_iid
+        complete!
+      else
+        update_parent_status!
+      end
     end
   end
 
