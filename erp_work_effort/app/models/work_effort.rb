@@ -389,6 +389,11 @@ class WorkEffort < ActiveRecord::Base
 
     # if passed status is current status then do nothing
     unless self.current_status_type && (self.current_status_type.id == tracked_status_type.id)
+      if self.current_status_type
+        _current_status = self.current_status_type.internal_identifier
+      else
+        _current_status = nil
+      end
 
       super(args)
 
@@ -405,6 +410,14 @@ class WorkEffort < ActiveRecord::Base
       if status == @@task_status_complete_iid
         complete!
       else
+        # if there were InventoryTxns that were applied and this task went from complete to pending we
+        # need to unapply those InventoryTxns
+        if _current_status && _current_status == @@task_status_complete_iid
+          InventoryTxn.where(created_by_id: self.id, created_by_type: 'WorkEffort').each do |inventory_txn|
+            inventory_txn.unapply!
+          end
+        end
+
         update_parent_status!
       end
     end
@@ -589,6 +602,11 @@ class WorkEffort < ActiveRecord::Base
       time_entry.calculate_regular_hours_in_seconds!
 
       time_entry.update_task_assignment_status(@@task_resource_status_complete_iid)
+    end
+
+    # apply any inventory_txns related to this task
+    InventoryTxn.where(created_by_id: self.id, created_by_type: 'WorkEffort').each do |inventory_txn|
+      inventory_txn.apply!
     end
 
     update_parent_status!

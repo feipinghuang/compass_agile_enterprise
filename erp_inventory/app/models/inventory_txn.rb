@@ -9,6 +9,10 @@
 #   t.boolean :applied, default: false
 #   t.datetime :applied_at
 
+#   t.integer :created_by_id
+#   t.string  :created_by_type
+#
+
 #   t.integer :tenant_id
 
 #   t.text :custom_fields
@@ -27,6 +31,7 @@ class InventoryTxn < ActiveRecord::Base
 
   belongs_to :fixed_asset
   belongs_to :inventory_entry
+  belongs_to :created_by, polymorphic: true
 
   after_create :update_inventory_available!
   before_destroy :unapply!, :revert_inventory_available!
@@ -63,55 +68,42 @@ class InventoryTxn < ActiveRecord::Base
   # Apply the transaction to the assoicated inventory
   #
   def apply!
-    inventory_entry.number_in_stock += self.quantity
-    inventory_entry.save!
-
-    if self.quantity > 0
-      inventory_entry.number_available += self.quantity
+    unless self.applied
+      inventory_entry.number_in_stock += self.quantity
       inventory_entry.save!
+
+      if self.quantity > 0
+        inventory_entry.number_available += self.quantity
+        inventory_entry.save!
+      end
+
+      self.applied = true
+      self.applied_at = Time.now
+      self.save!
     end
-
-    self.applied = true
-    self.applied_at = Time.now
-    self.save!
-
   end
 
   # Unapply the transaction to the assoicated inventory
   #
   def unapply!
-    inventory_entry.number_in_stock -= self.quantity
-    inventory_entry.save!
-
-    if self.quantity > 0
-      inventory_entry.number_available -= self.quantity
+    if self.applied
+      inventory_entry.number_in_stock -= self.quantity
       inventory_entry.save!
+
+      if self.quantity > 0
+        inventory_entry.number_available -= self.quantity
+        inventory_entry.save!
+      end
+
+      if is_sell?
+        inventory_entry.number_sold -= (0 - self.quantity)
+        inventory_entry.save!
+      end
+
+      self.applied = false
+      self.applied_at = nil
+      self.save!
     end
-
-    if is_sell?
-      inventory_entry.number_sold -= (0 - self.quantity)
-      inventory_entry.save!
-    end
-
-    self.applied = false
-    self.applied_at = nil
-    self.save!
-  end
-
-  # Associate this InventoryTxn to an OrderTxn
-  #
-  def associate_to_order(order_txn)
-    biz_txn_relationships_tbl = BizTxnRelationship.arel_table
-
-    current_relationship = BizTxnRelationship.where(biz_txn_relationships_tbl[:txn_event_id_from].eq(order_txn.root_txn.id)
-                                                    .or(biz_txn_relationships_tbl[:txn_event_id_to].eq(order_txn.root_txn.id)))
-    .where(biz_txn_relationships_tbl[:txn_event_id_from].eq(self.root_txn.id)
-           .or(biz_txn_relationships_tbl[:txn_event_id_to].eq(self.root_txn.id))).first
-
-    unless current_relationship
-      BizTxnRelationship.create(txn_event_id_from: self.root_txn.id, txn_event_id_to: order_txn.root_txn.id)
-    end
-
   end
 
 end
