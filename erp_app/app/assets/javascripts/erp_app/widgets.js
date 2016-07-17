@@ -14,13 +14,31 @@
 
 Compass.ErpApp.Utility.createNamespace("Compass.ErpApp.Widgets");
 
-Compass.ErpApp.Widgets = function(){
-    window.onbeforeunload = function () {
+Compass.ErpApp.Widgets = function() {
+    window.onbeforeunload = function() {
         return Compass.ErpApp.Widgets.clearWidgets();
     };
 
     return {
-        setup: function (uuid, name, action, params, addToLoaded) {
+        buildWigetUrl: function(name, uuid, action, id, params) {
+            var url = '/erp_app/widgets/' + name + '/' + action + '/' + uuid;
+
+            if (id) {
+                url = url + '/' + id;
+            }
+
+            if (params) {
+                url = url + "?";
+                for (var item in params) {
+                    url += item + '=' + params[item] + '&';
+                }
+                url = url.slice(0, -1);
+            }
+
+            return url;
+        },
+
+        setup: function(uuid, name, action, params, addToLoaded) {
             var widgetParams = {
                 widget_params: JSON.stringify(params),
                 authenticity_token: Compass.ErpApp.AuthentictyToken
@@ -30,7 +48,7 @@ Compass.ErpApp.Widgets = function(){
                 url: '/erp_app/widgets/' + name + '/' + action + '/' + uuid,
                 type: 'GET',
                 data: widgetParams,
-                success: function (data, textStatus, xhr) {
+                success: function(data, textStatus, xhr) {
                     var $widgetDiv = $('#' + uuid);
 
                     $widgetDiv.html(data.html);
@@ -43,32 +61,32 @@ Compass.ErpApp.Widgets = function(){
                             params: params
                         });
                 },
-                error: function () {
+                error: function() {
                     //ALERT?
                 }
             });
         },
 
-        refreshWidgets: function () {
-            $.each(Compass.ErpApp.Widgets.LoadedWidgets, function (index, widget) {
+        refreshWidgets: function() {
+            $.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget) {
                 Compass.ErpApp.Widgets.setup(widget.id, widget.name, widget.action, widget.params, false);
             });
         },
 
-        refreshWidget: function (name, action) {
-            $.each(Compass.ErpApp.Widgets.LoadedWidgets, function (index, widget) {
+        refreshWidget: function(name, action) {
+            $.each(Compass.ErpApp.Widgets.LoadedWidgets, function(index, widget) {
                 if (widget.name == name && widget.action == action) {
                     Compass.ErpApp.Widgets.setup(widget.id, widget.name, widget.action, widget.params, false);
                 }
             });
         },
 
-        setupAjaxNavigation: function (css_class, home_url) {
+        setupAjaxNavigation: function(css_class, home_url) {
             $.address.value('nav?url=' + home_url);
 
             var bindCss = 'a.' + css_class;
             var anchor = null;
-            $(bindCss).bind('click', function () {
+            $(bindCss).bind('click', function() {
                 anchor = $(this);
                 var href = anchor.attr('href');
                 $.address.value('nav?url=' + href + '&key=' + Compass.ErpApp.Utility.randomString(10));
@@ -77,7 +95,7 @@ Compass.ErpApp.Widgets = function(){
                 return false;
             });
 
-            $.address.change(function (event) {
+            $.address.change(function(event) {
                 try {
                     if (!Ext.isEmpty(event.parameters.url)) {
                         $.ajax({
@@ -85,8 +103,7 @@ Compass.ErpApp.Widgets = function(){
                             success: Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse
                         });
                     }
-                }
-                catch (exception) {
+                } catch (exception) {
                     if (console) {
                         console.log(exception);
                     }
@@ -94,20 +111,20 @@ Compass.ErpApp.Widgets = function(){
             });
         },
 
-        clearWidgets: function(){
+        clearWidgets: function() {
             var uuids = Compass.ErpApp.Widgets.LoadedWidgets.collect('id');
 
-            if(uuids.length > 0){
+            if (uuids.length > 0) {
                 $.ajax({
                     url: '/erp_app/widgets/clear',
                     type: 'DELETE',
-                    data:{
+                    data: {
                         uuids: uuids.join(',')
                     },
-                    success: function (data, textStatus, xhr) {
+                    success: function(data, textStatus, xhr) {
                         // DO NOTHING
                     },
-                    error: function () {
+                    error: function() {
                         // DO NOTHING
                     }
                 });
@@ -119,4 +136,3 @@ Compass.ErpApp.Widgets = function(){
         AvailableWidgets: []
     };
 }();
-
