@@ -571,6 +571,29 @@ class WorkEffort < ActiveRecord::Base
     data
   end
 
+  # Clone this WorkEffort. Copies any assignments and watchers
+  #
+  def clone
+    _copy = self.dup
+    _copy.save!
+
+    # copy assignments
+    self.work_effort_party_assignments.each do |work_effort_party_assignment|
+      _work_effort_party_assignment_copy = work_effort_party_assignment.dup
+      _work_effort_party_assignment_copy.work_effort_id = _copy.id
+      _work_effort_party_assignment_copy.save!
+    end
+
+    # copy party roles
+    self.entity_party_roles.each do |entity_party_role|
+      entity_party_role = entity_party_role.dup
+      entity_party_role.entity_record_id = _copy.id
+      entity_party_role.save!
+    end
+
+    _copy
+  end
+
   protected
 
   # determine difference in minutes between two times
