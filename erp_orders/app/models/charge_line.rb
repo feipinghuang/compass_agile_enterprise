@@ -38,9 +38,14 @@ class ChargeLine < ActiveRecord::Base
   def to_data_hash
     data = to_hash(only: [:id, :description])
 
+    if charge_type
+      data[:charge_type] = charge_type.to_data_hash
+    end
+
     data[:money] = money.to_data_hash
 
     data
   end
+  alias :to_mobile_hash :to_data_hash
 
 end

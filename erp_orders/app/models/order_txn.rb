@@ -714,16 +714,21 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def to_data_hash
-    {
-      id: id,
-      description: description,
-      order_number: order_number,
-      amount: total_amount,
-      status: current_status_application.try(:tracked_status_type).try(:description)
-    }
-  end
+    data = to_hash({only: [:id, :description, :order_number, 
+      :ship_to_address_line_1, :ship_to_address_line_2, :ship_to_city, 
+      :ship_to_state, :ship_to_postal_code, :ship_to_country,
+      :bill_to_address_line_1, :bill_to_address_line_2, :bill_to_city, 
+      :bill_to_state, :bill_to_postal_code, :bill_to_country],
+       sub_total: sub_total,
+       amount: total_amount, 
+       status: current_status_application.try(:tracked_status_type).try(:description)})
 
-  def to_mobile_hash
-    to_data_hash
+    data[:charge_lines] = charge_lines.collect(&:to_data_hash)
+
+    data[:order_line_items] = order_line_items.collect(&:to_data_hash)
+
+    data
   end
+  alias :to_mobile_hash :to_data_hash
+
 end

@@ -165,18 +165,29 @@ class ProductType < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(only: [
-              :id,
-              :description,
-              :internal_identifier,
-              :sku,
-              :comment,
-              :created_at,
-              :updated_at
-            ],
-            unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
-            price: try(:get_current_simple_plan).try(:money_amount),
-            gl_account: try(:gl_account).try(:to_data_hash))
+    data = to_hash(only: [
+                     :id,
+                     :description,
+                     :internal_identifier,
+                     :sku,
+                     :comment,
+                     :created_at,
+                     :updated_at
+                   ],
+                   unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
+                   price: try(:get_current_simple_plan).try(:money_amount),
+                   gl_account: try(:gl_account).try(:to_data_hash),
+                   images: [])
+
+    if self.images.empty?
+      data[:images] << "#{ErpTechSvcs::Config.file_protocol}://#{ErpTechSvcs::Config.installation_domain}/#{Rails.configuration.assets.prefix}/place_holder.jpeg"
+    else
+      self.images.each do |image|
+        data[:images] << image.fully_qualified_url
+      end
+    end
+
+    data
   end
 
   def to_display_hash

@@ -182,15 +182,10 @@ class OrderLineItem < ActiveRecord::Base
 
     data[:product_type] = line_item_record.to_data_hash
 
-    data
-  end
-
-  def to_mobile_hash
-    data = to_data_hash
-
     data[:selected_product_options] = self.selected_product_options.collect(&:to_mobile_data_hash)
 
     data
   end
+  alias :to_mobile_hash :to_data_hash
 
 end

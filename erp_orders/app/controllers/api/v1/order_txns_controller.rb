@@ -57,12 +57,12 @@ module Api
           if context[:view] == 'mobile'
             render :json => {success: true,
                              total_count: total_count,
-                             order_txns: order_txns.collect { |order_txn| order_txn.to_mobile_hash }}
+                             order_txns: order_txns.collect(&:to_data_hash)}
           end
         else
           render :json => {success: true,
                            total_count: total_count,
-                           order_txns: order_txns.collect { |order_txn| order_txn.to_data_hash }}
+                           order_txns: order_txns.collect(&:to_data_hash)}
         end
 
       end
