@@ -9,7 +9,7 @@ module Api
  @apiName GetPostalAddresses
  @apiGroup Postal Address
 
- @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+ @apiParam {String} [contact_purposes] Comma delimited string of ContactPurpose internal identifiers to filter by
  @apiParam {String} [query] Query to search description by
 
  @apiSuccess {Boolean} success True if the request was successful
