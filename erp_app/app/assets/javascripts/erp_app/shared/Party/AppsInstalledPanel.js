@@ -151,8 +151,25 @@ Ext.define("CompassAE.ErpApp.Shared.Party.AppsInstalledPanel", {
         me.on('activate', function() {
             me.setDbaOrganizationOnApplications();
 
-            me.down('#toolsTree').getRootNode().expand(false);
-            me.down('#userAppsTree').getRootNode().expand(false);
+            var loadToolsTree = function() {
+                var dfd = Ext.create('Ext.ux.Deferred');
+
+                me.down('#toolsTree').getRootNode().expand(false, function() {
+                    dfd.resolve();
+                });
+
+                return dfd.promise();
+            };
+
+            var loadAppsTree = function() {
+                var dfd = Ext.create('Ext.ux.Deferred');
+
+                me.down('#userAppsTree').getRootNode().expand(false, function() {
+                    dfd.resolve();
+                });
+
+                return dfd.promise();
+            };
 
             if (me.userId) {
                 var mask = new Ext.LoadMask({
@@ -223,8 +240,15 @@ Ext.define("CompassAE.ErpApp.Shared.Party.AppsInstalledPanel", {
                     return dfd.promise();
                 };
 
-                Ext.ux.Deferred.when(
-                        loadCurrentTools)
+                Ext.ux.Deferred.when(loadToolsTree)
+                    .then(loadAppsTree,
+                        function() {
+                            mask.hide();
+                        })
+                    .then(loadCurrentTools,
+                        function() {
+                            mask.hide();
+                        })
                     .then(loadCurrentApps,
                         function() {
                             mask.hide();
