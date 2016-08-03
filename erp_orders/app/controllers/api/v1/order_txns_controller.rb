@@ -24,6 +24,9 @@ module Api
           sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
           sort = sort_hash[:property] || 'description'
           dir = sort_hash[:direction] || 'ASC'
+        end
+
+        if !params[:limit].blank? && !params[:start].blank?
           limit = params[:limit] || 25
           start = params[:start] || 0
         end

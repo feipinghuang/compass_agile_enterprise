@@ -100,7 +100,7 @@ class CreditCard < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(only: [:id, :expiration_month, :expiration_year], methods: [:last_4])
+    to_hash(only: [:description, :id, :expiration_month, :expiration_year], methods: [:last_4])
   end
 
 end
