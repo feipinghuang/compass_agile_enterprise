@@ -16,6 +16,8 @@ module ErpTechSvcs
           def is_json(attr_name)
             serialize attr_name, JSON
 
+            before_update "#{attr_name}_check_dirty".to_sym
+
             extend SingletonMethods
             include InstanceMethods
 
@@ -33,6 +35,16 @@ module ErpTechSvcs
               end
             end
             before_save "stringify_keys_for_#{attr_name}_json".to_sym
+
+            define_method("#{attr_name}_dirty?") do
+              _db_record = self.class.where("#{attr_name} = ?", self.send(attr_name).to_json).first
+
+              _db_record.nil?
+            end
+
+            define_method("#{attr_name}_check_dirty") do
+              self.send("#{attr_name}_will_change!") if self.send("#{attr_name}_dirty?")
+            end
           end
 
         end

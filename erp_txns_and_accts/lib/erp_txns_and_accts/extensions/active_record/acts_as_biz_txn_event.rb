@@ -50,7 +50,7 @@ module ErpTxnsAndAccts
           def without_current_status(status)
             self.joins(:biz_txn_event).where("biz_txn_events.id in (#{BizTxnEvent.select('biz_txn_events.id').without_current_status(status).to_sql})")
           end
-        end
+        end # SingletonMethods
 
         module InstanceMethods
           def root_txn
@@ -82,9 +82,9 @@ module ErpTxnsAndAccts
           def destroy_biz_txn_event
             self.biz_txn_event.destroy if (self.biz_txn_event && !self.biz_txn_event.frozen?)
           end
-        end
+        end # InstanceMethods
 
-      end
-    end
-  end
-end
+      end # ActsAsBizTxnEvent
+    end # ActiveRecord
+  end # Extensions
+end # ErpTxnsAndAccts

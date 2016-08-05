@@ -101,6 +101,7 @@ module ErpBaseErpSvcs
         end
 
         module InstanceMethods
+          include Wisper::Publisher
 
           def destroy_status_applications
             self.status_applications.each do |status_application|
@@ -195,7 +196,11 @@ module ErpBaseErpSvcs
               status_application.save
 
               self.status_applications << status_application
-              self.save
+              
+              self.save!
+
+              # publish status change
+              publish(:tracked_status_changed, self, tracked_status_type)
             end
 
           end

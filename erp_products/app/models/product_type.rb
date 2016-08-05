@@ -240,14 +240,14 @@ class ProductType < ActiveRecord::Base
     ProductTypePtyRole.create(party: party, role_type: role_type, product_type: self)
   end
 
-  def find_party_by_role(role_type)
-    if role_type.is_a?(String)
-      role_type = RoleType.find_child_role_types([role_type])
-    else
-      role_type = RoleType.find_child_role_types([role_type.iid])
+  def find_party_by_role(role_types)
+    unless role_types.is_a? Array
+      role_types = [role_types]
     end
 
-    product_type_pty_roles.where(role_type_id: role_type).first.try(:party)
+    role_types = RoleType.find_child_role_types(role_types)
+
+    product_type_pty_roles.where(role_type_id: role_types).first.try(:party)
   end
 
   def has_dimensions?
