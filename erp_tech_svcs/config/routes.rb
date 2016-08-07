@@ -26,6 +26,10 @@ Rails.application.routes.draw do
       end
 
       resources :users, defaults: { :format => 'json' } do
+        collection do
+          get :check_username
+        end
+
         member do
           put :reset_password
           get :effective_security

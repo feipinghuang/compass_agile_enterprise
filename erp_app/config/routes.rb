@@ -6,6 +6,10 @@ Rails.application.routes.draw do
       resources :applications, defaults: { :format => 'json' }
 
       resources :users, defaults: { :format => 'json' } do
+        collection do
+          get :check_username
+        end
+
         resources :applications, defaults: { :format => 'json' } do
           collection do
             put 'install'

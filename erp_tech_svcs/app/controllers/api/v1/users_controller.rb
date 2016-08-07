@@ -2,6 +2,8 @@ module Api
   module V1
     class UsersController < BaseController
 
+      before_filter :require_login, except: :check_username
+
       def index
         username = params[:username]
         sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
@@ -38,7 +40,15 @@ module Api
           users = users.order("#{sort} #{dir}").offset(start).limit(limit)
         end
 
-        render :json => {total_count: total_count, users: users.uniq.collect(&:to_data_hash)}
+        render json: {total_count: total_count, users: users.uniq.collect(&:to_data_hash)}
+      end
+
+      def check_username
+        if User.where('username = ?', params[:username]).first
+          render json: {success: false}
+        else
+          render json: {success: true}
+        end
       end
 
       def create
