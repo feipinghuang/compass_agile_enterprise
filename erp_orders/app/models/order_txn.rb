@@ -443,17 +443,28 @@ class OrderTxn < ActiveRecord::Base
     end
   end
 
+  # True if there is shipping info
+  #
+  def has_shipping_info?
+    !ship_to_address_line_1.nil?
+  end
+
   # Get shipping info formatted for HTML
   #
   def shipping_info
-    info = "#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1})"
+    if has_shipping_info?
 
-    if ship_to_address_line_2.present?
-      info << "<br>#{ship_to_address_line_2}"
+      info = "#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1}"
+
+      if ship_to_address_line_2.present?
+        info << "<br>#{ship_to_address_line_2}"
+      end
+
+      info << "<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country}"
+
+    else
+      info = ''
     end
-
-    info << "<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country})"
-
     info
   end
 
@@ -714,14 +725,14 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def to_data_hash
-    data = to_hash({only: [:id, :description, :order_number, 
-      :ship_to_address_line_1, :ship_to_address_line_2, :ship_to_city, 
-      :ship_to_state, :ship_to_postal_code, :ship_to_country,
-      :bill_to_address_line_1, :bill_to_address_line_2, :bill_to_city, 
-      :bill_to_state, :bill_to_postal_code, :bill_to_country],
-       sub_total: sub_total,
-       amount: total_amount, 
-       status: current_status_application.try(:tracked_status_type).try(:description)})
+    data = to_hash({only: [:id, :description, :order_number,
+                           :ship_to_address_line_1, :ship_to_address_line_2, :ship_to_city,
+                           :ship_to_state, :ship_to_postal_code, :ship_to_country,
+                           :bill_to_address_line_1, :bill_to_address_line_2, :bill_to_city,
+                           :bill_to_state, :bill_to_postal_code, :bill_to_country],
+                    sub_total: sub_total,
+                    amount: total_amount,
+                    status: current_status_application.try(:tracked_status_type).try(:description)})
 
     data[:charge_lines] = charge_lines.collect(&:to_data_hash)
 
