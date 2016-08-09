@@ -165,6 +165,20 @@ class OrderLineItem < ActiveRecord::Base
     end
   end
 
+  def add_party_with_role(party, role_type)
+    unless order_line_item_pty_roles.joins(:role_type).where(party_id: party).where(role_types: {internal_identifier: role_type}).first
+      order_line_item_pty_roles.create(party: party, role_type: RoleType.iid(role_type))
+    end
+  end
+
+  def find_party_by_role(role_type)
+    order_line_item_pty_role = order_line_item_pty_roles.joins(:role_type).where(party_id: party).where(role_types: {internal_identifier: role_type}).first
+    
+    if order_line_item_pty_role
+      order_line_item_pty_role.party
+    end
+  end
+
   def clone
     order_line_item_dup = dup
     order_line_item_dup.order_txn_id = nil
