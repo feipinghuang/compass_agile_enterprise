@@ -25,7 +25,19 @@ class Party < ActiveRecord::Base
     # @param statement [ActiveRecord::Relation] the query being built
     # @return [ActiveRecord::Relation] the query being built
     def apply_filters(filters, statement=nil)
-      self
+      statement = statement || Party
+
+      if filters[:role_types]
+        if filters[:include_child_roles]
+          role_types = RoleType.find_child_role_types(filters[:role_types].split(',')).collect{|role_type| role_type.internal_identifier}
+        else
+          role_types = filters[:role_types].split(',')
+        end
+
+        statement = statement.joins(party_roles: :role_type).where('role_types.internal_identifier' => role_types)
+      end
+
+      statement
     end
 
     # scope by dba organization
