@@ -2,7 +2,7 @@ module Api
   module V1
     class UsersController < BaseController
 
-      before_filter :require_login, except: :check_username
+      skip_before_filter :require_login, only: :check_username
 
       def index
         username = params[:username]
