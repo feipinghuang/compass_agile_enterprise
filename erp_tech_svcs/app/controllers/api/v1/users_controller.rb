@@ -1,9 +1,7 @@
 module Api
   module V1
     class UsersController < BaseController
-
-      skip_before_filter :require_login, only: :check_username
-
+     
       def index
         username = params[:username]
         sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
