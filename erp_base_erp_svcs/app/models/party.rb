@@ -37,6 +37,42 @@ class Party < ActiveRecord::Base
         statement = statement.joins(party_roles: :role_type).where('role_types.internal_identifier' => role_types)
       end
 
+      if filters[:email_address]
+        statement = statement.joins("join contacts on contacts.contact_record_id = parties.id
+                                           and contacts.contact_record_type = 'Party'")
+        .joins("join email_addresses on contacts.contact_mechanism_type =
+                              'EmailAddress' and contacts.contact_mechanism_id = email_addresses.id")
+
+        statement = statement.where(::EmailAddress.arel_table[:email_address].eq("#{filters[:email_address]}"))
+      end
+
+      if filters[:phone_number]
+        statement = statement.joins("join contacts on contacts.contact_record_id = parties.id
+                                           and contacts.contact_record_type = 'Party'")
+        .joins("join phone_numbers on contacts.contact_mechanism_type =
+                              'PhoneNumber' and contacts.contact_mechanism_id = phone_numbers.id")
+
+        statement = statement.where(::PhoneNumber.arel_table[:phone_number].eq("#{filters[:phone_number]}"))
+      end
+
+      if filters[:postal_address]
+        statement = statement.joins("join contacts on contacts.contact_record_id = parties.id
+                                           and contacts.contact_record_type = 'Party'")
+        .joins("join postal_addresses on contacts.contact_mechanism_type = 'PostalAddress'
+          and contacts.contact_mechanism_id = postal_addresses.id")
+
+        where = nil
+        filters[:postal_address].each do |key, value|
+          if where
+            where = where.and(::PostalAddress.arel_table[key].eq("#{value}"))
+          else
+            where = ::PostalAddress.arel_table[key].eq("#{value}")
+          end
+        end
+ 
+        statement = statement.where(where)
+      end
+
       statement
     end
 

@@ -82,10 +82,15 @@ module Api
   @apiVersion 1.0.0
   @apiName CreatePostalAddress
   @apiGroup Postal Address
-
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} postal_address Postal Address
+  
   @apiParam {String} description Description of Postal Address
+  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+  @apiParam {String} address_line_1 Address Line 1
+  @apiParam {String} [address_line_1] Address Line 2
+  @apiParam {String} city City
+  @apiParam {String} state State
+  @apiParam {String} zip Zip
+  @apiParam {String} country Country
 
   @apiSuccess {Boolean} success True if the request was successful
   @apiSuccess {Object} postal_address PostalAddress record
