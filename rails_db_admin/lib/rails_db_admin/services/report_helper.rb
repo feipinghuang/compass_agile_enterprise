@@ -159,6 +159,9 @@ module RailsDbAdmin
       # build configuration to render a pdf of a report
       #
       def build_pdf_config
+        time_helper = ErpBaseErpSvcs::Helpers::Time::Client.new(@report_params[:client_utc_offset])
+        current_time = time_helper.in_client_time(Time.now)
+
         {
             page_size: @report.meta_data['print_page_size'] || 'A4',
             orientation: @report.meta_data['print_orientation'] || 'Portrait',
@@ -170,7 +173,8 @@ module RailsDbAdmin
 
             },
             footer: {
-                right: 'Page [page] of [topage]'
+                right: 'Page [page] of [topage]',
+                center: "#{@report.name} ran at #{current_time.strftime('%m/%d/%Y %l:%M%p')}"
             }
         }
       end
