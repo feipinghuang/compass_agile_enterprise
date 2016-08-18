@@ -96,7 +96,7 @@
   <link rel="icon" type="image/png" href="/images/erp_app/favicon.ico">
 
   <!--javascript-->
-  <%= include_extjs(:debug => (Rails.env == 'development' or Rails.env == 'shared_dev')) %>
+  <%= include_extjs(:debug => Rails.env == 'development') %>
 
   <%= javascript_include_tag('extjs/Callout') %>
   <%= javascript_include_tag("erp_app/utility") %>
