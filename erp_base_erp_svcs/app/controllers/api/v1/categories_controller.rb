@@ -26,6 +26,24 @@ module Api
         dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
         categories = categories.scope_by_dba_organization(dba_organizations)
 
+        if query_filter[:with_products]
+          category_ids_with_products = []
+
+          Category.scope_by_dba_organization(dba_organizations)
+          .joins(:category_classifications)
+          .joins("join product_types on product_types.id = category_classifications.classification_id
+                and category_classifications.classification_type = 'ProductType' ").uniq.each do |category|
+
+            category_ids_with_products.push(category.id)
+            category_ids_with_products = category_ids_with_products.concat(category.ancestors.collect(&:id))
+
+          end
+
+          category_ids_with_products = category_ids_with_products.uniq
+
+          categories = categories.where(categories: {id: category_ids_with_products})
+        end
+
         respond_to do |format|
           format.json do
 
@@ -85,7 +103,7 @@ module Api
         begin
           ActiveRecord::Base.transaction do
             category = Category.new(
-                description: params[:description].strip
+              description: params[:description].strip
 
             )
 

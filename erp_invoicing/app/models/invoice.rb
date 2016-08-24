@@ -109,6 +109,7 @@ class Invoice < ActiveRecord::Base
         invoice.message = options[:message]
         invoice.invoice_date = options[:invoice_date]
         invoice.due_date = options[:due_date]
+        invoice.invoice_type = InvoiceType.iid('acct_receivable')
 
         invoice.save
 
@@ -133,7 +134,7 @@ class Invoice < ActiveRecord::Base
           invoice_item.unit_price = line_item.sold_price
           invoice_item.amount = (line_item.quantity * line_item.sold_price)
           invoice_item.taxed = line_item.taxed?
-          invoice_item.biz_txn_acct_root = charged_item.try(:biz_txn_acct_root)
+          invoice_item.biz_txn_acct_root = charged_item.try(:revenue_gl_account)
           invoice_item.add_invoiced_record(charged_item)
 
           invoice.invoice_items << invoice_item
@@ -247,13 +248,13 @@ class Invoice < ActiveRecord::Base
 
   def get_payment_applications(status=:all)
     selected_payment_applications = case status.to_sym
-                                      when :pending
-                                        self.payment_applications.pending
-                                      when :successful
-                                        self.payment_applications.successful
-                                      when :all
-                                        self.payment_applications
-                                    end
+    when :pending
+      self.payment_applications.pending
+    when :successful
+      self.payment_applications.successful
+    when :all
+      self.payment_applications
+    end
 
     unless self.items.empty?
       unless self.items.collect { |item| item.get_payment_applications(status) }.empty?
@@ -332,14 +333,14 @@ class Invoice < ActiveRecord::Base
   def calculate_balance
     unless self.calculate_balance_strategy_type.nil?
       case self.calculate_balance_strategy_type.internal_identifier
-        when 'invoice_items_and_payments'
-          (self.items.all.sum(&:total_amount) - self.total_payments).round(2)
-        when 'payable_balances_and_payments'
-          (self.payable_balances.all.sum(&:balance).amount - self.total_payments).round(2)
-        when 'payments'
-          (self.balance - self.total_payments).round(2)
-        else
-          self.balance
+      when 'invoice_items_and_payments'
+        (self.items.all.sum(&:total_amount) - self.total_payments).round(2)
+      when 'payable_balances_and_payments'
+        (self.payable_balances.all.sum(&:balance).amount - self.total_payments).round(2)
+      when 'payments'
+        (self.balance - self.total_payments).round(2)
+      else
+        self.balance
       end
     else
       unless self.balance.nil?
@@ -357,19 +358,19 @@ class Invoice < ActiveRecord::Base
 
     self.items.each do |item|
       transactions << {
-          :date => item.created_at,
-          :description => item.item_description,
-          :quantity => item.quantity,
-          :amount => item.amount
+        :date => item.created_at,
+        :description => item.item_description,
+        :quantity => item.quantity,
+        :amount => item.amount
       }
     end
 
     self.get_payment_applications(:successful).each do |item|
       transactions << {
-          :date => item.financial_txn.payments.last.created_at,
-          :description => item.financial_txn.description,
-          :quantity => 1,
-          :amount => (0 - item.financial_txn.money.amount)
+        :date => item.financial_txn.payments.last.created_at,
+        :description => item.financial_txn.description,
+        :quantity => 1,
+        :amount => (0 - item.financial_txn.money.amount)
       }
     end
 
@@ -382,7 +383,13 @@ class Invoice < ActiveRecord::Base
   end
 
   def find_parties_by_role_type(role_type)
-    self.invoice_party_roles.where('role_type_id = ?', convert_role_type(role_type).id).all.collect(&:party)
+    if role_type.is_a? RoleType
+      role_types = RoleType.find_child_role_types([role_type.internal_identifier])
+    else
+      role_types = RoleType.find_child_role_types([role_type])
+    end
+    
+    self.invoice_party_roles.where(role_type_id: role_types).all.collect(&:party)
   end
 
   def find_party_by_role(role_type)
