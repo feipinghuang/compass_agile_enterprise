@@ -23,27 +23,27 @@ module Knitkit
               ThemeSupport::Cache.theme_resolvers = [] if ThemeSupport::Cache.theme_resolvers.nil?
               current_theme_paths(website).each do |theme|
                 resolver = case Rails.application.config.erp_tech_svcs.file_storage
-                             when :s3
-                               path = File.join(theme[:url], "templates")
-                               cached_resolver = ThemeSupport::Cache.theme_resolvers.find { |cached_resolver| cached_resolver.to_path == path }
-                               if cached_resolver.nil?
-                                 resolver = ActionView::S3Resolver.new(path)
-                                 ThemeSupport::Cache.theme_resolvers << resolver
-                                 resolver
-                               else
-                                 cached_resolver
-                               end
-                             when :filesystem
-                               path = "#{theme[:path]}/templates"
-                               cached_resolver = ThemeSupport::Cache.theme_resolvers.find { |cached_resolver| cached_resolver.to_path == path }
-                               if cached_resolver.nil?
-                                 resolver = ActionView::CompassAeFileResolver.new(path)
-                                 ThemeSupport::Cache.theme_resolvers << resolver
-                                 resolver
-                               else
-                                 cached_resolver
-                               end
-                           end
+                when :s3
+                  path = File.join(theme[:url], "templates")
+                  cached_resolver = ThemeSupport::Cache.theme_resolvers.find { |cached_resolver| cached_resolver.to_path == path }
+                  if cached_resolver.nil?
+                    resolver = ActionView::S3Resolver.new(path)
+                    ThemeSupport::Cache.theme_resolvers << resolver
+                    resolver
+                  else
+                    cached_resolver
+                  end
+                when :filesystem
+                  path = "#{theme[:path]}/templates"
+                  cached_resolver = ThemeSupport::Cache.theme_resolvers.find { |cached_resolver| cached_resolver.to_path == path }
+                  if cached_resolver.nil?
+                    resolver = ActionView::CompassAeFileResolver.new(path)
+                    ThemeSupport::Cache.theme_resolvers << resolver
+                    resolver
+                  else
+                    cached_resolver
+                  end
+                end
                 prepend_view_path(resolver)
               end
             end
