@@ -23,86 +23,82 @@ Ext.define("Compass.ErpApp.Desktop.Applications.CompassAeConsole.ConsolePanel", 
     desktop_console_history_index: 0,
     startup_heading: "<div class='compassConsoleHistory'><span style='color:goldenrod;'><b>Compass Console</b>&nbsp;(<span style='color:white;'>-help</span> for Help)</span></div>",
 
-    listeners:{
-        afterrender: function(comp){
+    listeners: {
+        afterrender: function(comp) {
             comp.sendCommand('-clear');
         },
-        show: function(comp){
+        show: function(comp) {
             comp.down('textarea').focus();
         },
-        activate: function(comp){
+        activate: function(comp) {
             comp.down('textarea').focus();
         }
     },
 
-    initComponent: function () {
+    initComponent: function() {
         var self = this;
 
-        self.items = [
-            {
-                xtype: 'panel',
-                itemId: 'console_history_panel',
-                region: 'center',
-                bodyStyle: "background-color:#000;padding:5px;",
-                autoScroll: true,
-                html: self.startup_heading
-            },
-            {
-                xtype: 'textarea',
-                region: 'south',
-                autoscroll: true,
-                itemId: "console_text_area",
-                enableKeyEvents: true,
-                listeners: {
-                    afterrender: function (field) {
-                        field.focus();
-                    },
-                    // use key-up for textarea since ENTER does not affect focus traversal
-                    keyup: function (field, e) {
-                        if (e.getKey() == e.ENTER) {
+        self.items = [{
+            xtype: 'panel',
+            itemId: 'console_history_panel',
+            region: 'center',
+            bodyStyle: "background-color:#000;padding:5px;",
+            autoScroll: true,
+            html: self.startup_heading
+        }, {
+            xtype: 'textarea',
+            region: 'south',
+            autoscroll: true,
+            itemId: "console_text_area",
+            enableKeyEvents: true,
+            listeners: {
+                afterrender: function(field) {
+                    field.focus();
+                },
+                // use key-up for textarea since ENTER does not affect focus traversal
+                keyup: function(field, e) {
+                    if (e.getKey() == e.ENTER) {
 
-                            self.sendCommand(field.getValue());
-                            // add to history
-                            self.desktop_console_history[self.desktop_console_history.length] = field.getValue().substring(0, field.getValue().length - 1);
-                            //update index
-                            self.desktop_console_history_index = self.desktop_console_history.length;
-                            field.setValue("");
-                        } else if (e.getKey() == e.UP) {
+                        self.sendCommand(field.getValue());
+                        // add to history
+                        self.desktop_console_history[self.desktop_console_history.length] = field.getValue().substring(0, field.getValue().length - 1);
+                        //update index
+                        self.desktop_console_history_index = self.desktop_console_history.length;
+                        field.setValue("");
+                    } else if (e.getKey() == e.UP) {
 
-                            if (self.desktop_console_history.length === 0) {
-                                // no history to display
+                        if (self.desktop_console_history.length === 0) {
+                            // no history to display
+                        } else {
+                            self.desktop_console_history_index--;
+                            if (self.desktop_console_history_index >= 0) {
+
                             } else {
-                                self.desktop_console_history_index--;
-                                if (self.desktop_console_history_index >= 0) {
-
-                                }
-                                else {
-                                    self.desktop_console_history_index = desktop_console_history.length - 1;
-                                }
-                                field.setValue(self.desktop_console_history[self.desktop_console_history_index]);
+                                self.desktop_console_history_index = self.desktop_console_history.length - 1;
                             }
+                            field.setValue(self.desktop_console_history[self.desktop_console_history_index]);
+                        }
 
-                        } else if (e.getKey() == e.DOWN) {
+                    } else if (e.getKey() == e.DOWN) {
 
-                            if (self.desktop_console_history.length === 0) {
-                                // no history to display
-                            } else {
-                                self.desktop_console_history_index++;
-                                if (self.desktop_console_history_index >= (self.desktop_console_history.length)) {
-                                    self.desktop_console_history_index = 0;
-                                }
-                                field.setValue(self.desktop_console_history[self.desktop_console_history_index]);
+                        if (self.desktop_console_history.length === 0) {
+                            // no history to display
+                        } else {
+                            self.desktop_console_history_index++;
+                            if (self.desktop_console_history_index >= (self.desktop_console_history.length)) {
+                                self.desktop_console_history_index = 0;
                             }
+                            field.setValue(self.desktop_console_history[self.desktop_console_history_index]);
                         }
                     }
                 }
             }
-        ];
+        }];
 
         this.callParent();
     },
 
-    sendCommand: function (command, includeOriginalCommand) {
+    sendCommand: function(command, includeOriginalCommand) {
         var self = this;
 
         if (Ext.isEmpty(includeOriginalCommand)) {
@@ -122,7 +118,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.CompassAeConsole.ConsolePanel", 
 
                     command_message: command
                 },
-                success: function (response) {
+                success: function(response) {
                     var text = response.responseText;
                     var result = Ext.JSON.decode(text);
                     self.update_history_panel("<div style='color:yellow;'>" + result.success + "</div>");
@@ -131,7 +127,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.CompassAeConsole.ConsolePanel", 
         }
     },
 
-    clear_history_panel: function (text) {
+    clear_history_panel: function(text) {
         var self = this,
             panel = self.down('#console_history_panel'),
             historyDiv = panel.el.query('div.compassConsoleHistory').first();
@@ -145,7 +141,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.CompassAeConsole.ConsolePanel", 
         self.sendCommand('"Ruby version: #{RUBY_VERSION}, Rails version: #{Rails.version}, CompassAeConsole version: #{CompassAeConsole.version}"', false);
     },
 
-    update_history_panel: function (text) {
+    update_history_panel: function(text) {
         var self = this,
             panel = self.down('#console_history_panel'),
             historyDiv = panel.el.query('div.compassConsoleHistory').first();
