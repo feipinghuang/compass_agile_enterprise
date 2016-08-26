@@ -23,7 +23,16 @@ class Invoice < ActiveRecord::Base
 
   acts_as_document
   can_be_generated
-  has_tracked_status
+
+  has_tracked_status({
+                       valid_transitions: {
+                         invoice_statuses_open: [:invoice_statuses_hold, :invoice_statuses_sent],
+                         invoice_statuses_sent: [:invoice_statuses_closed],
+                         invoice_statuses_hold: [:invoice_statuses_open, :invoice_statuses_sent],
+                         invoice_statuses_closed: []
+                       }
+  })
+
   tracks_created_by_updated_by
 
   belongs_to :billing_account
@@ -388,7 +397,7 @@ class Invoice < ActiveRecord::Base
     else
       role_types = RoleType.find_child_role_types([role_type])
     end
-    
+
     self.invoice_party_roles.where(role_type_id: role_types).all.collect(&:party)
   end
 
