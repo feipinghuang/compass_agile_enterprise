@@ -21,7 +21,7 @@
 class Invoice < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-  acts_as_document
+  has_file_assets
   can_be_generated
 
   has_tracked_status({
