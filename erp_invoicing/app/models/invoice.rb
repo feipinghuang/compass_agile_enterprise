@@ -189,6 +189,7 @@ class Invoice < ActiveRecord::Base
             shipping_invoice_item.amount = shipping_invoice_item.unit_price.nil? ? charge_line.money.amount : shipping_invoice_item.unit_price + charge_line.money.amount
             shipping_invoice_item.unit_price = shipping_invoice_item.unit_price.nil? ? charge_line.money.amount : shipping_invoice_item.unit_price + charge_line.money.amount
             shipping_invoice_item.taxed = charge_line.taxed?
+            shipping_invoice_item.biz_txn_acct_root = BizTxnAcctRoot.where(internal_identifier: 'shipping', biz_txn_acct_type_id: BizTxnAcctType.iid('gl_account')).first
             shipping_invoice_item.add_invoiced_record(charge_line)
 
             invoice.invoice_items << shipping_invoice_item
