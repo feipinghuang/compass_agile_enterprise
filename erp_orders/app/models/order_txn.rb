@@ -66,6 +66,16 @@ class OrderTxn < ActiveRecord::Base
         .where(biz_txn_party_roles: {party_id: User.find(filters[:user_id]).party}).uniq
       end
 
+      if filters[:status]
+        if filters[:status].is_a? Array
+          status = filters[:status]
+        else
+          status = [filters[:status]]
+        end
+
+        statement = statement.with_current_status(status)
+      end
+
       statement
     end
 

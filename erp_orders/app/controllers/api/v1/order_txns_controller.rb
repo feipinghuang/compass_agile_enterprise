@@ -44,6 +44,10 @@ module Api
           order_txns = order_txns.scope_by_dba_organization(dba_organizations)
         end
 
+        if params[:id]
+          order_txns = order_txns.where(order_txns: {id: params[:id]})
+        end
+
         if sort and dir
           order_txns = order_txns.order("#{sort} #{dir}")
         else
