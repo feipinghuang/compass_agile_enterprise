@@ -84,6 +84,40 @@ class User < ActiveRecord::Base
 
   validate :email_cannot_match_username_of_other_user
 
+  class << self
+
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=self)
+
+      if filters[:username]
+        statement = statement.where('username like ? or email like ?', "%#{filters[:username]}%", "%#{filters[:username]}%")
+      end
+
+      statement
+    end
+
+    #
+    # scoping helpers
+    #
+
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      joins(:party).joins("inner join party_relationships on party_relationships.role_type_id_to ='#{RoleType.iid('dba_org').id}'
+             and party_relationships.party_id_from = parties.id")
+      .where({party_relationships: {party_id_to: dba_organization}})
+    end
+
+    alias scope_by_dba scope_by_dba_organization
+  end
+
   def email_cannot_match_username_of_other_user
     unless User.where(:username => self.email).where('id != ?', self.id).first.nil?
       errors.add(:email, "In use by another user")

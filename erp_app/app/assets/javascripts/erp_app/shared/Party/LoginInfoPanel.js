@@ -39,9 +39,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         );
 
         me.on('afterrender', function() {
-            if (me.user) {
-                me.setFields();
-            } else if (me.userId) {
+            if (me.user || me.userId) {
                 me.load();
             } else {
                 me.setupForNewUser();
@@ -206,7 +204,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         mask.show();
 
         Compass.ErpApp.Utility.ajaxRequest({
-            url: '/api/v1/users/' + me.userId,
+            url: '/api/v1/users/' + (me.userId || me.user.id),
             method: 'GET',
             errorMessage: 'Could not load Login Info',
             success: function(response) {

@@ -1,9 +1,8 @@
 module Api
   module V1
     class UsersController < BaseController
-     
+
       def index
-        username = params[:username]
         sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
         sort = sort_hash[:property] || 'username'
         dir = sort_hash[:direction] || 'ASC'
@@ -24,21 +23,20 @@ module Api
                           dba_reln.role_type_id_to = #{RoleType.iid('dba_org').id}
                           )")
 
-        # TODO update for more advance searching
-        if params[:query_filter].present?
-          username = params[:query_filter].strip
-        end
+        query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
-        if username.blank?
-          total_count = users.uniq.count
-          users = users.order("#{sort} #{dir}").offset(start).limit(limit)
-        else
-          users = users.where('username like ? or email like ?', "%#{username}%", "%#{username}%")
-          total_count = users.uniq.count
-          users = users.order("#{sort} #{dir}").offset(start).limit(limit)
-        end
+        users = User.apply_filters(query_filter, users)
+
+        total_count = users.uniq.count
+        users = users.order("#{sort} #{dir}").offset(start).limit(limit)
 
         render json: {total_count: total_count, users: users.uniq.collect(&:to_data_hash)}
+      end
+
+      def show
+        user = User.find(params[:id])
+
+        render json: {success: true, user: user.to_data_hash}
       end
 
       def check_username
@@ -54,58 +52,7 @@ module Api
           ActiveRecord::Base.connection.transaction do
             current_user.with_capability(:create, 'User') do
 
-              user = User.new(
-                :email => params[:email],
-                :username => params[:username],
-                :password => params[:password],
-                :password_confirmation => params[:password_confirmation]
-              )
-
-              # set this to tell activation where to redirect_to for login and temp password
-              login_url = params[:login_url] || '/erp_app/login'
-
-              # if a website was selected then set it so we can use the any templates in that website
-              unless params['website_id'].blank?
-                user.add_instance_attribute(:website_id, params['website_id'])
-              end
-
-              #set this to tell activation where to redirect_to for login and temp password
-              user.add_instance_attribute(:login_url, login_url)
-              user.add_instance_attribute(:temp_password, params[:password])
-
-              if params[:auto_activate] == 'yes'
-                user.skip_activation_email = true
-              end
-
-              user.save!
-              if params[:auto_activate] == 'yes'
-                user.activate!
-              end
-
-              if params[:party_id]
-                user.party = Party.find(params[:party_id])
-                user.save!
-              else
-                individual = Individual.create(:gender => params[:gender],
-                                               :current_first_name => params[:first_name],
-                                               :current_last_name => params[:last_name])
-                user.party = individual.party
-                user.save
-
-                user.party.created_by_party = current_user.party
-                user.party.save!
-
-                # add employee role to party
-                party = individual.party
-                party.add_role_type(RoleType.find_or_create('employee', 'Employee'))
-
-                # associate the new party to the dba_organization of the user creating this user
-                relationship_type = RelationshipType.find_or_create(RoleType.find_or_create('dba_org', 'Doing Business As Organization'),
-                                                                    RoleType.find_or_create('employee', 'Employee'))
-                party.create_relationship(relationship_type.description,
-                                          current_user.party.dba_organization.id,
-                                          relationship_type)
-              end
+              user = create_user
 
               render :json => {:success => true, user: user.to_data_hash}
             end
@@ -136,53 +83,9 @@ module Api
         begin
           ActiveRecord::Base.transaction do
 
-            if params[:id]
-              user = User.find(params[:id])
-              party = user.party
-            else
-              user = current_user
-              party = user.party
-            end
-
-            if params[:password].present?
-              user.password = params[:password].strip
-              if params[:password_confirmation].present?
-                user.password_confirmation = params[:password_confirmation].strip
-              else
-                user.password_confirmation = params[:password].strip
-              end
-            end
-
-            if params[:username].present?
-              user.username = params[:username].strip
-            end
-
-            if params[:status]
-              user.activation_state = params[:status]
-            end
-
-            if params[:email].present?
-              user.email = params[:email].strip
-            end
-
-            user.save!
-
-            business_party = party.business_party
-
-            # update business party information
-            if params[:first_name].present?
-              business_party.current_first_name = params[:first_name].strip
-            end
-
-            if params[:last_name].present?
-              business_party.current_last_name = params[:last_name].strip
-            end
-
-            user.party.updated_by_party = current_user.party
-            user.party.save!
+            user = update_user
 
             render :json => {:success => true, :message => 'User updated', :user => user.to_data_hash}
-
           end
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors
@@ -196,7 +99,6 @@ module Api
 
           render :json => {:success => false, :message => 'Error updating user', :user => nil}
         end
-
       end
 
       def reset_password
@@ -263,6 +165,123 @@ module Api
 
           render :json => {:success => false, :message => 'Error updating security', :user => nil}
         end
+      end
+
+      protected
+
+      # Create User
+      #
+      # @return [User] Newly created user
+      def create_user
+        user = User.new(
+          :email => params[:email],
+          :username => params[:username],
+          :password => params[:password],
+          :password_confirmation => params[:password_confirmation]
+        )
+
+        # set this to tell activation where to redirect_to for login and temp password
+        login_url = params[:login_url] || '/erp_app/login'
+
+        # if a website was selected then set it so we can use the any templates in that website
+        unless params['website_id'].blank?
+          user.add_instance_attribute(:website_id, params['website_id'])
+        end
+
+        #set this to tell activation where to redirect_to for login and temp password
+        user.add_instance_attribute(:login_url, login_url)
+        user.add_instance_attribute(:temp_password, params[:password])
+
+        if params[:auto_activate] == 'yes'
+          user.skip_activation_email = true
+        end
+
+        user.save!
+
+        if params[:auto_activate] == 'yes'
+          user.activate!
+        end
+
+        if params[:party_id]
+          user.party = Party.find(params[:party_id])
+          user.save!
+
+          user
+        else
+          individual = Individual.create(:gender => params[:gender],
+                                         :current_first_name => params[:first_name],
+                                         :current_last_name => params[:last_name])
+          user.party = individual.party
+          user.save
+
+          user.party.created_by_party = current_user.party
+          user.party.save!
+
+          # add employee role to party
+          party = individual.party
+          party.add_role_type(RoleType.find_or_create('employee', 'Employee'))
+
+          # associate the new party to the dba_organization of the user creating this user
+          relationship_type = RelationshipType.find_or_create(RoleType.find_or_create('dba_org', 'Doing Business As Organization'),
+                                                              RoleType.find_or_create('employee', 'Employee'))
+          party.create_relationship(relationship_type.description,
+                                    current_user.party.dba_organization.id,
+                                    relationship_type)
+
+          user
+        end
+      end
+
+      # Update User
+      #
+      # @return [User] Updated user
+      def update_user
+        if params[:id]
+          user = User.find(params[:id])
+          party = user.party
+        else
+          user = current_user
+          party = user.party
+        end
+
+        if params[:password].present?
+          user.password = params[:password].strip
+          if params[:password_confirmation].present?
+            user.password_confirmation = params[:password_confirmation].strip
+          else
+            user.password_confirmation = params[:password].strip
+          end
+        end
+
+        if params[:username].present?
+          user.username = params[:username].strip
+        end
+
+        if params[:status]
+          user.activation_state = params[:status]
+        end
+
+        if params[:email].present?
+          user.email = params[:email].strip
+        end
+
+        user.save!
+
+        business_party = party.business_party
+
+        # update business party information
+        if params[:first_name].present?
+          business_party.current_first_name = params[:first_name].strip
+        end
+
+        if params[:last_name].present?
+          business_party.current_last_name = params[:last_name].strip
+        end
+
+        user.party.updated_by_party = current_user.party
+        user.party.save!
+
+        user
       end
 
     end # UsersController
