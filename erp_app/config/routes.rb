@@ -3,7 +3,11 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :applications, defaults: { :format => 'json' }
+      resources :applications, defaults: { :format => 'json' } do
+        collection do
+          post :reorder
+        end
+      end
 
       resources :users, defaults: { :format => 'json' } do
         collection do
