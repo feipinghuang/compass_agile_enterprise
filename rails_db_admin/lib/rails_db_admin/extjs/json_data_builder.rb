@@ -93,9 +93,7 @@ module RailsDbAdmin
       def get_total_count(table)
         total_count = 0
 
-        table = table_name.classify.constantize
-
-        if table.columns.collect(&:name).include?('id')
+        if table_name.classify.constantize.columns.collect(&:name).include?('id')
           rows = @connection.select_all("SELECT COUNT(id) as count FROM #{table}")
         else
           rows = @connection.select_all("SELECT COUNT(*) as count FROM #{table}")
