@@ -66,7 +66,7 @@ module RailsDbAdmin
         arel_table = Arel::Table::new(table)
 
         query = arel_table.project(
-          Arel.sql('*')).where(arel_table[id[0].to_sym].eq(id[1]))
+        Arel.sql('*')).where(arel_table[id[0].to_sym].eq(id[1]))
 
         rows = @connection.select_all(query.to_sql)
         records = RailsDbAdmin::TableSupport.database_rows_to_hash(rows)
@@ -92,12 +92,20 @@ module RailsDbAdmin
 
       def get_total_count(table)
         total_count = 0
-        rows = @connection.select_all("SELECT COUNT(*) as count FROM #{table}")
+
+        table = table_name.classify.constantize
+
+        if table.columns.collect(&:name).include?('id')
+          rows = @connection.select_all("SELECT COUNT(id) as count FROM #{table}")
+        else
+          rows = @connection.select_all("SELECT COUNT(*) as count FROM #{table}")
+        end
+
         records = RailsDbAdmin::TableSupport.database_rows_to_hash(rows)
         total_count = records[0][:count]
 
         total_count
       end
-	end
+    end
   end
 end
