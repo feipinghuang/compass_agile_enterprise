@@ -16,7 +16,7 @@ Rails.application.routes.draw do
 
         resources :applications, defaults: { :format => 'json' } do
           collection do
-            put 'install'
+            put :install
           end
         end
       end

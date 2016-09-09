@@ -4,6 +4,7 @@
 #   t.column :internal_identifier, :string
 #   t.column :type, :string
 #   t.column :can_delete, :boolean, :default => true
+#   t.column :sequence, :integer, :default => 0
 #
 #   t.timestamps
 # end
@@ -22,6 +23,10 @@ class Application < ActiveRecord::Base
   validates_uniqueness_of :internal_identifier, :scope => :type, :case_sensitive => false
 
   class << self
+    def sequenced
+      order('sequence ASC')
+    end
+
     def iid(internal_identifier)
       find_by_internal_identifier(internal_identifier)
     end
