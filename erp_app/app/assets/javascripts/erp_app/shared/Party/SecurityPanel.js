@@ -199,7 +199,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.SecurityPanel", {
 
         me.down('#capabilitiesTree').getRootNode().expand(false);
 
-        me.on('activate', function() {
+        me.on('render', function() {
             if (me.userId) {
                 var mask = new Ext.LoadMask({
                     msg: 'Please wait...',
