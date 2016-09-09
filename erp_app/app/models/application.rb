@@ -54,8 +54,9 @@ class Application < ActiveRecord::Base
     # @param dba_organization [Party] dba organization to scope by
     #
     # @return [ActiveRecord::Relation]
-    def scope_by_dba_organization(dba_organization)
-      scope_by_party(dba_organization, {role_types: [RoleType.iid('dba_org')]})
+    def scope_by_dba_organization(dba_organization, options={})
+      options[:role_types] = [RoleType.iid('dba_org')]
+      scope_by_party(dba_organization, options)
     end
 
     alias scope_by_dba scope_by_dba_organization
@@ -69,17 +70,31 @@ class Application < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_party(party, options={})
-      table_alias = String.random
+      application_table = Application.arel_table
+      entity_party_roles_alias = EntityPartyRole.arel_table.alias("entity_party_roles_alias")
 
-      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = applications.id
-                         and \"#{table_alias}\".entity_record_type = 'Application'")
-      .where("#{table_alias}.party_id" => party).uniq
+      statement = application_table.project(application_table[Arel.star]).join(entity_party_roles_alias)
+                                   .on(application_table[:id].eq(entity_party_roles_alias[:entity_record_id]))
+                                   .where(entity_party_roles_alias[:entity_record_type].eq("Application"))
+                                   .where(entity_party_roles_alias[:party_id].eq(party.id))
 
       if options[:role_types]
-        statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
+        statement = statement.where(entity_party_roles_alias[:role_type_id].in(RoleType.find_child_role_types(options[:role_types]).map{|rt| rt.id}))
       end
 
-      statement
+      if options[:types].present?
+        types = options[:types].split(',')
+
+        # if types length is 1 then we only want tools or apps
+        if types.length == 1
+          if types.first == 'tool'
+            statement = statement.where(application_table[:type].eq('DesktopApplication'))
+          elsif types.first == 'app'
+            statement = statement.where(application_table[:type].eq(nil))
+          end
+        end
+      end
+      Application.find_by_sql (statement.to_sql)
     end
 
     def allows_business_modules
@@ -89,7 +104,7 @@ class Application < ActiveRecord::Base
     def desktop_applications
       where('type = ?', 'DesktopApplication')
     end
-    
+
     alias tools desktop_applications
   end
 

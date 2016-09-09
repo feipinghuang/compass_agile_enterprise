@@ -17,13 +17,23 @@ module RailsDbAdmin
 
       values = []
       columns = []
- 
+
       if @connection.class == ActiveRecord::ConnectionAdapters::PostgreSQLAdapter
         columns = result.fields
 
         if result && result.count > 0
           result.each do |row|
             values << HashWithIndifferentAccess.new(row)
+          end
+        end
+      elsif @connection.class == ActiveRecord::ConnectionAdapters::Mysql2Adapter
+        columns = result.fields
+
+        if result && result.count > 0
+          result.each do |row|
+            result_hash = {}
+            columns.zip(row) { |key,value| result_hash[key] = value }
+            values << HashWithIndifferentAccess.new(result_hash)
           end
         end
       else
