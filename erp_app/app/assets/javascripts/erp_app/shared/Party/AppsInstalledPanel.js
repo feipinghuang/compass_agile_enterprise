@@ -148,7 +148,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.AppsInstalledPanel", {
             }]
         });
 
-        me.on('activate', function() {
+        me.on('render', function() {
             me.setDbaOrganizationOnApplications();
 
             var loadToolsTree = function() {
