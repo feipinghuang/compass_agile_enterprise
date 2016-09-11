@@ -456,7 +456,7 @@ module Api
           work_effort.move_to_child_of(parent)
 
           # if there is no parent then move to root
-        else
+        elsif data[:parent_id] == 'root'
           work_effort.move_to_root
         end
 

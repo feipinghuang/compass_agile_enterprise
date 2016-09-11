@@ -34,6 +34,7 @@ Rails.application.routes.draw do
           put :reset_password
           get :effective_security
           put :update_security
+          post :update_profile_image
         end
 
         resources :security_roles, defaults: { :format => 'json' }
