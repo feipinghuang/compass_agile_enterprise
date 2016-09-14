@@ -24,12 +24,12 @@ module Api
         # scope by dba_organizations if there are no parties passed as filters
         dba_organizations = [current_user.party.dba_organization]
         dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
-        categories = categories.scope_by_dba_organization(dba_organizations)
+        categories = categories.by_tenant(dba_organizations)
 
         if query_filter[:with_products]
           category_ids_with_products = []
 
-          Category.scope_by_dba_organization(dba_organizations)
+          Category.by_tenant(dba_organizations)
           .joins(:category_classifications)
           .joins("join product_types on product_types.id = category_classifications.classification_id
                 and category_classifications.classification_type = 'ProductType' ").uniq.each do |category|
@@ -122,9 +122,7 @@ module Api
               end
             end
 
-            EntityPartyRole.create(party: current_user.party.dba_organization,
-                                   role_type: RoleType.iid('dba_org'),
-                                   entity_record: category)
+            category.set_tenant!(current_user.party.dba_organization)
 
             render json: {success: true, category: category.to_data_hash}
           end

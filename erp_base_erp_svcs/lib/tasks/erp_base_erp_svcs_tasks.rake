@@ -114,6 +114,15 @@ namespace :compass_ae do
         end
       end
 
+      puts "update categories to use is_tenantable"
+      Category.all.each do |category|
+        tenant = EntityPartyRole.where(entity_record_id: category.id, entity_record_type: 'Category', role_type_id: RoleType.iid('dba_org').id).first.try(:party)
+
+        if tenant
+          category.set_tenant!(tenant)
+        end
+      end
+
     end
 
   end # upgrade

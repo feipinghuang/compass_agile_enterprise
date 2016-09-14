@@ -15,6 +15,8 @@
 #     t.integer :lft
 #     t.integer :rgt
 #
+#     t.integer :tenant_id
+#
 #     t.timestamps
 #   end
 #   add_index :categories, [:category_record_id, :category_record_type], :name => "category_polymorphic"
@@ -22,11 +24,12 @@
 #   add_index :categories, :parent_id, :name => 'categories_parent_id_idx'
 #   add_index :categories, :lft, :name => 'categories_lft_idx'
 #   add_index :categories, :rgt, :name => 'categories_rgt_idx'
+#   add_index :categories, :tenant_id, name: 'categories_tenant_idx'
 # end
 
 class Category < ActiveRecord::Base
   
-  has_party_roles
+  is_tenantable
   acts_as_erp_type
   acts_as_nested_set
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
