@@ -222,8 +222,6 @@ module Api
         if params[:party_id]
           user.party = Party.find(params[:party_id])
           user.save!
-
-          user
         else
           individual = Individual.create(:gender => params[:gender],
                                          :current_first_name => params[:first_name],
@@ -244,13 +242,13 @@ module Api
           party.create_relationship(relationship_type.description,
                                     current_user.party.dba_organization.id,
                                     relationship_type)
-
-          user
         end
 
         if params[:profile_image]
           user.set_profile_image(params[:profile_image].read, params[:profile_image].original_filename) 
         end
+
+        user
       end
 
       # Update User
