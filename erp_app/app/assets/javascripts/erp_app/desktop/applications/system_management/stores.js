@@ -16,13 +16,13 @@ Ext.define('SystemManagementTypeTreeNodeStore', {
     autoLoad: true,
     extend: 'Ext.data.TreeStore',
     model: 'SystemManagementTypeTreeNode',
-    folderSort: true,
+    /*folderSort: true,
     sorters: [
         {
             property: 'text',
             direction: 'ASC'
         }
-    ],
+    ],*/
     proxy: {
         type: 'ajax',
         url: '/erp_app/desktop/system_management/types',

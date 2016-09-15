@@ -127,7 +127,11 @@ ErpApp::Engine.routes.draw do
 
     # system management
     namespace :system_management do
-      resources :types
+      resources :types do
+        collection do
+          post 'reorder'
+        end
+      end
     end
   end
 
