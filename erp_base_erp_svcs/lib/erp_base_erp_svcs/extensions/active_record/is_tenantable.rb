@@ -11,8 +11,6 @@ module ErpBaseErpSvcs
             extend IsTenantable::SingletonMethods
             include IsTenantable::InstanceMethods
 
-            validates :tenant_id, presence: true
-
             belongs_to :tenant, class_name: 'Party'
           end
         end # ClassMethods

@@ -23,6 +23,7 @@ module ErpApp
               if current_user
                 current_user = {
                     username: user.username,
+                    profileImageUrl: user.profile_image.try(:fully_qualified_url),
                     lastloginAt: user.last_login_at,
                     lastActivityAt: user.last_activity_at,
                     failedLoginCount: user.failed_logins_count,
