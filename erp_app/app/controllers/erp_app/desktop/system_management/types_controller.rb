@@ -43,7 +43,11 @@ module ErpApp
 
             if query_filter
               query_results = compass_ae_type.where("description ILIKE '%#{query_filter[:keyword]}%' OR internal_identifier ILIKE '%#{query_filter[:keyword]}%'").all
-              root_ids = query_results.collect{|type| type.root.id}.uniq
+              if compass_ae_type.respond_to?(:roots)
+                root_ids = query_results.collect{|type| type.root.id}.uniq
+              else
+                root_ids = query_results.collect{|type| type.id}.uniq
+              end
 
               unless root_ids.empty?
                 compass_ae_type.where("id in (#{root_ids.join(',')})").each do |record|
@@ -133,7 +137,7 @@ module ErpApp
             # email error
             ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-            render json: {success: false, message: 'Application Error'}
+            render json: {success: false, message: ex.message}
           end
         end
 
@@ -160,7 +164,7 @@ module ErpApp
             # email error
             ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-            render json: {success: false, message: 'Application Error'}
+            render json: {success: false, message: ex.message}
           end
         end
 
