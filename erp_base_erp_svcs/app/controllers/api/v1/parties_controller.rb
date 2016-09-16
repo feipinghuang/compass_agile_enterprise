@@ -219,6 +219,9 @@ module Api
 
             if params[:description].present?
               party.description = params[:description]
+              if party.business_party.respond_to?(:description)
+                party.business_party.description = params[:description]
+              end
             end
 
             if params[:first_name].present?
