@@ -1,7 +1,7 @@
 Ext.define("Compass.ErpApp.Shared.DynamicEditableGrid", {
     extend: "Ext.grid.Panel",
     alias: 'widget.shared_dynamiceditablegrid',
-    initComponent: function () {
+    initComponent: function() {
         var config = this.initialConfig;
         //set a default proxy if none provided
         if (config.proxy === undefined ||
@@ -22,7 +22,7 @@ Ext.define("Compass.ErpApp.Shared.DynamicEditableGrid", {
                     root: 'data'
                 },
                 listeners: {
-                    exception: function (proxy, response, operation) {
+                    exception: function(proxy, response, operation) {
                         Ext.MessageBox.show({
                             title: 'REMOTE EXCEPTION',
                             msg: operation.getError(),
@@ -59,7 +59,7 @@ Ext.define("Compass.ErpApp.Shared.DynamicEditableGrid", {
         this.callParent(arguments);
     },
 
-    constructor: function (config) {
+    constructor: function(config) {
         var me = this,
             plugins = [];
 
@@ -83,22 +83,20 @@ Ext.define("Compass.ErpApp.Shared.DynamicEditableGrid", {
 
             if (config.showEditorToolbar) {
                 tbar = {
-                    items: [
-                        {
+                    items: [{
                             text: 'Add',
                             iconCls: 'icon-add',
-                            handler: function (button) {
+                            handler: function(button) {
                                 var grid = button.findParentByType('shared_dynamiceditablegrid');
                                 var edit = grid.editing;
                                 grid.store.insert(0, new Model());
                                 edit.startEdit(0, 0);
                             }
                         },
-                        '-',
-                        {
+                        '-', {
                             text: 'Delete',
                             iconCls: 'icon-delete',
-                            handler: function (button) {
+                            handler: function(button) {
                                 var grid = button.findParentByType('shared_dynamiceditablegrid');
                                 var selection = grid.getView().getSelectionModel().getSelection()[0];
                                 if (selection) {
@@ -109,43 +107,37 @@ Ext.define("Compass.ErpApp.Shared.DynamicEditableGrid", {
                     ]
                 };
 
-                if (config.searchable){
-                    var searchable_toolbar = [
+                var searchable_toolbar = [];
+                if (config.searchable) {
+                    searchable_toolbar = [
                         '-',
-                        'Search',
-                        {
+                        'Search', {
                             xtype: 'textfield',
                             emptyText: 'Find',
                             width: 200,
                             listeners: {
-                                specialkey: function (field, e) {
+                                specialkey: function(field, e) {
                                     if (e.getKey() == e.ENTER) {
                                         var button = field.up('toolbar').down('#searchbtn');
                                         button.fireEvent('click', button);
                                     }
                                 }
                             }
-                        },
-                        {
+                        }, {
                             xtype: 'button',
                             itemId: 'searchbtn',
                             icon: '/assets/erp_app/organizer/applications/crm/toolbar_find.png',
                             listeners: {
-                                click: function (button, e, eOpts) {
+                                click: function(button, e, eOpts) {
                                     var value = this.up().down('textfield').getValue();
-                                    me.store.load({
-                                        params: {
-                                            query_filter: value
-                                        }
-                                    });
+
+                                    me.store.getProxy().setExtraParam('query_filter', value);
+
+                                    me.store.loadPage(1);
                                 }
                             }
                         }
-                    ]
-
-                }
-                else{
-                    var searchable_toolbar = [];
+                    ];
                 }
 
                 tbar.items = tbar.items.concat(searchable_toolbar);
