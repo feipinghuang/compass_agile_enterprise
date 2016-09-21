@@ -84,7 +84,9 @@ class WorkEffort < ActiveRecord::Base
   has_many :work_effort_party_assignments, :dependent => :destroy
   has_many :parties, :through => :work_effort_party_assignments do
     def work_resources
-      where('work_effort_party_assignments.role_type_id' => RoleType.iid('work_resource'))
+      role_types = RoleType.find_child_role_types(['work_resource'])
+
+      where('work_effort_party_assignments.role_type_id' => role_types)
     end
   end
 
