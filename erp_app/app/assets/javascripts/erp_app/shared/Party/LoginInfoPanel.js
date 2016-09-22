@@ -191,6 +191,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
                     btn.enable();
 
                     me.fireEvent('userinformationloaded', me, me.user);
+                    me.up('#user_management').down('usermanagement_usersgrid').getStore().load();
                 },
                 failure: function() {
                     btn.enable();
