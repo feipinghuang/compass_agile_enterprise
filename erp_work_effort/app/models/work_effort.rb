@@ -424,11 +424,15 @@ class WorkEffort < ActiveRecord::Base
   def descendants_complete?(ignored_id=nil)
     all_complete = true
 
-    descendants.each do |node|
-      unless node.id == ignored_id
-        if !node.is_complete?
-          all_complete = false
-          break
+    if descendants.count == 0
+      all_complete = false
+    else
+      descendants.each do |node|
+        unless node.id == ignored_id
+          if !node.is_complete?
+            all_complete = false
+            break
+          end
         end
       end
     end
