@@ -26,13 +26,16 @@
 #   t.column  :cylindrical,              :boolean
 #   t.column  :taxable                   :boolean
 #   t.column  :available_on_web          :boolean
+#
 #   t.references :unit_of_measurement
-#   t.references :biz_txn_acct_root
+#   t.references :revenue_gl_account
+#   t.references :expense_gl_account
 #
 #   t.timestamps
 # end
 #
-# add_index :product_types, :biz_txn_acct_root_id
+# add_index :product_types, :revenue_gl_account_id, name: 'product_types_rev_gl_acct_idx'
+# add_index :product_types, :expense_gl_account_id, name: 'product_types_exp_gl_acct_idx'
 
 class ProductType < ActiveRecord::Base
   attr_protected :created_at, :updated_at
@@ -47,7 +50,9 @@ class ProductType < ActiveRecord::Base
 
   belongs_to :product_type_record, polymorphic: true
   belongs_to :unit_of_measurement
-  belongs_to :biz_txn_acct_root
+
+  belongs_to :revenue_gl_account, class_name: 'BizTxnAcctRoot', foreign_key: 'revenue_gl_account_id'
+  belongs_to :expense_gl_account, class_name: 'BizTxnAcctRoot', foreign_key: 'expense_gl_account_id'
 
   has_one :product_instance
   has_many :product_type_pty_roles, dependent: :destroy
@@ -59,8 +64,6 @@ class ProductType < ActiveRecord::Base
   has_many :product_option_applicabilities, dependent: :destroy, as: :optioned_record
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
-
-  alias :gl_account :biz_txn_acct_root
 
   class << self
     # Filter records
@@ -169,18 +172,31 @@ class ProductType < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(only: [
-              :id,
-              :description,
-              :internal_identifier,
-              :sku,
-              :comment,
-              :created_at,
-              :updated_at
-            ],
-            unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
-            price: try(:get_current_simple_plan).try(:money_amount),
-            gl_account: try(:gl_account).try(:to_data_hash))
+    data = to_hash(only: [
+                     :id,
+                     :description,
+                     :internal_identifier,
+                     :sku,
+                     :comment,
+                     :created_at,
+                     :updated_at
+                   ],
+                   unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
+                   price: try(:get_current_simple_plan).try(:money_amount),
+                   cost: custom_fields['cost'],
+                   revenue_gl_account: try(:revenue_gl_account).try(:to_data_hash),
+                   expense_gl_account: try(:expense_gl_account).try(:to_data_hash),
+                   images: [])
+
+    if self.images.empty?
+      data[:images] << "#{ErpTechSvcs::Config.file_protocol}://#{ErpTechSvcs::Config.installation_domain}/#{Rails.configuration.assets.prefix}/place_holder.jpeg"
+    else
+      self.images.each do |image|
+        data[:images] << image.fully_qualified_url
+      end
+    end
+
+    data
   end
 
   def to_display_hash
@@ -233,14 +249,14 @@ class ProductType < ActiveRecord::Base
     ProductTypePtyRole.create(party: party, role_type: role_type, product_type: self)
   end
 
-  def find_party_by_role(role_type)
-    if role_type.is_a?(String)
-      role_type = RoleType.find_child_role_types([role_type])
-    else
-      role_type = RoleType.find_child_role_types([role_type.iid])
+  def find_party_by_role(role_types)
+    unless role_types.is_a? Array
+      role_types = [role_types]
     end
 
-    product_type_pty_roles.where(role_type_id: role_type).first.try(:party)
+    role_types = RoleType.find_child_role_types(role_types)
+
+    product_type_pty_roles.where(role_type_id: role_types).first.try(:party)
   end
 
   def has_dimensions?

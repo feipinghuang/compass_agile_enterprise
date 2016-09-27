@@ -41,13 +41,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
                 params: {
                     database: self.getDatabase()
                 },
-                grid_listeners: {
-                    validateedit: {
-                        fn: function(editor, e) {
-                            this.store.proxy.setOldModel(e.record);
-                        }
-                    }
-                },
                 proxy: {
                     type: 'rest',
                     url: '/rails_db_admin/erp_app/desktop/base/table_data/' + table,
@@ -350,7 +343,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
         var itemId = Compass.ErpApp.Utility.Encryption.MD5(node.data.id);
         var item = centerRegion.getComponent(itemId);
         var imgSrc = '/download/' + node.data.text + '?path=' + node.data.parentId;
-        var title = node.data.text + ' (' + node.parentNode.data.reportName + ')'
+        var title = node.data.text + ' (' + node.parentNode.data.reportName + ')';
         if (Compass.ErpApp.Utility.isBlank(item)) {
             item = Ext.create('Ext.panel.Panel', {
                 closable: true,
@@ -459,6 +452,40 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin", {
 
         if (!win) {
             this.container = Ext.create('Ext.tab.Panel', {
+                plugins: Ext.create('Ext.ux.TabCloseMenu', {
+                    extraItemsTail: [
+                        '-', {
+                            text: 'Closable',
+                            checked: true,
+                            hideOnClick: true,
+                            handler: function(item) {
+                                currentItem.tab.setClosable(item.checked);
+                            }
+                        },
+                        '-', {
+                            text: 'Enabled',
+                            checked: true,
+                            hideOnClick: true,
+                            handler: function(item) {
+                                currentItem.tab.setDisabled(!item.checked);
+                            }
+                        }
+                    ],
+                    listeners: {
+                        beforemenu: function(menu, item) {
+                            var enabled = menu.child('[text="Enabled"]');
+                            menu.child('[text="Closable"]').setChecked(item.closable);
+                            if (item.tab.active) {
+                                enabled.disable();
+                            } else {
+                                enabled.enable();
+                                enabled.setChecked(!item.tab.isDisabled());
+                            }
+
+                            currentItem = item;
+                        }
+                    }
+                }),
                 itemId: 'centerRegion',
                 region: 'center',
                 margins: '0 0 0 0',
@@ -574,8 +601,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
         this.store = Ext.create('Ext.data.ArrayStore', {
             fields: ['display', 'value'],
             data: [
-                ['False', false],
-                ['True', true]
+                ['False', 'f'],
+                ['True', 't']
             ]
         });
 
@@ -587,13 +614,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
             displayField: 'display',
             triggerAction: 'all',
             forceSelection: true,
-            mode: 'local'
+            queryMode: 'local'
         }, config);
 
         this.callParent([config]);
     }
 });
 
-Compass.ErpApp.Desktop.Applications.RailsDbAdmin.renderBooleanColumn = function(v) {
-    return (v == 1) ? "True" : "False";
+Compass.ErpApp.Desktop.Applications.RailsDbAdmin.renderBooleanColumn = function(value) {
+    if (value == "t") {
+        return "True";
+    } else if (value == "f") {
+        return "False";
+    } else {
+        return null;
+    }
 };

@@ -54,9 +54,8 @@ module Api
         unless params[:id].blank?
           parties = parties.where(id: params[:id].split(','))
         end
-
         unless role_types.blank?
-          if params[:include_child_roles]
+          if params[:include_child_roles].present? and params[:include_child_roles].to_bool
             role_types = RoleType.find_child_role_types(role_types.split(',')).collect{|role_type| role_type.internal_identifier}
           else
             role_types = role_types.split(',')
@@ -219,6 +218,9 @@ module Api
 
             if params[:description].present?
               party.description = params[:description]
+              if party.business_party.respond_to?(:description)
+                party.business_party.description = params[:description]
+              end
             end
 
             if params[:first_name].present?

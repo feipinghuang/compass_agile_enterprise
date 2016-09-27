@@ -15,29 +15,26 @@ Ext.define('Ext.ux.form.DateTimeField', {
         flex: 1,
         itemId: 'date',
         listeners: {
-            change: function(comp, newValue, oldValue) {
-                var me = comp.up('datetimefield');
+            change: function(field, newValue, oldValue) {
+                var fieldContainer = field.up('datetimefield');
 
-                var value = me.timeField.getValue();
+                var _oldValue = fieldContainer.timeField.getValue();
+                var _newValue = Ext.clone(_oldValue);
 
-                if (newValue && value) {
-                    if (oldValue) {
-                        value.setMonth(oldValue.getMonth());
-                        value.setFullYear(oldValue.getFullYear());
-                        value.setDate(oldValue.getDate());
+                if (_oldValue) {
+                    _oldValue.setMonth(oldValue.getMonth());
+                    _oldValue.setFullYear(oldValue.getFullYear());
+                    _oldValue.setDate(oldValue.getDate());
+                }
 
-                        oldValue = value;
-                    }
+                if (_newValue) {
+                    _newValue.setMonth(newValue.getMonth());
+                    _newValue.setFullYear(newValue.getFullYear());
+                    _newValue.setDate(newValue.getDate());
+                }
 
-                    value = me.timeField.getValue();
-
-                    value.setMonth(newValue.getMonth());
-                    value.setFullYear(newValue.getFullYear());
-                    value.setDate(newValue.getDate());
-
-                    newValue = value;
-
-                    me.fireEvent('change', me, newValue, oldValue);
+                if (fieldContainer.fireEvent('change', fieldContainer, _newValue, _oldValue) === false) {
+                    field.setValue(oldValue);
                 }
             }
         }
@@ -47,23 +44,28 @@ Ext.define('Ext.ux.form.DateTimeField', {
         flex: 1,
         itemId: 'time',
         listeners: {
-            change: function(comp, newValue, oldValue) {
-                var me = comp.up('datetimefield');
+            change: function(field, newValue, oldValue) {
+                var fieldContainer = field.up('datetimefield');
 
-                var dateValue = me.dateField.getValue();
+                var _oldValue = oldValue;
+                var _newValue = newValue;
 
-                if (newValue && dateValue) {
-                    if (oldValue) {
-                        oldValue.setMonth(dateValue.getMonth());
-                        oldValue.setFullYear(dateValue.getFullYear());
-                        oldValue.setDate(dateValue.getDate());
-                    }
+                var date = fieldContainer.dateField.getValue();
 
-                    newValue.setMonth(dateValue.getMonth());
-                    newValue.setFullYear(dateValue.getFullYear());
-                    newValue.setDate(dateValue.getDate());
+                if (_oldValue) {
+                    _oldValue.setMonth(date.getMonth());
+                    _oldValue.setFullYear(date.getFullYear());
+                    _oldValue.setDate(date.getDate());
+                }
 
-                    me.fireEvent('change', me, newValue, oldValue);
+                if (_newValue) {
+                    _newValue.setMonth(date.getMonth());
+                    _newValue.setFullYear(date.getFullYear());
+                    _newValue.setDate(date.getDate());
+                }
+
+                if (fieldContainer.fireEvent('change', fieldContainer, _newValue, _oldValue) === false) {
+                    field.setValue(oldValue);
                 }
             }
         }

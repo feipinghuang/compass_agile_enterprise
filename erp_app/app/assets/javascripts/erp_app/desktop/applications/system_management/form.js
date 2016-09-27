@@ -41,15 +41,15 @@ Ext.define('Compass.ErpApp.Desktop.Applications.SystemManagement.Form', {
                             url += '/' + form.serverId
                         }
 
-                        var myMask = new Ext.LoadMask({
-                            msg: 'Please wait...',
-                            target: form
-                        });
-                        myMask.show();
-
-                        params = Ext.apply(params, form.getValues());
-
                         if (form.isValid()) {
+                            var myMask = new Ext.LoadMask({
+                                msg: 'Please wait...',
+                                target: form
+                            });
+                            myMask.show();
+
+                            params = Ext.apply(params, form.getValues());
+
                             Ext.Ajax.request({
                                 url: url,
                                 method: method,

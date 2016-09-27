@@ -84,6 +84,53 @@ class User < ActiveRecord::Base
 
   validate :email_cannot_match_username_of_other_user
 
+  class << self
+
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=self)
+
+      if filters[:username]
+        statement = statement.where('username like ? or email like ?', "%#{filters[:username]}%", "%#{filters[:username]}%")
+      end
+
+      statement
+    end
+
+    #
+    # scoping helpers
+    #
+
+    # scope by dba organization
+    #
+    # @param dba_organization [Party] dba organization to scope by
+    #
+    # @return [ActiveRecord::Relation]
+    def scope_by_dba_organization(dba_organization)
+      joins(:party).joins("inner join party_relationships on party_relationships.role_type_id_to ='#{RoleType.iid('dba_org').id}'
+             and party_relationships.party_id_from = parties.id")
+      .where({party_relationships: {party_id_to: dba_organization}})
+    end
+
+    alias scope_by_dba scope_by_dba_organization
+  end
+
+  def profile_image
+    self.party.images.scoped_by('is_profile_image', true).first
+  end
+
+  def set_profile_image(data, file_name)
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+
+    data = FileAsset.adjust_image(data, '200x200')
+
+    file_asset = self.party.add_file(data, File.join(file_support.root, 'file_assets', 'user', self.id.to_s, 'profile_image', file_name))
+    file_asset.add_scope('is_profile_image', true)
+  end
+
   def email_cannot_match_username_of_other_user
     unless User.where(:username => self.email).where('id != ?', self.id).first.nil?
       errors.add(:email, "In use by another user")
@@ -334,7 +381,8 @@ class User < ActiveRecord::Base
                    ],
                    display_name: party.description,
                    is_admin: party.has_security_role?('admin'),
-                   party: party.to_data_hash
+                   party: party.to_data_hash,
+                   profile_image_url: profile_image.try(:fully_qualified_url)
                    )
 
     # add first name and last name if this party is an Individual

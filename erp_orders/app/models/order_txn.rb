@@ -66,6 +66,16 @@ class OrderTxn < ActiveRecord::Base
         .where(biz_txn_party_roles: {party_id: User.find(filters[:user_id]).party}).uniq
       end
 
+      if filters[:status]
+        if filters[:status].is_a? Array
+          status = filters[:status]
+        else
+          status = [filters[:status]]
+        end
+
+        statement = statement.with_current_status(status)
+      end
+
       statement
     end
 
@@ -435,17 +445,28 @@ class OrderTxn < ActiveRecord::Base
     end
   end
 
+  # True if there is shipping info
+  #
+  def has_shipping_info?
+    !ship_to_address_line_1.nil?
+  end
+
   # Get shipping info formatted for HTML
   #
   def shipping_info
-    info = "#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1})"
+    if has_shipping_info?
 
-    if ship_to_address_line_2.present?
-      info << "<br>#{ship_to_address_line_2}"
+      info = "#{ship_to_first_name} #{ship_to_last_name}<br>#{ship_to_address_line_1}"
+
+      if ship_to_address_line_2.present?
+        info << "<br>#{ship_to_address_line_2}"
+      end
+
+      info << "<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country}"
+
+    else
+      info = ''
     end
-
-    info << "<br>#{ship_to_city} #{ship_to_state} #{ship_to_postal_code}<br>#{ship_to_country})"
-
     info
   end
 
@@ -727,16 +748,21 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def to_data_hash
-    {
-      id: id,
-      description: description,
-      order_number: order_number,
-      amount: total_amount,
-      status: current_status_application.try(:tracked_status_type).try(:description)
-    }
-  end
+    data = to_hash({only: [:id, :description, :order_number,
+                           :ship_to_address_line_1, :ship_to_address_line_2, :ship_to_city,
+                           :ship_to_state, :ship_to_postal_code, :ship_to_country,
+                           :bill_to_address_line_1, :bill_to_address_line_2, :bill_to_city,
+                           :bill_to_state, :bill_to_postal_code, :bill_to_country],
+                    sub_total: sub_total,
+                    amount: total_amount,
+                    status: current_status_application.try(:tracked_status_type).try(:description)})
 
-  def to_mobile_hash
-    to_data_hash
+    data[:charge_lines] = charge_lines.collect(&:to_data_hash)
+
+    data[:order_line_items] = order_line_items.collect(&:to_data_hash)
+
+    data
   end
+  alias :to_mobile_hash :to_data_hash
+
 end

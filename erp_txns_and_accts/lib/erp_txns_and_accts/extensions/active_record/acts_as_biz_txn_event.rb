@@ -87,9 +87,9 @@ module ErpTxnsAndAccts
           def destroy_biz_txn_event
             self.biz_txn_event.destroy if (self.biz_txn_event && !self.biz_txn_event.frozen?)
           end
-        end
+        end # InstanceMethods
 
-      end
-    end
-  end
-end
+      end # ActsAsBizTxnEvent
+    end # ActiveRecord
+  end # Extensions
+end # ErpTxnsAndAccts

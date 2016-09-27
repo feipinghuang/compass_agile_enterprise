@@ -3,12 +3,20 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :applications, defaults: { :format => 'json' }
+      resources :applications, defaults: { :format => 'json' } do
+        collection do
+          post :reorder
+        end
+      end
 
       resources :users, defaults: { :format => 'json' } do
+        collection do
+          get :check_username
+        end
+
         resources :applications, defaults: { :format => 'json' } do
           collection do
-            put 'install'
+            put :install
           end
         end
       end
@@ -119,7 +127,11 @@ ErpApp::Engine.routes.draw do
 
     # system management
     namespace :system_management do
-      resources :types
+      resources :types do
+        collection do
+          post 'reorder'
+        end
+      end
     end
   end
 

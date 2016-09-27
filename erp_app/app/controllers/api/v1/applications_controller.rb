@@ -21,7 +21,7 @@ module Api
             if types.first == 'tool'
               applications = applications.tools
             elsif types.first == 'app'
-              applications = applications.apps
+              applications = applications.apps.order('sequence ASC')
             end
           end
         end
@@ -60,10 +60,17 @@ module Api
           ActiveRecord::Base.transaction do
             name = params[:name].strip
 
+            last_sequence = Application.scope_by_dba(current_user.party.dba_organization).apps.select('Max(sequence) as sequence').first.sequence
+            if last_sequence.nil?
+              sequence = 1
+            else
+              sequence = last_sequence + 1
+            end
 
             application = Application.create(
               description: params[:name].strip,
-              internal_identifier: (params[:internal_identifier].present? ? params[:internal_identifier].strip : Application.generate_unique_iid(name))
+              internal_identifier: (params[:internal_identifier].present? ? params[:internal_identifier].strip : Application.generate_unique_iid(name)),
+              sequence: sequence
             )
 
             current_user.apps << application
@@ -123,10 +130,19 @@ module Api
       def destroy
         application = Application.find(params[:id])
         success = false
+        sequence = application.sequence
 
         begin
           ActiveRecord::Base.transaction do
             application.destroy
+
+            #
+            # Decrement sequence of all apps that came after deleted record
+            #
+            Application.scope_by_dba(current_user.party.dba_organization).apps.where('sequence > ?', sequence).readonly(false).each do |reorder_app|
+              reorder_app.sequence = reorder_app.sequence - 1
+              reorder_app.save
+            end
 
             success = true
           end
@@ -172,6 +188,18 @@ module Api
 
           render json: {success: false, message: 'Error updating installed Applications'}
         end
+      end
+
+      def reorder
+        apps = JSON.parse(params[:apps])
+
+        apps.each do |application|
+          app = Application.find(application['app_id'])
+          app.sequence = application['sequence']
+          app.save
+        end
+
+        render json: {success: true}
       end
 
     end # ApplicationsController

@@ -24,6 +24,9 @@ module Api
           sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
           sort = sort_hash[:property] || 'description'
           dir = sort_hash[:direction] || 'ASC'
+        end
+
+        if !params[:limit].blank? && !params[:start].blank?
           limit = params[:limit] || 25
           start = params[:start] || 0
         end
@@ -39,6 +42,10 @@ module Api
           dba_organizations = [current_user.party.dba_organization]
           dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
           order_txns = order_txns.scope_by_dba_organization(dba_organizations)
+        end
+
+        if params[:id]
+          order_txns = order_txns.where(order_txns: {id: params[:id]})
         end
 
         if sort and dir
@@ -57,12 +64,12 @@ module Api
           if context[:view] == 'mobile'
             render :json => {success: true,
                              total_count: total_count,
-                             order_txns: order_txns.collect { |order_txn| order_txn.to_mobile_hash }}
+                             order_txns: order_txns.collect(&:to_data_hash)}
           end
         else
           render :json => {success: true,
                            total_count: total_count,
-                           order_txns: order_txns.collect { |order_txn| order_txn.to_data_hash }}
+                           order_txns: order_txns.collect(&:to_data_hash)}
         end
 
       end

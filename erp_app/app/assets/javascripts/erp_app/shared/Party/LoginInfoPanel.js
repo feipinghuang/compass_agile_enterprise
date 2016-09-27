@@ -11,7 +11,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
     partyId: null,
     user: null,
     autoScroll: true,
-    fieldSetHeights: 250,
+    fieldSetHeights: 375,
 
     dockedItems: {
         xtype: 'toolbar',
@@ -39,9 +39,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         );
 
         me.on('afterrender', function() {
-            if (me.user) {
-                me.setFields();
-            } else if (me.userId) {
+            if (me.user || me.userId) {
                 me.load();
             } else {
                 me.setupForNewUser();
@@ -73,6 +71,19 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
             },
             itemId: 'loginInfoFieldSet',
             items: [{
+                width: 250,
+                xtype: 'imageuploadfield',
+                itemId: 'profileImage',
+                title: 'Profile Image',
+                buttonText: 'Choose image',
+                spriteMode: false,
+                allowBlank: true,
+                imageWidth: 100,
+                imageHeight: 100,
+                submit: false,
+                name: 'profile_image',
+                previewImageSrc: '/assets/default-profile.png'
+            }, {
                 xtype: 'textfield',
                 fieldLabel: 'Username',
                 name: 'username',
@@ -165,32 +176,25 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         if (me.isValid()) {
             btn.disable();
 
-            var mask = new Ext.LoadMask({
-                msg: 'Please wait...',
-                target: me
-            });
-            mask.show();
-
-            Compass.ErpApp.Utility.ajaxRequest({
+            me.submitWithImage({
                 url: (me.user ? ('/api/v1/users/' + me.userId) : '/api/v1/users'),
                 method: (me.user ? 'PUT' : 'POST'),
-                params: Ext.apply({
+                params: {
                     login_url: me.loginPath,
                     party_id: me.partyId,
                     website_id: me.websiteId
-                }, me.getValues()),
-                errorMessage: 'Could not save Login Info',
+                },
+                waitMsg: 'Please Wait',
                 success: function(response) {
                     me.user = response.user;
                     me.setFields();
                     btn.enable();
-                    mask.hide();
 
                     me.fireEvent('userinformationloaded', me, me.user);
+                    me.up('#user_management').down('usermanagement_usersgrid').getStore().load();
                 },
                 failure: function() {
                     btn.enable();
-                    mask.hide();
                 }
             });
         }
@@ -206,7 +210,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         mask.show();
 
         Compass.ErpApp.Utility.ajaxRequest({
-            url: '/api/v1/users/' + me.userId,
+            url: '/api/v1/users/' + (me.userId || me.user.id),
             method: 'GET',
             errorMessage: 'Could not load Login Info',
             success: function(response) {
@@ -240,7 +244,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 
         // add Status
         if (!me.down('#status')) {
-            me.down('#loginInfoFieldSet').insert(0, {
+            me.down('#loginInfoFieldSet').insert(1, {
                 xtype: 'radiogroup',
                 fieldLabel: 'Status',
                 labelWrap: true,
@@ -263,6 +267,10 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
                     checked: (me.user.activation_state == 'inactive')
                 }]
             });
+        }
+
+        if (me.user.profile_image_url) {
+            me.down('#profileImage').setValue(me.user.profile_image_url);
         }
 
         if (me.user.last_login_at) {

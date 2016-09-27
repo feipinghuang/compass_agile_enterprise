@@ -1,6 +1,7 @@
 Api::V1::BaseController.class_eval do
 
-  before_filter :require_login, except: [:generate_auth_token, :auth_token_valid]
+  # check_username is added because the users api controller is loaded before this file is loaded
+  before_filter :require_login, except: [:generate_auth_token, :auth_token_valid, :check_username]
 
   def generate_auth_token
     if params[:username] && params[:password] && (user = login(params[:username].strip, params[:password].strip))
