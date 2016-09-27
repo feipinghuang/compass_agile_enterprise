@@ -5,6 +5,7 @@
 #     t.datetime :from_date
 #     t.datetime :to_date
 #     t.string :internal_identifier
+#     t.boolean :is_internal
 #
 #     # polymorphic assns
 #     t.integer :category_record_id
