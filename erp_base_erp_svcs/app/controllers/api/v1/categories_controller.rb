@@ -64,7 +64,7 @@ module Api
           format.tree do
             if params[:parent_id]
               render :json => {success: true,
-                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: category_ids_with_products})}
+                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories})}
             else
               nodes = [].tap do |nodes|
                 categories.roots.each do |root|
