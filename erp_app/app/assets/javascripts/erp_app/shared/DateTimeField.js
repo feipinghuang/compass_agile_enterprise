@@ -43,6 +43,9 @@ Ext.define('Ext.ux.form.DateTimeField', {
         increment: 30,
         flex: 1,
         itemId: 'time',
+        listConfig: {
+            initDate: Ext.Date.format(Ext.Date.add(new Date(), Ext.Date.MONTH, -1), "Y,n,j").split(",")
+        },
         listeners: {
             change: function(field, newValue, oldValue) {
                 var fieldContainer = field.up('datetimefield');
@@ -89,7 +92,7 @@ Ext.define('Ext.ux.form.DateTimeField', {
         var me = this;
         var value = null;
 
-        if (me.dateField.getValue()) {
+        if (me.dateField.getValue() && me.timeField.getValue()) {
             value = me.timeField.getValue();
             var dateValue = me.dateField.getValue();
 
