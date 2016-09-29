@@ -109,7 +109,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 
 			if (!Ext.isEmpty(me.parentType)) {
 				params['parent'] = me.parentType;
-			} else if (!Ext.isEmpty(me.parentType)) {
+			} else {
 				params['parent'] = me.defaultParentType;
 			}
 
@@ -131,7 +131,7 @@ Ext.define("Compass.ErpApp.Shared.TypeSelectionTree", {
 				}]
 			});
 
-			if (me.availableTypes) {
+			if (!Ext.isEmpty(me.availableTypes)) {
 				me.store.load({
 					params: {
 						ids: me.availableTypes.join(',')
