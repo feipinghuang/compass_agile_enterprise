@@ -6,21 +6,13 @@ class ErpAppSetup
     # contact purposes
     #######################################
     [
-        {:description => 'Default', :internal_identifier => 'default'},
-        {:description => 'Home', :internal_identifier => 'home'},
-        {:description => 'Work', :internal_identifier => 'work'},
-        {:description => 'Billing', :internal_identifier => 'billing'},
-        {:description => 'Temporary', :internal_identifier => 'temporary'},
-        {:description => 'Tax Reporting', :internal_identifier => 'tax_reporting'},
-        {:description => 'Recruiting', :internal_identifier => 'recruiting'},
-        {:description => 'Employment Offer', :internal_identifier => 'employment_offer'},
-        {:description => 'Business', :internal_identifier => 'business'},
-        {:description => 'Personal', :internal_identifier => 'personal'},
-        {:description => 'Fax', :internal_identifier => 'fax'},
-        {:description => 'Mobile', :internal_identifier => 'mobile'},
-        {:description => 'Emergency', :internal_identifier => 'emergency'},
-        {:description => 'Shipping', :internal_identifier => 'shipping'},
-        {:description => 'Other', :internal_identifier => 'other'},
+      {:description => 'Default', :internal_identifier => 'default'},
+      {:description => 'Home', :internal_identifier => 'home'},
+      {:description => 'Work', :internal_identifier => 'work'},
+      {:description => 'Billing', :internal_identifier => 'billing'},
+      {:description => 'Billing', :internal_identifier => 'shipping'},
+      {:description => 'Fax', :internal_identifier => 'fax'},
+      {:description => 'Other', :internal_identifier => 'other'}
     ].each do |item|
       contact_purpose = ContactPurpose.find_by_internal_identifier(item[:internal_identifier])
       ContactPurpose.create(:description => item[:description], :internal_identifier => item[:internal_identifier]) if contact_purpose.nil?
@@ -63,20 +55,9 @@ class ErpAppSetup
 
     #create application and assign widgets
     user_mgr_app = DesktopApplication.create(
-        :description => 'User Management',
-        :icon => 'icon-user',
-        :internal_identifier => 'user_management'
-    )
-
-    #######################################
-    # organizer setup
-    #######################################
-
-    #create application
-    crm_app = Application.create(
-        :description => 'CRM',
-        :icon => 'icon-user',
-        :internal_identifier => 'crm'
+      :description => 'User Management',
+      :icon => 'icon-user',
+      :internal_identifier => 'user_management'
     )
 
     #######################################
@@ -103,19 +84,18 @@ class ErpAppSetup
     # users
     #######################################
     admin_user = User.create(
-        :username => "admin",
-        :email => "admin@portablemind.com"
+      :username => "admin",
+      :email => "admin@portablemind.com"
     )
     admin_user.password = 'password'
     admin_user.password_confirmation = 'password'
-	admin_user.save
+    admin_user.save
     admin_user.party = admin_party
     admin_user.activate!
     admin_user.save
     admin_user.add_security_role('admin')
     admin_user.save
 
-    admin_user.apps << crm_app
     admin_user.desktop_applications << user_mgr_app
     admin_user.save
 
@@ -123,36 +103,36 @@ class ErpAppSetup
     # Create applications
     ########################################
     app = DesktopApplication.create(
-        :description => 'Audit Log Viewer',
-        :icon => 'icon-history',
-        :internal_identifier => 'audit_log_viewer'
+      :description => 'Audit Log Viewer',
+      :icon => 'icon-history',
+      :internal_identifier => 'audit_log_viewer'
     )
 
     admin_user.desktop_applications << app
     admin_user.save
 
     app = DesktopApplication.create(
-        :description => 'File Manager',
-        :icon => 'icon-folders',
-        :internal_identifier => 'file_manager'
+      :description => 'File Manager',
+      :icon => 'icon-folders',
+      :internal_identifier => 'file_manager'
     )
 
     admin_user.desktop_applications << app
     admin_user.save
 
     app = DesktopApplication.create(
-        :description => 'Job Tracker',
-        :icon => 'icon-calendar',
-        :internal_identifier => 'job_tracker'
+      :description => 'Job Tracker',
+      :icon => 'icon-calendar',
+      :internal_identifier => 'job_tracker'
     )
 
     admin_user.desktop_applications << app
     admin_user.save
 
     app = DesktopApplication.create(
-        :description => 'Security Management',
-        :icon => 'icon-key',
-        :internal_identifier => 'security_management',
+      :description => 'Security Management',
+      :icon => 'icon-key',
+      :internal_identifier => 'security_management',
     )
 
     admin_user.desktop_applications << app
@@ -162,8 +142,8 @@ class ErpAppSetup
     # Create Job Trackers
     ########################################
     JobTracker.create(
-        :job_name => 'Delete Expired Sessions',
-        :job_klass => 'ErpTechSvcs::Sessions::DeleteExpiredSessionsJob'
+      :job_name => 'Delete Expired Sessions',
+      :job_klass => 'ErpTechSvcs::Sessions::DeleteExpiredSessionsJob'
     )
 
     #
