@@ -183,6 +183,22 @@ Ext.override(Ext.menu.Menu, {
     }
 });
 
+Ext.override(Ext.grid.RowEditor, {
+    initComponent: function() {
+        var me = this;
+        me.addEvents(
+            /*
+             * @event updated
+             * Fires when a record is updated
+             * @param {Compass.ErpApp.Shared.BusinessModule.DetailView} this
+             * @param {Int} updatedPartyId
+             */
+            'updated'
+        );
+        me.callParent();
+    }
+});
+
 // Upate to include time zone
 Ext.JSON.encodeDate = function(o) {
     return '"' + Ext.Date.format(o, 'c') + '"';
