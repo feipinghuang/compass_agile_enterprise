@@ -601,8 +601,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
         this.store = Ext.create('Ext.data.ArrayStore', {
             fields: ['display', 'value'],
             data: [
-                ['False', false],
-                ['True', true]
+                ['False', 'f'],
+                ['True', 't']
             ]
         });
 
@@ -614,13 +614,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.BooleanEditor", {
             displayField: 'display',
             triggerAction: 'all',
             forceSelection: true,
-            mode: 'local'
+            queryMode: 'local'
         }, config);
 
         this.callParent([config]);
     }
 });
 
-Compass.ErpApp.Desktop.Applications.RailsDbAdmin.renderBooleanColumn = function(v) {
-    return (v == 1) ? "True" : "False";
+Compass.ErpApp.Desktop.Applications.RailsDbAdmin.renderBooleanColumn = function(value) {
+    if (value == "t") {
+        return "True";
+    } else if (value == "f") {
+        return "False";
+    } else {
+        return null;
+    }
 };

@@ -1,4 +1,28 @@
+# create_table :inventory_entries do |t|
+#   t.column :description, :string
+#   t.column :inventory_entry_record_id, :integer
+#   t.column :inventory_entry_record_type, :string
+#   t.column :external_identifier, :string
+#   t.column :external_id_source, :string
+#   t.column :product_type_id, :integer
+#   t.column :number_available, :integer
+#   t.string :sku
+#   t.integer :number_sold
+#   t.references :unit_of_measurement
+#   t.integer :number_in_stock
+#
+#   t.integer :tenant_id
+#
+#   t.timestamps
+# end
+#
+# add_index :inventory_entries, :unit_of_measurement_id, :name => 'inv_entry_uom_idx'
+# add_index :inventory_entries, [:inventory_entry_record_id, :inventory_entry_record_type], :name => "bii_1"
+# add_index :inventory_entries, :product_type_id
+
 class InventoryEntry < ActiveRecord::Base
+  is_tenantable
+
   attr_protected :created_at, :updated_at
 
   belongs_to :inventory_entry_record, :polymorphic => true
@@ -27,7 +51,9 @@ class InventoryEntry < ActiveRecord::Base
   end
 
   def current_storage_facility
-    inventory_entry_locations.last.facility
+    unless inventory_entry_locations.empty?
+      inventory_entry_locations.last.facility
+    end
   end
 
   def current_storage_facility=(facility)
@@ -42,33 +68,6 @@ class InventoryEntry < ActiveRecord::Base
     location.facility_id = facility_id
     location.inventory_entry = self
     location.save
-  end
-
-  def to_data_hash
-    data = to_hash(only: [
-                       :id,
-                       :description,
-                       :number_available,
-                       :number_in_stock,
-                       :created_at,
-                       :updated_at
-                   ],
-                   sku: get_sku,
-                   product_type: try(:product_type).try(:to_data_hash))
-
-    if get_uom
-      data[:unit_of_measurement] = get_uom.to_data_hash
-    else
-      data[:unit_of_measurement] = nil
-    end
-
-    if current_storage_facility
-      data[:inventory_storage_facility] = current_storage_facility.to_data_hash
-    else
-      data[:inventory_storage_facility] = nil
-    end
-
-    data
   end
 
   def to_label
@@ -89,6 +88,33 @@ class InventoryEntry < ActiveRecord::Base
     else
       self.unit_of_measurement
     end
+  end
+
+  def to_data_hash
+    data = to_hash(only: [
+                     :id,
+                     :description,
+                     :number_available,
+                     :number_in_stock,
+                     :created_at,
+                     :updated_at
+                   ],
+                   sku: get_sku,
+                   product_type: try(:product_type).try(:to_data_hash))
+
+    if get_uom
+      data[:unit_of_measurement] = get_uom.to_data_hash
+    else
+      data[:unit_of_measurement] = nil
+    end
+
+    if current_storage_facility
+      data[:inventory_storage_facility] = current_storage_facility.to_data_hash
+    else
+      data[:inventory_storage_facility] = nil
+    end
+
+    data
   end
 
 end

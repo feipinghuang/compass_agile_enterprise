@@ -90,10 +90,6 @@ class WorkEffort < ActiveRecord::Base
     end
   end
 
-  ## What Inventory Items are used in the execution of this Work Effort
-  has_many :work_effort_inventory_assignments, :dependent => :destroy
-  has_many :inventory_entries, :through => :work_effort_inventory_assignments
-
   ## What Fixed Assets (tools, equipment) are used in the execution of this Work Effort
   has_many :work_effort_fixed_asset_assignments, :dependent => :destroy
   has_many :fixed_assets, :through => :work_effort_fixed_asset_assignments
@@ -395,6 +391,11 @@ class WorkEffort < ActiveRecord::Base
 
     # if passed status is current status then do nothing
     unless self.current_status_type && (self.current_status_type.id == tracked_status_type.id)
+      if self.current_status_type
+        _current_status = self.current_status_type.internal_identifier
+      else
+        _current_status = nil
+      end
 
       super(args)
 
@@ -411,6 +412,14 @@ class WorkEffort < ActiveRecord::Base
       if status == @@task_status_complete_iid
         complete!
       else
+        # if there were InventoryTxns that were applied and this task went from complete to pending we
+        # need to unapply those InventoryTxns
+        if _current_status && _current_status == @@task_status_complete_iid
+          InventoryTxn.where(created_by_id: self.id, created_by_type: 'WorkEffort').each do |inventory_txn|
+            inventory_txn.unapply!
+          end
+        end
+
         update_parent_status!
       end
     end
@@ -424,11 +433,15 @@ class WorkEffort < ActiveRecord::Base
   def descendants_complete?(ignored_id=nil)
     all_complete = true
 
-    descendants.each do |node|
-      unless node.id == ignored_id
-        if !node.is_complete?
-          all_complete = false
-          break
+    if descendants.count == 0
+      all_complete = false
+    else
+      descendants.each do |node|
+        unless node.id == ignored_id
+          if !node.is_complete?
+            all_complete = false
+            break
+          end
         end
       end
     end
@@ -564,6 +577,29 @@ class WorkEffort < ActiveRecord::Base
     data
   end
 
+  # Clone this WorkEffort. Copies any assignments and watchers
+  #
+  def clone
+    _copy = self.dup
+    _copy.save!
+
+    # copy assignments
+    self.work_effort_party_assignments.each do |work_effort_party_assignment|
+      _work_effort_party_assignment_copy = work_effort_party_assignment.dup
+      _work_effort_party_assignment_copy.work_effort_id = _copy.id
+      _work_effort_party_assignment_copy.save!
+    end
+
+    # copy party roles
+    self.entity_party_roles.each do |entity_party_role|
+      entity_party_role = entity_party_role.dup
+      entity_party_role.entity_record_id = _copy.id
+      entity_party_role.save!
+    end
+
+    _copy
+  end
+
   protected
 
   # determine difference in minutes between two times
@@ -595,6 +631,11 @@ class WorkEffort < ActiveRecord::Base
       time_entry.calculate_regular_hours_in_seconds!
 
       time_entry.update_task_assignment_status(@@task_resource_status_complete_iid)
+    end
+
+    # apply any inventory_txns related to this task
+    InventoryTxn.where(created_by_id: self.id, created_by_type: 'WorkEffort').each do |inventory_txn|
+      inventory_txn.apply!
     end
 
     update_parent_status!

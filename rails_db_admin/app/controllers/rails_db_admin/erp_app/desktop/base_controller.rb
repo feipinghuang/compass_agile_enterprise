@@ -110,7 +110,7 @@ module RailsDbAdmin
           table = params[:table]
           params[:data].delete('id')
           record = nil
-
+          params[:data]["created_at"] = params[:data]["updated_at"] = Time.now
           if @table_support.primary_key?(table)
             id = @table_support.primary_key(table)
             id[1] = @table_support.insert_row(table, params[:data])

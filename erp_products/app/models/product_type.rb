@@ -76,6 +76,10 @@ class ProductType < ActiveRecord::Base
         statement = ProductType
       end
 
+      if filters[:id]
+        statement = statement.where(id: filters[:id])
+      end
+
       if filters[:category_id]
         statement = statement.joins("inner join category_classifications on category_classifications.classification_type = 'ProductType'
                          and category_classifications.classification_id = product_types.id")

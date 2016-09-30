@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       resources :email_addresses, defaults: { :format => 'json' }
       resources :phone_numbers, defaults: { :format => 'json' }
       resources :postal_addresses, defaults: { :format => 'json' }
+      resources :facilities, defaults: { :format => 'json' }
     end
   end
 

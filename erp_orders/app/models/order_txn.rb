@@ -319,20 +319,16 @@ class OrderTxn < ActiveRecord::Base
     product_type = simple_product_offer.product_type
 
     if line_item
-      ActiveRecord::Base.transaction do
-        line_item.quantity += 1
-        line_item.save
-      end
+      line_item.quantity += 1
+      line_item.save
     else
-      ActiveRecord::Base.transaction do
-        line_item = OrderLineItem.new
-        line_item.product_type = product_type
-        line_item.product_offer = simple_product_offer.product_offer
-        line_item.sold_price = simple_product_offer.get_current_simple_plan.money_amount
-        line_item.quantity = 1
-        line_item.save
-        line_items << line_item
-      end
+      line_item = OrderLineItem.new
+      line_item.product_type = product_type
+      line_item.product_offer = simple_product_offer.product_offer
+      line_item.sold_price = simple_product_offer.get_current_simple_plan.money_amount
+      line_item.quantity = 1
+      line_item.save
+      line_items << line_item
     end
 
     line_item
@@ -370,19 +366,15 @@ class OrderTxn < ActiveRecord::Base
     line_item = get_line_item_for_product_type(product_type_for_line_item)
 
     if line_item
-      ActiveRecord::Base.transaction do
-        line_item.quantity += 1
-        line_item.save
-      end
+      line_item.quantity += 1
+      line_item.save
     else
-      ActiveRecord::Base.transaction do
-        line_item = OrderLineItem.new
-        line_item.product_type = product_type_for_line_item
-        line_item.sold_price = product_type_for_line_item.get_current_simple_plan.money_amount
-        line_item.quantity = 1
-        line_item.save
-        line_items << line_item
-      end
+      line_item = OrderLineItem.new
+      line_item.product_type = product_type_for_line_item
+      line_item.sold_price = product_type_for_line_item.get_current_simple_plan.money_amount
+      line_item.quantity = 1
+      line_item.save
+      line_items << line_item
     end
 
     line_item
@@ -693,41 +685,62 @@ class OrderTxn < ActiveRecord::Base
     return result, message, authorized_txns
   end
 
-  def clone
-    ActiveRecord::Base.transaction do
-      order_txn_dup = dup
-      order_txn_dup.order_txn_record_id = nil
-      order_txn_dup.order_txn_record_type = nil
-      order_txn_dup.order_number = OrderTxn.next_order_number
-      order_txn_dup.error_message = nil
-      order_txn_dup.payment_gateway_txn_id = nil
-      order_txn_dup.credit_card_id = nil
-      order_txn_dup.initialize_biz_txn_event
-      order_txn_dup.biz_txn_event.description = self.biz_txn_event.description
+  # Clone this OrderTxn and its OrderLineItems
+  #
+  # @param [Hash] opts Options for the clone
+  # @option opts [Party] :dba_organization The DBA Org to set for the clone, if not passed it will default to the current DBA Org for the cloned OrderTxn
+  # @option opts [BizTxnType] :biz_txn_type The BizTxnType to set for the clone, if not passed it will default to the current OrderTxns BizTxnType
+  # @option opts [String] :status The status to initialize this OrderTxn with
+  # @return [OrderTxn]
+  def clone(opts={})
+    order_txn_dup = dup
+    order_txn_dup.order_txn_record_id = nil
+    order_txn_dup.order_txn_record_type = nil
+    order_txn_dup.order_number = OrderTxn.next_order_number
+    order_txn_dup.error_message = nil
+    order_txn_dup.payment_gateway_txn_id = nil
+    order_txn_dup.credit_card_id = nil
+    order_txn_dup.initialize_biz_txn_event
+    order_txn_dup.root_txn.description = self.biz_txn_event.description
 
-      # add a relationship describing the original and the clone
-      biz_txn_rel_type = BizTxnRelType.find_or_create('cloned_from', 'Cloned From', nil)
-      BizTxnRelationship.create(txn_event_to: self.root_txn,
-                                txn_event_from: order_txn_dup.root_txn,
-                                biz_txn_rel_type: biz_txn_rel_type)
-
-
-      order_line_item_rel_type = OrderLineItemRelType.find_or_create('cloned_from', 'Cloned From', nil)
-
-      self.order_line_items.each do |order_line_item|
-        order_line_item_clone = order_line_item.clone
-        order_txn_dup.order_line_items << order_line_item_clone
-
-        OrderLineItemRelationship.create(order_line_item_from: order_line_item_clone,
-                                         order_line_item_to: order_line_item,
-                                         order_line_item_rel_type: order_line_item_rel_type)
-
-      end
-      order_txn_dup.save!
-      order_txn_dup.current_status = self.current_status
-
-      order_txn_dup
+    if opts[:biz_txn_type]
+      order_txn_dup.root_txn.biz_txn_type = opts[:biz_txn_type]
+    else
+      order_txn_dup.root_txn.biz_txn_type = self.root_txn.biz_txn_type
     end
+
+    # add a relationship describing the original and the clone
+    biz_txn_rel_type = BizTxnRelType.find_or_create('cloned_from', 'Cloned From', nil)
+    BizTxnRelationship.create(txn_event_to: self.root_txn,
+                              txn_event_from: order_txn_dup.root_txn,
+                              biz_txn_rel_type: biz_txn_rel_type)
+
+
+    order_line_item_rel_type = OrderLineItemRelType.find_or_create('cloned_from', 'Cloned From', nil)
+
+    self.order_line_items.each do |order_line_item|
+      order_line_item_clone = order_line_item.clone
+      order_txn_dup.order_line_items << order_line_item_clone
+
+      OrderLineItemRelationship.create(order_line_item_from: order_line_item_clone,
+                                       order_line_item_to: order_line_item,
+                                       order_line_item_rel_type: order_line_item_rel_type)
+
+    end
+
+    order_txn_dup.save!
+
+    if opts[:status]
+      order_txn_dup.current_status = opts[:status]
+    end
+
+    if opts[:dba_organization]
+      order_txn_dup.root_txn.add_party_with_role(opts[:dba_organization], 'order_roles_dba_org')
+    else
+      order_txn_dup.root_txn.add_party_with_role(self.root_txn.find_party_by_role('order_roles_dba_org'), 'order_roles_dba_org')
+    end
+
+    order_txn_dup
   end
 
   def to_label

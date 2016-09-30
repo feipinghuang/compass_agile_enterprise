@@ -104,41 +104,6 @@ class BaseInventory < ActiveRecord::Migration
       add_index :inventory_entry_locations, :inventory_entry_id, :name => "inv_entry_loc_inv_entry_idx"
       add_index :inventory_entry_locations, :facility_id, :name => "inv_entry_loc_facility_idx"
     end
-
-    unless table_exists?(:inventory_pickup_txns)
-      create_table :inventory_pickup_txns do |t|
-
-        t.references :fixed_asset
-        t.string :description
-        t.integer :quantity
-        t.integer :unit_of_measurement_id
-        t.text :comment
-        t.references :inventory_entry
-
-        t.timestamps
-      end
-
-      add_index :inventory_pickup_txns, :fixed_asset_id
-      add_index :inventory_pickup_txns, :inventory_entry_id
-    end
-
-    unless table_exists?(:inventory_dropoff_txns)
-      create_table :inventory_dropoff_txns do |t|
-
-        t.references :fixed_asset
-        t.string :description
-        t.integer :quantity
-        t.integer :unit_of_measurement_id
-        t.text :comment
-        t.references :inventory_entry
-
-        t.timestamps
-
-      end
-
-      add_index :inventory_dropoff_txns, :fixed_asset_id
-      add_index :inventory_dropoff_txns, :inventory_entry_id
-    end
   end
 
   def self.down

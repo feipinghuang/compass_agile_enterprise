@@ -5,6 +5,7 @@
 #     t.datetime :from_date
 #     t.datetime :to_date
 #     t.string :internal_identifier
+#     t.boolean :is_internal default: false
 #
 #     # polymorphic assns
 #     t.integer :category_record_id
@@ -110,6 +111,10 @@ class Category < ActiveRecord::Base
 
     def iid(internal_identifier)
       where("internal_identifier = ?", internal_identifier).first
+    end
+
+    def non_internal
+      where('is_internal = ?', false)
     end
   end
 

@@ -50,7 +50,12 @@ module ErpTxnsAndAccts
           def without_current_status(status)
             self.joins(:biz_txn_event).where("biz_txn_events.id in (#{BizTxnEvent.select('biz_txn_events.id').without_current_status(status).to_sql})")
           end
-        end # SingletonMethods
+
+          def join_root_txn
+            joins(:biz_txn_event).uniq
+          end
+
+        end
 
         module InstanceMethods
           def root_txn
