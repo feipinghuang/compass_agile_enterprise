@@ -13,176 +13,150 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
         var me = this;
         me.items = [];
 
-        me.params.eachSlice(me.slice, function(slice) {
-            var container = {
-                xtype: 'container',
-                layout: 'hbox',
-                style: {
-                    marginBottom: '5px'
-                },
-                defaults: {
-                    labelWidth: 80,
+        if (me.params) {
+            me.params.eachSlice(me.slice, function(slice) {
+                var container = {
+                    xtype: 'container',
+                    layout: 'hbox',
                     style: {
-                        marginRight: '20px'
-                    }
-                },
-                items: []
-            };
-
-            Ext.each(slice, function(param) {
-                var defaultValue = param.default_value;
-
-                switch (param.type) {
-                    case 'text':
-                        container.items.push({
-                            xtype: 'textfield',
-                            fieldLabel: param.display_name,
-                            allowBlank: (param.required !== true),
-                            style: {
-                                marginRight: '20px'
-                            },
-                            name: param.name,
-                            value: param.default_value
-                        });
-                        break;
-                    case 'date':
-                        var today = new Date();
-                        var defaultDate = null;
-
-                        if (param.options && param.options.onlyWeeks == 'on') {
-                            defaultDate = new Date(today.getFullYear(), today.getMonth(), (today.getDate() - today.getDay() + 1));
-
-                            if (defaultValue == 'previous') {
-                                defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.DAY, 7);
-                            } else if (defaultValue == 'next') {
-                                defaultDate = Ext.Date.add(defaultDate, Ext.Date.DAY, 7);
-                            }
-
-                            container.items.push({
-                                xtype: 'datefield',
-                                allowBlank: (param.required !== true),
-                                labelWidth: 80,
-                                style: {
-                                    marginRight: '20px'
-                                },
-                                format: 'm/d/Y',
-                                fieldLabel: param.display_name,
-                                name: param.name,
-                                disabledDays: [0, 2, 3, 4, 5, 6],
-                                value: defaultDate
-                            });
-
-                        } else if (param.options && param.options.onlyMonths == 'on') {
-                            defaultDate = new Date(today.getFullYear(), today.getMonth(), 1);
-
-                            if (defaultValue == 'previous') {
-                                defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.MONTH, 1);
-                            } else if (defaultValue == 'next') {
-                                defaultDate = Ext.Date.add(defaultDate, Ext.Date.MONTH, 1);
-                            }
-
-                            container.items.push({
-                                xtype: 'monthfield',
-                                allowBlank: (param.required !== true),
-                                labelWidth: 80,
-                                style: {
-                                    marginRight: '20px'
-                                },
-                                format: 'm/d/Y',
-                                fieldLabel: param.display_name,
-                                name: param.name,
-                                value: defaultDate
-                            });
-
-                        } else {
-                            defaultDate = null;
-
-                            if (defaultValue == 'previous') {
-                                defaultDate = Ext.Date.subtract(new Date(), Ext.Date.DAY, 1);
-                            } else if (defaultValue == 'next') {
-                                defaultDate = Ext.Date.add(new Date(), Ext.Date.DAY, 1);
-                            } else if (defaultValue == 'current') {
-                                defaultDate = new Date();
-                            }
-
-                            container.items.push({
-                                xtype: 'datefield',
-                                allowBlank: (param.required !== true),
-                                labelWidth: 80,
-                                style: {
-                                    marginRight: '20px'
-                                },
-                                format: 'm/d/Y',
-                                fieldLabel: param.display_name,
-                                name: param.name,
-                                value: defaultDate
-                            });
+                        marginBottom: '5px'
+                    },
+                    defaults: {
+                        labelWidth: 80,
+                        style: {
+                            marginRight: '20px'
                         }
+                    },
+                    items: []
+                };
 
-                        break;
-                    case 'time':
-                        container.items.push({
-                            xtype: 'timefield',
-                            fieldLabel: param.display_name,
-                            allowBlank: (param.required !== true),
-                            style: {
-                                marginRight: '20px'
-                            },
-                            name: param.name,
-                            value: param.default_value
-                        });
-                        break;
-                    case 'select':
-                        var values = (!param.options.values) ? [] : eval(param.options.values);
-                        var storeData = [];
-                        for (var i = 0; i < values.length; i++) {
-                            storeData.push([values[i]]);
-                        }
+                Ext.each(slice, function(param) {
+                    var defaultValue = param.default_value;
 
-                        var arrayStore = Ext.create('Ext.data.ArrayStore', {
-                            fields: ['name'],
-                            data: storeData
-                        });
+                    switch (param.type) {
+                        case 'text':
+                            container.items.push({
+                                xtype: 'textfield',
+                                fieldLabel: param.display_name,
+                                allowBlank: (param.required !== true),
+                                style: {
+                                    marginRight: '20px'
+                                },
+                                name: param.name,
+                                value: param.default_value
+                            });
+                            break;
+                        case 'date':
+                            var today = new Date();
+                            var defaultDate = null;
 
-                        container.items.push({
-                            xtype: 'combo',
-                            allowBlank: (param.required !== true),
-                            queryMode: 'local',
-                            multiSelect: (param.options.multiSelect == 'on'),
-                            displayField: 'name',
-                            valueField: 'name',
-                            fieldLabel: param.display_name,
-                            name: param.name,
-                            store: arrayStore,
-                            value: defaultValue,
-                            listeners: {
-                                select: function(combo, records) {
-                                    if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
-                                        combo.setValue('All');
-                                    }
+                            if (param.options && param.options.onlyWeeks == 'on') {
+                                defaultDate = new Date(today.getFullYear(), today.getMonth(), (today.getDate() - today.getDay() + 1));
+
+                                if (defaultValue == 'previous') {
+                                    defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.DAY, 7);
+                                } else if (defaultValue == 'next') {
+                                    defaultDate = Ext.Date.add(defaultDate, Ext.Date.DAY, 7);
                                 }
+
+                                container.items.push({
+                                    xtype: 'datefield',
+                                    allowBlank: (param.required !== true),
+                                    labelWidth: 80,
+                                    style: {
+                                        marginRight: '20px'
+                                    },
+                                    format: 'm/d/Y',
+                                    fieldLabel: param.display_name,
+                                    name: param.name,
+                                    disabledDays: [0, 2, 3, 4, 5, 6],
+                                    value: defaultDate
+                                });
+
+                            } else if (param.options && param.options.onlyMonths == 'on') {
+                                defaultDate = new Date(today.getFullYear(), today.getMonth(), 1);
+
+                                if (defaultValue == 'previous') {
+                                    defaultDate = Ext.Date.subtract(defaultDate, Ext.Date.MONTH, 1);
+                                } else if (defaultValue == 'next') {
+                                    defaultDate = Ext.Date.add(defaultDate, Ext.Date.MONTH, 1);
+                                }
+
+                                container.items.push({
+                                    xtype: 'monthfield',
+                                    allowBlank: (param.required !== true),
+                                    labelWidth: 80,
+                                    style: {
+                                        marginRight: '20px'
+                                    },
+                                    format: 'm/d/Y',
+                                    fieldLabel: param.display_name,
+                                    name: param.name,
+                                    value: defaultDate
+                                });
+
+                            } else {
+                                defaultDate = null;
+
+                                if (defaultValue == 'previous') {
+                                    defaultDate = Ext.Date.subtract(new Date(), Ext.Date.DAY, 1);
+                                } else if (defaultValue == 'next') {
+                                    defaultDate = Ext.Date.add(new Date(), Ext.Date.DAY, 1);
+                                } else if (defaultValue == 'current') {
+                                    defaultDate = new Date();
+                                }
+
+                                container.items.push({
+                                    xtype: 'datefield',
+                                    allowBlank: (param.required !== true),
+                                    labelWidth: 80,
+                                    style: {
+                                        marginRight: '20px'
+                                    },
+                                    format: 'm/d/Y',
+                                    fieldLabel: param.display_name,
+                                    name: param.name,
+                                    value: defaultDate
+                                });
                             }
-                        });
-                        break;
-                    case 'data_record':
-                        // make sure we have all the options we need
-                        if (param.options && param.options.businessModule) {
+
+                            break;
+                        case 'time':
                             container.items.push({
-                                minChars: 1,
-                                xtype: 'businessmoduledatarecordfield',
-                                itemId: param.name,
-                                multiSelect: (param.options.multiSelect == 'on'),
-                                allowBlank: (param.required !== true),
+                                xtype: 'timefield',
                                 fieldLabel: param.display_name,
-                                extraParams: {
-                                    business_module_iid: param.options.businessModule
+                                allowBlank: (param.required !== true),
+                                style: {
+                                    marginRight: '20px'
                                 },
                                 name: param.name,
+                                value: param.default_value
+                            });
+                            break;
+                        case 'select':
+                            var values = (!param.options.values) ? [] : eval(param.options.values);
+                            var storeData = [];
+                            for (var i = 0; i < values.length; i++) {
+                                storeData.push([values[i]]);
+                            }
+
+                            var arrayStore = Ext.create('Ext.data.ArrayStore', {
+                                fields: ['name'],
+                                data: storeData
+                            });
+
+                            container.items.push({
+                                xtype: 'combo',
+                                allowBlank: (param.required !== true),
+                                queryMode: 'local',
+                                multiSelect: (param.options.multiSelect == 'on'),
+                                displayField: 'name',
+                                valueField: 'name',
+                                fieldLabel: param.display_name,
+                                name: param.name,
+                                store: arrayStore,
                                 value: defaultValue,
                                 listeners: {
-                                    afterrender: function(combo) {
-                                        combo.store.load();
-                                    },
                                     select: function(combo, records) {
                                         if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
                                             combo.setValue('All');
@@ -190,47 +164,75 @@ Ext.define("Compass.ErpApp.Shared.ReportsParams", {
                                     }
                                 }
                             });
-                        }
-
-                        break;
-                    case 'service':
-                        // make sure we have all the options we need
-                        if (param.options.root && param.options.displayField && param.options.valueField) {
-                            container.items.push({
-                                xtype: 'combo',
-                                fieldLabel: param.display_name,
-                                name: param.name,
-                                allowBlank: (param.required !== true),
-                                value: defaultValue,
-                                multiSelect: (param.options.multiSelect == 'on'),
-                                displayField: param.options.displayField,
-                                valueField: param.options.valueField,
-                                queryMode: 'remote',
-                                minChars: 1,
-                                store: {
-                                    proxy: {
-                                        type: 'ajax',
-                                        url: param.options.url,
-                                        reader: {
-                                            type: 'json',
-                                            root: param.options.root
-                                        }
+                            break;
+                        case 'data_record':
+                            // make sure we have all the options we need
+                            if (param.options && param.options.businessModule) {
+                                container.items.push({
+                                    minChars: 1,
+                                    xtype: 'businessmoduledatarecordfield',
+                                    itemId: param.name,
+                                    multiSelect: (param.options.multiSelect == 'on'),
+                                    allowBlank: (param.required !== true),
+                                    fieldLabel: param.display_name,
+                                    extraParams: {
+                                        business_module_iid: param.options.businessModule
                                     },
-                                    fields: [
-                                        param.options.displayField,
-                                        param.options.valueField
-                                    ],
-                                    autoLoad: true
-                                }
-                            });
-                        }
+                                    name: param.name,
+                                    value: defaultValue,
+                                    listeners: {
+                                        afterrender: function(combo) {
+                                            combo.store.load();
+                                        },
+                                        select: function(combo, records) {
+                                            if (combo.value.length > 1 && Ext.Array.contains(combo.value, "All")) {
+                                                combo.setValue('All');
+                                            }
+                                        }
+                                    }
+                                });
+                            }
 
-                        break;
-                }
+                            break;
+                        case 'service':
+                            // make sure we have all the options we need
+                            if (param.options.root && param.options.displayField && param.options.valueField) {
+                                container.items.push({
+                                    xtype: 'combo',
+                                    fieldLabel: param.display_name,
+                                    name: param.name,
+                                    allowBlank: (param.required !== true),
+                                    value: defaultValue,
+                                    multiSelect: (param.options.multiSelect == 'on'),
+                                    displayField: param.options.displayField,
+                                    valueField: param.options.valueField,
+                                    queryMode: 'remote',
+                                    minChars: 1,
+                                    store: {
+                                        proxy: {
+                                            type: 'ajax',
+                                            url: param.options.url,
+                                            reader: {
+                                                type: 'json',
+                                                root: param.options.root
+                                            }
+                                        },
+                                        fields: [
+                                            param.options.displayField,
+                                            param.options.valueField
+                                        ],
+                                        autoLoad: true
+                                    }
+                                });
+                            }
+
+                            break;
+                    }
+                });
+
+                me.items.push(container);
             });
-
-            me.items.push(container);
-        });
+        }
 
         me.callParent();
     },
