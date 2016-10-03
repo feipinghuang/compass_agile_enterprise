@@ -110,7 +110,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.UserManagement.UsersGrid", {
                 xtype: 'partylogininfopanel',
                 user: user.data,
                 partyId: partyId,
-                userId: user.get('id')
+                userId: user.get('id'),
+                listeners: {
+                    userinformationsaved: function(panel, user) {
+                        me.getStore().load();
+                    }
+                }
             }, {
                 xtype: 'partyusertypepanel',
                 partyId: partyId,

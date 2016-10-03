@@ -5,7 +5,7 @@ Ext.define("Compass.ErpApp.Organizer.Applications.ApplicationContainer", {
     alias: 'widget.applicationcontainer'
 });
 
-Compass.ErpApp.Organizer.Layout = function (config) {
+Compass.ErpApp.Organizer.Layout = function(config) {
 
     this.layoutConfig = config;
 
@@ -13,22 +13,24 @@ Compass.ErpApp.Organizer.Layout = function (config) {
     var accordionMenuItems = [];
     var menu = Ext.create('Ext.menu.Menu', {
 
-        items: [
-            {
-                text: 'Profile',
-                iconCls: 'icon-user',
-                handler: function () {
-                    var win = Ext.create("Ext.window.Window", {
-                        title: 'Profile',
-                        iconCls: 'icon-user-light',
-                        items: [
-                            {xtype: 'shared_profilemanagementpanel'}
-                        ]
-                    });
-                    win.show();
-                }
+        items: [{
+            text: 'Profile',
+            iconCls: 'icon-user',
+            handler: function() {
+                var win = Ext.create("Ext.window.Window", {
+                    title: 'Profile',
+                    iconCls: 'icon-user-light',
+                    items: [{
+                        xtype: 'partylogininfopanel',
+                        title: null,
+                        header: false,
+                        border: false,
+                        showStatus: false,
+                        userId: currentUser.id
+                    }]
+                }).show();
             }
-        ]
+        }]
     });
 
     this.toolBar = Ext.create("Ext.toolbar.Toolbar", {
@@ -39,15 +41,13 @@ Compass.ErpApp.Organizer.Layout = function (config) {
             paddingLeft: '22px',
             paddingRight: '15px'
         },
-        items: [
-            {
+        items: [{
                 ui: 'cleanbutton',
                 text: 'Menu',
                 iconCls: 'icon-info',
                 menu: menu
             },
-            ' ',
-            {
+            ' ', {
                 xtype: 'label',
                 style: 'color:white;',
                 text: 'Welcome',
@@ -56,11 +56,11 @@ Compass.ErpApp.Organizer.Layout = function (config) {
         ]
     });
 
-    this.addToToolBar = function (item) {
+    this.addToToolBar = function(item) {
         this.toolBar.add(item);
     };
 
-    this.setupLogoutButton = function () {
+    this.setupLogoutButton = function() {
         this.toolBar.add("->");
         this.toolBar.add({
             ui: 'cleanbutton',
@@ -70,17 +70,15 @@ Compass.ErpApp.Organizer.Layout = function (config) {
             defaultAlign: "right",
             'listeners': {
                 scope: this,
-                'click': function () {
-                    Ext.MessageBox.confirm('Confirm', 'Are you sure you want to logout?', function (btn) {
+                'click': function() {
+                    Ext.MessageBox.confirm('Confirm', 'Are you sure you want to logout?', function(btn) {
                         if (btn == 'no') {
                             return false;
-                        }
-                        else if (btn == 'yes') {
+                        } else if (btn == 'yes') {
                             var defaultLogoutUrl = '/session/sign_out';
                             if (Compass.ErpApp.Utility.isBlank(this.layoutConfig) || Compass.ErpApp.Utility.isBlank(this.layoutConfig["logout_url"])) {
                                 window.location = defaultLogoutUrl;
-                            }
-                            else {
+                            } else {
                                 window.location = this.layoutConfig["logout_url"];
                             }
                         }
@@ -114,46 +112,44 @@ Compass.ErpApp.Organizer.Layout = function (config) {
             paddingRight: '15px'
         },
         items: [
-            "->",
-            {
+            "->", {
                 ui: 'cleanbutton',
                 xtype: "trayclock"
             }
         ]
     });
 
-    this.addApplication = function (config) {
+    this.addApplication = function(config) {
         var menuItems = [],
             cardHolderId = 'cardHolder' + '_' + config.id;
 
-        Ext.each(config.menuItems, function (menuItem) {
+        Ext.each(config.menuItems, function(menuItem) {
             menuItems.push({
-                    xtype: 'image',
-                    style: {
-                        cursor: 'pointer'
-                    },
-                    filtersPanelId: 'customerFilters',
-                    src: menuItem.imgSrc,
-                    height: 50,
-                    width: 50,
-                    cls: 'shortcut-image-button',
-                    listeners: {
-                        render: function (component) {
-                            component.getEl().on('click', function (e) {
-                                var masterPanel = Ext.getCmp(config.id),
-                                    tab = masterPanel.down('#' + menuItem.tabItemId);
-
-                                masterPanel.setActiveTab(tab);
-                            }, component);
-                        }
-                    }
+                xtype: 'image',
+                style: {
+                    cursor: 'pointer'
                 },
-                {
-                    html: menuItem.title,
-                    style: {
-                        cursor: 'pointer'
+                filtersPanelId: 'customerFilters',
+                src: menuItem.imgSrc,
+                height: 50,
+                width: 50,
+                cls: 'shortcut-image-button',
+                listeners: {
+                    render: function(component) {
+                        component.getEl().on('click', function(e) {
+                            var masterPanel = Ext.getCmp(config.id),
+                                tab = masterPanel.down('#' + menuItem.tabItemId);
+
+                            masterPanel.setActiveTab(tab);
+                        }, component);
                     }
-                });
+                }
+            }, {
+                html: menuItem.title,
+                style: {
+                    cursor: 'pointer'
+                }
+            });
         });
 
         var menuPanel = {
@@ -165,16 +161,16 @@ Compass.ErpApp.Organizer.Layout = function (config) {
             },
             id: cardHolderId,
             listeners: {
-                render: function (c) {
+                render: function(c) {
                     /*
                      *  We want a listener on each DOM element within this menu to ensure the center panel is set
                      *  properly when they are clicked. This is because this custom panel does not use the default
                      *  menu tree panel type, and hence does not inherit the switching behavior automatically.
                      */
-                    c.items.each(function (item) {
+                    c.items.each(function(item) {
                         // Wait until each item is rendered to add the click listener, as the panel usually renders before the items within the panel
-                        item.on('render', function () {
-                            this.getEl().on('click', function () {
+                        item.on('render', function() {
+                            this.getEl().on('click', function() {
                                 Compass.ErpApp.Organizer.Layout.setActiveCenterItem(config.id);
                             });
                         });
@@ -197,7 +193,7 @@ Compass.ErpApp.Organizer.Layout = function (config) {
         this.centerPanel.add(masterPanel);
     };
 
-    this.setup = function () {
+    this.setup = function() {
         this.westPanel = {
             id: 'erp_app_viewport_west',
             style: {
@@ -215,28 +211,26 @@ Compass.ErpApp.Organizer.Layout = function (config) {
         this.viewPort = Ext.create('Ext.container.Viewport', {
             border: false,
             layout: 'fit',
-            items: [
-                {
-                    xtype: 'panel',
-                    border: false,
-                    layout: 'border',
-                    dockedItems: [
-                        this.toolBar,
-                        this.bottomBar
-                    ],
-                    items: [
-                        this.westPanel,
-                        this.centerPanel,
-                        this.eastPanel
-                    ]
-                }
-            ]
+            items: [{
+                xtype: 'panel',
+                border: false,
+                layout: 'border',
+                dockedItems: [
+                    this.toolBar,
+                    this.bottomBar
+                ],
+                items: [
+                    this.westPanel,
+                    this.centerPanel,
+                    this.eastPanel
+                ]
+            }]
         });
         this.viewPort.down('#organizerWelcomeMsg').setText('Welcome: ' + currentUser.description);
     };
 };
 
-Compass.ErpApp.Organizer.Layout.setActiveCenterItem = function (panel_id, menu_id, loadRemoteData) {
+Compass.ErpApp.Organizer.Layout.setActiveCenterItem = function(panel_id, menu_id, loadRemoteData) {
     // set panel as active
     var panel = Ext.getCmp('erp_app_viewport_center').down('#' + panel_id);
     if (panel)
@@ -247,12 +241,9 @@ Compass.ErpApp.Organizer.Layout.setActiveCenterItem = function (panel_id, menu_i
         menu.expand();
 
     if (loadRemoteData === undefined || loadRemoteData) {
-        var hasLoad = ( (typeof panel.loadRemoteData) != 'undefined' );
+        var hasLoad = ((typeof panel.loadRemoteData) != 'undefined');
         if (hasLoad) {
             panel.loadRemoteData();
         }
     }
 };
-
-
-
