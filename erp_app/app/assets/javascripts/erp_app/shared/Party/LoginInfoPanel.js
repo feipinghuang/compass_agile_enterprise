@@ -197,6 +197,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
                 success: function(response) {
                     if (response.success) {
                         me.user = response.user;
+                        me.userId = me.user.id;
                         me.setFields();
                         btn.enable();
 
@@ -258,6 +259,8 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         me.down('#email').setValue(me.user.email);
         me.down('#password').reset();
         me.down('#passwordConfirmation').reset();
+        me.down('#password').allowBlank = true;
+        me.down('#passwordConfirmation').allowBlank = true;
         me.down('#faildLogins').setValue((me.user.failed_login_count || 0));
 
         if (me.down('#autoActivate')) {
