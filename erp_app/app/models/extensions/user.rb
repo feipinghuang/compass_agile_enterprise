@@ -41,6 +41,7 @@ User.class_eval do
   end
 
   def get_application_resource_paths(application_type, type)
+    override_suffixes = ErpBaseErpSvcs.installed_engine_names + ['root_app']
     if application_type == :desktop
       paths = desktop_applications.collect do |app|
         paths = []
@@ -50,10 +51,10 @@ User.class_eval do
         end
 
         # look for overrides
-        if Rails.application.assets.find_asset File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "overrides.#{type.to_s}")
-          paths.push File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "overrides")
+        override_suffixes.each do |suffix|
+          override_asset = Rails.application.assets.find_asset File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "overrides_#{suffix}.#{type.to_s}")
+          paths.push(File.join('erp_app', 'desktop', 'applications', app.internal_identifier, "overrides_#{suffix}")) if override_asset
         end
-
         paths
       end.flatten.compact
     else
@@ -65,8 +66,9 @@ User.class_eval do
         end
 
         # look for overrides
-        if Rails.application.assets.find_asset File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "overrides.#{type.to_s}")
-          paths.push File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "overrides")
+        override_suffixes.each do |suffix|
+          override_asset = Rails.application.assets.find_asset File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "overrides_#{suffix}.#{type.to_s}")
+          paths.push(File.join('erp_app', 'organizer', 'applications', app.internal_identifier, "overrides_#{suffix}")) if override_asset
         end
 
         paths
