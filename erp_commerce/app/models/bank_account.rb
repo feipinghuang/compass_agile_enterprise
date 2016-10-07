@@ -4,11 +4,16 @@
 #    t.string :crypted_private_account_number
 #    t.string :name_on_account
 #    t.references :bank_account_type
+#    t.string :bank_token
+#    t.string :account_holder_type
+#
+#    t.integer :tenant_id
 #
 #    t.timestamps
 #  end
 #
 #  add_index :bank_accounts, :bank_account_type_id, :name => 'bank_accounts_account_type_idx'
+#  add_index :bank_accounts, :tenant_id, :name => 'bank_accounts_tenant_id_idx'
 ####################################################
 
 class BankAccount < ActiveRecord::Base
@@ -17,6 +22,7 @@ class BankAccount < ActiveRecord::Base
   require 'attr_encrypted'
 
   acts_as_biz_txn_account
+  is_tenantable
 
   belongs_to :bank_account_type
 
@@ -82,21 +88,23 @@ class BankAccount < ActiveRecord::Base
   class << self
     
     def mask_number(number)
-      total_chars = number.length
-      total_chars -= 4
-      result = ''
-      result.tap do |str|
-        total_chars.times do
-          str << 'X'
-        end
-      end
-      result + number[number.length-4..number.length]
+      'XXXXXXX' + number[number.length-4..number.length]
     end
 
   end
 
   def refund
     # implement a refund on an account
+  end
+
+  def to_data_hash
+    data = to_hash(only: [:id, :routing_number, :name_on_account, :bank_token, :account_holder_type])
+
+    data[:description] = self.description
+    data[:account_number] = self.account_number
+    data[:bank_account_type] = self.try(:bank_account_type).try(:description)
+
+    data
   end
 
 end
