@@ -81,11 +81,11 @@ class CreditCard < ActiveRecord::Base
   end
 
   def to_label
-    "#{card_type}:  #{card_number}"
+    "#{card_type}: #{card_number}"
   end
 
   def to_s
-    "#{card_type}:  #{card_number}"
+    "#{card_type}: #{card_number}"
   end
 
   def cardholder

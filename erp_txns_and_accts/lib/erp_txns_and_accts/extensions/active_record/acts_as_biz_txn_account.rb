@@ -29,7 +29,8 @@ module ErpTxnsAndAccts
               :external_id_source,:external_id_source=,
               :external_identifier,:external_identifier=,
               :description,:description=,:txns,
-              :account_type,:find_parties_by_role
+              :account_type,:find_parties_by_role,
+              :to_biz_txn_acct_relns, :from_biz_txn_acct_relns
             ].each do |m| delegate m, :to => :biz_txn_acct_root end
 
           end

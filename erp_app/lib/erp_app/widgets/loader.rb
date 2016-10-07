@@ -10,13 +10,14 @@ module ErpApp
         end
 
         def load_root_widgets(config)
-           ErpBaseErpSvcs.setup_compass_ae_callback(config, nil) do |engine|
-             ::ErpApp::Widgets::Loader.require_widgets_and_helpers(Rails.root.to_s)
-           end
+          ErpBaseErpSvcs.setup_compass_ae_callback(config, nil) do |engine|
+            ::ErpApp::Widgets::Loader.require_widgets_and_helpers(Rails.root.to_s)
+          end
         end
 
         def require_widgets_and_helpers(path)
           widgets = []
+
           widgets_path = File.join(path,"/app/widgets/")
           widgets = Dir.entries(widgets_path) if File.exists? widgets_path
           widgets.delete_if{|name| name =~ /^\./}
@@ -31,7 +32,7 @@ module ErpApp
               }
               Rails.application.config.erp_app.widgets << widget_hash
             end
-            
+
             load File.join(widget_hash[:path],'base.rb')
             #load helpers
             if File.exists? File.join(widget_hash[:path],'helpers')
@@ -52,10 +53,17 @@ module ErpApp
           widgets.delete_if{|name| name =~ /^\./}
 
           widgets.each do |widget_name|
+
             widget_hash = Rails.application.config.erp_app.widgets.find{|item| item[:name] == widget_name}
             #load any extensions to existing widgets
-            Dir.glob(File.join(widgets_path,widget_name,"*.rb")).each do |file|
+            Dir.glob(File.join(widgets_path, widget_name, "*.rb")).each do |file|
               load file
+            end
+            
+            #load helpers
+            if File.exists? File.join(widgets_path,widget_name, 'helpers')
+              load_widget_view_helpers File.join(widgets_path,widget_name,'helpers','view') if File.directory? File.join(widgets_path,widget_name,'helpers','view')
+              load_widget_controller_helpers(File.join(widgets_path,widget_name,'helpers','controller'),widget_hash) if File.directory? File.join(widgets_path,widget_name,'helpers','controller')
             end
 
             #add any additional view paths to widgets
@@ -124,7 +132,7 @@ module ErpApp
             end
           end#make sure folder exists
         end
-        
+
       end#self
     end#Loader
   end#Widgets
