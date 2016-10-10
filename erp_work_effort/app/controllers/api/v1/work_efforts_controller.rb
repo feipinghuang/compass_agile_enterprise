@@ -122,6 +122,7 @@ module Api
   @apiParam {String} [work_efforts.comments] Comments on WorkEffort
   @apiParam {Number} [work_efforts.sequence] Sequence of WorkEffort
   @apiParam {Number} [work_efforts.parent_id ID] of Parent WorkEffort to put the newly created WorkEfforts under
+  @apiParam {Number} [work_efforts.biz_txn_event_id] BizTxnEvent to relate to this WorkEffort
 
   @apiSuccess {Boolean} success True if the request was successful
   @apiSuccess {Array} work_efforts Array of created WorkEfforts
@@ -295,7 +296,7 @@ module Api
 
 =begin
 
-  @api {put} /api/v1/order_txns/:id/update_status UpdateStatus
+  @api {put} /api/v1/work_efforts/:id/update_status UpdateStatus
   @apiVersion 1.0.0
   @apiName UpdateWorkEffortStatus
   @apiGroup WorkEffort
@@ -363,11 +364,23 @@ module Api
         end
 
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
+          if data[:status].is_a? String
+            work_effort.current_status = TrackedStatusType.iid(data[:status])
+          else
+            work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
+          end
         end
 
         if data[:work_effort_type].present?
-          work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
+          if data[:work_effort_type].is_a? String
+            work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type])
+          else
+            work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
+          end
+        end
+
+        if data[:biz_txn_event_id].present?
+          work_effort.biz_txn_events << BizTxnEvent.find(data[:biz_txn_event_id])
         end
 
         work_effort.created_by_party = current_user.party
@@ -439,11 +452,19 @@ module Api
         end
 
         if data[:status].present?
-          work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
+          if data[:status].is_a String
+            work_effort.current_status = TrackedStatusType.iid(data[:status])
+          else
+            work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])
+          end
         end
 
         if data[:work_effort_type].present?
-          work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
+          if data[:work_effort_type].is_a? String
+            work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type])
+          else
+            work_effort.work_effort_type = WorkEffortType.iid(data[:work_effort_type][:internal_identifier])
+          end
         end
 
         work_effort.updated_by_party = current_user.party

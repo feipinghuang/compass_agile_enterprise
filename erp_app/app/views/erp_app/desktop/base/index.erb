@@ -239,11 +239,14 @@
         iconCls: "icon-user-light",
         layout: 'fit',
         autoScroll: true,
-        items: [
-          {
-            xtype: 'shared_profilemanagementpanel'
-          }
-        ]
+        items: [{
+          xtype: 'partylogininfopanel',
+          title: null,
+          header: false,
+          border: false,
+          showStatus: false,
+          userId: currentUser.id
+        }]
       }).show();
     },
     onHelp: function () {

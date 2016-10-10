@@ -1,3 +1,9 @@
+# create_table :organizations do |t|
+#   t.string :description
+#   t.string :tax_id_number
+#   t.timestamps
+# end
+
 class Organization < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 

@@ -1,3 +1,31 @@
+# create_table :individuals do |t|
+#   t.column :party_id, :integer
+#   t.column :current_last_name, :string
+#   t.column :current_first_name, :string
+#   t.column :current_middle_name, :string
+#   t.column :current_personal_title, :string
+#   t.column :current_suffix, :string
+#   t.column :current_nickname, :string
+#   t.column :gender, :string, :limit => 1
+#   t.column :birth_date, :date
+#   t.column :height, :decimal, :precision => 5, :scale => 2
+#   t.column :weight, :integer
+#   t.column :mothers_maiden_name, :string
+#   t.column :marital_status, :string, :limit => 1
+#   t.column :social_security_number, :string
+#   t.column :current_passport_number, :integer
+#
+#   t.column :current_passport_expire_date, :date
+#   t.column :total_years_work_experience, :integer
+#   t.column :comments, :string
+#   t.column :encrypted_ssn, :string
+#   t.column :temp_ssn, :string
+#   t.column :salt, :string
+#   t.column :ssn_last_four, :string
+#   t.timestamps
+# end
+# add_index :individuals, :party_id
+
 class Individual < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
@@ -14,7 +42,15 @@ class Individual < ActiveRecord::Base
   end
 
   alias :social_security_number= :ssn=
-    alias :social_security_number :ssn
+  alias :social_security_number :ssn
+
+  before_update :update_ssn_last_4
+
+  def update_ssn_last_4
+    if social_security_number
+      self.ssn_last_four = social_security_number.split(//).last(4).join
+    end
+  end
 
   def formatted_ssn_label
     (self.ssn_last_four.blank?) ? "" : "XXX-XX-#{self.ssn_last_four}"

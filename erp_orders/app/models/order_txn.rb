@@ -313,7 +313,6 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def add_simple_product_offer_line_item(simple_product_offer)
-
     line_item = get_line_item_for_simple_product_offer(simple_product_offer)
 
     product_type = simple_product_offer.product_type
@@ -381,7 +380,6 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def add_product_instance_line_item(product_instance, reln_type = nil, to_role = nil, from_role = nil)
-
     li = OrderLineItem.new
 
     if (product_instance.is_a?(Array))
@@ -426,6 +424,32 @@ class OrderTxn < ActiveRecord::Base
 
   def get_line_item_for_simple_product_offer(simple_product_offer)
     line_items.detect { |oli| oli.product_offer.product_offer_record == simple_product_offer }
+  end
+
+  # Get all vendors for this order as there might be multiple depending on the products purchased
+  #
+  # @return [Array] Array of vendors
+  def vendors
+    valid_order_line_items = order_line_items.select{|order_line_item| order_line_item.line_item_record.is_a? ProductType}
+
+    _vendors = []
+
+    valid_order_line_items.each do |order_line_item|
+      _vendors.push(order_line_item.product_type.find_party_by_role('vendor'))
+    end
+
+    _vendors.compact.uniq
+  end
+
+  # Get line items grouped by vendor
+  #
+  # @return [Array] Array of vendors
+  def line_items_by_vendor
+    valid_order_line_items = order_line_items.select{|order_line_item| order_line_item.line_item_record.is_a? ProductType}
+
+     valid_order_line_items.group_by do |order_line_item|
+      order_line_item.product_type.find_party_by_role('vendor')
+    end
   end
 
   def set_shipping_info(party)

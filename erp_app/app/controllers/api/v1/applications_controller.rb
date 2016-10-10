@@ -79,11 +79,6 @@ module Api
             # associate application to dba_org of current user
             application.add_party_with_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
 
-            # apply recipes
-            if params[:recipe_klass].present?
-              params[:recipe_klass].constantize.new(application, current_user).execute((params[:recipe_params] || {}))
-            end
-
             render :json => {success: true, application: application.to_data_hash}
           end
         rescue ActiveRecord::RecordInvalid => invalid

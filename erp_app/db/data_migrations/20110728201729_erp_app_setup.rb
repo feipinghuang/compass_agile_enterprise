@@ -10,7 +10,7 @@ class ErpAppSetup
       {:description => 'Home', :internal_identifier => 'home'},
       {:description => 'Work', :internal_identifier => 'work'},
       {:description => 'Billing', :internal_identifier => 'billing'},
-      {:description => 'Billing', :internal_identifier => 'shipping'},
+      {:description => 'Shipping', :internal_identifier => 'shipping'},
       {:description => 'Fax', :internal_identifier => 'fax'},
       {:description => 'Other', :internal_identifier => 'other'}
     ].each do |item|

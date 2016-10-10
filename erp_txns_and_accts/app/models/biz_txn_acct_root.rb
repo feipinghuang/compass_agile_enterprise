@@ -1,11 +1,11 @@
 # create_table :biz_txn_acct_roots do |t|
-#   t.string 	 :description
+#   t.string   :description
 #   t.string   :internal_identifier
 #   t.integer  :status
 #   t.integer  :biz_txn_acct_id
 #   t.string   :biz_txn_acct_type
-#   t.string 	 :external_identifier
-#   t.string 	 :external_id_source
+#   t.string   :external_identifier
+#   t.string   :external_id_source
 #   t.string   :type
 #
 #   t.integer  :parent_id
@@ -35,6 +35,8 @@ class BizTxnAcctRoot < ActiveRecord::Base
   belongs_to :biz_txn_acct_type
   has_many :biz_txn_events, :dependent => :destroy
   has_many :biz_txn_acct_party_roles, :dependent => :destroy
+  has_many :to_biz_txn_acct_relns, class_name: 'BizTxnAcctRelationship', foreign_key: 'biz_txn_acct_root_id_to'
+  has_many :from_biz_txn_acct_relns, class_name: 'BizTxnAcctRelationship', foreign_key: 'biz_txn_acct_root_id_from'
 
   alias :account :biz_txn_acct
   alias :txn_events :biz_txn_events
@@ -107,7 +109,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
     # @return [ActiveRecord::Relation]
     def scope_by_party(party, options={})
       statement = joins(:biz_txn_acct_party_roles)
-                      .where(biz_txn_acct_party_roles: {party_id: party}).uniq
+      .where(biz_txn_acct_party_roles: {party_id: party}).uniq
 
       if options[:role_types]
         role_types = options[:role_types]
@@ -116,7 +118,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
         end
 
         statement = statement.joins(biz_txn_acct_party_roles: :biz_txn_acct_pty_rtype)
-                        .where(biz_txn_acct_pty_rtypes: {internal_identifier: role_types})
+        .where(biz_txn_acct_pty_rtypes: {internal_identifier: role_types})
       end
 
       statement
@@ -130,6 +132,11 @@ class BizTxnAcctRoot < ActiveRecord::Base
     end
   end
 
+  def dba_organization
+    biz_txn_acct_party_roles.joins(:biz_txn_acct_pty_rtype).where(biz_txn_acct_pty_rtypes: {internal_identifier: 'dba_org'}).first.try(:party)
+  end
+  alias dba_org dba_organization
+
   def to_label
     "#{description}"
   end
@@ -139,7 +146,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
   end
 
   def add_party_with_role(party, biz_txn_acct_pty_rtype, description=nil)
-    biz_txn_acct_pty_rtype = BizTxnAcctPtyRtype.iid(biz_txn_acct_pty_rtype) if biz_txn_acct_pty_rtype.is_a? String
+    biz_txn_acct_pty_rtype = BizTxnAcctPtyRtype.find_or_create(biz_txn_acct_pty_rtype, biz_txn_acct_pty_rtype.humanize) if biz_txn_acct_pty_rtype.is_a? String
     raise "BizTxnAcctPtyRtype #{biz_txn_acct_pty_rtype.to_s} does not exist" if biz_txn_acct_pty_rtype.nil?
 
     # get description from biz_txn_acct_pty_rtype if not passed
@@ -150,12 +157,16 @@ class BizTxnAcctRoot < ActiveRecord::Base
   end
 
   def find_parties_by_role(biz_txn_acct_pty_rtype)
-    biz_txn_acct_pty_rtype = BizTxnAcctPtyRtype.iid(biz_txn_acct_pty_rtype) if biz_txn_acct_pty_rtype.is_a? String
+    biz_txn_acct_pty_rtype = BizTxnAcctPtyRtype.find_or_create(biz_txn_acct_pty_rtype, biz_txn_acct_pty_rtype.humanize) if biz_txn_acct_pty_rtype.is_a? String
     raise "BizTxnAcctPtyRtype #{biz_txn_acct_pty_rtype.to_s} does not exist" if biz_txn_acct_pty_rtype.nil?
 
     Party.joins('inner join biz_txn_acct_party_roles on biz_txn_acct_party_roles.party_id = parties.id')
-        .where('biz_txn_acct_pty_rtype_id = ?', biz_txn_acct_pty_rtype.id)
-        .where('biz_txn_acct_root_id = ?', self.id)
+    .where('biz_txn_acct_pty_rtype_id = ?', biz_txn_acct_pty_rtype.id)
+    .where('biz_txn_acct_root_id = ?', self.id)
+  end
+
+  def find_party_by_role(biz_txn_acct_pty_rtype)
+    find_parties_by_role(biz_txn_acct_pty_rtype).first
   end
 
   def to_data_hash

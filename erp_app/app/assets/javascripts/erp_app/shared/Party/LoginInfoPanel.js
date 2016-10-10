@@ -4,14 +4,15 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 
     layout: 'hbox',
     title: 'Login Info',
+    autoScroll: true,
+    fieldSetHeights: 375,
 
     userId: null,
     loginPath: null,
     websiteId: null,
     partyId: null,
     user: null,
-    autoScroll: true,
-    fieldSetHeights: 375,
+    showStatus: true,
 
     dockedItems: {
         xtype: 'toolbar',
@@ -35,7 +36,15 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
              * @param {CompassAE.ErpApp.Shared.Party.LoginInfoPanel} this panel
              * @param {Object} User information
              */
-            'userinformationloaded'
+            'userinformationloaded',
+
+            /*
+             * @event userinformationsaved
+             * Fires when user information is saved
+             * @param {CompassAE.ErpApp.Shared.Party.LoginInfoPanel} this panel
+             * @param {Object} User information
+             */
+            'userinformationsaved'
         );
 
         me.on('afterrender', function() {
@@ -186,14 +195,28 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
                 },
                 waitMsg: 'Please Wait',
                 success: function(response) {
-                    me.user = response.user;
-                    me.setFields();
-                    btn.enable();
+                    if (response.success) {
+                        me.user = response.user;
+                        me.userId = me.user.id;
+                        me.setFields();
+                        btn.enable();
 
-                    me.fireEvent('userinformationloaded', me, me.user);
-                    me.up('#user_management').down('usermanagement_usersgrid').getStore().load();
+                        me.fireEvent('userinformationsaved', me, me.user);
+                    } else {
+                        if (response && response.message) {
+                            Ext.Msg.error('Error', response.message);
+                        } else {
+                            Ext.Msg.error('Error', 'Could not update user');
+                        }
+                    }
                 },
-                failure: function() {
+                failure: function(response) {
+                    if (response && response.message) {
+                        Ext.Msg.error('Error', response.message);
+                    } else {
+                        Ext.Msg.error('Error', 'Could not update user');
+                    }
+
                     btn.enable();
                 }
             });
@@ -236,6 +259,8 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         me.down('#email').setValue(me.user.email);
         me.down('#password').reset();
         me.down('#passwordConfirmation').reset();
+        me.down('#password').allowBlank = true;
+        me.down('#passwordConfirmation').allowBlank = true;
         me.down('#faildLogins').setValue((me.user.failed_login_count || 0));
 
         if (me.down('#autoActivate')) {
@@ -243,7 +268,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         }
 
         // add Status
-        if (!me.down('#status')) {
+        if (!me.down('#status') && me.showStatus) {
             me.down('#loginInfoFieldSet').insert(1, {
                 xtype: 'radiogroup',
                 fieldLabel: 'Status',

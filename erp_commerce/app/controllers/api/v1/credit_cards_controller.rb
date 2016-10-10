@@ -10,7 +10,7 @@ module Api
   @apiGroup CreditCard
 
   @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} credit_cards GetCreditCard records
+  @apiSuccess {Array} credit_cards CreditCard records
 
 =end
 
