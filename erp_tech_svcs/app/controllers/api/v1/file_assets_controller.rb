@@ -27,6 +27,36 @@ module Api
                       file_assets: file_assets.collect { |file| file.to_data_hash }}
       end
 
+      def create
+        begin
+          ActiveRecord::Base.transaction do
+            file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
+
+            record = params[:file_asset_holder_type].constantize.find(params[:file_asset_holder_id])
+
+            file_name = params[:file].original_filename
+            data = params[:file].read
+
+            path = File.join(file_support.root, 'file_assets', params[:file_asset_holder_type], params[:file_asset_holder_id], file_name)
+
+            file_asset = record.add_file(data, path)
+
+            if params[:scopes]
+              JSON.parse(params[:scopes]).each do |scope|
+                file_asset.add_scope(scope['name'], scope['value'])
+              end
+            end
+
+            render json: {success: true, file_asset: file_asset.to_data_hash}
+          end
+        rescue StandardError => ex
+          logger.error ex.message
+          logger.error ex.backtrace.join("\n")
+
+          render json: {success: false, message: "Error creating file_asset"}
+        end
+      end
+
       def destroy
         file_asset = FileAsset.find(params[:id])
 

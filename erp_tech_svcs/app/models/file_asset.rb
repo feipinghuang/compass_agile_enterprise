@@ -180,6 +180,14 @@ class FileAsset < ActiveRecord::Base
                                })
       end
 
+      if filters[:scopes]
+        JSON.parse(filters[:scopes]).each do |scope|
+          scope = Hash.symbolize_keys(scope)
+
+          self.scoped_by(scope[:name], scope[:value])
+        end
+      end
+
       statement
     end
 
