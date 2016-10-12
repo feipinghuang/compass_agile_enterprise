@@ -4,6 +4,7 @@
 #
 #   t.string :description
 #   t.string :internal_identifier
+#   t.boolean :is_default, default: false
 #
 #   t.references :created_by
 #   t.references :updated_by
@@ -30,7 +31,7 @@ class ProductOption < ActiveRecord::Base
 
   def to_data_hash
 
-  	to_hash(only: [:id, :description, :internal_identifier])
+  	to_hash(only: [:id, :description, :internal_identifier, :is_default])
 
   end
   alias :to_mobile_data_hash :to_data_hash
