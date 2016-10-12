@@ -3,13 +3,13 @@ UserMailer.class_eval do
 
   def activation_needed_email(user)
     # add theme paths if a website is present
-    if user.instance_attributes[:website_id]
+    unless user.instance_attributes[:website_id].blank?
       add_theme_view_paths(Website.find(user.instance_attributes[:website_id]))
     end
 
     @user = user
     @url  = "#{get_domain(user.instance_attributes[:domain])}/users/activate/#{user.activation_token}"
-    @url << "?login_url=#{@user.instance_attributes[:login_url]}" unless @user.instance_attributes[:login_url].nil?
+    @url << "?login_url=#{@user.instance_attributes[:login_url]}" unless @user.instance_attributes[:login_url].blank?
 
     @temp_password = @user.instance_attributes[:temp_password] unless @user.instance_attributes[:temp_password].nil?
 
@@ -18,7 +18,7 @@ UserMailer.class_eval do
 
   def reset_password_email(user)
     # add theme paths if a website is present
-    if user.instance_attributes[:website_id]
+    unless user.instance_attributes[:website_id].blank?
       add_theme_view_paths(Website.find(user.instance_attributes[:website_id]))
     end
 

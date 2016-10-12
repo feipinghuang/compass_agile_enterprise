@@ -329,7 +329,7 @@ Ext.override(Ext.FormPanel, {
             formData = new FormData(document.createElement('form'));
 
         for (var attr in params) {
-            formData.append(attr, params[attr]);
+            formData.append(attr, (Ext.isEmpty(params[attr]) ? '' : params[attr]));
         }
 
         if (uploadableImages) {

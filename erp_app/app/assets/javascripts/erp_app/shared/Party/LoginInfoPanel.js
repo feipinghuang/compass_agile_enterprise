@@ -202,6 +202,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
                         btn.enable();
 
                         me.fireEvent('userinformationsaved', me, me.user);
+                        me.fireEvent('userinformationloaded', me, me.user);
                     } else {
                         if (response && response.message) {
                             Ext.Msg.error('Error', response.message);
