@@ -91,7 +91,7 @@ module Api
             product_option = new_product_option
 
             render :json => {success: true,
-                           product_option: product_option.to_data_hash}
+                             product_option: product_option.to_data_hash}
           end
 
         rescue ActiveRecord::RecordInvalid => invalid
@@ -130,7 +130,7 @@ module Api
             product_option = update_product_option
 
             render :json => {success: true,
-                           product_option: product_option.to_data_hash}
+                             product_option: product_option.to_data_hash}
           end
 
         rescue ActiveRecord::RecordInvalid => invalid
@@ -171,6 +171,7 @@ module Api
         product_option = ProductOption.new
         product_option.description = params[:description]
         product_option.internal_identifier = params[:internal_identifier]
+        product_option.is_default = params[:is_default]
 
         product_option.created_by_party = current_user.party
 
@@ -190,6 +191,10 @@ module Api
 
         if params[:internal_identifier].present?
           product_option.internal_identifier = params[:internal_identifier]
+        end
+
+        if params[:is_default].present?
+          product_option.is_default = params[:is_default]
         end
 
         product_option.updated_by_party = current_user.party

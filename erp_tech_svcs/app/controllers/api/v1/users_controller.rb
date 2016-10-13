@@ -198,8 +198,8 @@ module Api
         )
 
         # set this to tell activation where to redirect_to for login and temp password
-        login_url = params[:login_url] || '/erp_app/login'
-
+        login_url = params[:login_url].blank? ? '/erp_app/login' : params[:login_url]
+    
         # if a website was selected then set it so we can use the any templates in that website
         unless params['website_id'].blank?
           user.add_instance_attribute(:website_id, params['website_id'])

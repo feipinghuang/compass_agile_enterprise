@@ -4,7 +4,7 @@ class UserMailer < ActionMailer::Base
   def activation_needed_email(user, dba_organization=nil)
     @user = user
     @url  = "#{get_domain(user.instance_attributes[:domain])}/users/activate/#{user.activation_token}"
-    @url << "?login_url=#{@user.instance_attributes[:login_url]}" unless @user.instance_attributes[:login_url].nil?
+    @url << "?login_url=#{@user.instance_attributes[:login_url]}" unless @user.instance_attributes[:login_url].blank?
 
     @temp_password = @user.instance_attributes[:temp_password] unless @user.instance_attributes[:temp_password].nil?
 

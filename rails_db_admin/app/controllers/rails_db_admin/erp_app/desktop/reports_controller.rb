@@ -94,7 +94,7 @@ module RailsDbAdmin
                 # assign report roles
                 report_roles.split(',').each do |role_type|
                   report.add_party_with_role(
-                      current_user.party,
+                      current_user.party.dba_organization,
                       RoleType.iid(role_type)
                   ) unless available_role_types.include?(role_type.to_sym)
                 end

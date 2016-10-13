@@ -14,6 +14,12 @@ module ErpBaseErpSvcs
       ErpBaseErpSvcs::Config.compass_ae_engines
     end
 
+    def installed_engine_names
+      ErpBaseErpSvcs::Config.compass_ae_engines.collect do |engine|
+        engine.parent_name.underscore
+      end
+    end
+
     # engine_name should be module/class name (i.e. ErpSearch)
     def engine_loaded?(engine_name)
       installed_engines.map { |compass_ae_engine| compass_ae_engine.railtie_name.camelize }.include?(engine_name)
