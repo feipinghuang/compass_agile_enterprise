@@ -29,7 +29,7 @@
 # end
 
 class Category < ActiveRecord::Base
-  
+
   is_tenantable
   acts_as_erp_type
   acts_as_nested_set
@@ -78,36 +78,10 @@ class Category < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_dba_organization(dba_organization)
-      scope_by_party(dba_organization, {role_types: 'dba_org'})
+      by_tenant(dba_organization)
     end
 
     alias scope_by_dba scope_by_dba_organization
-
-    # scope by party
-    #
-    # @param party [Integer | Party | Array] either a id of Party record, a Party record, an array of Party records
-    # or an array of Party ids
-    # @param options [Hash] options to apply to this scope
-    # @option options [String | Array] :role_types BizTxnAcctPtyRtype internal identifiers to include in the scope,
-    # comma separated or an Array
-    #
-    # @return [ActiveRecord::Relation]
-    def scope_by_party(party, options={})
-      statement = joins(:entity_party_roles)
-                      .where(entity_party_roles: {party_id: party}).uniq
-
-      if options[:role_types]
-        role_types = options[:role_types]
-        unless role_types.is_a? Array
-          role_types = role_types.split(',')
-        end
-
-        statement = statement.joins(entity_party_roles: :role_type)
-                        .where(role_types: {internal_identifier: role_types})
-      end
-
-      statement
-    end
 
     def iid(internal_identifier)
       where("internal_identifier = ?", internal_identifier).first
@@ -120,14 +94,14 @@ class Category < ActiveRecord::Base
 
   def to_data_hash
     data = to_hash(
-        only: [
-            :id,
-            :description,
-            :internal_identifier,
-            :created_at,
-            :updated_at
-        ],
-        leaf: leaf?
+      only: [
+        :id,
+        :description,
+        :internal_identifier,
+        :created_at,
+        :updated_at
+      ],
+      leaf: leaf?
     )
 
     data['image_url'] = self.images.first.try(:fully_qualified_url)
