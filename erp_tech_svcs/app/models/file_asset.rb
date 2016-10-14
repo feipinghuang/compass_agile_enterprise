@@ -276,6 +276,10 @@ class FileAsset < ActiveRecord::Base
     end
   end
 
+  def base64encoded
+    Base64.encode64(get_contents.first())
+  end
+
   def is_secured?
     self.protected_with_capability?('download')
   end
