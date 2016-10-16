@@ -33,7 +33,7 @@ module ErpTechSvcs
           :@s3_protocol => 'https', # Can be either 'http' or 'https'
           :@file_storage => :filesystem, # Can be either :s3 or :filesystem
           :@session_expires_in_hours => 12, # this is used by DeleteExpiredSessionsJob to purge inactive sessions from database
-          :@notification_job_delay => '2 minutes from now'
+          :@notification_job_delay => '15 seconds from now'
         }
       end
 
