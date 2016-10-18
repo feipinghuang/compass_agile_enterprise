@@ -9,6 +9,7 @@ Ext.define('Ext.ux.form.DateTimeField', {
     mixins: {
         field: 'Ext.form.field.Field'
     },
+
     layout: 'hbox',
     items: [{
         xtype: 'datefield',
