@@ -4,12 +4,21 @@ Rails.application.routes.draw do
     namespace :v1 do
 
       resources :product_types, defaults: { :format => 'json' } do
-        resources :product_option_applicabilities, defaults: { :format => 'json' }
+        resources :product_option_applicabilities, defaults: { :format => 'json' } do
+          collection do
+            put :update_positions
+          end
+        end
       end
       resources :product_option_types, defaults: { :format => 'json' } do
-      	resources :product_options, defaults: { :format => 'json' }
+        resources :product_options, defaults: { :format => 'json' }
       end
-      resources :product_option_applicabilities, defaults: { :format => 'json' }
+      resources :product_option_applicabilities, defaults: { :format => 'json' } do
+        collection do
+          put :update_positions
+        end
+      end
+
       resources :product_options, defaults: { :format => 'json' }
       resources :selected_product_options, defaults: { :format => 'json' }
     end

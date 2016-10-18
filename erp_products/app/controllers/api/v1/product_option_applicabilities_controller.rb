@@ -54,6 +54,48 @@ module Api
 
 =begin
 
+  @api {get} /api/v1/product_option_applicabilities/update_positions UpdatePositions
+  @apiVersion 1.0.0
+  @apiName UpdateProductOptionApplicabilityPositions
+  @apiGroup ProductOptionApplicability
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} positions Order that Product Option Applicablities should be in
+
+=end
+
+      def update_positions
+        position = 0
+
+        begin
+          ActiveRecord::Base.transaction do
+            JSON.parse(params[:positions]).each do |id|
+              product_option_applicability = ProductOptionApplicability.find(id)
+              product_option_applicability.position = position
+              product_option_applicability.save!
+
+              position += 1
+            end
+
+            render :json => {success: true}
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+
+          render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}
+
+        rescue => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          # email error
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {success: false, message: 'Could not update positions'}
+        end
+      end
+
+=begin
+
   @api {get} /api/v1/product_option_applicabilities/:id Show
   @apiVersion 1.0.0
   @apiName GetProductOptionApplicability
