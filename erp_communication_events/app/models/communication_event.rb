@@ -13,16 +13,21 @@
 #   t.string   :external_identifier
 #   t.string   :external_id_source
 #
+#   t.integer :tenant_id
+#
 #   t.timestamps
 # end
 #
 # add_index :communication_events, :status_type_id
 # add_index :communication_events, :case_id
+# add_index :communication_events, :tenant_id, name: 'communication_event_tenant_idx'
 # add_index :communication_events, [:to_contact_mechanism_id, :to_contact_mechanism_type], :name => 'to_contact_mech_idx'
 # add_index :communication_events, [:from_contact_mechanism_id, :from_contact_mechanism_type], :name => 'from_contact_mech_idx'
 
 class CommunicationEvent < ActiveRecord::Base
   attr_protected :created_at, :updated_at
+
+  is_tenantable
 
   belongs_to :from_contact_mechanism, :polymorphic => true
   belongs_to :to_contact_mechanism, :polymorphic => true
