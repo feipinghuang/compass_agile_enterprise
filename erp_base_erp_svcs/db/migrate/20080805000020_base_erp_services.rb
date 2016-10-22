@@ -56,10 +56,10 @@ class BaseErpServices < ActiveRecord::Migration
     # Create party_roles table
     unless table_exists?(:party_roles)
       create_table :party_roles do |t|
-        #this column holds the class name of the 
+        #this column holds the class name of the
         #subtype of party-to-role_type relatsionship
         t.column :type, :string
-        #xref between party and role_type      
+        #xref between party and role_type
         t.column :party_id, :integer
         t.column :role_type_id, :integer
         t.timestamps
@@ -77,7 +77,7 @@ class BaseErpServices < ActiveRecord::Migration
         t.column :lft, :integer
         t.column :rgt, :integer
 
-        #custom columns go here   
+        #custom columns go here
         t.column :description, :string
         t.column :comments, :string
         t.column :internal_identifier, :string
@@ -99,7 +99,7 @@ class BaseErpServices < ActiveRecord::Migration
         t.column :lft, :integer
         t.column :rgt, :integer
 
-        #custom columns go here        
+        #custom columns go here
         t.column :valid_from_role_type_id, :integer
         t.column :valid_to_role_type_id, :integer
         t.column :name, :string
@@ -148,7 +148,7 @@ class BaseErpServices < ActiveRecord::Migration
       end
     end
 
-    # Create individuals table 
+    # Create individuals table
     unless table_exists?(:individuals)
       create_table :individuals do |t|
         t.column :party_id, :integer
@@ -204,7 +204,7 @@ class BaseErpServices < ActiveRecord::Migration
         t.column :lft, :integer
         t.column :rgt, :integer
 
-        #custom columns go here   
+        #custom columns go here
 
         t.column :description, :string
         t.column :comments, :string
@@ -229,7 +229,7 @@ class BaseErpServices < ActiveRecord::Migration
         t.column :lft, :integer
         t.column :rgt, :integer
 
-        #custom columns go here   
+        #custom columns go here
 
         t.column :description, :string
         t.column :comments, :string
@@ -428,6 +428,7 @@ class BaseErpServices < ActiveRecord::Migration
     unless table_exists?(:notes)
       create_table :notes do |t|
         t.text :content
+        t.integer :created_by_id
         t.references :noted_record, :polymorphic => true
         t.references :note_type
 
@@ -436,6 +437,7 @@ class BaseErpServices < ActiveRecord::Migration
 
       add_index :notes, [:noted_record_id, :noted_record_type]
       add_index :notes, :note_type_id
+      add_index :notes, :created_by_id
     end
 
     unless table_exists?(:note_types)
@@ -663,17 +665,17 @@ class BaseErpServices < ActiveRecord::Migration
 
   def self.down
     [
-        :currencies, :money, :compass_ae_instance_party_roles,
-        :party_search_facts, :phone_numbers, :email_addresses,
-        :postal_addresses, :contact_purposes, :contact_types,
-        :contacts, :individuals, :organizations,
-        :party_relationships, :relationship_types, :role_types,
-        :party_roles, :parties, :categories, :category_classifications,
-        :descriptive_assets, :view_types, :notes, :note_types,
-        :valid_note_types, :compass_ae_instances,
-        :facilities, :facility_types, :fixed_assets,
-        :fixed_asset_types, :party_fixed_asset_assignments,
-        :unit_of_measurements, :entity_party_roles
+      :currencies, :money, :compass_ae_instance_party_roles,
+      :party_search_facts, :phone_numbers, :email_addresses,
+      :postal_addresses, :contact_purposes, :contact_types,
+      :contacts, :individuals, :organizations,
+      :party_relationships, :relationship_types, :role_types,
+      :party_roles, :parties, :categories, :category_classifications,
+      :descriptive_assets, :view_types, :notes, :note_types,
+      :valid_note_types, :compass_ae_instances,
+      :facilities, :facility_types, :fixed_assets,
+      :fixed_asset_types, :party_fixed_asset_assignments,
+      :unit_of_measurements, :entity_party_roles
     ].each do |tbl|
       if table_exists?(tbl)
         drop_table tbl

@@ -1,3 +1,18 @@
+# create_table :notes do |t|
+#   t.text :content
+#   t.references :noted_record, :polymorphic => true
+#   t.references :note_type
+#
+#   t.references :created_by_party
+#   t.references :updated_by_party
+# 
+#   t.timestamps
+# end
+
+# add_index :notes, [:noted_record_id, :noted_record_type]
+# add_index :notes, :note_type_id
+# add_index :notes, :notes_updated_by_pty_idx
+# add_index :notes, :notes_created_by_pty_idx
 class Note < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
