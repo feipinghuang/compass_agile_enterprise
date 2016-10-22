@@ -427,7 +427,6 @@ class BaseErpServices < ActiveRecord::Migration
 
     unless table_exists?(:notes)
       create_table :notes do |t|
-        t.integer :created_by_id
         t.text :content
         t.references :noted_record, :polymorphic => true
         t.references :note_type
@@ -437,7 +436,6 @@ class BaseErpServices < ActiveRecord::Migration
 
       add_index :notes, [:noted_record_id, :noted_record_type]
       add_index :notes, :note_type_id
-      add_index :notes, :created_by_id
     end
 
     unless table_exists?(:note_types)
