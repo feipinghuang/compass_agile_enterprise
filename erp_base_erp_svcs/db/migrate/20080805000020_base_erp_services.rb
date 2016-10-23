@@ -435,7 +435,7 @@ class BaseErpServices < ActiveRecord::Migration
         t.timestamps
       end
 
-      add_index :notes, [:noted_record_id, :noted_record_type]
+      add_index :notes, [:noted_record_id, :noted_record_type], name: 'notes_noted_record_idx'
       add_index :notes, :note_type_id
       add_index :notes, :created_by_id
     end
