@@ -76,6 +76,16 @@ class OrderTxn < ActiveRecord::Base
         statement = statement.with_current_status(status)
       end
 
+      if filters[:not_status]
+        if filters[:not_status].is_a? Array
+          not_status = filters[:not_status]
+        else
+          not_status = [filters[:not_status]]
+        end
+
+        statement = statement.without_current_status(not_status)
+      end
+
       statement
     end
 
