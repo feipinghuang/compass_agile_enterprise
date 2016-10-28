@@ -27,21 +27,7 @@ module Api
         categories = categories.by_tenant(dba_organizations)
 
         if query_filter[:with_products]
-          category_ids_with_products = []
-
-          Category.by_tenant(dba_organizations)
-          .joins(:category_classifications)
-          .joins("join product_types on product_types.id = category_classifications.classification_id
-                and category_classifications.classification_type = 'ProductType' ").uniq.each do |category|
-
-            category_ids_with_products.push(category.id)
-            category_ids_with_products = category_ids_with_products.concat(category.ancestors.collect(&:id))
-
-          end
-
-          category_ids_with_products = category_ids_with_products.uniq
-
-          categories = categories.where(categories: {id: category_ids_with_products})
+          categories = categories.where(categories: {id: Category.with_products(dba_organizations, {current_user: current_user})})
         end
 
         respond_to do |format|

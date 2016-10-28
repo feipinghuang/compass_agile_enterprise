@@ -90,6 +90,22 @@ class Category < ActiveRecord::Base
     def non_internal
       where('is_internal = ?', false)
     end
+
+    def with_products(dba_organization, context={})
+      category_ids_with_products = []
+
+      self.by_tenant(dba_organization)
+      .joins(:category_classifications)
+      .joins("join product_types on product_types.id = category_classifications.classification_id
+                and category_classifications.classification_type = 'ProductType' ").uniq.each do |category|
+
+        category_ids_with_products.push(category.id)
+        category_ids_with_products = category_ids_with_products.concat(category.ancestors.collect(&:id))
+
+      end
+
+      category_ids_with_products.uniq
+    end
   end
 
   def to_data_hash
