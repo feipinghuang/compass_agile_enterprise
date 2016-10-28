@@ -36,7 +36,7 @@ module ErpApp
                 :content => content,
                 :noted_record_type => record_type,
                 :noted_record_id => record_id,
-                :created_by_id => current_user.party.id
+                :created_by_party_id => current_user.party.id
             )
 
             render :json => {:success => true}

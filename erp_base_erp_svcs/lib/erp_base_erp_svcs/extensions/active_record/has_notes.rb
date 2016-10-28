@@ -2,6 +2,7 @@ module ErpBaseErpSvcs
 	module Extensions
 		module ActiveRecord
 			module HasNotes
+
 				def self.included(base)
 				  base.extend(ClassMethods)
 				end
@@ -32,7 +33,7 @@ module ErpBaseErpSvcs
             note = Note.new
             note.note_type = NoteType.iid(note_type_iid)
             note.noted_record = self
-            note.created_by = party unless party.nil?
+            note.created_by_party = party unless party.nil?
             note.content = content
             note if note.save
           end
@@ -43,7 +44,7 @@ module ErpBaseErpSvcs
               note = Note.new if note.nil?
               note.note_type_id = NoteType.find_by_internal_identifier(note_type_iid).id
               note.noted_record = self
-              note.created_by_id = party unless party.nil?
+              note.created_by_party = party unless party.nil?
             end
             note.content = content
             note.save
@@ -60,7 +61,8 @@ module ErpBaseErpSvcs
           end
 
 				end
-			end
-		end
-	end
-end
+        
+			end # HasNotes
+		end # ActiveRecord
+	end # Extensions
+end # ErpBaseErpSvcs

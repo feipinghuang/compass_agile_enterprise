@@ -5,7 +5,7 @@ class Party < ActiveRecord::Base
   has_contacts
   tracks_created_by_updated_by
 
-  has_many :created_notes, :class_name => 'Note', :foreign_key => 'created_by_id'
+  has_many :created_notes, :class_name => 'Note', :foreign_key => 'created_by_party_id'
   belongs_to :business_party, :polymorphic => true
 
   has_many :entity_party_roles, dependent: :destroy
