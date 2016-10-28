@@ -108,7 +108,7 @@ class Category < ActiveRecord::Base
     end
   end
 
-  def to_data_hash
+  def to_data_hash(context={})
     data = to_hash(
       only: [
         :id,

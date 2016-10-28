@@ -187,7 +187,7 @@ module ErpTechSvcs
 
       alias_method_chain :to_json, :leaf
 
-      def to_tree_hash(options={})
+      def to_tree_hash(options={}, context={})
         if options[:child_ids]
           _children = self.children.where(id: options[:child_ids])
         else
@@ -198,17 +198,17 @@ module ErpTechSvcs
           only: [:parent_id, :internal_identifier],
           leaf: self.leaf?,
           text: self.to_label,
-          children: _children.collect { |child| child.to_tree_hash(options) }
+          children: _children.collect { |child| child.to_tree_hash(options, context) }
         }.merge(options)
 
         if self.respond_to?(:to_data_hash)
-          self.to_hash(options).merge(to_data_hash)
+          self.to_hash(options).merge(to_data_hash(context))
         else
           self.to_hash(options)
         end
       end
 
-      def children_to_tree_hash(options={})
+      def children_to_tree_hash(options={}, context={})
         if options[:child_ids]
           _children = self.children.where(id: options[:child_ids])
         else

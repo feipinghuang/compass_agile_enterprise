@@ -48,13 +48,14 @@ module Api
                              categories: categories.collect { |item| item.to_data_hash }}
           end
           format.tree do
+
             if params[:parent_id]
               render :json => {success: true,
-                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories})}
+                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories}, {dba_organization: dba_organizations, current_user: current_user})}
             else
               nodes = [].tap do |nodes|
                 categories.roots.each do |root|
-                  nodes.push(root.to_tree_hash)
+                  nodes.push(root.to_tree_hash({}, {dba_organization: dba_organizations, current_user: current_user}))
                 end
               end
 
