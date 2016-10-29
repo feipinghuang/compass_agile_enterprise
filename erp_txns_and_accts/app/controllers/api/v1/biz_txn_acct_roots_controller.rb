@@ -61,7 +61,7 @@ module Api
           end
           format.all_representation do
             render :json => {success: true,
-                             biz_txn_acct_roots: BizTxnAcctRoot.to_all_representation(nil, [], 0, biz_txn_acct_roots)}
+                             biz_txn_acct_roots: BizTxnAcctRoot.to_all_representation(nil, [], 0, biz_txn_acct_roots.roots)}
 
           end
         end

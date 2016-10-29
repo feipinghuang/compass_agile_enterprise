@@ -70,7 +70,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
 
       # filter by BizTxnAcctType
       unless filters[:biz_txn_acct_type_iids].blank?
-        statement = statement.joins(:biz_txn_acct_type).where(biz_txn_acct_type: {internal_identifier: filters[:biz_txn_acct_type_iids]})
+        statement = statement.joins(:biz_txn_acct_type).where(biz_txn_acct_types: {internal_identifier: filters[:biz_txn_acct_type_iids]})
       end
 
       # filter by Status
