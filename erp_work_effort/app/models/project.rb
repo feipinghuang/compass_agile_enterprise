@@ -35,10 +35,15 @@ class Project < ActiveRecord::Base
     # @return [ActiveRecord::Relation]
     def scope_by_party(party, options={})
       table_alias = String.random
-
-      statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = projects.id
-                         and \"#{table_alias}\".entity_record_type = 'Project'")
-                      .where("#{table_alias}.party_id" => party).uniq
+      if ActiveRecord::Base.connection.adapter_name == "Mysql2"
+        statement = joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_id = projects.id
+                           and #{table_alias}.entity_record_type = 'Project'")
+                        .where("#{table_alias}.party_id" => party).uniq
+      else
+        statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = projects.id
+                           and \"#{table_alias}\".entity_record_type = 'Project'")
+                        .where("#{table_alias}.party_id" => party).uniq
+      end
 
       if options[:role_types]
         statement = statement.where("#{table_alias}.role_type_id" => RoleType.find_child_role_types(options[:role_types]))
