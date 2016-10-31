@@ -5,12 +5,27 @@ module Api
       def index
         # scope by dba_organization
         if params[:dba_organization_id].present?
-          applications = Application.scope_by_dba(params[:dba_organization_id], {types: params[:types]})
+          applications = Application.scope_by_dba(params[:dba_organization_id])
         elsif params[:user_id].present?
           applications = User.find(params[:user_id]).applications
         else
-          applications = Application.scope_by_dba(current_user.party.dba_organization, {types: params[:types]})
+          applications = Application.scope_by_dba(current_user.party.dba_organization)
         end
+
+        # scope by types if passed
+        if params[:types].present?
+          types = params[:types].split(',')
+
+          # if types length is 1 then we only want tools or apps
+          if types.length == 1
+            if types.first == 'tool'
+              applications = applications.tools
+            elsif types.first == 'app'
+              applications = applications.apps
+            end
+          end
+        end
+
         respond_to do |format|
           format.tree do
             applications = applications.map do |application|
