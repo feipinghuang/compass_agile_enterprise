@@ -202,7 +202,12 @@ module ErpTechSvcs
         }.merge(options)
 
         if self.respond_to?(:to_data_hash)
-          self.to_hash(options).merge(to_data_hash(context))
+          parameters = self.method(:to_data_hash).parameters
+          if parameters.count > 0 && parameters.first.second == :context
+            self.to_hash(options).merge(to_data_hash(context))
+          else
+            self.to_hash(options).merge(to_data_hash)
+          end
         else
           self.to_hash(options)
         end
