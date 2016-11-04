@@ -27,7 +27,7 @@ module Api
         categories = categories.by_tenant(dba_organizations)
 
         if query_filter[:with_products]
-          categories = categories.where(categories: {id: Category.with_products(dba_organizations, {current_user: current_user})})
+          categories = categories.where(categories: {id: Category.with_products(dba_organizations)})
         end
 
         respond_to do |format|
@@ -51,11 +51,11 @@ module Api
 
             if params[:parent_id]
               render :json => {success: true,
-                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories}, {dba_organization: dba_organizations, current_user: current_user})}
+                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories})}
             else
               nodes = [].tap do |nodes|
                 categories.roots.each do |root|
-                  nodes.push(root.to_tree_hash({}, {dba_organization: dba_organizations, current_user: current_user}))
+                  nodes.push(root.to_tree_hash)
                 end
               end
 
@@ -67,12 +67,12 @@ module Api
           format.all_representation do
             if params[:parent_id].present?
               render :json => {success: true,
-                               categories: BizTxnAcctRoot.to_all_representation(Category.find(params[:parent_id]))}
+                               categories: Category.to_all_representation(Category.find(params[:parent_id]))}
             else
 
 
               render :json => {success: true,
-                               categories: BizTxnAcctRoot.to_all_representation(nil, [], 0, categories.roots)}
+                               categories: Category.to_all_representation(nil, [], 0, categories.roots)}
             end
           end
         end
