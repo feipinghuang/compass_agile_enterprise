@@ -795,6 +795,10 @@ class OrderTxn < ActiveRecord::Base
 
     data[:order_line_items] = order_line_items.collect(&:to_data_hash)
 
+    if find_party_by_role('order_roles_customer')
+      data[:customer_party_id] = find_party_by_role('order_roles_customer').id
+    end
+
     data
   end
   alias :to_mobile_hash :to_data_hash
