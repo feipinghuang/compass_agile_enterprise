@@ -141,7 +141,7 @@ class Invoice < ActiveRecord::Base
           invoice_item.item_description = charged_item.description
           invoice_item.quantity = line_item.quantity
           invoice_item.unit_price = line_item.sold_price
-          invoice_item.amount = (line_item.quantity * line_item.sold_price)
+          invoice_item.amount = line_item.total_amount
           invoice_item.taxed = line_item.taxed?
           invoice_item.biz_txn_acct_root = charged_item.try(:revenue_gl_account)
           invoice_item.add_invoiced_record(charged_item)
@@ -158,6 +158,7 @@ class Invoice < ActiveRecord::Base
           invoice_item.invoice = invoice
           charged_item = charge_line.charged_item
           invoice_item.item_description = charge_line.description
+          invoice_item.type = InvoiceItemType.find_or_create(charge_line.charge_type.internal_identifier, charge_line.charge_type.description)
 
           # set data based on charged item either a OrderTxn or OrderLineItem
           if charged_item.is_a?(OrderLineItem)
