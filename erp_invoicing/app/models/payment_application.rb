@@ -18,6 +18,7 @@
 class PaymentApplication < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  has_file_assets
   tracks_created_by_updated_by
 
   belongs_to :financial_txn
