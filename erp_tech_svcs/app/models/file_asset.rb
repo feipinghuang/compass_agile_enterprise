@@ -73,7 +73,7 @@ class FileAsset < ActiveRecord::Base
     self.check_name_uniqueness
   end
 
-  has_many :file_asset_holders, dependent: :destroy, class_name: 'FileAssetHolder', foreign_key: 'file_asset_id'
+  has_many :file_asset_holders, class_name: 'FileAssetHolder', foreign_key: 'file_asset_id', dependent: :destroy
 
   acts_as_taggable
 
