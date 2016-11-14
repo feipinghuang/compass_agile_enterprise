@@ -66,7 +66,7 @@ class Category < ActiveRecord::Base
 
       # filter by query which will filter on description
       if filters[:query]
-        statement = statement.where('description like ?', "%#{filters[:query].strip}%")
+        statement = statement.where('description ilike ?', "%#{filters[:query].strip}%")
       end
 
       statement

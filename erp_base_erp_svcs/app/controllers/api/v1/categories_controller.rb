@@ -12,9 +12,10 @@ module Api
           sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
           sort = sort_hash[:property] || 'description'
           dir = sort_hash[:direction] || 'ASC'
-          limit = params[:limit] || 25
-          start = params[:start] || 0
         end
+
+        limit = params[:limit] || 25
+        start = params[:start] || 0
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
@@ -65,13 +66,22 @@ module Api
 
           end
           format.all_representation do
+
+            total_count = categories.count
+
+            if start and limit
+              categories = categories.offset(start).limit(limit)
+            end
+
             if params[:parent_id].present?
               render :json => {success: true,
+                               total_count: total_count,
                                categories: Category.to_all_representation(Category.find(params[:parent_id]))}
             else
 
 
               render :json => {success: true,
+                               total_count: total_count,
                                categories: Category.to_all_representation(nil, [], 0, categories.roots)}
             end
           end
