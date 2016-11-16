@@ -35,9 +35,6 @@ namespace :erp_orders do
 
           current_status = TrackedStatusType.find_or_create(data[0], data[1])
 
-          current_status.internal_identifier = "sales_#{iid}"
-          current_status.save!
-
           current_status.move_to_child_of(sales_order_statues)
 
         end
