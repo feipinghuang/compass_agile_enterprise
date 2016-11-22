@@ -74,7 +74,7 @@ module ErpInventory
   module Extensions
     module OrderTxnExtension
 
-      @@order_status_shipped_iid = 'order_statuses_shipped'
+      @@order_status_shipped_iid = 'sales_order_statuses_shipped'
 
       # set current status of entity.
       #
