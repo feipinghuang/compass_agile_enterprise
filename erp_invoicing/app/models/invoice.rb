@@ -26,7 +26,7 @@ class Invoice < ActiveRecord::Base
 
   has_tracked_status({
                        valid_transitions: {
-                         invoice_statuses_open: [:invoice_statuses_hold, :invoice_statuses_sent],
+                         invoice_statuses_open: [:invoice_statuses_hold, :invoice_statuses_sent, :invoice_statuses_closed],
                          invoice_statuses_sent: [:invoice_statuses_closed],
                          invoice_statuses_hold: [:invoice_statuses_open, :invoice_statuses_sent],
                          invoice_statuses_closed: []
