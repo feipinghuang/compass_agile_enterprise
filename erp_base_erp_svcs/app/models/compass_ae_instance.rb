@@ -19,7 +19,34 @@ class CompassAeInstance < ActiveRecord::Base
     end
   end
 
-  #helpers for guid
+  # Find party by role type
+  #
+  # @param [String || RoleType] role_type Role Type to lookup either an iid or RoleType
+  # @return [Party] party with role if found
+  def find_party_by_role(role_type)
+    if role_type.is_a? String
+      role_type = RoleType.iid(role_type)
+    end
+
+    Party.joins(:compass_ae_instance_party_roles).where(compass_ae_instance_party_roles: {role_type_id: role_type}).first
+  end
+
+  # Add a party with a role type
+  #
+  # @param [Party] party Party to relate
+  # @param [String || RoleType] role_type Role Type to use
+  # @return [CompassAeInstancePartyRole] newly created CompassAeInstancePartyRole
+  def add_party_with_role(party, role_type)
+    if role_type.is_a? String
+      role_type = RoleType.iid(role_type)
+    end
+
+    unless find_party_by_role(role_type).try(:id) == party.id
+      compass_ae_instance_party_roles.create(party: party, role_type: role_type)
+    end
+  end
+
+  # helpers for guid
   def set_guid(guid)
     self.guid = guid
     self.save

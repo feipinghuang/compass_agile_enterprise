@@ -74,6 +74,8 @@ class ErpAppSetup
     compass_ae_org_party = compass_ae_org.party
     compass_ae_org_party.add_role_type(dba_role_type)
 
+    CompassAeInstance.first.add_party_with_role(compass_ae_org.party, 'compass_ae_instance_owner')
+
     # Admins
     admin = Individual.create(:current_first_name => 'Admin', :current_last_name => 'Istrator', :gender => 'm')
     admin_party = admin.party
