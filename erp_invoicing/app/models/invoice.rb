@@ -355,11 +355,7 @@ class Invoice < ActiveRecord::Base
       end
     else
       unless self.balance.nil?
-        if has_invoice_items?
-          (self.balance - self.total_payments).round(2)
-        else
-          self.balance.round(2)
-        end
+        (self.balance - self.total_payments).round(2)
       end
     end
   end
