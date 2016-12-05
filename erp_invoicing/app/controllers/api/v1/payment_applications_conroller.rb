@@ -20,9 +20,9 @@ module Api
         .where('internal_identifier = ?', 'stripe').first
 
         result = payment_application.financial_txn.refund(CompassAeBusinessSuite::ActiveMerchantWrappers::StripeWrapper,
-                                      {
-                                        private_key: stripe_external_system.private_key,
-                                        public_key: stripe_external_system.public_key
+                                                          {
+                                                            private_key: stripe_external_system.private_key,
+                                                            public_key: stripe_external_system.public_key
         })
 
         render :json => {success: result[:success], message: result[:message]}
@@ -46,9 +46,9 @@ module Api
         .where('internal_identifier = ?', 'stripe').first
 
         result = payment_application.financial_txn.capture(CompassAeBusinessSuite::ActiveMerchantWrappers::StripeWrapper,
-                                      {
-                                        private_key: stripe_external_system.private_key,
-                                        public_key: stripe_external_system.public_key
+                                                           {
+                                                             private_key: stripe_external_system.private_key,
+                                                             public_key: stripe_external_system.public_key
         })
 
         render :json => {success: result[:success], message: result[:message]}
