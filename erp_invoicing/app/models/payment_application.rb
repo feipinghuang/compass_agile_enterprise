@@ -28,44 +28,25 @@ class PaymentApplication < ActiveRecord::Base
   before_destroy :unapply_payment
 
   def is_pending?
-    self.financial_txn.nil? or (self.financial_txn.is_scheduled? or self.financial_txn.is_pending?) 
+    self.financial_txn.nil? or (self.financial_txn.is_scheduled? or self.financial_txn.is_pending?)
+  end
+
+  def refund
+  	financial_txn.refund
   end
 
   def apply_payment
-    #check the calculate balance strategy, if it includes payments then do nothing
-    #if it doesn't include payments then update the balance on the model
-    unless self.payment_applied_to.calculate_balance_strategy_type.nil?
-      unless self.payment_applied_to.calculate_balance_strategy_type.iid =~ /payment/
-        update_applied_to_balance(:debit)
-      end
-    else
-      update_applied_to_balance(:debit)
-    end
+    # hook method to be extended
   end
 
   def unapply_payment
-    #check the calculate balance strategy, if it includes payments then do nothing
-    #if it doesn't include payments then update the balance on the model
-    if self.payment_applied_to.respond_to? :calculate_balance_strategy_type
-      if !self.payment_applied_to.calculate_balance_strategy_type.nil?
-        if self.payment_applied_to.calculate_balance_strategy_type.iid !=~ /payment/ and !self.is_pending?
-          update_applied_to_balance(:credit)
-        end
-      elsif !self.is_pending?
-        update_applied_to_balance(:credit)
-      end
-    end
-  end
-
-  private
-
-  def update_applied_to_balance(type)
-    #check if payment_applied_to model has a balance= method
-    if self.payment_applied_to.respond_to?(:balance=)
-      if type == :debit
-        self.payment_applied_to.balance = self.payment_applied_to.balance - self.money.amount
-      else
-        self.payment_applied_to.balance = self.payment_applied_to.balance + self.money.amount
+    # If this payment was on an Invoice or Bill update its status
+    #
+    if payment_applied_to.is_a? Invoice
+      if payment_applied_to.invoice_type.internal_identifier == 'acct_receivable'
+        payment_applied_to.current_status = 'invoice_statuses_sent'
+      elsif payment_applied_to.invoice_type.internal_identifier == 'acct_payable'
+        payment_applied_to.current_status = 'bill_statuses_open'
       end
     end
   end
