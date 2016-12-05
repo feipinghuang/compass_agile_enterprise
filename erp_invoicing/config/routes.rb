@@ -11,7 +11,7 @@ Rails.application.routes.draw do
         end
 
         member do
-          get :print_invoice
+          get :print_invoice, :defaults => {:format => 'html'}
           get :generate_pdf
           post :make_payment
           put :email_invoice
