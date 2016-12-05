@@ -47,6 +47,13 @@ FinancialTxn.class_eval do
             result[:message] = 'Payment Captured'
           end
 
+          # if the capture was a success apply the payments
+          if result[:success]
+            payment_applications.each do |payment_application|
+              payment_application.apply_payment
+            end
+          end
+
           result
 
         end
@@ -75,6 +82,13 @@ FinancialTxn.class_eval do
             payment.save
 
             result[:message] = 'Payment Refunded'
+          end
+
+          # if the refund was a success un-apply the payments
+          if result[:success]
+            payment_applications.each do |payment_application|
+              payment_application.unapply_payment
+            end
           end
 
           result
