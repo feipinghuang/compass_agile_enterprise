@@ -355,11 +355,7 @@ class Invoice < ActiveRecord::Base
       end
     else
       unless self.balance.nil?
-        if has_invoice_items?
-          (self.balance - self.total_payments).round(2)
-        else
-          self.balance.round(2)
-        end
+        (self.balance - self.total_payments).round(2)
       end
     end
   end
@@ -562,6 +558,8 @@ class Invoice < ActiveRecord::Base
         payment_application.payment_applied_to = self
         payment_application.applied_money_amount_id = money.id
         payment_application.save!
+
+        payment_application.apply_payment
 
         self.current_status = 'invoice_statuses_closed'
 
