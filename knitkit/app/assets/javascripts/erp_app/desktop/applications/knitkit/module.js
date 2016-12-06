@@ -9,7 +9,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
      */
     currentWebsite: null,
 
-    init: function () {
+    init: function() {
 
         this.launcher = {
             text: 'Website Builder',
@@ -19,7 +19,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         }
     },
 
-    initComponent: function () {
+    initComponent: function() {
         var me = this;
 
         me.addEvents(
@@ -33,7 +33,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         );
     },
 
-    clearWebsite: function(){
+    clearWebsite: function() {
         var self = this,
             desktop = self.app.getDesktop(),
             win = desktop.getWindow('knitkit'),
@@ -63,7 +63,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
 
     },
 
-    selectWebsite: function (website) {
+    selectWebsite: function(website) {
         // get only the data for the website
         website = website.data;
 
@@ -82,7 +82,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         eastRegion.imageAssetsPanel.selectWebsite(website);
 
         var westRegion = Ext.getCmp('knitkitWestRegion');
-        westRegion.selectWebsite(website);
+
+        westRegion.siteStructureTabPanel.selectWebsite(website);
 
         Compass.ErpApp.Shared.FileManagerTree.extraPostData = {
             website_id: website.id
@@ -93,7 +94,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
             params: {
                 website_id: website.id
             },
-            success: function(response){
+            success: function(response) {
                 var text = response.responseText;
                 var obj = Ext.decode(text);
                 if (obj.message == 'true') {
@@ -116,7 +117,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
 
     },
 
-    createWindow: function () {
+    createWindow: function() {
         var desktop = this.app.getDesktop();
         var win = desktop.getWindow('knitkit');
 
@@ -127,85 +128,75 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
             var tbarItems = [];
 
             if (currentUser.hasCapability('create', 'Website')) {
-                tbarItems.push(
-                    {
-                        text: 'Main Menu',
-                        menu: {
-                            xtype: 'menu',
-                            items: [
-                                Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu(),
-                                Compass.ErpApp.Desktop.Applications.Knitkit.ArticlesMenu(),
-                                Compass.ErpApp.Desktop.Applications.Knitkit.SectionsMenu(),
-                                Compass.ErpApp.Desktop.Applications.Knitkit.ThemeMenu(),
-                                Compass.ErpApp.Desktop.Applications.Knitkit.NavigationMenu(),
-                                Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu(),
-                                Compass.ErpApp.Desktop.Applications.Knitkit.TemplateMenu()
-                            ]
-                        }
+                tbarItems.push({
+                    text: 'Main Menu',
+                    menu: {
+                        xtype: 'menu',
+                        items: [
+                            Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu(),
+                            Compass.ErpApp.Desktop.Applications.Knitkit.ArticlesMenu(),
+                            Compass.ErpApp.Desktop.Applications.Knitkit.SectionsMenu(),
+                            Compass.ErpApp.Desktop.Applications.Knitkit.ThemeMenu(),
+                            Compass.ErpApp.Desktop.Applications.Knitkit.NavigationMenu(),
+                            Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu(),
+                            Compass.ErpApp.Desktop.Applications.Knitkit.TemplateMenu()
+                        ]
                     }
-                );
+                });
             }
 
-            tbarItems.push(
-                {
-                    iconCls: 'btn-save-light',
-                    text: 'Save',
-                    handler: function (btn) {
-                        centerRegion.saveCurrent();
-                    }
-                },
-                {
-                    iconCls: 'btn-save-all-light',
-                    text: 'Save All',
-                    handler: function (btn) {
-                        centerRegion.saveAll();
-                    }
-                });
+            tbarItems.push({
+                iconCls: 'btn-save-light',
+                text: 'Save',
+                handler: function(btn) {
+                    centerRegion.saveCurrent();
+                }
+            }, {
+                iconCls: 'btn-save-all-light',
+                text: 'Save All',
+                handler: function(btn) {
+                    centerRegion.saveAll();
+                }
+            });
 
-            tbarItems.push('->',
-                {
-                    iconCls: 'btn-left-panel',
-                    handler: function (btn) {
-                        var panel = btn.up('window').down('knitkit_westregion');
-                        if (panel.collapsed) {
-                            panel.expand();
-                        }
-                        else {
-                            panel.collapse(Ext.Component.DIRECTION_LEFT);
-                        }
+            tbarItems.push('->', {
+                iconCls: 'btn-left-panel',
+                handler: function(btn) {
+                    var panel = btn.up('window').down('knitkit_westregion');
+                    if (panel.collapsed) {
+                        panel.expand();
+                    } else {
+                        panel.collapse(Ext.Component.DIRECTION_LEFT);
                     }
-                },
-                {
-                    iconCls: 'btn-right-panel',
-                    handler: function (btn) {
-                        var panel = btn.up('window').down('knitkit_eastregion');
-                        if (panel.collapsed) {
-                            panel.expand();
-                        }
-                        else {
-                            panel.collapse(Ext.Component.DIRECTION_RIGHT);
-                        }
+                }
+            }, {
+                iconCls: 'btn-right-panel',
+                handler: function(btn) {
+                    var panel = btn.up('window').down('knitkit_eastregion');
+                    if (panel.collapsed) {
+                        panel.expand();
+                    } else {
+                        panel.collapse(Ext.Component.DIRECTION_RIGHT);
                     }
-                },
-                {
-                    iconCls: 'btn-left-right-panel',
-                    handler: function (btn) {
-                        var east = btn.up('window').down('knitkit_eastregion');
-                        var west = btn.up('window').down('knitkit_westregion');
-                        if (west.collapsed || east.collapsed) {
-                            west.expand();
-                            east.expand();
-                        }
-                        else if (!west.collapsed && !east.collapsed) {
-                            var task = new Ext.util.DelayedTask(function () {
-                                west.collapse(Ext.Component.DIRECTION_LEFT);
-                            });
-                            east.collapse(Ext.Component.DIRECTION_RIGHT);
-                            task.delay(400);
+                }
+            }, {
+                iconCls: 'btn-left-right-panel',
+                handler: function(btn) {
+                    var east = btn.up('window').down('knitkit_eastregion');
+                    var west = btn.up('window').down('knitkit_westregion');
+                    if (west.collapsed || east.collapsed) {
+                        west.expand();
+                        east.expand();
+                    } else if (!west.collapsed && !east.collapsed) {
+                        var task = new Ext.util.DelayedTask(function() {
+                            west.collapse(Ext.Component.DIRECTION_LEFT);
+                        });
+                        east.collapse(Ext.Component.DIRECTION_RIGHT);
+                        task.delay(400);
 
-                        }
                     }
-                });
+                }
+            });
 
             win = desktop.createWindow({
                 id: 'knitkit',
@@ -225,13 +216,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
                     items: tbarItems
                 }],
                 items: [
-                    this.centerRegion,
-                    {
+                    this.centerRegion, {
                         xtype: 'knitkit_eastregion',
                         header: false,
                         module: this
-                    },
-                    {
+                    }, {
                         xtype: 'knitkit_westregion',
                         header: false,
                         centerRegion: this.centerRegion,

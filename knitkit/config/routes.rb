@@ -19,6 +19,15 @@ Rails.application.routes.draw do
 
       resources :websites, defaults: { :format => 'json' }
 
+      resources :website_builder, defaults: { :format => 'json' } do
+        collection do
+          get 'headers'
+          get 'footers'
+          get 'get_header_dom_url'
+          get 'get_footer_dom_url'
+        end
+      end
+
     end
   end
 
