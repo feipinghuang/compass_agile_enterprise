@@ -1,25 +1,21 @@
-Ext.define('Compass.ErpApp.Desktop.Applications.ApplicationManagement.ReorderableDropZone', {
+Ext.define('Compass.ErpApp.Desktop.Applications.ApplicationManagement.WebsiteBuilderDropZone', {
     extend: 'Ext.Component',
-    alias: 'widget.reorderabledropzone',
-
+    alias: 'widget.websitebuilderdropzone',
     lastDropZone: false,
-    cls: 'reorderableDropZone',
-    height: '1px',
+    cls: 'websiteBuilderDropZone',
     listeners: {
         render: function(comp) {
-            if (comp.lastDropZone) {
-                comp.el.setStyle('height', '25px');
-                comp.el.setStyle('marginBottom', '5px');
-            }
+            comp.lastDropZone ? comp.el.setStyle('height', '25px') : comp.el.setStyle('height', '10px');
+            comp.el.setStyle('marginBottom', '5px');
         }
     }
 });
 
 
-Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
+Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.reorderablepanel',
-    title: "Drag Drop panel",
+    alias: 'widget.websitebuilderpanel',
+    title: "Website Builder",
     autoScroll: true,
     items: [],
     initComponent: function() {
@@ -27,9 +23,9 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
 
         me.on('render', function() {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
-                ddGroup: 'reorderablePanelDDgroup',
+                ddGroup: 'websiteBuilderPanelDDgroup',
                 getDragData: function(e) {
-                    var target = e.getTarget('.reorderable-component-panel');
+                    var target = e.getTarget('.websitebuilder-component-panel');
 
                     if (target) {
                         var element = Ext.getCmp(target.id);
@@ -57,9 +53,9 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
                 }
             });
             me.dropZone = Ext.create('Ext.dd.DropZone', me.getEl(), {
-                ddGroup: 'reorderablePanelDDgroup',
+                ddGroup: 'websiteBuilderPanelDDgroup',
                 getTargetFromEvent(e) {
-                    return e.getTarget('.reorderableDropZone');
+                    return e.getTarget('.websiteBuilderDropZone');
                 },
 
                 // On entry into a target node, highlight that node.
@@ -67,7 +63,7 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
                     if (this.validDrop(target, dragData)) {
                         var dropComponent = Ext.getCmp(target.id);
                         if (dropComponent) {
-                            Ext.fly(target).addCls('application-management-move-field-hover');
+                            Ext.fly(target).addCls('website-builder-move-component-hover');
                         }
                     } else {
                         return Ext.dd.DropZone.prototype.dropNotAllowed;
@@ -79,7 +75,7 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
                     if (target) {
                         var dropComponent = Ext.getCmp(target.id);
                         if (dropComponent) {
-                            Ext.fly(target).removeCls('application-management-move-field-hover');
+                            Ext.fly(target).removeCls('website-builder-move-component-hover');
                         }
                     }
                 },
@@ -89,7 +85,7 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
                         var row = parseInt(target.attributes['data-row'].value),
                             indexToDrop = (row == 0) ? 0 : row - 1,
                             panel = Ext.getCmp(data.panelId),
-                            containerPanel = Ext.ComponentQuery.query('reorderablepanel').first();
+                            containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
 
                         Ext.Ajax.request({
                             method: "GET",
@@ -101,14 +97,26 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
                                 var responseObj = Ext.decode(response.responseText);
 
                                 if (responseObj.success) {
-                                    debugger;
                                     containerPanel.removeFieldDropZones();
                                     containerPanel.insert(indexToDrop, {
                                         xtype: 'panel',
-                                        cls: "reorderable-component-panel",
+                                        cls: "websitebuilder-component-panel",
                                         layout: 'fit',
                                         height: data.componentHeight,
-                                        html: '<iframe height="100%" width="100%" frameBorder="0" src="' + responseObj.html_src + '"></iframe>'
+                                        html: '<iframe height="100%" width="100%" frameBorder="0" id="' + data.componentId + 'Frame" src="' + responseObj.html_src + '"></iframe>',
+                                        listeners: {
+                                            render: function(box) {
+                                                var iframe = Ext.get(data.componentId + "Frame");
+                                                iframe.on('load', function() {
+                                                    editContents = this.el.dom.contentDocument.getElementsByClassName('editContent');
+                                                    Ext.Array.each(editContents, function(editContent) {
+                                                        editContent.addEventListener('click', function() {
+                                                            console.log(this.tagName + " editable element clicked");
+                                                        });
+                                                    });
+                                                });
+                                            }
+                                        }
                                     });
                                     containerPanel.remove(panel);
                                     containerPanel.addFieldDropZones();
@@ -145,7 +153,7 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
     removeFieldDropZones: function() {
         var me = this;
         me.suspendLayout = true;
-        Ext.each(me.query('reorderabledropzone'), function(dropZone) {
+        Ext.each(me.query('websitebuilderdropzone'), function(dropZone) {
             // remove the drop zones
             dropZone.destroy();
         });
@@ -161,7 +169,7 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
         me.suspendLayout = true;
         if (itemCount === 0) {
             me.insert(0, {
-                xtype: 'reorderabledropzone',
+                xtype: 'websitebuilderdropzone',
                 lastDropZone: true,
                 autoEl: {
                     tag: 'div',
@@ -174,7 +182,7 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
             for (var i = 0; i < itemCount; i++) {
                 if (i === 0) {
                     me.insert(0, {
-                        xtype: 'reorderabledropzone',
+                        xtype: 'websitebuilderdropzone',
                         autoEl: {
                             tag: 'div',
                             'data-row': 0
@@ -185,7 +193,7 @@ Ext.define('Compass.ErpApp.Shared.ReOrderablePanel', {
                 rowIndex += 2;
 
                 me.insert(rowIndex, {
-                    xtype: 'reorderabledropzone',
+                    xtype: 'websitebuilderdropzone',
                     lastDropZone: (i == lastIndex),
                     autoEl: {
                         tag: 'div',

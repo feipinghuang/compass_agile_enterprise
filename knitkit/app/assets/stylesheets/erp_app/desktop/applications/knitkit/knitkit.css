@@ -169,3 +169,8 @@
     max-height: 100%;
 }
 
+.website-builder-move-component-hover {
+  border: dashed 2px #CCC;
+  height: 100px !important;
+  margin-bottom: 15px !important;
+}

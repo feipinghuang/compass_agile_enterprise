@@ -1,13 +1,13 @@
-Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.FooterBlocks', {
+Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.ContentSectionBlocks', {
     extend: "Ext.panel.Panel",
-    alias: 'widget.knitkitfooterblock',
+    alias: 'widget.knitkitcontentsectionblock',
     cls: "draggableImages",
     items: [],
     initComponent: function() {
         var me = this;
         Ext.Ajax.request({
             method: "GET",
-            url: '/api/v1/website_builder/footers.json',
+            url: '/api/v1/website_builder/content_sections.json',
             success: function(response) {
                 var responseObj = Ext.decode(response.responseText);
 
@@ -18,7 +18,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.FooterBlocks'
                             cls: 'draggable-image-display',
                             layout: 'fit',
                             autoScroll: true,
-                            componentType: 'footer',
+                            componentType: 'content_section',
                             imgId: data.id,
                             componentHeight: data.height,
                             html: '<img src="' + data.src + '"></img>'
@@ -38,25 +38,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.FooterBlocks'
                     var target = e.getTarget('.draggable-image-display');
 
                     if (target) {
-                        var element = Ext.getCmp(target.id);
-
-                        var dragEl = element.getEl(); //document.createElement('div');
-                        var height = element.getEl().getHeight(),
-                            width = element.getEl().getWidth();
-
-                        var d = dragEl.dom.cloneNode(true);
+                        var element = Ext.getCmp(target.id),
+                            dragEl = element.getEl(),
+                            d = dragEl.dom.cloneNode(true);
                         d.id = Ext.id();
-
-                        Ext.fly(dragEl).setWidth(width);
-                        Ext.fly(dragEl).setHeight(height);
 
                         return {
                             panelConfig: element.initialConfig,
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
-                            ddel: d, //dragEl,
+                            ddel: d,
                             componentType: element.componentType,
-                            componentId: element.imgId
+                            componentId: element.imgId,
+                            componentHeight: element.componentHeight
                         };
                     }
                 },

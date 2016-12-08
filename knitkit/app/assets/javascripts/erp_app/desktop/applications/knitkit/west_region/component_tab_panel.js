@@ -17,6 +17,17 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
             }]
         });
 
+
+        var contentSectionPanel = Ext.create('Ext.panel.Panel', {
+            title: 'Content Section Blocks',
+            autoScroll: true,
+            items: [{
+                xtype: 'knitkitcontentsectionblock',
+                centerRegion: this.initialConfig['module'].centerRegion,
+                header: false
+            }]
+        });
+
         var footerPanel = Ext.create('Ext.panel.Panel', {
             title: 'Footer Blocks',
             autoScroll: true,
@@ -27,7 +38,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
             }]
         });
 
-        this.items = [headerPanel, footerPanel];
+        this.items = [headerPanel, contentSectionPanel, footerPanel];
 
         this.callParent(arguments);
     },

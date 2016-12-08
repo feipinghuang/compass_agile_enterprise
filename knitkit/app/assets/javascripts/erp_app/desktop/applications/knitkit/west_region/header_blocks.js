@@ -1,34 +1,39 @@
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.HeaderBlocks', {
     extend: "Ext.panel.Panel",
     alias: 'widget.knitkitheaderblock',
-    dataObjects: [{
-        src: '/website_builder/header1.png',
-        id: 'header1',
-        height: 480
-    }, {
-        src: '/website_builder/header2.png',
-        id: 'header2',
-        height: 498
-    }],
     cls: "draggableImages",
     items: [],
     initComponent: function() {
         var me = this;
+        Ext.Ajax.request({
+            method: "GET",
+            url: '/api/v1/website_builder/headers.json',
+            success: function(response) {
+                var responseObj = Ext.decode(response.responseText);
 
-        Ext.each(me.dataObjects, function(data) {
-            me.items.push({
-                xtype: 'panel',
-                cls: 'draggable-image-display',
-                layout: 'fit',
-                autoScroll: true,
-                componentType: 'header',
-                imgId: data.id,
-                html: '<img src="' + data.src + '"></img>'
-            });
+                if (responseObj.success) {
+                    Ext.each(responseObj.srcs, function(data) {
+                        me.add({
+                            xtype: 'panel',
+                            cls: 'draggable-image-display',
+                            layout: 'fit',
+                            autoScroll: true,
+                            componentType: 'header',
+                            imgId: data.id,
+                            componentHeight: data.height,
+                            html: '<img src="' + data.src + '"></img>'
+                        });
+                    });
+                }
+            },
+            failure: function() {
+                // TODO: Could not load message count, should we display an error?
+            }
         });
+
         me.on('render', function() {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
-                ddGroup: 'reorderablePanelDDgroup',
+                ddGroup: 'websiteBuilderPanelDDgroup',
                 getDragData: function(e) {
                     var target = e.getTarget('.draggable-image-display');
 
@@ -45,7 +50,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.HeaderBlocks'
                             ddel: d,
                             componentType: element.componentType,
                             componentId: element.imgId,
-                            componentHeight: element.height
+                            componentHeight: element.componentHeight
                         };
                     }
                 },

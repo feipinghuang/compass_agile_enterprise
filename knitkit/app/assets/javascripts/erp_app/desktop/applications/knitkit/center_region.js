@@ -972,12 +972,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
             closable: true,
             centerRegion: region
         });
-        dragDropPanel = Ext.createWidget('reorderablepanel', {
+        websiteBuilderPanel = Ext.createWidget('websitebuilderpanel', {
             closable: true,
             centerRegion: region
         });
         this.workArea.add(startupPanel);
-        this.workArea.add(dragDropPanel);
+        this.workArea.add(websiteBuilderPanel);
         this.workArea.setActiveTab(startupPanel);
 
         config = Ext.apply({
