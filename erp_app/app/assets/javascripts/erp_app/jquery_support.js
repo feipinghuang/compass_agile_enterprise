@@ -15,15 +15,15 @@
 if (jQuery) {
     Compass.ErpApp.Utility.createNamespace("Compass.ErpApp.JQuerySupport");
 
-    jQuery(document).ready(function () {
+    jQuery(document).ready(function() {
         Compass.ErpApp.JQuerySupport.setupHtmlReplace();
     });
 
-    Compass.ErpApp.JQuerySupport.setupHtmlReplace = function () {
+    Compass.ErpApp.JQuerySupport.setupHtmlReplace = function() {
         jQuery(document).unbind('ajaxSuccess', Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse).bind('ajaxSuccess', Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse);
     };
 
-    Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse = function (e, xhr, options, data) {
+    Compass.ErpApp.JQuerySupport.handleHtmlUpdateResponse = function(e, xhr, options, data) {
         var utility = Compass.ErpApp.Utility;
 
         //reset SessionTimeout
@@ -31,11 +31,11 @@ if (jQuery) {
             utility.SessionTimeout.reset();
         }
         if (!utility.isBlank(data) && !utility.isBlank(data.htmlId)) {
+
             var updateDiv = $('#' + data.htmlId);
             try {
                 updateDiv.closest('div.compass_ae-widget').unmask();
-            }
-            catch (ex) {
+            } catch (ex) {
                 //messy catch for no update div
             }
 
