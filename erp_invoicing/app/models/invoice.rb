@@ -554,7 +554,9 @@ class Invoice < ActiveRecord::Base
 
         payment_application.apply_payment
 
-        self.current_status = 'invoice_statuses_closed'
+        if self.calculate_balance == 0
+          self.current_status = 'invoice_statuses_closed'
+        end
 
         PaymentMailer.delay.payment_success(payment_application.id, website_id)
       else

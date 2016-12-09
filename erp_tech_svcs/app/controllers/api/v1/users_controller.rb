@@ -199,7 +199,7 @@ module Api
 
         # set this to tell activation where to redirect_to for login and temp password
         login_url = params[:login_url].blank? ? '/erp_app/login' : params[:login_url]
-    
+
         # if a website was selected then set it so we can use the any templates in that website
         unless params['website_id'].blank?
           user.add_instance_attribute(:website_id, params['website_id'])
@@ -211,6 +211,10 @@ module Api
 
         if params[:auto_activate] == 'yes'
           user.skip_activation_email = true
+        end
+
+        if params[:time_zone].present?
+          user.time_zone = params[:time_zone]
         end
 
         user.save!
@@ -245,7 +249,7 @@ module Api
         end
 
         if params[:profile_image]
-          user.set_profile_image(params[:profile_image].read, params[:profile_image].original_filename) 
+          user.set_profile_image(params[:profile_image].read, params[:profile_image].original_filename)
         end
 
         user
@@ -284,6 +288,10 @@ module Api
           user.email = params[:email].strip
         end
 
+        if params[:time_zone].present?
+          user.time_zone = params[:time_zone]
+        end
+
         user.save!
 
         business_party = party.business_party
@@ -298,7 +306,7 @@ module Api
         end
 
         if params[:profile_image]
-          user.set_profile_image(params[:profile_image].read, params[:profile_image].original_filename) 
+          user.set_profile_image(params[:profile_image].read, params[:profile_image].original_filename)
         end
 
         user.party.updated_by_party = current_user.party

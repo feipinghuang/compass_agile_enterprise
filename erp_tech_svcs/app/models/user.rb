@@ -377,6 +377,7 @@ class User < ActiveRecord::Base
                      :last_activity_at,
                      :failed_logins_count,
                      :created_at,
+                     :time_zone,
                      :updated_at
                    ],
                    display_name: party.description,
