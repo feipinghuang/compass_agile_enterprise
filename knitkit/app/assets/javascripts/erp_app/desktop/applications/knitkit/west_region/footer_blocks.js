@@ -21,7 +21,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.FooterBlocks'
                             componentType: 'footer',
                             imgId: data.id,
                             componentHeight: data.height,
-                            html: '<img src="' + data.src + '"></img>'
+                            html: '<img src="' + data.img_src + '"></img>'
                         });
                     });
                 }

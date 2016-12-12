@@ -21,7 +21,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.ContentSectio
                             componentType: 'content_section',
                             imgId: data.id,
                             componentHeight: data.height,
-                            html: '<img src="' + data.src + '"></img>'
+                            html: '<img src="' + data.img_src + '"></img>'
                         });
                     });
                 }
@@ -49,8 +49,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.ContentSectio
                             repairXY: element.getEl().getXY(),
                             ddel: d,
                             componentType: element.componentType,
-                            componentId: element.imgId,
-                            componentHeight: element.componentHeight
+                            componentId: element.imgId
                         };
                     }
                 },

@@ -24,9 +24,9 @@ Rails.application.routes.draw do
           get 'headers'
           get 'content_sections'
           get 'footers'
-          get 'get_header_dom_url'
-          get 'get_content_section_dom_url'
-          get 'get_footer_dom_url'
+          get 'get_header_component'
+          get 'get_content_section_component'
+          get 'get_footer_component'
         end
       end
 

@@ -28,22 +28,23 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     var target = e.getTarget('.websitebuilder-component-panel');
 
                     if (target) {
-                        var element = Ext.getCmp(target.id);
-                        var dragEl = element.getEl(); //document.createElement('div');
-                        var height = element.getEl().getHeight(),
-                            width = element.getEl().getWidth();
-
-                        var d = dragEl.dom.cloneNode(true);
+                        var element = Ext.getCmp(target.id),
+                            dragEl = element.getEl(),
+                            height = element.getEl().getHeight(),
+                            width = element.getEl().getWidth(),
+                            d = dragEl.dom.cloneNode(true);
                         d.id = Ext.id();
-
-                        Ext.fly(dragEl).setWidth(width);
-                        Ext.fly(dragEl).setHeight(height);
+                        Ext.fly(d).setHTML('<img src="' + element.imgSrc + '">');
+                        Ext.fly(d).setWidth(186);
+                        Ext.fly(d).setHeight(80);
 
                         return {
                             panelConfig: element.initialConfig,
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
-                            ddel: d //dragEl
+                            ddel: d,
+                            componentType: element.componentType,
+                            componentId: element.imgId
                         };
                     }
                 },
@@ -89,7 +90,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                         Ext.Ajax.request({
                             method: "GET",
-                            url: '/api/v1/website_builder/get_' + data.componentType + '_dom_url.json',
+                            url: '/api/v1/website_builder/get_' + data.componentType + '_component.json',
                             params: {
                                 id: data.componentId
                             },
@@ -97,16 +98,20 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 var responseObj = Ext.decode(response.responseText);
 
                                 if (responseObj.success) {
+                                    var responseData = responseObj.data
                                     containerPanel.removeFieldDropZones();
                                     containerPanel.insert(indexToDrop, {
                                         xtype: 'panel',
                                         cls: "websitebuilder-component-panel",
                                         layout: 'fit',
-                                        height: data.componentHeight,
-                                        html: '<iframe height="100%" width="100%" frameBorder="0" id="' + data.componentId + 'Frame" src="' + responseObj.html_src + '"></iframe>',
+                                        height: responseData.height,
+                                        imgSrc: responseData.img_src,
+                                        componentType: data.componentType,
+                                        imgId: responseData.id,
+                                        html: '<div class="website-builder-reorder-setting move-icon" id="componentSetting"></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" frameBorder="0" id="' + responseData.id + 'Frame" src="' + responseData.html_src + '"></iframe></div>',
                                         listeners: {
-                                            render: function(box) {
-                                                var iframe = Ext.get(data.componentId + "Frame");
+                                            render: function(panel) {
+                                                var iframe = Ext.get(responseData.id + "Frame");
                                                 iframe.on('load', function() {
                                                     editContents = this.el.dom.contentDocument.getElementsByClassName('editContent');
                                                     Ext.Array.each(editContents, function(editContent) {
@@ -115,6 +120,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                         });
                                                     });
                                                 });
+                                                var iframe = Ext.get(responseData.componentId + "Frame");
+                                                // debugger;
                                             }
                                         }
                                     });
