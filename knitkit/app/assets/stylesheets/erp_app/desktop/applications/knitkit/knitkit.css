@@ -179,19 +179,33 @@
     visibility: visible;
     opacity: 1;
     transition: right 0.5s linear 0s;
-    /*background-color: #fff;*/
-    padding-left: 16px;
+    background-color: #ccc;
+    padding: 10px;
     position: absolute;
     top: 5px;
     right: 15px;
     width: auto;
     height: 36px;
-    cursor: move;
 }
 
-.move-icon {
+.icon-move {
     background-image: url(/assets/knitkit/icons/move-component.png) !important;
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/knitkit/icons/move-component.png', sizingMethod='crop');
     height: 16px;
     width: 16px;
+    cursor: move;
+}
+
+.icon-remove {
+    background-image: url(/assets/icons/delete/delete_16x16.png) !important;
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/delete/delete_16x16.png', sizingMethod='crop');
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+}
+.pull-right{
+    float: right;
+}
+.pull-left{
+    float: left;
 }

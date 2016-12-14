@@ -34,7 +34,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             width = element.getEl().getWidth(),
                             d = dragEl.dom.cloneNode(true);
                         d.id = Ext.id();
-                        Ext.fly(d).setHTML('<img src="' + element.imgSrc + '">');
+                        Ext.fly(d).setHTML('<img src="' + element.imgSrc + '" style="width:186px;height:80px">');
                         Ext.fly(d).setWidth(186);
                         Ext.fly(d).setHeight(80);
 
@@ -83,8 +83,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                 onNodeDrop: function(target, dd, e, data) {
                     if (this.validDrop(target, data)) {
-                        var row = parseInt(target.attributes['data-row'].value),
-                            indexToDrop = (row == 0) ? 0 : row - 1,
+                        var indexToDrop = parseInt(target.attributes['data-row'].value),
                             panel = Ext.getCmp(data.panelId),
                             containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
 
@@ -99,7 +98,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                                 if (responseObj.success) {
                                     var responseData = responseObj.data
-                                    containerPanel.removeFieldDropZones();
                                     containerPanel.insert(indexToDrop, {
                                         xtype: 'panel',
                                         cls: "websitebuilder-component-panel",
@@ -108,9 +106,20 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         imgSrc: responseData.img_src,
                                         componentType: data.componentType,
                                         imgId: responseData.id,
-                                        html: '<div class="website-builder-reorder-setting move-icon" id="componentSetting"></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" frameBorder="0" id="' + responseData.id + 'Frame" src="' + responseData.html_src + '"></iframe></div>',
                                         listeners: {
                                             render: function(panel) {
+                                                // assigning click event to remove icon
+                                                panel.update(new Ext.XTemplate('<div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{componetId}"></div></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" frameBorder="0" id="{componetId}Frame" src="{htmlSrc}"></iframe></div>').apply({
+                                                    componetId: responseData.id,
+                                                    htmlSrc: responseData.html_src,
+                                                    panelId: panel.id
+                                                }));
+
+                                                Ext.get(panel.id + "-remove").on("click", function() {
+                                                    panel.destroy();
+                                                });
+
+                                                // Assigning click event inside iFrame content
                                                 var iframe = Ext.get(responseData.id + "Frame");
                                                 iframe.on('load', function() {
                                                     editContents = this.el.dom.contentDocument.getElementsByClassName('editContent');
@@ -125,13 +134,15 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                             }
                                         }
                                     });
+
+                                    containerPanel.removeFieldDropZones();
                                     containerPanel.remove(panel);
                                     containerPanel.addFieldDropZones();
                                     containerPanel.updateLayout();
                                 }
                             },
                             failure: function() {
-                                // TODO: Could not load message count, should we display an error?
+                                // TODO: Could not able to drop component, should we display an error?
                             }
                         });
 
