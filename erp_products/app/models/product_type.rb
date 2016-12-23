@@ -181,11 +181,16 @@ class ProductType < ActiveRecord::Base
                      :created_at,
                      :updated_at
                    ],
+                   offer_list_description: find_description_by_view_type('list_description').try(:description),
+                   offer_short_description: find_description_by_view_type('short_description').try(:description),
+                   offer_long_description: find_description_by_view_type('long_description').try(:description),
                    unit_of_measurement: try(:unit_of_measurement).try(:to_data_hash),
                    price: try(:get_current_simple_plan).try(:money_amount),
                    cost: custom_fields['cost'],
                    revenue_gl_account: try(:revenue_gl_account).try(:to_data_hash),
                    expense_gl_account: try(:expense_gl_account).try(:to_data_hash),
+                   img_url: images.first.try(:fully_qualified_url),
+                   vendor: find_party_by_role(RoleType.iid('vendor')).try(:description),
                    images: [])
 
     if self.images.empty?
@@ -195,6 +200,8 @@ class ProductType < ActiveRecord::Base
         data[:images] << image.fully_qualified_url
       end
     end
+
+    data[:options] = product_option_applicabilities.collect{|item| item.to_data_hash({include_options: true})}
 
     data
   end
@@ -212,21 +219,7 @@ class ProductType < ActiveRecord::Base
   end
 
   def to_mobile_hash
-    data = {
-      id: id,
-      description: description,
-      offer_list_description: find_description_by_view_type('list_description').try(:description),
-      offer_short_description: find_description_by_view_type('short_description').try(:description),
-      offer_long_description: find_description_by_view_type('long_description').try(:description),
-      offer_base_price: get_current_simple_amount_with_currency,
-      unit_of_measurement: try(:unit_of_measurement).try(:description),
-      img_url: images.first.try(:fully_qualified_url),
-      vendor: find_party_by_role(RoleType.iid('vendor')).try(:description)
-    }
-
-    data[:options] = product_option_applicabilities.collect{|item| item.to_data_hash({include_options: true})}
-
-    data
+    to_data_hash
   end
 
   def parent_dba_organizations(dba_orgs=[])

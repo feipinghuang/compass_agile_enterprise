@@ -285,7 +285,7 @@ class OrderTxn < ActiveRecord::Base
 
     case class_name
     when 'ProductType'
-      line_item = add_product_type_line_item(object, opts[:reln_type], opts[:to_role], opts[:from_role])
+      line_item = add_product_type_line_item(object, opts[:selected_product_options], opts[:reln_type], opts[:to_role], opts[:from_role])
     when 'ProductInstance'
       line_item = add_product_instance_line_item(object, opts[:reln_type], opts[:to_role], opts[:from_role])
     when 'SimpleProductOffer'
@@ -295,7 +295,7 @@ class OrderTxn < ActiveRecord::Base
     # handle selected product options
     if opts[:selected_product_options]
       opts[:selected_product_options].each do |selected_product_option_hash|
-        selected_product_option = line_item.selected_product_options.create(product_option_applicability_id: selected_product_option_hash[:product_option_applicability_id])
+        selected_product_option = line_item.selected_product_options.create(product_option_applicability_id: selected_product_option_hash[:product_option_applicability][:id])
         selected_product_option_hash[:selected_options].each do |selected_option|
           product_option = ProductOption.find(selected_option[:id])
 
@@ -343,7 +343,7 @@ class OrderTxn < ActiveRecord::Base
     line_item
   end
 
-  def add_product_type_line_item(product_type, reln_type = nil, to_role = nil, from_role = nil)
+  def add_product_type_line_item(product_type, options=[], reln_type = nil, to_role = nil, from_role = nil)
     if (product_type.is_a?(Array))
       if (product_type.size == 0)
         return
@@ -372,7 +372,7 @@ class OrderTxn < ActiveRecord::Base
       product_type_for_line_item = product_type
     end
 
-    line_item = get_line_item_for_product_type(product_type_for_line_item)
+    line_item = get_line_item_for_product_type(product_type_for_line_item, options)
 
     if line_item
       line_item.quantity += 1
@@ -428,8 +428,8 @@ class OrderTxn < ActiveRecord::Base
     li
   end
 
-  def get_line_item_for_product_type(product_type)
-    line_items.detect { |oli| oli.product_type == product_type }
+  def get_line_item_for_product_type(product_type, options)
+    line_items.detect { |oli| oli.equals?(product_type.id, options) }
   end
 
   def get_line_item_for_simple_product_offer(simple_product_offer)
