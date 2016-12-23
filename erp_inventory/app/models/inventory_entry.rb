@@ -23,6 +23,8 @@
 class InventoryEntry < ActiveRecord::Base
   is_tenantable
 
+  is_repeatable :starttime, :endtime
+
   attr_protected :created_at, :updated_at
 
   belongs_to :inventory_entry_record, :polymorphic => true
@@ -41,6 +43,8 @@ class InventoryEntry < ActiveRecord::Base
   has_many :inventory_entry_locations
   has_many :facilities, :through => :inventory_entry_locations
   belongs_to :unit_of_measurement
+
+  attr_accessor :unavailable
 
   alias_method :storage_facilities, :facilities
 
