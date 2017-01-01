@@ -35,7 +35,12 @@ class Individual < ActiveRecord::Base
 
   has_one :party, :as => :business_party
 
-  attr_encrypted :ssn, :key => Rails.application.config.erp_base_erp_svcs.encryption_key, :attribute => :encrypted_ssn
+  attr_encrypted :ssn,
+    key: Rails.application.config.erp_base_erp_svcs.encryption_key,
+    attribute: :encrypted_ssn,
+    algorithm: 'aes-256-cbc',
+    mode: :single_iv_and_salt,
+    insecure_mode: true
 
   def after_initialize
     self.salt ||= Digest::SHA256.hexdigest((Time.now.to_i * rand(5)).to_s)
