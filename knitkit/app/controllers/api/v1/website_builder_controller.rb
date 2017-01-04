@@ -1,68 +1,122 @@
 module Api
   module V1
     class WebsiteBuilderController < BaseController
-      ## Component images
-      HEADERS = [ { id: 'header1', img_src: '/website_builder/header1.png', height: 530, html_src: '/website_builder/header1.html'},
-                            { id: 'header2', img_src: '/website_builder/header2.png', height: 550, html_src: '/website_builder/header2.html'} ]
-      CONTENT_SECTIONS = [ { id: 'content_section1', img_src: '/website_builder/content_section1.png', height: 550, html_src: '/website_builder/content_section1.html'},
-                                                { id: 'content_section2', img_src: '/website_builder/content_section2.png', height: 550, html_src: '/website_builder/content_section2.html'},
-                                                { id: 'content_section3', img_src: '/website_builder/content_section3.png', height: 1200, html_src: '/website_builder/content_section3.html'},
-                                                { id: 'content_section4', img_src: '/website_builder/content_section4.png', height: 350, html_src: '/website_builder/content_section4.html'},
-                                                { id: 'content_section5', img_src: '/website_builder/content_section5.png', height: 550, html_src: '/website_builder/content_section5.html'} ]
-      FOOTERS = [ { id: 'footer1', img_src: '/website_builder/footer1.png', height: 300, html_src: '/website_builder/footer1.html'},
-                             { id: 'footer2', img_src: '/website_builder/footer2.png', height: 200, html_src: '/website_builder/footer2.html' } ]
+      before_filter :set_website, :only => [:save_website]
 
       def index
 
       end
 
-      def headers
+      def header_data
         render json: {
                    success: true,
-                   srcs:HEADERS
+                   srcs: headers.collect(&:to_data_hash)
                }
       end
 
-      def content_sections
+      def content_section_data
         render json: {
                    success: true,
-                   srcs:CONTENT_SECTIONS
+                   srcs: content_sections.collect(&:to_data_hash)
                }
       end
 
-      def footers
+      def footer_data
         render json: {
                    success: true,
-                   srcs:FOOTERS
+                   srcs: footers.collect(&:to_data_hash)
                }
       end
 
-      def get_header_component
+      def get_component
         render json: {
                    success: true,
-                   data: search_component(HEADERS, params[:id])
+                   data: find_component(params[:id]).to_data_hash
                }
       end
 
-      def get_content_section_component
-        render json: {
-                   success: true,
-                   data:  search_component(CONTENT_SECTIONS, params[:id])
-               }
-      end
+      def save_website
+          begin
+            result = {success: false}
+            contents_data = JSON.parse(params["content"])
+            if contents_data
+              current_user.with_capability('create', 'WebsiteSection') do
+                begin
+                  ActiveRecord::Base.transaction do
+                      website_section = @website.website_sections.where(title: @website.name).first || WebsiteSection.new
+                      website_section.parent_id = params[:website_section_id] if params[:website_section_id]
+                      website_section.website_id = @website.id
+                      website_section.in_menu = params[:in_menu] == 'yes'
+                      website_section.title = @website.name
+                      website_section.render_base_layout = params[:render_with_base_layout] == 'yes'
+                      website_section.type = params[:type] unless params[:type] == 'Page'
+                      website_section.internal_identifier = params[:internal_identifier]
+                      website_section.position = 0 # explicitly set position null, MS SQL doesn't always honor column default
 
-      def get_footer_component
-        render json: {
-                   success: true,
-                   data: search_component(FOOTERS, params[:id])
-               }
+                      website_section.website_section_contents.destroy_all
+
+                      contents_data.each do |data|
+                        website_section.website_section_contents.build(content: Content.where(internal_identifier: data["content_iid"]).first, position: data["position"])
+                      end
+
+                      if website_section.save
+                        if params[:website_section_id]
+                          parent_website_section = WebsiteSection.find(params[:website_section_id])
+                          website_section.move_to_child_of(parent_website_section)
+                        end
+
+                        website_section.update_path!
+                        result = {:success => true}
+                      else
+                        message = "<ul>"
+                        website_section.errors.collect do |e, m|
+                          message << "<li>#{e} #{m}</li>"
+                        end
+                        message << "</ul>"
+                        result = {:success => false, :message => message}
+                      end
+                  end
+                rescue => ex
+                  Rails.logger.error ex.message
+                  Rails.logger.error ex.backtrace.join("\n")
+
+                  ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+                  result = {:success => false, :message => 'Could not create Section'}
+                end
+
+                render :json => result
+              end
+            end
+          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
+            render :json => {:success => false, :message => ex.message}
+          end
       end
 
       private
 
-      def search_component(static_components, component_id)
-          component = static_components.detect { |components| components[:id] == params[:id]}
-        # "#{ErpTechSvcs::Config.file_protocol}://#{ErpTechSvcs::Config.installation_domain}/#{static_components.detect { |components| components[:id] == params[:id]}[:html_src]}"
+      def headers
+          @headers ||= Content.header_components
+      end
+
+      def content_sections
+          @content_sections ||= Content.content_section_components
+      end
+
+      def footers
+          @footers ||= Content.footer_components
+      end
+
+      def find_component(component_id)
+          Content.where(internal_identifier: component_id).first
+      end
+
+      def set_website
+        @website = Website.find(params[:id])
+      end
+
+      def set_website_section
+        @website_section = WebsiteSection.find(params[:id])
       end
 
     end # WebsitesController

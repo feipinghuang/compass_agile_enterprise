@@ -7,7 +7,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.ContentSectio
         var me = this;
         Ext.Ajax.request({
             method: "GET",
-            url: '/api/v1/website_builder/content_sections.json',
+            url: '/api/v1/website_builder/content_section_data.json',
             success: function(response) {
                 var responseObj = Ext.decode(response.responseText);
 
@@ -18,8 +18,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.ContentSectio
                             cls: 'draggable-image-display',
                             layout: 'fit',
                             autoScroll: true,
-                            componentType: 'content_section',
-                            imgId: data.id,
+                            componentId: data.iid,
                             componentHeight: data.height,
                             html: '<img src="' + data.img_src + '"></img>'
                         });
@@ -48,8 +47,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.ContentSectio
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
                             ddel: d,
-                            componentType: element.componentType,
-                            componentId: element.imgId
+                            componentId: element.componentId
                         };
                     }
                 },

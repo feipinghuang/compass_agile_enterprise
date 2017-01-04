@@ -972,12 +972,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
             closable: true,
             centerRegion: region
         });
-        websiteBuilderPanel = Ext.createWidget('websitebuilderpanel', {
-            closable: true,
-            centerRegion: region
-        });
         this.workArea.add(startupPanel);
-        this.workArea.add(websiteBuilderPanel);
         this.workArea.setActiveTab(startupPanel);
 
         config = Ext.apply({

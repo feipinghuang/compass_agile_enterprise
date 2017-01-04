@@ -2,6 +2,7 @@ require 'will_paginate/array'
 
 class Content < ActiveRecord::Base
   attr_protected :created_at, :updated_at
+  is_json :custom_data
 
   has_party_roles
 
@@ -35,6 +36,10 @@ class Content < ActiveRecord::Base
 
   validates :type, :presence => {:message => 'Type cannot be blank'}
   validates_uniqueness_of :internal_identifier, :case_sensitive => false
+
+  scope :header_components,  where("internal_identifier like '%header%'")
+  scope :content_section_components, where("internal_identifier like '%content_section%'")
+  scope :footer_components, where("internal_identifier like '%footer%'")
 
   def self.search(options = {})
     predicate = Content.includes([:website_sections])
@@ -181,6 +186,15 @@ class Content < ActiveRecord::Base
 
   def pretty_tag_list
     self.tag_list.join(", ")
+  end
+
+  def to_data_hash
+      data = {
+          iid: self.internal_identifier,
+          img_src: self.custom_data["image_src"],
+          html_src: self.custom_data["html_src"],
+          height: self.custom_data["height"]
+      }
   end
 
   protected

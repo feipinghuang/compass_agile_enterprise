@@ -7,7 +7,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.FooterBlocks'
         var me = this;
         Ext.Ajax.request({
             method: "GET",
-            url: '/api/v1/website_builder/footers.json',
+            url: '/api/v1/website_builder/footer_data.json',
             success: function(response) {
                 var responseObj = Ext.decode(response.responseText);
 
@@ -18,8 +18,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.FooterBlocks'
                             cls: 'draggable-image-display',
                             layout: 'fit',
                             autoScroll: true,
-                            componentType: 'footer',
-                            imgId: data.id,
+                            componentId: data.iid,
                             componentHeight: data.height,
                             html: '<img src="' + data.img_src + '"></img>'
                         });
@@ -38,25 +37,17 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion.FooterBlocks'
                     var target = e.getTarget('.draggable-image-display');
 
                     if (target) {
-                        var element = Ext.getCmp(target.id);
-
-                        var dragEl = element.getEl(); //document.createElement('div');
-                        var height = element.getEl().getHeight(),
-                            width = element.getEl().getWidth();
-
-                        var d = dragEl.dom.cloneNode(true);
+                        var element = Ext.getCmp(target.id),
+                            dragEl = element.getEl(),
+                            d = dragEl.dom.cloneNode(true);
                         d.id = Ext.id();
-
-                        Ext.fly(dragEl).setWidth(width);
-                        Ext.fly(dragEl).setHeight(height);
 
                         return {
                             panelConfig: element.initialConfig,
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
-                            ddel: d, //dragEl,
-                            componentType: element.componentType,
-                            componentId: element.imgId
+                            ddel: d,
+                            componentId: element.componentId
                         };
                     }
                 },

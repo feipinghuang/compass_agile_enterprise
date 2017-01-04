@@ -43,8 +43,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
                             ddel: d,
-                            componentType: element.componentType,
-                            componentId: element.imgId
+                            componentId: element.componentId
                         };
                     }
                 },
@@ -86,10 +85,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                         var indexToDrop = parseInt(target.attributes['data-row'].value),
                             panel = Ext.getCmp(data.panelId),
                             containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
-
                         Ext.Ajax.request({
                             method: "GET",
-                            url: '/api/v1/website_builder/get_' + data.componentType + '_component.json',
+                            url: '/api/v1/website_builder/get_component.json',
                             params: {
                                 id: data.componentId
                             },
@@ -104,12 +102,11 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         layout: 'fit',
                                         height: responseData.height,
                                         imgSrc: responseData.img_src,
-                                        componentType: data.componentType,
-                                        imgId: responseData.id,
+                                        componentId: responseData.iid,
                                         listeners: {
                                             render: function(panel) {
                                                 // assigning click event to remove icon
-                                                panel.update(new Ext.XTemplate('<div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{componetId}"></div></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" frameBorder="0" id="{componetId}Frame" src="{htmlSrc}"></iframe></div>').apply({
+                                                panel.update(new Ext.XTemplate('<div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
                                                     componetId: responseData.id,
                                                     htmlSrc: responseData.html_src,
                                                     panelId: panel.id
@@ -120,7 +117,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                 });
 
                                                 // Assigning click event inside iFrame content
-                                                var iframe = Ext.get(responseData.id + "Frame");
+                                                var iframe = Ext.get(panel.id + "-frame");
                                                 iframe.on('load', function() {
                                                     editContents = this.el.dom.contentDocument.getElementsByClassName('editContent');
                                                     Ext.Array.each(editContents, function(editContent) {
@@ -129,8 +126,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                         });
                                                     });
                                                 });
-                                                var iframe = Ext.get(responseData.componentId + "Frame");
-                                                // debugger;
                                             }
                                         }
                                     });

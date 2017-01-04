@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Content</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="/website_builder/css/build.css" rel="stylesheet">
+    <link href="/website_builder/css/style-headers.css" rel="stylesheet">
+    <link href="/website_builder/css/style-content.css" rel="stylesheet">
+    <link href="/website_builder/css/style-footers.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/website_builder/images/favicon.ico">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+    <!--[if lt IE 9]>
+      <script src="/website_builder/js/html5shiv.js"></script>
+      <script src="/website_builder/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+  <%@website_section_contents.each do |section_content|%>
+    <div class="components">
+      <%=raw section_content.content.body_html%>
+    </div>
+  <%end%>
+
+    <!-- Load JS here for greater good =============================-->
+    <script src="/website_builder/js/build/build.min.js"></script>
+</body>
+</html>

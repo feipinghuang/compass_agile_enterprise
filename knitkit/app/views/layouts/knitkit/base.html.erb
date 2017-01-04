@@ -67,7 +67,7 @@
     </nav>
 
     <div class="content-area">
-      <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>  
+      <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>
 
       <%= yield %>
     </div>
