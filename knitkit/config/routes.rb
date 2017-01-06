@@ -22,9 +22,7 @@ Rails.application.routes.draw do
 
       resources :website_builder, defaults: { :format => 'json' } do
         collection do
-          get 'header_data'
-          get 'content_section_data'
-          get 'footer_data'
+          get 'components'
           get 'get_component'
           post 'save_website'
         end

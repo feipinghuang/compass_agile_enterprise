@@ -3,28 +3,10 @@ module Api
     class WebsiteBuilderController < BaseController
       before_filter :set_website, :only => [:save_website]
 
-      def index
-
-      end
-
-      def header_data
+      def components
         render json: {
                    success: true,
-                   srcs: headers.collect(&:to_data_hash)
-               }
-      end
-
-      def content_section_data
-        render json: {
-                   success: true,
-                   srcs: content_sections.collect(&:to_data_hash)
-               }
-      end
-
-      def footer_data
-        render json: {
-                   success: true,
-                   srcs: footers.collect(&:to_data_hash)
+                   components: Component.to_data_hash
                }
       end
 
@@ -94,18 +76,6 @@ module Api
       end
 
       private
-
-      def headers
-          @headers ||= Content.header_components
-      end
-
-      def content_sections
-          @content_sections ||= Content.content_section_components
-      end
-
-      def footers
-          @footers ||= Content.footer_components
-      end
 
       def find_component(component_id)
           Content.where(internal_identifier: component_id).first

@@ -1,3 +1,49 @@
+Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.knitkitdraggablepanel',
+    cls: "draggableImages",
+    header: false,
+    initComponent: function() {
+        var me = this;
+        me.on('render', function() {
+            me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
+                ddGroup: 'websiteBuilderPanelDDgroup',
+                getDragData: function(e) {
+                    var target = e.getTarget('.draggable-image-display');
+                    if (target) {
+                        var element = Ext.getCmp(target.id),
+                            dragEl = element.getEl(),
+                            d = dragEl.dom.cloneNode(true);
+                        d.id = Ext.id();
+
+                        return {
+                            panelConfig: element.initialConfig,
+                            panelId: element.id,
+                            repairXY: element.getEl().getXY(),
+                            ddel: d,
+                            componentId: element.componentId
+                        };
+                    }
+                },
+
+                getRepairXY: function() {
+                    return this.dragData.repairXY;
+                }
+            });
+        });
+
+        me.callParent();
+    }
+
+});
+
+Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.AccordianComponentPanel', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.knitkitaccordiancomponentpanel',
+    autoScroll: true,
+    items: []
+});
+
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.knitkit_componenttabpanel',
@@ -14,39 +60,37 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
 
     initComponent: function() {
         var me = this;
-        var headerPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Header Blocks',
-            autoScroll: true,
-            items: [{
-                xtype: 'knitkitheaderblock',
-                centerRegion: this.initialConfig['module'].centerRegion,
-                header: false
-            }]
+
+        Ext.Ajax.request({
+            method: "GET",
+            url: '/api/v1/website_builder/components.json',
+            success: function(response) {
+                var responseObj = Ext.decode(response.responseText);
+
+                if (responseObj.success) {
+                    var components = responseObj.components;
+                    for (var component in components) {
+                        if (components.hasOwnProperty(component)) {
+                            accordianComponentPanel = me.add({
+                                xtype: 'knitkitaccordiancomponentpanel',
+                                title: Ext.String.capitalize(component) + ' Blocks'
+                            });
+
+                            accordianComponentPanel.add({
+                                xtype: 'knitkitdraggablepanel',
+                                items: me.getThumbnailPanelArray(components[component])
+                            })
+                        }
+                    }
+                }
+            },
+            failure: function() {
+                // TODO: Could not load message count, should we display an error?
+            }
         });
 
 
-        var contentSectionPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Content Section Blocks',
-            autoScroll: true,
-            items: [{
-                xtype: 'knitkitcontentsectionblock',
-                centerRegion: this.initialConfig['module'].centerRegion,
-                header: false
-            }]
-        });
-
-        var footerPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Footer Blocks',
-            autoScroll: true,
-            items: [{
-                xtype: 'knitkitfooterblock',
-                centerRegion: this.initialConfig['module'].centerRegion,
-                header: false
-            }]
-        });
-
-        this.items = [headerPanel, contentSectionPanel, footerPanel];
-        this.dockedItems = [{
+        me.dockedItems = [{
             dock: 'top',
             xtype: 'container',
             layout: {
@@ -94,9 +138,23 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                     }
                 }] // eo container items
         }]
-        this.callParent(arguments);
+
+        me.callParent(arguments);
     },
-    /* sections */
+
+    getThumbnailPanelArray: function(components) {
+        return Ext.Array.map(components, function(data) {
+            return {
+                xtype: 'panel',
+                cls: 'draggable-image-display',
+                layout: 'fit',
+                autoScroll: true,
+                componentId: data.iid,
+                componentHeight: data.height,
+                html: '<img src="' + data.thumbnail + '"></img>'
+            };
+        });
+    },
 
     saveWebsiteLayout: function(id, components) {
         var me = this;

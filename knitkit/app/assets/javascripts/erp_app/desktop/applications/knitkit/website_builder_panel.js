@@ -101,14 +101,14 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         cls: "websitebuilder-component-panel",
                                         layout: 'fit',
                                         height: responseData.height,
-                                        imgSrc: responseData.img_src,
+                                        imgSrc: responseData.thumbnail,
                                         componentId: responseData.iid,
                                         listeners: {
                                             render: function(panel) {
                                                 // assigning click event to remove icon
                                                 panel.update(new Ext.XTemplate('<div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
                                                     componetId: responseData.id,
-                                                    htmlSrc: responseData.html_src,
+                                                    htmlSrc: responseData.url,
                                                     panelId: panel.id
                                                 }));
 
