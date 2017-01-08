@@ -558,3 +558,23 @@ class Swf < FileAsset
     "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/shockwave_file.png')}"
   end
 end
+
+class Mp3 < FileAsset
+  self.file_type = :mp3
+  self.content_type = 'audio/mpeg'
+  self.valid_extensions = %w(.mp3)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/shockwave_file.png')}"
+  end
+end
+
+class Wav < FileAsset
+  self.file_type = :wav
+  self.content_type = 'audio/wav'
+  self.valid_extensions = %w(.wav)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/shockwave_file.png')}"
+  end
+end

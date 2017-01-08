@@ -97,6 +97,12 @@ class User < ActiveRecord::Base
         statement = statement.where('username like ? or email like ?', "%#{filters[:username]}%", "%#{filters[:username]}%")
       end
 
+      if filters[:role_types]
+        role_types = RoleType.find_child_role_types(filters[:role_types].split(',')).collect{|role_type| role_type.internal_identifier}.uniq
+
+        statement = statement.joins(party: {party_roles: :role_type}).where(role_types: {internal_identifier: role_types})
+      end
+
       statement
     end
 

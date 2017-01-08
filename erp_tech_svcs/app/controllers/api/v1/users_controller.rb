@@ -27,6 +27,10 @@ module Api
 
         users = User.apply_filters(query_filter, users)
 
+        if params[:username]
+          users = users.where('username like ? or email like ?', "%#{params[:username]}%", "%#{params[:username]}%")
+        end
+
         total_count = users.uniq.count
         users = users.order("#{sort} #{dir}").offset(start).limit(limit)
 
