@@ -32,8 +32,19 @@ class CreditCard < ActiveRecord::Base
 
   #the function EncryptionKey.get_key is meant to be overridden to provide a means for implementations to specify their
   #own encryption schemes and locations. It will default to a simple string for development and testing
-  attr_encrypted :private_card_number, :key => Rails.application.config.erp_commerce.encryption_key, :attribute => :crypted_private_card_number
-  attr_encrypted :private_cvc, :key => Rails.application.config.erp_commerce.encryption_key, :attribute => :crypted_private_cvc
+  attr_encrypted :private_card_number,
+    key: Rails.application.config.erp_commerce.encryption_key,
+    attribute: :crypted_private_card_number,
+    algorithm: 'aes-256-cbc',
+    mode: :single_iv_and_salt,
+    insecure_mode: true
+
+  attr_encrypted :private_cvc,
+    key: Rails.application.config.erp_commerce.encryption_key,
+    attribute: :crypted_private_cvc,
+    algorithm: 'aes-256-cbc',
+    mode: :single_iv_and_salt,
+    insecure_mode: true
 
   class << self
     def mask_number(number)
