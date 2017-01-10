@@ -7,7 +7,7 @@ module Knitkit
     layout 'knitkit/base', :except => :website_preview
 
     def website_preview
-      website_section = website.website_sections.where(title: website.name).first
+      website_section = website.website_sections.where(title: website.name).first if website.present?
       @website_section_contents = website_section ? website_section.website_section_contents.order("position") : []
       render :layout => false
     end
