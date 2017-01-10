@@ -12,7 +12,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.EastRegion", {
         this.fileAssetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel', {
             module: config.module
         });
-        this.componentPropertiesPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesPanel', {
+        this.componentPropertiesPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormPanel', {
             module: config.module
         });
 

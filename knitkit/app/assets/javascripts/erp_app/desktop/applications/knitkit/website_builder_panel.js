@@ -106,7 +106,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         listeners: {
                                             render: function(panel) {
                                                 // assigning click event to remove icon
-                                                panel.update(new Ext.XTemplate('<div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" style="pointer-events: none;" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
+                                                panel.update(new Ext.XTemplate('<div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><div style="height: 100%" id="iframeDiv"><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
                                                     componetId: responseData.id,
                                                     htmlSrc: responseData.url,
                                                     panelId: panel.id
@@ -122,7 +122,20 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                     editContents = this.el.dom.contentDocument.getElementsByClassName('editContent');
                                                     Ext.Array.each(editContents, function(editContent) {
                                                         editContent.addEventListener('click', function() {
-                                                            console.log(this.tagName + " editable element clicked");
+                                                            var propertiesEditForm = Ext.ComponentQuery.query("knitkitcomponentpropertiesformpanel").first(),
+                                                                eastRegionPanel = propertiesEditForm.up('knitkit_eastregion'),
+                                                                tabpanel = propertiesEditForm.up('tabpanel');
+                                                            eastRegionPanel.expand();
+                                                            tabpanel.setActiveTab(propertiesEditForm);
+                                                            propertiesEditForm.removeAll();
+                                                            propertiesEditForm.add({
+                                                                xtype: 'label',
+                                                                forId: 'myFieldId',
+                                                                text: this.tagName + " editable element clicked",
+                                                                margin: '20 0 0 10'
+                                                            });
+                                                            propertiesEditForm.down('#componentPropertiessaveButton').show();
+                                                            propertiesEditForm.down('#componentPropertiesAdvanceEdit').show();
                                                         });
                                                     });
                                                 });
