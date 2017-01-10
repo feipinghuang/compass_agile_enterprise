@@ -54,7 +54,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             });
             me.dropZone = Ext.create('Ext.dd.DropZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
-                getTargetFromEvent(e) {
+                getTargetFromEvent: function(e) {
                     return e.getTarget('.websiteBuilderDropZone');
                 },
 
