@@ -34,7 +34,7 @@ class BankAccount < ActiveRecord::Base
 
   #the function EncryptionKey.get_key is meant to be overridden to provide a means for implementations to specify their
   #own encryption schemes and locations. It will default to a simple string for development and testing
-  attr_encrypted :private_account_number, 
+  attr_encrypted :private_account_number,
     marshall: true,
     key: Rails.application.config.erp_commerce.encryption_key,
     attribute: :crypted_private_account_number,
@@ -46,6 +46,14 @@ class BankAccount < ActiveRecord::Base
   # string containing the last four digits of the account number. The idea is to make it
   # painfully obvious when any coder is using the private_account_number, which should
   # be used only in limited circumstances.
+
+  def dba_organization
+    account_root.dba_organization
+  end
+  alias :tenant :dba_organization
+  def tenant_id
+    tenant.id
+  end
 
   def account_number
     if self.private_account_number
@@ -92,7 +100,7 @@ class BankAccount < ActiveRecord::Base
   end
 
   class << self
-    
+
     def mask_number(number)
       'XXXXXXX' + number[number.length-4..number.length]
     end

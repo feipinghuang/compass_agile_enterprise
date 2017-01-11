@@ -33,12 +33,20 @@ class InvoiceItem < ActiveRecord::Base
   alias :type :invoice_item_type
   alias :type= :invoice_item_type=
 
-  belongs_to :biz_txn_acct_root
+    belongs_to :biz_txn_acct_root
 
   has_many :invoiced_records, :dependent => :destroy
   has_many :sales_tax_lines, as: :taxed_record, dependent: :destroy
 
   alias :gl_account :biz_txn_acct_root
+
+  def dba_organization
+    invoice.dba_organization
+  end
+  alias :tenant :dba_organization
+  def tenant_id
+    tenant.id
+  end
 
   def taxed?
     self.taxed
@@ -75,9 +83,9 @@ class InvoiceItem < ActiveRecord::Base
       taxation = ErpOrders::Services::Taxation.new
 
       tax += taxation.calculate_tax!(self,
-                                    ctx.merge({
-                                                  amount: (self.unit_price * (self.quantity || 1))
-                                              }))
+                                     ctx.merge({
+                                                 amount: (self.unit_price * (self.quantity || 1))
+      }))
     end
 
     tax

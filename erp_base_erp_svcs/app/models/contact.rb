@@ -10,6 +10,15 @@ class Contact < ActiveRecord::Base
   #rather than carry our own description for the abstract -contact-, we'll
   #delegate that call to the implementer of the -contact_mechanism- interface
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    contact_record.dba_organization
+  end
+  alias :tenant :dba_organization
+  def tenant_id
+    tenant.id
+  end
+
   def description
     @description = contact_mechanism.description
   end

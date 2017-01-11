@@ -13,6 +13,15 @@ class Organization < ActiveRecord::Base
 
   has_one :party, :as => :business_party
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.party.dba_organization
+  end
+  alias :tenant :dba_organization
+  def tenant_id
+    tenant.id
+  end
+
   def create_party
     unless self.party
       pty = Party.new

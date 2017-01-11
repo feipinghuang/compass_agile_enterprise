@@ -159,6 +159,10 @@ class OrderTxn < ActiveRecord::Base
   def dba_organization
     find_party_by_role('dba_org')
   end
+  alias :tenant :dba_organization
+  def tenant_id
+    tenant.id
+  end
 
   # get the total charges for an order.
   # The total will be returned as Money.
