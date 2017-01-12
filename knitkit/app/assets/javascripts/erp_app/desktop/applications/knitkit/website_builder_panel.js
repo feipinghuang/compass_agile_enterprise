@@ -277,8 +277,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     },
 
     convertRgbToHex: function(rgbColorString) {
-        var [r, g, b] = rgbColorString.match(/\d+/g);
-        return this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+        // var [r, g, b] = rgbColorString.match(/\d+/g);
+        // return this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
     },
     componentToHex: function(data) {
         var hex = data.toString(16);
