@@ -118,7 +118,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                                     page = iframe.contentDocument.documentElement.getElementsByClassName('page')[0];
                                     components.push({
                                         position: index,
-                                        content_iid: component.componentId
+                                        content_iid: component.componentId,
+                                        body_html: page.outerHTML
                                     });
                                 });
                                 me.saveWebsiteLayout(websiteId, JSON.stringify(components));

@@ -40,7 +40,7 @@ module Api
                   website_section.website_section_contents.destroy_all
 
                   contents_data.each do |data|
-                    website_section.website_section_contents.build(content: Content.where(internal_identifier: data["content_iid"]).first, position: data["position"])
+                    website_section.website_section_contents.build(content: Content.where(internal_identifier: data["content_iid"]).first, position: data["position"], body_html: data["body_html"])
                   end
 
                   if website_section.save

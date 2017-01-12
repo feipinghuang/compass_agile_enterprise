@@ -209,3 +209,11 @@
 .pull-left{
     float: left;
 }
+
+.website-builder-form-header{
+    font-size: 18px;
+    font-weight: 900;
+    width: 100% !important;
+    text-align: center;
+    margin: 20px;
+}

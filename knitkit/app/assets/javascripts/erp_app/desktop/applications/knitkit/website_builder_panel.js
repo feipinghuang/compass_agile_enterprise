@@ -1,3 +1,46 @@
+Ext.namespace('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder').config = {
+    pageContainer: "#page",
+    editableItems: {
+        'span.fa': ['color', 'font-size'],
+        '.bg.bg1': ['background-color'],
+        'nav a': ['color', 'font-weight', 'text-transform'],
+        'img': ['border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius', 'border-color', 'border-style', 'border-width'],
+        'hr.dashed': ['border-color', 'border-width'],
+        '.divider > span': ['color', 'font-size'],
+        'hr.shadowDown': ['margin-top', 'margin-bottom'],
+        '.footer a': ['color'],
+        '.social a': ['color'],
+        '.bg.bg1, .bg.bg2, .header10, .header11': ['background-image', 'background-color'],
+        '.frameCover': [],
+        '.editContent': ['content', 'color', 'font-size', 'background-color', 'font-family'],
+        'a.btn, button.btn': ['border-radius', 'font-size', 'background-color'],
+        '#pricing_table2 .pricing2 .bottom li': ['content']
+    },
+    editableItemOptions: {
+        'nav a : font-weight': ['400', '700'],
+        'a.btn, button.btn : border-radius': ['0px', '4px', '10px'],
+        'img : border-style': ['none', 'dotted', 'dashed', 'solid'],
+        'img : border-width': ['1px', '2px', '3px', '4px'],
+        'h1, h2, h3, h4, h5, p : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
+        'h2 : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
+        'h3 : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
+        'p : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
+    },
+    responsiveModes: {
+        desktop: '97%',
+        mobile: '480px',
+        tablet: '1024px'
+    },
+    mediumCssUrls: [
+        '//cdn.jsdelivr.net/medium-editor/latest/css/medium-editor.min.css',
+        '../css/medium-bootstrap.css'
+    ],
+    mediumButtons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h1', 'h2', 'h3', 'h4', 'removeFormat'],
+    externalJS: [
+        'js/builder_in_block.js'
+    ]
+};
+
 Ext.define('Compass.ErpApp.Desktop.Applications.ApplicationManagement.WebsiteBuilderDropZone', {
     extend: 'Ext.Component',
     alias: 'widget.websitebuilderdropzone',
@@ -121,21 +164,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                 iframe.on('load', function() {
                                                     editContents = this.el.dom.contentDocument.getElementsByClassName('editContent');
                                                     Ext.Array.each(editContents, function(editContent) {
-                                                        editContent.addEventListener('click', function() {
-                                                            var propertiesEditForm = Ext.ComponentQuery.query("knitkitcomponentpropertiesformpanel").first(),
-                                                                eastRegionPanel = propertiesEditForm.up('knitkit_eastregion'),
-                                                                tabpanel = propertiesEditForm.up('tabpanel');
-                                                            eastRegionPanel.expand();
-                                                            tabpanel.setActiveTab(propertiesEditForm);
-                                                            propertiesEditForm.removeAll();
-                                                            propertiesEditForm.add({
-                                                                xtype: 'label',
-                                                                forId: 'myFieldId',
-                                                                text: this.tagName + " editable element clicked",
-                                                                margin: '20 0 0 10'
-                                                            });
-                                                            propertiesEditForm.down('#componentPropertiessaveButton').show();
-                                                            propertiesEditForm.down('#componentPropertiesAdvanceEdit').show();
+                                                        editContent.addEventListener('click', function(event) {
+                                                            event.preventDefault();
+                                                            me.buildPropertiesEditForm(this);
                                                         });
                                                     });
                                                 });
@@ -176,6 +207,83 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         me.callParent();
     },
 
+    buildPropertiesEditForm: function(element) {
+        var me = this,
+            dataSelector = element.getAttribute('data-selector'),
+            websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config,
+            editableItems = websiteBuilderEditConfig.editableItems[dataSelector],
+            propertiesEditFormPanel = Ext.ComponentQuery.query("knitkitcomponentpropertiesformpanel").first(),
+            eastRegionPanel = propertiesEditFormPanel.up('knitkit_eastregion'),
+            tabpanel = propertiesEditFormPanel.up('tabpanel');
+        eastRegionPanel.expand();
+        tabpanel.setActiveTab(propertiesEditFormPanel);
+        propertiesEditFormPanel.removeAll();
+        propertiesEditFormPanel.element = element;
+        propertiesEditFormPanel.editableItems = editableItems;
+        propertiesEditFormPanel.add({
+            xtype: 'label',
+            text: "Editing " + dataSelector,
+            cls: 'website-builder-form-header'
+        });
+
+        Ext.Array.each(editableItems, function(editableAttr) {
+            options = websiteBuilderEditConfig.editableItemOptions[dataSelector + " : " + editableAttr];
+            data = Ext.String.trim(editableAttr == 'content' ? element.innerHTML : window.getComputedStyle(element).getPropertyValue(editableAttr));
+            if (Ext.isDefined(options)) {
+                propertiesEditFormPanel.add({
+                    xtype: "combo",
+                    name: editableAttr,
+                    queryMode: 'local',
+                    store: options,
+                    fieldLabel: Ext.String.capitalize(editableAttr),
+                    value: data
+                });
+            } else {
+                if (editableAttr.includes('color')) {
+                    propertiesEditFormPanel.add([{
+                        xtype: 'hiddenfield',
+                        name: editableAttr,
+                        itemId: editableAttr + "-color"
+                    }, {
+                        xtype: 'label',
+                        forId: editableAttr,
+                        text: Ext.String.capitalize(editableAttr) + ":",
+                        flex: 1
+                    }, {
+                        xtype: 'colorpicker',
+                        flex: 1,
+                        listeners: {
+                            select: function(picker, selColor) {
+                                propertiesEditForm = propertiesEditFormPanel.getForm();
+                                hiddenField = propertiesEditForm.findField(editableAttr);
+                                hiddenField.setValue('#' + selColor);
+                            }
+                        }
+                    }]);
+                } else {
+                    propertiesEditFormPanel.add({
+                        xtype: (editableAttr == 'content' ? 'textareafield' : 'textfield'),
+                        name: editableAttr,
+                        fieldLabel: Ext.String.capitalize(editableAttr),
+                        value: data,
+                        allowBlank: false
+                    });
+                }
+            }
+        })
+        propertiesEditFormPanel.down('#componentPropertiesSaveButton').show();
+        propertiesEditFormPanel.down('#componentPropertiesResetButton').show();
+
+    },
+
+    convertRgbToHex: function(rgbColorString) {
+        var [r, g, b] = rgbColorString.match(/\d+/g);
+        return this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+    },
+    componentToHex: function(data) {
+        var hex = data.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    },
     removeFieldDropZones: function() {
         var me = this;
         me.suspendLayout = true;
