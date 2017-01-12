@@ -8,7 +8,7 @@ module RailsDbAdmin
           module ReportHelper
             
             def report_download_url(report_iid, format)
-              raw "/reports/display/#{report_iid}.#{format}"
+              raw "/compass_ae_reports/display/#{report_iid}.#{format}"
             end
 
             def report_download_link(report_iid, format, display=nil)
