@@ -76,17 +76,16 @@ namespace :knitkit do
                         body_html: '<div id="page" class="page"><div class="footerWrapper" id="footer3"> <div class="item footer dark"><div class="container"> <div class="row"> <div class="col-md-6 col-md-offset-3 text-center social"><div class="editContent" data-selector=".editContent" style="outline: none; cursor: inherit;">  <h2 class="editContent" data-selector="h1, h2, h3, h4, h5, p" style="outline: none; cursor: inherit;">We are HTML Builder!</h2> <span>We are social, come meet and meet us:</span><br></div> <a href="#" class="fa fa-facebook-square editContent" data-selector=".social a" style="outline: none; cursor: inherit;"></a> <a href="#" class="fa fa-twitter-square editContent" data-selector=".social a" style="outline: none; cursor: inherit;"></a><a href="#" class="fa fa-linkedin-square editContent" data-selector=".social a" style="outline: none; cursor: inherit;"></a> <a href="#" class="fa fa-github-square editContent" data-selector=".social a" style="outline: none; cursor: inherit;"></a> <a href="#" class="fa fa-google-plus-square editContent" data-selector=".social a" style="outline: none; cursor: inherit;"></a><a href="#" class="fa fa-pinterest-square editContent" data-selector=".social a" style="outline: none; cursor: inherit;"></a><a href="#" class="fa fa-reddit-square editContent" data-selector=".social a" style="outline: none; cursor: inherit;"></a>  </div><!-- /.col -->  </div><!-- /.row --></div></div><!-- /.item -->  </div><!-- /.footerWrapper -->  </div>'}]
 
       COMPONENTS.each do |component|
-        unless Component.where(internal_identifier: "#{component[:id]}").first
-          Component.create!({
-                              title: component[:type].downcase.camelcase,
+        component_record = Component.where(internal_identifier: "#{component[:id]}").first
+        attributes = {  title: component[:type].downcase.camelcase,
                               body_html: component[:body_html],
                               internal_identifier: "#{component[:id]}",
                               custom_data: { thumbnail: component[:thumbnail],
                                              url: component[:url],
                                              height: component[:height],
                                              component_type: component[:type].downcase }
-          })
-        end ## unless block
+          }
+        component_record ? component_record.update_attributes(attributes) : Component.create!(attributes)
       end ## Component array loop
     end ## Component insert rake task
   end
