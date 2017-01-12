@@ -6,7 +6,7 @@ module Api
       def components
         render json: {
           success: true,
-          components: Component.to_data_hash
+          components: Component.order('id asc').to_data_hash
         }
       end
 
