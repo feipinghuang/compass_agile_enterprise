@@ -38,12 +38,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
         width: 250
     },
     updateHtmlProperties: function(formPanel, params, successCallback) {
-        var me = this;
+        var me = this,
+            websiteBuilderPanel = Ext.ComponentQuery.query("websitebuilderpanel").first();
         if (formPanel.isValid()) {
             values = formPanel.form.getValues();
             Ext.Array.each(me.editableItems, function(editableItem) {
-                if (editableItem == 'content') {
-                    me.element.innerHTML = values[editableItem];
+                if (editableItem == 'content' && me.element.isContentEditable) {
+                    websiteBuilderPanel.removeEditable(me.element);
                 } else {
                     me.element.style[editableItem] = values[editableItem];
                 }

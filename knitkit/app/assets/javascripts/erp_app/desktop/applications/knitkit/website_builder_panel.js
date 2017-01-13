@@ -26,6 +26,28 @@ Ext.namespace('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder').conf
         'h3 : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
         'p : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
     },
+    inlineEditableSettings: [{
+        'attrName': 'contenteditable',
+        'attrValue': 'true'
+    }, {
+        'attrName': 'spellcheck',
+        'attrValue': 'true'
+    }, {
+        'attrName': 'data-medium-editor-element',
+        'attrValue': 'true'
+    }, {
+        'attrName': 'role',
+        'attrValue': 'textbox'
+    }, {
+        'attrName': 'medium-editor-index',
+        'attrValue': '0'
+    }, {
+        'attrName': 'data-placeholder',
+        'attrValue': 'Type your text'
+    }, {
+        'attrName': 'data-medium-focused',
+        'attrValue': 'true'
+    }],
     responsiveModes: {
         desktop: '97%',
         mobile: '480px',
@@ -162,11 +184,28 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                 // Assigning click event inside iFrame content
                                                 var iframe = Ext.get(panel.id + "-frame");
                                                 iframe.on('load', function() {
-                                                    editContents = this.el.dom.contentDocument.getElementsByClassName('editContent');
+                                                    var iframePanel = this,
+                                                        editContents = this.el.dom.contentDocument.documentElement.querySelectorAll("[data-selector]");
                                                     Ext.Array.each(editContents, function(editContent) {
+                                                        editContent.addEventListener('mouseover', function(event) {
+                                                            if (!editContent.isContentEditable) {
+                                                                me.hightlightElement(editContent);
+                                                            }
+                                                        });
+                                                        editContent.addEventListener('mouseout', function(event) {
+                                                            if (!editContent.isContentEditable) {
+                                                                me.deHightlightElement(editContent);
+                                                            }
+                                                        });
                                                         editContent.addEventListener('click', function(event) {
-                                                            event.preventDefault();
-                                                            me.buildPropertiesEditForm(this);
+                                                            if (!editContent.isContentEditable) {
+                                                                event.preventDefault();
+                                                                contentEditableElements = iframePanel.el.dom.contentDocument.documentElement.querySelectorAll("[contenteditable]");
+                                                                Ext.Array.each(contentEditableElements, function(element) {
+                                                                    me.removeEditable(element)
+                                                                })
+                                                                me.buildPropertiesEditForm(this);
+                                                            }
                                                         });
                                                     });
                                                 });
@@ -207,6 +246,33 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         me.callParent();
     },
 
+    makeEditable: function(element) {
+        var websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+        Ext.Array.each(websiteBuilderEditConfig.inlineEditableSettings, function(setting) {
+            element.setAttribute(setting.attrName, setting.attrValue);
+        });
+    },
+
+    removeEditable: function(element) {
+        var websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+        Ext.Array.each(websiteBuilderEditConfig.inlineEditableSettings, function(setting) {
+            element.removeAttribute(setting.attrName, setting.attrValue);
+        });
+        this.deHightlightElement(element);
+    },
+
+    hightlightElement: function(element) {
+        element.style.outline = 'rgba(233, 94, 94, 0.498039) solid 2px';
+        element.style['outline-offset'] = '-2px';
+        element.cursor = 'pointer';
+    },
+
+    deHightlightElement: function(element) {
+        element.style.outline = 'none';
+        element.style['outline-offset'] = '0px';
+        element.cursor = 'pointer';
+    },
+
     buildPropertiesEditForm: function(element) {
         var me = this,
             dataSelector = element.getAttribute('data-selector'),
@@ -223,8 +289,12 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         propertiesEditFormPanel.add({
             xtype: 'label',
             text: "Editing " + dataSelector,
-            cls: 'website-builder-form-header'
+            cls: 'website-builder-form-header',
+            margin: '5  0 20 0'
         });
+        if (dataSelector == '.editContent') {
+            me.makeEditable(element);
+        }
 
         Ext.Array.each(editableItems, function(editableAttr) {
             options = websiteBuilderEditConfig.editableItemOptions[dataSelector + " : " + editableAttr];
@@ -239,35 +309,38 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     value: data
                 });
             } else {
-                if (editableAttr.includes('color')) {
-                    propertiesEditFormPanel.add([{
-                        xtype: 'hiddenfield',
-                        name: editableAttr,
-                        itemId: editableAttr + "-color"
-                    }, {
-                        xtype: 'label',
-                        forId: editableAttr,
-                        text: Ext.String.capitalize(editableAttr) + ":",
-                        flex: 1
-                    }, {
-                        xtype: 'colorpicker',
-                        flex: 1,
-                        listeners: {
-                            select: function(picker, selColor) {
-                                propertiesEditForm = propertiesEditFormPanel.getForm();
-                                hiddenField = propertiesEditForm.findField(editableAttr);
-                                hiddenField.setValue('#' + selColor);
-                            }
-                        }
-                    }]);
-                } else {
-                    propertiesEditFormPanel.add({
-                        xtype: (editableAttr == 'content' ? 'textareafield' : 'textfield'),
-                        name: editableAttr,
-                        fieldLabel: Ext.String.capitalize(editableAttr),
-                        value: data,
-                        allowBlank: false
-                    });
+                if (editableAttr != 'content') {
+                    if (editableAttr.includes('color')) {
+                        propertiesEditFormPanel.add([{
+                            layout: 'vbox',
+                            items: [{
+                                xtype: 'hiddenfield',
+                                name: editableAttr,
+                                itemId: editableAttr + "-color"
+                            }, {
+                                xtype: 'label',
+                                forId: editableAttr,
+                                text: Ext.String.capitalize(editableAttr) + ":"
+                            }, {
+                                xtype: 'colorpicker',
+                                listeners: {
+                                    select: function(picker, selColor) {
+                                        propertiesEditForm = propertiesEditFormPanel.getForm();
+                                        hiddenField = propertiesEditForm.findField(editableAttr);
+                                        hiddenField.setValue('#' + selColor);
+                                    }
+                                }
+                            }]
+                        }]);
+                    } else {
+                        propertiesEditFormPanel.add({
+                            xtype: 'textfield',
+                            name: editableAttr,
+                            fieldLabel: Ext.String.capitalize(editableAttr),
+                            value: data,
+                            allowBlank: false
+                        });
+                    }
                 }
             }
         })
