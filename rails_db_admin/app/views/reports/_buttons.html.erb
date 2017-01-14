@@ -58,9 +58,9 @@
 
 	$('#executeBtn').click(function(){
 		var form = $('#<%=report.internal_identifier%>reportParamsForm');
-		$('.iframe-container').show();
-
+	
 		if (form.valid()) {
+			$('.iframe-container').show();
 			$('#<%=report.internal_identifier%>iFrame').attr('src', '/compass_ae_reports/display/<%= report.internal_identifier %>?report_params=' + getReportParams(form));
 		}
 	});
