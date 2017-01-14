@@ -2,7 +2,7 @@
   <form class="form-inline" style="padding-bottom:10px;" id="<%=report.internal_identifier%>reportParamsForm">
   <% if report.meta_data['params'] %>
     <% report.meta_data['params'].each do |param| %>
-      <%= render_report_param(param) %>
+      <%= render_report_param(report, param) %>
     <% end %> 
   <% end %>
   </form> 

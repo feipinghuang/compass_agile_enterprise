@@ -13,7 +13,7 @@ module RailsDbAdmin
               render partial: '/reports/body.html.erb', locals: {report: report}
             end
 
-            def render_report_param(param)
+            def render_report_param(report, param)
               param = Hash.symbolize_keys(param)
 
               case param[:type]
@@ -28,7 +28,7 @@ module RailsDbAdmin
 
                   buffer += content_tag('div',
                               class: 'input-group date datetimepicker',
-                  id: param[:name] + '-datepicker') do
+                  id: report.internal_identifier + param[:name] + '-datepicker') do
 
                     html = text_field_tag param[:name],
                       nil,
@@ -42,7 +42,7 @@ module RailsDbAdmin
 
                     html += %{
                       <script type="text/javascript">
-                      jQuery('##{param[:name] + '-datepicker'}').datetimepicker({format: 'MM/DD/YYYY'});
+                      jQuery('##{report.internal_identifier + param[:name] + '-datepicker'}').datetimepicker({format: 'MM/DD/YYYY'});
                       </script>
                     }.html_safe
                   end
