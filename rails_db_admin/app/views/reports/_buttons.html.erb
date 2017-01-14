@@ -60,7 +60,7 @@
 		var form = $('#<%=report.internal_identifier%>reportParamsForm');
 	
 		if (form.valid()) {
-			$('.iframe-container').show();
+			$('#iframeContainer<%=report.internal_identifier%>').show();
 			$('#<%=report.internal_identifier%>iFrame').attr('src', '/compass_ae_reports/display/<%= report.internal_identifier %>?report_params=' + getReportParams(form));
 		}
 	});

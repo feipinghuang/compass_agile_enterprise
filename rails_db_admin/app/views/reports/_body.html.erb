@@ -27,7 +27,7 @@
    }
   
   </style>
-  <div class="iframe-container" style="display:<%= report.meta_data['auto_execute'] ? 'block' : 'none' %>;">
+  <div class="iframe-container" id="iframeContainer<%=report.internal_identifier%>" style="display:<%= report.meta_data['auto_execute'] ? 'block' : 'none' %>;">
     <% src = report.meta_data['auto_execute'] ? "/compass_ae_reports/display/#{report.internal_identifier}" : nil %>
     <iframe class="report-iframe" id="<%=report.internal_identifier%>iFrame" src="<%= src %>" ></iframe>
   </div>  
