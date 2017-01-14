@@ -1,13 +1,13 @@
 <div>
 
-	<button id="executeBtn" type="button" class="btn btn-primary" >Execute</button>
+	<button id="<%=report.internal_identifier%>executeBtn" type="button" class="btn btn-primary" >Execute</button>
 
 	<%  if report.meta_data['can_download_csv'] %>
-	<button id="downloadCsvBtn" type="button" class="btn btn-primary" >Download CSV</button>
+	<button id="<%=report.internal_identifier%>downloadCsvBtn" type="button" class="btn btn-primary" >Download CSV</button>
 	<% end %>
 
 	<%  if report.meta_data['can_print'] %>
-	<button id="downloadPdf" type="button" class="btn btn-primary" >Download PDF</button>
+	<button id="<%=report.internal_identifier%>downloadPdf" type="button" class="btn btn-primary" >Download PDF</button>
 	<%  end %>
 
 </div>
@@ -56,7 +56,7 @@
 		return params;
 	};
 
-	$('#executeBtn').click(function(){
+	$('#<%=report.internal_identifier%>executeBtn').click(function(){
 		var form = $('#<%=report.internal_identifier%>reportParamsForm');
 	
 		if (form.valid()) {
@@ -65,7 +65,7 @@
 		}
 	});
 
-	$('#downloadCsvBtn').click(function(){
+	$('#<%=report.internal_identifier%>downloadCsvBtn').click(function(){
 		var form = $('#<%=report.internal_identifier%>reportParamsForm');
 		
 		if (form.valid()) {
@@ -73,7 +73,7 @@
 		}
 	});
 
-	$('#downloadPdf').click(function(){
+	$('#<%=report.internal_identifier%>downloadPdf').click(function(){
 		var form = $('#<%=report.internal_identifier%>reportParamsForm');
 
 		if (form.valid()) {
