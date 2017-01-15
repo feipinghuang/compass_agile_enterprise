@@ -27,9 +27,6 @@ class Payment < ActiveRecord::Base
     self.financial_txn.find_party_by_role('payor').dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   aasm_column :current_state
 

@@ -151,9 +151,6 @@ class BizTxnAcctRoot < ActiveRecord::Base
   end
   alias :dba_org :dba_organization
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def to_label
     "#{description}"

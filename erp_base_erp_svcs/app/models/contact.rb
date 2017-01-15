@@ -15,9 +15,6 @@ class Contact < ActiveRecord::Base
     contact_record.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def description
     @description = contact_mechanism.description

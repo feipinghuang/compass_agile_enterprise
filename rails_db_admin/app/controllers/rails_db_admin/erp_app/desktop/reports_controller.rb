@@ -68,10 +68,10 @@ module RailsDbAdmin
               report.meta_data['print_margin_bottom'] = params[:print_margin_bottom].strip if params[:print_margin_bottom]
               report.meta_data['print_margin_left'] = params[:print_margin_left].strip if params[:print_margin_left]
               report.meta_data['print_orientation'] = params[:print_orientation].strip if params[:print_orientation]
-              report.meta_data['auto_execute'] = params['auto_execute'] == 'on'
-              report.meta_data['can_download_csv'] = params['can_download_csv'] == 'on'
-              report.meta_data['can_email'] = params['can_email'] == 'on'
-              report.meta_data['can_print'] = params['can_print'] == 'on'
+              report.meta_data['auto_execute'] = params[:auto_execute] == 'on'
+              report.meta_data['can_download_csv'] = params[:can_download_csv] == 'on'
+              report.meta_data['can_email'] = params[:can_email] == 'on'
+              report.meta_data['can_print'] = params[:can_print] == 'on'
 
               unless params[:report_name].blank?
                 report.name = params[:report_name].squish

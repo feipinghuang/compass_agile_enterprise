@@ -270,9 +270,6 @@ class WorkEffort < ActiveRecord::Base
     find_party_by_role(RoleType.dba_org)
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   # Get assigned parties by role type
   #

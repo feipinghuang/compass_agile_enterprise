@@ -60,9 +60,6 @@ class OrderLineItem < ActiveRecord::Base
     order_txn.find_party_by_role('dba_org')
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def destroy_order_line_item_relationships
     OrderLineItemRelationship.where("order_line_item_id_from = ? or order_line_item_id_to = ?", self.id, self.id).destroy_all

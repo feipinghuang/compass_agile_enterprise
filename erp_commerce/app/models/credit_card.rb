@@ -57,9 +57,6 @@ class CreditCard < ActiveRecord::Base
     self.cardholder.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   # These methods are exposed for the purposes of displaying a version of the card number
   # string containing the last four digits of the card number. The idea is to make it

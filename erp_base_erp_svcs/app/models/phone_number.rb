@@ -18,9 +18,6 @@ class PhoneNumber < ActiveRecord::Base
     self.contact.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def summary_line
     "#{description} : #{phone_number}"

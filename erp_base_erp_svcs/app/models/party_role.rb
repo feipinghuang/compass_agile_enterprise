@@ -9,10 +9,7 @@ class PartyRole < ActiveRecord::Base
     self.party.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
-
+  
   def to_label
     self.role_type.description
   end

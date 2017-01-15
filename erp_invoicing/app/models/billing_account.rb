@@ -21,9 +21,6 @@ class BillingAccount < ActiveRecord::Base
     account_root.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def self.find_by_account_number(account_number)
     #self.includes(:financial_txn_account).where(:financial_txn_accounts => {:account_number => account_number.to_s}).first

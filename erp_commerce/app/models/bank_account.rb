@@ -51,9 +51,6 @@ class BankAccount < ActiveRecord::Base
     account_root.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def account_number
     if self.private_account_number

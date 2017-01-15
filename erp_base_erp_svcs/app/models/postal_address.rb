@@ -26,9 +26,6 @@ class PostalAddress < ActiveRecord::Base
     self.contact.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def summary_line
     "#{description} : #{address_line_1}, #{city}"

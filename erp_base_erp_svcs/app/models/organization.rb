@@ -18,9 +18,6 @@ class Organization < ActiveRecord::Base
     self.party.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def create_party
     unless self.party

@@ -44,9 +44,6 @@ class InvoiceItem < ActiveRecord::Base
     invoice.dba_organization
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def taxed?
     self.taxed

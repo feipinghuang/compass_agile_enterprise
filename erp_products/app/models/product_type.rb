@@ -227,9 +227,6 @@ class ProductType < ActiveRecord::Base
     find_party_by_role(RoleType.dba_org)
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   def parent_dba_organizations(dba_orgs=[])
     ProductTypePtyRole.

@@ -105,9 +105,6 @@ class Party < ActiveRecord::Base
     find_related_parties_with_role('dba_org').first
   end
   alias :tenant :dba_organization
-  def tenant_id
-    tenant.id
-  end
 
   # Get any child DBA Organizations related this party
   #
