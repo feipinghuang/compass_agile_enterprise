@@ -79,10 +79,7 @@ class InvoiceItem < ActiveRecord::Base
     if invoiced_records.collect { |item| item.taxed? }.include?(true)
       taxation = ErpOrders::Services::Taxation.new
 
-      tax += taxation.calculate_tax!(self,
-                                     ctx.merge({
-                                                 amount: (self.unit_price * (self.quantity || 1))
-      }))
+      tax += taxation.calculate_tax!(self, ctx.merge({amount: self.sub_total}))
     end
 
     tax
