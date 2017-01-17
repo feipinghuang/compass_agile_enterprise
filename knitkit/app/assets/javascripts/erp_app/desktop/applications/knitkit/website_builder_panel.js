@@ -33,20 +33,11 @@ Ext.namespace('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder').conf
         'attrName': 'spellcheck',
         'attrValue': 'true'
     }, {
-        'attrName': 'data-medium-editor-element',
-        'attrValue': 'true'
-    }, {
         'attrName': 'role',
         'attrValue': 'textbox'
     }, {
-        'attrName': 'medium-editor-index',
-        'attrValue': '0'
-    }, {
         'attrName': 'data-placeholder',
         'attrValue': 'Type your text'
-    }, {
-        'attrName': 'data-medium-focused',
-        'attrValue': 'true'
     }],
     responsiveModes: {
         desktop: '97%',
@@ -185,25 +176,34 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                 var iframe = Ext.get(panel.id + "-frame");
                                                 iframe.on('load', function() {
                                                     var iframePanel = this,
-                                                        editContents = this.el.dom.contentDocument.documentElement.querySelectorAll("[data-selector]");
-                                                    Ext.Array.each(editContents, function(editContent) {
-                                                        editContent.addEventListener('mouseover', function(event) {
-                                                            if (!editContent.isContentEditable) {
-                                                                me.hightlightElement(editContent);
+                                                        editableElements = iframePanel.el.dom.contentDocument.documentElement.querySelectorAll("[data-selector]"),
+                                                        contentEditableElements = iframePanel.el.dom.contentDocument.documentElement.querySelectorAll(".editContent"),
+                                                        websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+                                                    // // Loading websitebuilder CSS & JS dynamically
+                                                    // Ext.ux.Loader.load(mediumCssUrls,
+                                                    //     function() {
+                                                    //         // callback when finished loading
+                                                    //     },
+                                                    //     iframePanel // scope
+                                                    // );
+
+                                                    Ext.Array.each(editableElements, function(editableElement) {
+                                                        editableElement.addEventListener('mouseover', function(event) {
+                                                            if (!editableElement.isContentEditable) {
+                                                                me.highlightElement(editableElement);
                                                             }
                                                         });
-                                                        editContent.addEventListener('mouseout', function(event) {
-                                                            if (!editContent.isContentEditable) {
-                                                                me.deHightlightElement(editContent);
+                                                        editableElement.addEventListener('mouseout', function(event) {
+                                                            if (!editableElement.isContentEditable) {
+                                                                me.deHighlightElement(editableElement);
                                                             }
                                                         });
-                                                        editContent.addEventListener('click', function(event) {
-                                                            if (!editContent.isContentEditable) {
+                                                        editableElement.addEventListener('click', function(event) {
+                                                            if (!editableElement.isContentEditable) {
                                                                 event.preventDefault();
-                                                                contentEditableElements = iframePanel.el.dom.contentDocument.documentElement.querySelectorAll("[contenteditable]");
                                                                 Ext.Array.each(contentEditableElements, function(element) {
                                                                     me.removeEditable(element)
-                                                                })
+                                                                });
                                                                 me.buildPropertiesEditForm(this);
                                                             }
                                                         });
@@ -258,19 +258,61 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         Ext.Array.each(websiteBuilderEditConfig.inlineEditableSettings, function(setting) {
             element.removeAttribute(setting.attrName, setting.attrValue);
         });
-        this.deHightlightElement(element);
+        this.deHighlightElement(element);
     },
 
-    hightlightElement: function(element) {
+    highlightElement: function(element) {
         element.style.outline = 'rgba(233, 94, 94, 0.498039) solid 2px';
         element.style['outline-offset'] = '-2px';
         element.cursor = 'pointer';
     },
 
-    deHightlightElement: function(element) {
+    deHighlightElement: function(element) {
         element.style.outline = 'none';
         element.style['outline-offset'] = '0px';
         element.cursor = 'pointer';
+    },
+
+    enableMediumEditor: function(element, websiteBuilderEditConfig) {
+        rangy.init();
+        var HighlighterButton = MediumEditor.extensions.button.extend({
+            name: 'highlighter',
+            tagNames: ['mark'], // nodeName which indicates the button should be 'active' when isAlreadyApplied() is called
+            contentDefault: '<b>H</b>', // default innerHTML of the button
+            contentFA: '<i class="fa fa-paint-brush"></i>', // innerHTML of button when 'fontawesome' is being used
+            aria: 'Hightlight', // used as both aria-label and title attributes
+            action: 'highlight', // used as the data-action attribute of the button
+            iframeWin: {},
+            init: function() {
+                MediumEditor.extensions.button.prototype.init.call(this);
+                this.classApplier = rangy.createClassApplier('highlight', {
+                    elementTagName: 'mark',
+                    normalize: true
+                });
+                this.iframeWin = rangy.dom.getIframeWindow(this.window.frameElement);
+            },
+            handleClick: function(event) {
+                this.classApplier.toggleSelection(this.iframeWin);
+                return false;
+            }
+        });
+
+        if (!element.hasAttribute('medium-editor-index')) {
+            var theWindow = element.ownerDocument.defaultView,
+                theDoc = element.ownerDocument,
+                editor = new MediumEditor(element, {
+                    ownerDocument: theDoc,
+                    contentWindow: theWindow,
+                    buttonLabels: 'fontawesome',
+                    toolbar: {
+                        buttons: websiteBuilderEditConfig.mediumButtons
+                    },
+                    extensions: {
+                        'highlighter': HighlighterButton
+                    }
+
+                });
+        }
     },
 
     buildPropertiesEditForm: function(element) {
@@ -294,6 +336,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         });
         if (dataSelector == '.editContent') {
             me.makeEditable(element);
+            me.enableMediumEditor(element, websiteBuilderEditConfig);
         }
 
         Ext.Array.each(editableItems, function(editableAttr) {
