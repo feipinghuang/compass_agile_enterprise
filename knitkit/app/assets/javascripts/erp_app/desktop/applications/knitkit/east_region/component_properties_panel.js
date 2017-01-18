@@ -45,6 +45,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             Ext.Array.each(me.editableItems, function(editableItem) {
                 if (editableItem == 'content' && me.element.isContentEditable) {
                     websiteBuilderPanel.removeEditable(me.element);
+                    websiteBuilderPanel.deHighlightElement(me.element);
                 } else {
                     me.element.style[editableItem] = values[editableItem];
                 }

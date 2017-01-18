@@ -177,7 +177,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                 iframe.on('load', function() {
                                                     var iframePanel = this,
                                                         editableElements = iframePanel.el.dom.contentDocument.documentElement.querySelectorAll("[data-selector]"),
-                                                        contentEditableElements = iframePanel.el.dom.contentDocument.documentElement.querySelectorAll(".editContent"),
                                                         websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
                                                     // // Loading websitebuilder CSS & JS dynamically
                                                     // Ext.ux.Loader.load(mediumCssUrls,
@@ -199,13 +198,16 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                             }
                                                         });
                                                         editableElement.addEventListener('click', function(event) {
+                                                            event.preventDefault();
                                                             if (!editableElement.isContentEditable) {
-                                                                event.preventDefault();
+                                                                var contentEditableElements = iframePanel.el.dom.contentDocument.documentElement.querySelectorAll(".editContent");
                                                                 Ext.Array.each(contentEditableElements, function(element) {
-                                                                    me.removeEditable(element)
+                                                                    me.removeEditable(element);
+                                                                    me.deHighlightElement(element);
                                                                 });
-                                                                me.buildPropertiesEditForm(this);
                                                             }
+
+                                                            me.buildPropertiesEditForm(this);
                                                         });
                                                     });
                                                 });
@@ -258,7 +260,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         Ext.Array.each(websiteBuilderEditConfig.inlineEditableSettings, function(setting) {
             element.removeAttribute(setting.attrName, setting.attrValue);
         });
-        this.deHighlightElement(element);
     },
 
     highlightElement: function(element) {
@@ -328,6 +329,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         propertiesEditFormPanel.removeAll();
         propertiesEditFormPanel.element = element;
         propertiesEditFormPanel.editableItems = editableItems;
+
+        me.highlightElement(element);
+
         propertiesEditFormPanel.add({
             xtype: 'label',
             text: "Editing " + dataSelector,
