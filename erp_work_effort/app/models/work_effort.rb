@@ -108,6 +108,7 @@ class WorkEffort < ActiveRecord::Base
   has_many :time_entries
   has_many :associated_transportation_routes, as: :associated_record
   has_many :transportation_routes, through: :associated_transportation_routes
+  has_many :inventory_txns, as: :created_by, dependent: :destroy
 
   class << self
 
@@ -417,7 +418,7 @@ class WorkEffort < ActiveRecord::Base
         # if there were InventoryTxns that were applied and this task went from complete to pending we
         # need to unapply those InventoryTxns
         if _current_status && _current_status == @@task_status_complete_iid
-          InventoryTxn.where(created_by_id: self.id, created_by_type: 'WorkEffort').each do |inventory_txn|
+          self.inventory_txns.each do |inventory_txn|
             inventory_txn.unapply!
           end
         end
@@ -636,7 +637,7 @@ class WorkEffort < ActiveRecord::Base
     end
 
     # apply any inventory_txns related to this task
-    InventoryTxn.where(created_by_id: self.id, created_by_type: 'WorkEffort').each do |inventory_txn|
+    self.inventory_txns.each do |inventory_txn|
       inventory_txn.apply!
     end
 

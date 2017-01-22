@@ -3,12 +3,12 @@ require 'uuid'
 class CompassAeInstance < ActiveRecord::Base
   attr_protected :created_at, :updated_at
   has_tracked_status
-  has_many :parties, :through => :compass_ae_instance_party_roles
   has_many :compass_ae_instance_party_roles, :dependent => :destroy do
     def owners
       where('role_type_id = ?', RoleType.compass_ae_instance_owner.id)
     end
   end
+  has_many :parties, :through => :compass_ae_instance_party_roles
   validates :guid, :uniqueness => true
   validates :internal_identifier, :presence => {:message => 'internal_identifier cannot be blank'}, :uniqueness => {:case_sensitive => false}
 
@@ -28,7 +28,7 @@ class CompassAeInstance < ActiveRecord::Base
       role_type = RoleType.iid(role_type)
     end
 
-    Party.joins(:compass_ae_instance_party_roles).where(compass_ae_instance_party_roles: {role_type_id: role_type}).first
+    parties.where(compass_ae_instance_party_roles: {role_type_id: role_type}).first
   end
 
   # Add a party with a role type
