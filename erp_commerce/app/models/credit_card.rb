@@ -52,6 +52,12 @@ class CreditCard < ActiveRecord::Base
     end
   end
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.cardholder.dba_organization
+  end
+  alias :tenant :dba_organization
+
   # These methods are exposed for the purposes of displaying a version of the card number
   # string containing the last four digits of the card number. The idea is to make it
   # painfully obvious when any coder is using the private_card_number, which should

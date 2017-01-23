@@ -1,0 +1,34 @@
+<div style="padding: 10px 0 10px 0;">
+  <form class="form-inline" style="padding-bottom:10px;" id="<%=report.internal_identifier%>reportParamsForm">
+  <% if report.meta_data['params'] %>
+    <% report.meta_data['params'].each do |param| %>
+      <%= render_report_param(report, param) %>
+    <% end %> 
+  <% end %>
+  </form> 
+
+  <%= render partial: '/reports/buttons.html.erb', locals: {report: report} %>
+  
+  <style>
+  
+   label.report-param{
+     margin-right: 10px;
+   }
+
+   .report-iframe{
+   	border: none;
+   	display:block;
+    height: calc(100vh - 30px); 
+    width: 100%;
+   }
+
+   .iframe-container {
+     background:url(/assets/report-loading.gif) center center no-repeat;
+   }
+  
+  </style>
+  <div class="iframe-container" id="iframeContainer<%=report.internal_identifier%>" style="display:<%= report.meta_data['auto_execute'] ? 'block' : 'none' %>;">
+    <% src = report.meta_data['auto_execute'] ? "/compass_ae_reports/display/#{report.internal_identifier}" : nil %>
+    <iframe class="report-iframe" id="<%=report.internal_identifier%>iFrame" src="<%= src %>" ></iframe>
+  </div>  
+</div>	

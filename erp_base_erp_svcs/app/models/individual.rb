@@ -57,6 +57,12 @@ class Individual < ActiveRecord::Base
     end
   end
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.party.dba_organization
+  end
+  alias :tenant :dba_organization
+
   def formatted_ssn_label
     (self.ssn_last_four.blank?) ? "" : "XXX-XX-#{self.ssn_last_four}"
   end

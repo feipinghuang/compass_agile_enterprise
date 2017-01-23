@@ -403,6 +403,7 @@ class Invoice < ActiveRecord::Base
   def dba_organization
     find_parties_by_role_type('dba_org').first
   end
+  alias :tenant :dba_organization
 
   def to_data_hash
     to_hash(only: [:id, :created_at, :updated_at, :description, :invoice_number, :invoice_date, :due_date])

@@ -222,6 +222,12 @@ class ProductType < ActiveRecord::Base
     to_data_hash
   end
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    find_party_by_role(RoleType.dba_org)
+  end
+  alias :tenant :dba_organization
+
   def parent_dba_organizations(dba_orgs=[])
     ProductTypePtyRole.
       where('product_type_id = ?', id).

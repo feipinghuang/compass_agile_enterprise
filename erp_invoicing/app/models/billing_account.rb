@@ -17,6 +17,11 @@ class BillingAccount < ActiveRecord::Base
 
   has_one  :recurring_payment, :dependent => :destroy
 
+  def dba_organization
+    account_root.dba_organization
+  end
+  alias :tenant :dba_organization
+
   def self.find_by_account_number(account_number)
     #self.includes(:financial_txn_account).where(:financial_txn_accounts => {:account_number => account_number.to_s}).first
     self.where(:account_number => account_number.to_s).first
@@ -50,13 +55,13 @@ class BillingAccount < ActiveRecord::Base
   def calculate_balance
     unless self.calculate_balance_strategy_type.nil?
       case self.calculate_balance_strategy_type.internal_identifier
-        when 'invoices_and_payments'
-          (self.invoices.all.sum(&:calculate_balance) - self.total_payments)
-        when 'payments'
-          balance_amt = (self.balance - self.total_payments)
-          balance_amt == 0 ? 0 : balance_amt.round(2)
-        else
-          self.balance == 0 ? 0 : self.balance.round(2)
+      when 'invoices_and_payments'
+        (self.invoices.all.sum(&:calculate_balance) - self.total_payments)
+      when 'payments'
+        balance_amt = (self.balance - self.total_payments)
+        balance_amt == 0 ? 0 : balance_amt.round(2)
+      else
+        self.balance == 0 ? 0 : self.balance.round(2)
       end
     else
       self.balance == 0 ? 0 : self.balance.round(2)
@@ -68,8 +73,8 @@ class BillingAccount < ActiveRecord::Base
   end
 
   def outstanding_balance
-     outstanding_balance_amt = (calculate_balance - total_pending_payments)
-     outstanding_balance_amt == 0 ? 0 : outstanding_balance_amt.round(2)
+    outstanding_balance_amt = (calculate_balance - total_pending_payments)
+    outstanding_balance_amt == 0 ? 0 : outstanding_balance_amt.round(2)
   end
 
   #payment due is determined by last invoice
