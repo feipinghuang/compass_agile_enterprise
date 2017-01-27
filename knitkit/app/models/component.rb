@@ -25,6 +25,7 @@ class Component < Content
   def to_data_hash
     data = {
         iid: self.internal_identifier,
+        title: self.title,
         thumbnail: self.custom_data["thumbnail"],
         url: self.custom_data["url"],
         height: self.custom_data["height"]

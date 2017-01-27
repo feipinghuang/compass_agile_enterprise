@@ -19,6 +19,7 @@
 //= require ./published_grid_panel
 //= require ./splash_screen
 //= require ./versions_grid_panel
+//= require ./website_builder_config
 //= require ./website_builder_panel
 //= require ./medium-editor
 //= require ./rangy-core

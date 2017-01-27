@@ -145,6 +145,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
 
     getThumbnailPanelArray: function(components) {
         return Ext.Array.map(components, function(data) {
+            var html = '<div style="border: 1px solid #ececec;font-weight:bold">' + data.title + '</div>';
+            if (data.thumbnail) {
+                html = '<img src="' + data.thumbnail + '"></img>';
+            }
+
             return {
                 xtype: 'panel',
                 cls: 'draggable-image-display',
@@ -152,7 +157,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 autoScroll: true,
                 componentId: data.iid,
                 componentHeight: data.height,
-                html: '<img src="' + data.thumbnail + '"></img>'
+                html: html
             };
         });
     },

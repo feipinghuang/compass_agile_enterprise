@@ -1,70 +1,10 @@
-Ext.namespace('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder').config = {
-    pageContainer: "#page",
-    editableItems: {
-        'span.fa': ['color', 'font-size'],
-        '.bg.bg1': ['background-color'],
-        'nav a': ['color', 'font-weight', 'text-transform'],
-        'img': ['border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius', 'border-color', 'border-style', 'border-width'],
-        'hr.dashed': ['border-color', 'border-width'],
-        '.divider > span': ['color', 'font-size'],
-        'hr.shadowDown': ['margin-top', 'margin-bottom'],
-        '.footer a': ['color'],
-        '.social a': ['color'],
-        '.bg.bg1, .bg.bg2, .header10, .header11': ['background-image', 'background-color'],
-        '.frameCover': [],
-        '.editContent': ['content', 'color', 'font-size', 'background-color', 'font-family'],
-        'a.btn, button.btn': ['border-radius', 'font-size', 'background-color'],
-        '#pricing_table2 .pricing2 .bottom li': ['content']
-    },
-    editableItemOptions: {
-        'nav a : font-weight': ['400', '700'],
-        'a.btn, button.btn : border-radius': ['0px', '4px', '10px'],
-        'img : border-style': ['none', 'dotted', 'dashed', 'solid'],
-        'img : border-width': ['1px', '2px', '3px', '4px'],
-        'h1, h2, h3, h4, h5, p : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
-        'h2 : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
-        'h3 : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
-        'p : font-family': ['default', 'Lato', 'Helvetica', 'Arial', 'Times New Roman'],
-    },
-    inlineEditableSettings: [{
-        'attrName': 'contenteditable',
-        'attrValue': 'true'
-    }, {
-        'attrName': 'spellcheck',
-        'attrValue': 'true'
-    }, {
-        'attrName': 'role',
-        'attrValue': 'textbox'
-    }, {
-        'attrName': 'data-placeholder',
-        'attrValue': 'Type your text'
-    }],
-    responsiveModes: {
-        desktop: '97%',
-        mobile: '480px',
-        tablet: '1024px'
-    },
-    mediumCssUrls: [
-        '//cdn.jsdelivr.net/medium-editor/latest/css/medium-editor.min.css',
-        '../css/medium-bootstrap.css'
-    ],
-    mediumButtons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h1', 'h2', 'h3', 'h4', 'removeFormat'],
-    externalJS: [
-        'js/builder_in_block.js'
-    ]
-};
-
 Ext.define('Compass.ErpApp.Desktop.Applications.ApplicationManagement.WebsiteBuilderDropZone', {
     extend: 'Ext.Component',
     alias: 'widget.websitebuilderdropzone',
     lastDropZone: false,
-    cls: 'websiteBuilderDropZone',
-    listeners: {
-        render: function(comp) {
-            comp.lastDropZone ? comp.el.setStyle('height', '25px') : comp.el.setStyle('height', '10px');
-            comp.el.setStyle('marginBottom', '5px');
-        }
-    }
+    cls: 'website-builder-dropzone',
+    height: 150,
+    html: '<div>Drop Component Here</div>'
 });
 
 
@@ -111,7 +51,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             me.dropZone = Ext.create('Ext.dd.DropZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getTargetFromEvent: function(e) {
-                    return e.getTarget('.websiteBuilderDropZone');
+                    return e.getTarget('.website-builder-dropzone');
                 },
 
                 // On entry into a target node, highlight that node.
@@ -151,12 +91,12 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 var responseObj = Ext.decode(response.responseText);
 
                                 if (responseObj.success) {
-                                    var responseData = responseObj.data
+                                    var responseData = responseObj.data;
                                     containerPanel.insert(indexToDrop, {
                                         xtype: 'panel',
                                         cls: "websitebuilder-component-panel",
                                         layout: 'fit',
-                                        height: responseData.height,
+                                        // height: responseData.height,
                                         imgSrc: responseData.thumbnail,
                                         componentId: responseData.iid,
                                         listeners: {
@@ -215,9 +155,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         }
                                     });
 
-                                    containerPanel.removeFieldDropZones();
+                                    containerPanel.removeFieldDropZone(target);
                                     containerPanel.remove(panel);
-                                    containerPanel.addFieldDropZones();
+                                    // containerPanel.addFieldDropZones();
                                     containerPanel.updateLayout();
                                 }
                             },
@@ -404,60 +344,55 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var hex = data.toString(16);
         return hex.length == 1 ? "0" + hex : hex;
     },
-    removeFieldDropZones: function() {
+    removeFieldDropZone: function(target) {
         var me = this;
-        me.suspendLayout = true;
-        Ext.each(me.query('websitebuilderdropzone'), function(dropZone) {
-            // remove the drop zones
-            dropZone.destroy();
-        });
-        me.suspendLayout = false;
-        me.doLayout();
+        // me.suspendLayout = true;
+        // Ext.each(me.query('websitebuilderdropzone'), function(dropZone) {
+        //     // remove the drop zones
+        //     dropZone.destroy();
+        // });
+        dropZonePanel = Ext.get(target.id);
+        dropZonePanel.destroy();
+        // me.suspendLayout = false;
+        // me.doLayout();
     },
 
     addFieldDropZones: function() {
-        var me = this,
-            rowIndex = 0,
-            itemCount = me.items.items.length;
+        var me = this;
+        me.add([{
+            xtype: 'websitebuilderdropzone',
+            flex: 1,
+            autoEl: {
+                tag: 'div',
+                'data-row': 0
+            }
 
-        me.suspendLayout = true;
-        if (itemCount === 0) {
-            me.insert(0, {
+        }, {
+            layout: 'hbox',
+            items: [{
                 xtype: 'websitebuilderdropzone',
-                lastDropZone: true,
+                flex: 1,
                 autoEl: {
                     tag: 'div',
-                    'data-row': 0
+                    'data-row': 1
                 }
-            });
-        } else {
-            var lastIndex = (me.items.length - 1);
-
-            for (var i = 0; i < itemCount; i++) {
-                if (i === 0) {
-                    me.insert(0, {
-                        xtype: 'websitebuilderdropzone',
-                        autoEl: {
-                            tag: 'div',
-                            'data-row': 0
-                        }
-                    });
+            }, {
+                xtype: 'websitebuilderdropzone',
+                flex: 1,
+                autoEl: {
+                    tag: 'div',
+                    'data-row': 2
                 }
+            }]
 
-                rowIndex += 2;
-
-                me.insert(rowIndex, {
-                    xtype: 'websitebuilderdropzone',
-                    lastDropZone: (i == lastIndex),
-                    autoEl: {
-                        tag: 'div',
-                        'data-row': rowIndex
-                    }
-                });
+        }, {
+            xtype: 'websitebuilderdropzone',
+            flex: 1,
+            autoEl: {
+                tag: 'div',
+                'data-row': 3
             }
-        }
-        me.suspendLayout = false;
-        me.doLayout();
+        }]);
     },
 
 });
