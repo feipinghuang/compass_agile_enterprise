@@ -175,16 +175,15 @@
 }
 
 .website-builder-reorder-setting{
-    visibility: visible;
-    opacity: 1;
-    transition: right 0.5s linear 0s;
     background-color: #ccc;
     padding: 10px;
-    position: absolute;
-    top: 5px;
-    right: 15px;
-    width: auto;
+    top: 40px;
+    right: 10px;
+    width: 60px;
     height: 36px;
+    border-radius: 5px;
+    float: right;
+    position: relative;
 }
 
 .icon-move {
