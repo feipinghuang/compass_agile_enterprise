@@ -111,7 +111,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                             closable: true,
                             centerRegion: region,
                             save: function(comp) {
-                                var componentPanels = comp.query("panel[cls=websitebuilder-component-panel]"),
+                                var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
                                     components = [];
                                 Ext.Array.each(componentPanels, function(component, index) {
                                     iframe = component.el.query("#" + component.id + "-frame").first();
