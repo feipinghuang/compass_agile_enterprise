@@ -105,12 +105,12 @@ module ErpInventory
             status = status.internal_identifier
           end
 
-          if @@order_status_shipped_iid.include?(status)
+          if @@order_status_shipped_iids.include?(status)
             self.apply_inventory!
           else
             # if there were InventoryTxns that were applied and this task went from complete to pending we
             # need to unapply those InventoryTxns
-            if _current_status && @@order_status_shipped_iid.include?(_current_status)
+            if _current_status && @@order_status_shipped_iids.include?(_current_status)
               self.unapply_inventory!
             end
           end
