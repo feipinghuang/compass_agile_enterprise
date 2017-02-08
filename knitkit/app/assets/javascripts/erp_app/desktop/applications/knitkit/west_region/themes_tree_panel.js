@@ -255,6 +255,46 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
         }).show();
     },
 
+
+    showThemeBuilderPanel: function(node) {
+        var me = this,
+            centerPanel = Ext.ComponentQuery.query("knitkit_centerregion").first(),
+            centerTabPanel = centerPanel.down('tabpanel');
+        
+       var themeBuilderPanel =  centerTabPanel.add({
+           xtype: 'websitebuilderpanel',
+           itemId: 'themeBuilder' + node.get('id'),
+           closable: true,
+           theme: true,
+           title: 'Theme Builder',
+           save: function(comp) {
+               var components = comp.query("[cls=websitebuilder-component-panel]"),
+                   headerComp = components.first(),
+                   footerComp = components.last();
+
+               var headerFrame = headerComp.getEl().query("#" + headerComp.id + "-frame").first(),
+                   footerFrame = footerComp.getEl().query("#" + footerComp.id + "-frame").first();
+               var headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
+                   footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
+               
+               Compass.ErpApp.Utility.ajaxRequest({
+                   url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',
+                   method: 'PUT',
+                   params: {
+                       header: headerHTML,
+                       footer: footerHTML
+                   },
+                   success: function(response) {
+                       
+                   }
+               });
+           }
+       });
+        
+        centerTabPanel.setActiveTab(themeBuilderPanel);
+        
+    },
+
     deleteTheme: function (theme) {
         var self = this,
             themeId = theme.get('id');
@@ -404,6 +444,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                                 }
                             }
                         });
+                        items.push({
+                            text: 'Build Theme',
+                            iconCls: 'icon-edit',
+                            listeners: {
+                                'click': function () {
+                                    self.showThemeBuilderPanel(node);
+                                }
+                            }
+                        });
+
                         items.push({
                             text: 'Export',
                             iconCls: 'icon-document_out',

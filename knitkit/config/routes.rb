@@ -27,7 +27,6 @@ Rails.application.routes.draw do
           post 'save_website'
         end
       end
-
     end
   end
 
@@ -59,6 +58,12 @@ Knitkit::Engine.routes.draw do
         end
         member do
           get :content
+        end
+      end
+
+      resources :theme_builder, only: [] do
+        member do
+          put 'update_layout'
         end
       end
 
