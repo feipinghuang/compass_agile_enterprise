@@ -162,38 +162,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
         });
     },
 
-    saveWebsiteLayout: function(id, components) {
-        var me = this;
-        me.setWindowStatus('Saving...');
-        Ext.Ajax.request({
-            url: '/api/v1/website_builder/save_website.json',
-            method: 'POST',
-            params: {
-                id: id,
-                content: components
-            },
-            success: function(response) {
-                me.clearWindowStatus();
-                var obj = Ext.decode(response.responseText);
-                if (obj.success) {
-                    knitkitWindow = Ext.getCmp('knitkit');
-                    knitkitWindow.dockedItems.add({
-                        text: 'Preview',
-                        handler: function(btn) {
-                            // debugger;
-                        }
-                    })
-                } else {
-                    Ext.Msg.alert('Error', obj.message);
-                }
-            },
-            failure: function(response) {
-                me.clearWindowStatus();
-                Ext.Msg.alert('Error', 'Error saving layout');
-            }
-        });
-    },
-
     constructor: function(config) {
         config = Ext.apply({
 

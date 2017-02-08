@@ -102,7 +102,7 @@ var viewConfigItems = {
                 // if the record is modified and the parentId has changed we need to change
                 // the section parent
                 var parentNode = null;
-                
+
                 if (dropPosition == 'append') {
                     positionArray.push({
                         id: record.get('recordId'),
@@ -249,12 +249,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
 
     listeners: {
         itemclick: function(view, record, htmlItem, index, e) {
+
             var url = null;
             var self = this;
             e.stopEvent();
-
             if (record.data['isSection']) {
-                self.initialConfig['centerRegion'].openIframeInTab(record.data.text, record.data['url']);
+                self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId);
             } else if (record.data['objectType'] === "Article") {
                 url = '/knitkit/erp_app/desktop/articles/show/' + record.get('recordId');
 

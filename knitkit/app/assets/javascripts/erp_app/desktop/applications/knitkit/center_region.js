@@ -552,8 +552,69 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         this.workArea.setActiveTab(item);
     },
 
-    openIframeInTab: function(title, url) {
+    saveWebsiteLayout: function(websiteId, websiteSectionId, components) {
+        var me = this;
+        me.setWindowStatus('Saving...');
+        Ext.Ajax.request({
+            url: '/api/v1/website_builder/save_website.json',
+            method: 'POST',
+            params: {
+                id: websiteId,
+                website_section_id: websiteSectionId,
+                content: components
+            },
+            success: function(response) {
+                me.clearWindowStatus();
+                var obj = Ext.decode(response.responseText);
+                if (obj.success) {
+                    knitkitWindow = Ext.getCmp('knitkit');
+                    knitkitWindow.dockedItems.add({
+                        text: 'Preview',
+                        handler: function(btn) {
+                            // debugger;
+                        }
+                    })
+                } else {
+                    Ext.Msg.alert('Error', obj.message);
+                }
+            },
+            failure: function(response) {
+                me.clearWindowStatus();
+                Ext.Msg.alert('Error', 'Error saving layout');
+            }
+        });
+    },
 
+    openWebsiteBuilderInTab: function(title, websiteSectionId) {
+        var me = this;
+        websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
+        websiteId = websitesCombo.getValue();
+
+        item = Ext.createWidget('websitebuilderpanel', {
+            closable: true,
+            title: title,
+            save: function(comp) {
+                var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
+                    components = [];
+                Ext.Array.each(componentPanels, function(component, index) {
+                    iframe = component.el.query("#" + component.id + "-frame").first();
+                    page = iframe.contentDocument.documentElement.getElementsByClassName('page')[0];
+                    components.push({
+                        position: index,
+                        content_iid: component.componentId,
+                        body_html: page.outerHTML
+                    });
+                });
+                me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(components));
+            }
+        });
+
+        this.workArea.add(item);
+        this.workArea.setActiveTab(item);
+    },
+
+    openIframeInTab: function(title, url) {
+        debugger;
         var item = Ext.create('Ext.panel.Panel', {
             iframeId: 'themes_iframe',
             closable: true,

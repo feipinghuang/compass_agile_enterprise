@@ -123,10 +123,11 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     buttons: [{
                         text: 'Select',
                         handler: function(btn) {
-                            var win = btn.up('window');
+                            var win = btn.up('window')
+                            indexToInsert = me.items.getCount() - 1;
 
                             if (win.down('#oneCol').getValue()) {
-                                me.add({
+                                me.insert(indexToInsert, {
                                     xtype: 'websitebuilderdropzone',
                                     flex: 1
 
@@ -134,7 +135,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             }
 
                             if (win.down('#twoCol').getValue()) {
-                                me.add({
+                                me.insert(indexToInsert, {
                                     xtype: 'container',
                                     layout: 'hbox',
                                     items: [{
@@ -150,7 +151,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             }
 
                             if (win.down('#threeCol').getValue()) {
-                                me.add({
+                                me.insert(indexToInsert, {
                                     xtype: 'container',
                                     layout: 'hbox',
                                     items: [{
@@ -263,14 +264,18 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 if (responseObj.success) {
                                     var responseData = responseObj.data;
                                     dropPanel.removeCls('website-builder-dropzone');
-                                    Ext.apply(dropPanel, {cls: "websitebuilder-component-panel"});
+                                    Ext.apply(dropPanel, {
+                                        cls: "websitebuilder-component-panel"
+                                    });
                                     dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
                                         componetId: responseData.id,
                                         htmlSrc: responseData.url,
                                         panelId: dropPanel.id
                                     }));
 
-                                    Ext.apply(dropPanel, {height: responseData.height});
+                                    Ext.apply(dropPanel, {
+                                        height: responseData.height
+                                    });
 
                                     Ext.get(dropPanel.id + "-remove").on("click", function() {
                                         me.insert(me.items.indexOf(dropPanel), {
@@ -537,7 +542,17 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         me.add([{
             xtype: 'websitebuilderdropzone',
-            flex: 1
+            flex: 1,
+            cls: '',
+            style: {
+                'text-align': 'center',
+                'font-size': '20px',
+                'font-weight': 'bold',
+                'border': '1px solid grey',
+                'padding': '50px',
+                'margin': '25px'
+            },
+            html: '<div>Header Component (Locked)</div>'
 
         }, {
             xtype: 'websitebuilderdropzone',
@@ -545,7 +560,18 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         }, {
             xtype: 'websitebuilderdropzone',
-            flex: 1
+            flex: 1,
+            cls: '',
+            style: {
+                'text-align': 'center',
+                'font-size': '20px',
+                'font-weight': 'bold',
+                'border': '1px solid grey',
+                'padding': '50px',
+                'margin': '25px'
+            },
+            html: '<div>Footer Component (Locked)</div>'
+
         }]);
     }
 
