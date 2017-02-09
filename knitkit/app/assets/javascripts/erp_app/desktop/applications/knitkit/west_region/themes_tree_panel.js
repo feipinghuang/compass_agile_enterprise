@@ -265,7 +265,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
            xtype: 'websitebuilderpanel',
            itemId: 'themeBuilder' + node.get('id'),
            closable: true,
-           theme: true,
+           theme: {
+               id: node.get('id'),
+               url: node.get('url')
+           },
            title: 'Theme Builder',
            save: function(comp) {
                var components = comp.query("[cls=websitebuilder-component-panel]"),

@@ -13,7 +13,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     alias: 'widget.websitebuilderpanel',
     title: "Website Builder",
     autoScroll: true,
-    theme: false,
+    theme: null,
     items: [],
     initComponent: function() {
         var me = this;
@@ -586,8 +586,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 flex: 1,
                 cls: 'website-builder-readonly-block',
                 
-                html: '<div>Footer Component (Locked)</div>'
-
+                html: '<div><iframe src="' + me.theme.url + '/templates/shared/knitkit/_footer.html"></div>'
+                
             }]);
         }
         

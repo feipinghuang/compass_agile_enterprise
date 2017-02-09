@@ -289,7 +289,6 @@ class Theme < ActiveRecord::Base
   
   def update_base_layout(options={})
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
-    binding.pry
     theme_path = File.join(path, "templates", "shared", "knitkit")
     if options[:header_html]
       file_support.update_file(File.join(theme_path, "_header.html.erb"), options[:header_html])
