@@ -18,8 +18,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     initComponent: function() {
         var me = this;
 
-        if(!me.theme) {
-            me.dockedItems =  [{
+        if (!me.theme) {
+            me.dockedItems = [{
                 xtype: 'toolbar',
                 items: [{
                     text: 'Add Row',
@@ -186,10 +186,14 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     }
                 }]
             }];
-
         }
-        
+
+        me.on('beforerender', function() {
+            me.setWebsiteTheme();
+        })
+
         me.on('render', function() {
+
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getDragData: function(e) {
@@ -539,43 +543,38 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         // me.suspendLayout = false;
         // me.doLayout();
     },
-    
+
     addFieldDropZones: function() {
-        
+
         var me = this;
-        if(me.theme) {
-            me.add([
-                {
-                    xtype: 'websitebuilderdropzone',
-                    html: '<div>Drop Header Here</div>'
+        if (false) {
+            me.add([{
+                xtype: 'websitebuilderdropzone',
+                html: '<div>Drop Header Here</div>'
+            }, {
+                xtype: 'websitebuilderdropzone',
+                flex: 1,
+                cls: '',
+                style: {
+                    'text-align': 'center',
+                    'font-size': '20px',
+                    'font-weight': 'bold',
+                    'border': '1px solid grey',
+                    'padding': '50px',
+                    'margin': '25px'
                 },
-                {
-                    xtype: 'websitebuilderdropzone',
-                    flex: 1,
-                    cls: '',
-                    style: {
-                        'text-align': 'center',
-                        'font-size': '20px',
-                        'font-weight': 'bold',
-                        'border': '1px solid grey',
-                        'padding': '50px',
-                        'margin': '25px'
-                    },
-                    html: '<div>Contents</div>'
-                },
-                {
-                    xtype: 'websitebuilderdropzone',
-                    html: '<div>Drop Footer Here</div>'
-                }
-            ]);
+                html: '<div>Contents</div>'
+            }, {
+                xtype: 'websitebuilderdropzone',
+                html: '<div>Drop Footer Here</div>'
+            }]);
 
         } else {
             me.add([{
                 xtype: 'websitebuilderdropzone',
+                cls: '',
                 flex: 1,
-                cls: 'website-builder-readonly-block',
-                
-                html: '<div>Header Component (Locked)</div>'
+                html: '<div><iframe src="' + me.templatePreviewURL('header') + '" width="100%" height="100%"></div>'
 
             }, {
                 xtype: 'websitebuilderdropzone',
@@ -583,14 +582,44 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
             }, {
                 xtype: 'websitebuilderdropzone',
+                cls: '',
                 flex: 1,
-                cls: 'website-builder-readonly-block',
-                
-                html: '<div><iframe src="' + me.theme.url + '/templates/shared/knitkit/_footer.html"></div>'
-                
+                html: '<div><iframe src="' + me.templatePreviewURL('footer') + '" width="100%" height="100%"></div>'
+
             }]);
         }
-        
+
+    },
+
+    templatePreviewURL: function(templateType) {
+        var me = this;
+        url = "";
+        if (me.theme && me.theme.id) {
+            url = '/knitkit/erp_app/desktop/theme_builder/' + me.theme.id + '/preview_layout?template_type=' + templateType;
+        }
+        return url;
+    },
+
+    setWebsiteTheme: function() {
+        var me = this,
+            websitesCombo = Ext.ComponentQuery.query("websitescombo").first(),
+            websiteId = websitesCombo.getValue();
+        Ext.Ajax.request({
+            method: "GET",
+            url: '/api/v1/website_builder/' + websiteId + '/active_website_theme.json',
+            async: false,
+            success: function(response) {
+                var responseObj = Ext.decode(response.responseText);
+                console.log(JSON.stringify(responseObj));
+                if (responseObj.success && responseObj.theme != "") {
+                    me.theme = responseObj.theme;
+                }
+            },
+
+            failure: function() {
+                // TODO: Could not load message count, should we display an error?
+            }
+        });
     }
 
 });

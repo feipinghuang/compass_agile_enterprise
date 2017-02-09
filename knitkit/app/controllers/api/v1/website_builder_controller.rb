@@ -1,7 +1,7 @@
 module Api
   module V1
     class WebsiteBuilderController < BaseController
-      before_filter :set_website, :only => [:save_website]
+      before_filter :set_website, :only => [:save_website, :active_website_theme]
 
       def components
         render json: {
@@ -14,6 +14,13 @@ module Api
         render json: {
           success: true,
           data: find_component(params[:id]).to_data_hash
+        }
+      end
+
+      def active_website_theme
+        render json: {
+          success: true,
+          theme: (current_theme.to_data_hash rescue "")
         }
       end
 
@@ -65,6 +72,10 @@ module Api
 
       def find_component(component_id)
         Content.where(internal_identifier: component_id).first
+      end
+
+      def current_theme
+          @theme ||=@website.themes.active.first
       end
 
       def set_website

@@ -22,9 +22,12 @@ Rails.application.routes.draw do
 
       resources :website_builder, defaults: { :format => 'json' } do
         collection do
-          get 'components'
-          get 'get_component'
-          post 'save_website'
+          get :components
+          get :get_component
+          post :save_website
+        end
+        member do
+          get :active_website_theme
         end
       end
     end
@@ -63,7 +66,8 @@ Knitkit::Engine.routes.draw do
 
       resources :theme_builder, only: [] do
         member do
-          put 'update_layout'
+          put :update_layout
+          get :preview_layout
         end
       end
 

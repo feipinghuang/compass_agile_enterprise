@@ -19,6 +19,13 @@ class Theme < ActiveRecord::Base
   protected_with_capabilities
   has_file_assets
 
+  def to_data_hash
+      {
+        id: self.id,
+        url: self.url
+      }
+  end
+
   def import_download_item_file(file)
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
 
@@ -286,7 +293,7 @@ class Theme < ActiveRecord::Base
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_images_path, :preload => true), :images, :path_to_replace => Theme.knitkit_website_images_path)
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_fonts_path, :preload => true), :fonts, :path_to_replace => Theme.knitkit_website_fonts_path)
   end
-  
+
   def update_base_layout(options={})
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
     theme_path = File.join(path, "templates", "shared", "knitkit")

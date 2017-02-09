@@ -15,25 +15,28 @@ module Knitkit
         end
 
         def preview_layout
-          theme = Theme.find(params[:theme_id])
+          theme = Theme.find(params[:id])
           template_type = params[:template_type]
+          template_path = "#{theme.path}/templates/shared/knitkit"
           file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
           content = ""
-          content += Dir.glob("#{theme.path}/stylesheets/**/*").collect do |stylesheet|
-            "<link rel= 'stylesheet' type='text/css' href='#{file_support.get_contents(stylesheet).first}'>"
+          content += Dir.glob("#{theme.path}/stylesheets/**/*.css").collect do |stylesheet|
+            "<style type='text/css'>#{file_support.get_contents(stylesheet).first}</style>"
           end.join("\n")
-          content += Dir.glob("#{theme.path}/javascripts/**/*").collect do |javasscript|
-            "<script type='text/css' src='#{file_support.get_contents(stylesheet).first}'>"
+          content += Dir.glob("#{theme.path}/javascripts/**/*.js").collect do |javasscript|
+            "<script type='text/javasscript'>#{file_support.get_contents(javasscript).first}</script>"
           end.join("\n")
-          content += Dir.glob("#{theme.path}/images/**/*").collect do |javasscript|
-            "<script type='text/css' src='#{file_support.get_contents(stylesheet).first}'>"
-          end.join("\n")
+          # content += Dir.glob("#{theme.path}/images/**/*").collect do |image|
+          #   "<script type='text/css' src='#{file_support.get_contents(image).first}'>"
+          # end.join("\n")
 
-          
-          
+          if File.file?("#{template_path}/_#{template_type}.html.erb")
+            content += IO.read("#{template_path}/_#{template_type}.html.erb")
+          end
+          render inline: content.html_safe, layout: false
         end
+
       end
-      
     end
   end
 end
