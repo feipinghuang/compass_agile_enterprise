@@ -84,6 +84,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                     }
                 }
             },
+
             failure: function() {
                 // TODO: Could not load message count, should we display an error?
             }

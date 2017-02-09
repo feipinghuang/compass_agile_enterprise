@@ -286,6 +286,19 @@ class Theme < ActiveRecord::Base
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_images_path, :preload => true), :images, :path_to_replace => Theme.knitkit_website_images_path)
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_fonts_path, :preload => true), :fonts, :path_to_replace => Theme.knitkit_website_fonts_path)
   end
+  
+  def update_base_layout(options={})
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+    binding.pry
+    theme_path = File.join(path, "templates", "shared", "knitkit")
+    if options[:header_html]
+      file_support.update_file(File.join(theme_path, "_header.html.erb"), options[:header_html])
+    end
+
+    if options[:footer_html]
+      file_support.update_file(File.join(theme_path, "_footer.html.erb"), options[:footer_html])
+    end
+  end
 
   private
 

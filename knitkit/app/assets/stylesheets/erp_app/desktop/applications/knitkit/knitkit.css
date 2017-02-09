@@ -224,3 +224,12 @@
     padding-top: 50px;
     color: #a2a2a2;
 }
+
+.website-builder-readonly-block {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  border: 1px solid grey;
+  padding: 50px;
+  margin: 25px;
+}
