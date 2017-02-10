@@ -31,13 +31,14 @@ module Api
 
           if contents_data
             current_user.with_capability('create', 'WebsiteSection') do
-
               begin
                 ActiveRecord::Base.transaction do
                   website_section = @website.website_sections.where(id: params[:website_section_id]).first
                   website_section.website_section_contents.destroy_all
                   contents_data.each do |data|
-                    website_section.website_section_contents.build(content: Content.where(internal_identifier: data["content_iid"]).first, position: data["position"], body_html: data["body_html"])
+                    content = Content.where(internal_identifier: data["content_iid"]).first
+                    content.website_sections <<  website_section
+                    content.update_html_and_position(website_section, data["body_html"], data["position"])
                   end
 
                   if website_section.save!

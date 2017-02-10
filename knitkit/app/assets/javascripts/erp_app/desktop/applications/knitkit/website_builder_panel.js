@@ -2,6 +2,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.ApplicationManagement.WebsiteBui
     extend: 'Ext.Component',
     alias: 'widget.websitebuilderdropzone',
     lastDropZone: false,
+    componentId: null,
     cls: 'website-builder-dropzone',
     height: 150,
     html: '<div>Drop Component Here</div>'
@@ -275,13 +276,13 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         cls: "websitebuilder-component-panel"
                                     });
                                     dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
-                                        componetId: responseData.id,
                                         htmlSrc: responseData.url,
                                         panelId: dropPanel.id
                                     }));
 
                                     Ext.apply(dropPanel, {
-                                        height: responseData.height
+                                        height: responseData.height,
+                                        componentId: responseData.iid
                                     });
 
                                     Ext.get(dropPanel.id + "-remove").on("click", function() {

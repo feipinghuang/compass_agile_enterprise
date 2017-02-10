@@ -11,8 +11,8 @@ module Knitkit
       else
         @website_section.render_base_layout? ? (render :inline => layout, :layout => 'knitkit/base') : (render :inline => layout)
       end
-      
+
     end
-    
+
   end
 end

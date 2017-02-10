@@ -133,6 +133,16 @@ class Content < ActiveRecord::Base
     website_section_content
   end
 
+  def update_html_and_position(section, body_html, position)
+      website_section_content = WebsiteSectionContent.where("content_id = ? and website_section_id = ? ", self.id, section.id).first
+      unless website_section_content.nil?
+        website_section_content.body_html = body_html
+        website_section_content.position = position
+        website_section_content.save
+      end
+      website_section_content
+  end
+
   def content_area_by_website_section(section)
     content_area = nil
     unless WebsiteSectionContent.where('content_id = ? and website_section_id = ?', self.id, section.id).first.nil?
