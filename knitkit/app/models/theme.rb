@@ -13,7 +13,7 @@ class Theme < ActiveRecord::Base
   @base_layouts_views_path = "#{Knitkit::Engine.root.to_s}/app/views"
   @knitkit_website_stylesheets_path = "#{Knitkit::Engine.root.to_s}/app/assets/stylesheets/knitkit"
   @knitkit_website_javascripts_path = "#{Knitkit::Engine.root.to_s}/app/assets/javascripts/knitkit"
-  @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/public/images/knitkit"
+  @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/app/assets/images/knitkit"
   @knitkit_website_fonts_path = "#{Knitkit::Engine.root.to_s}/app/assets/fonts/knitkit"
 
   protected_with_capabilities
