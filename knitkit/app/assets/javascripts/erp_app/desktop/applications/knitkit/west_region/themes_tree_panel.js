@@ -269,8 +269,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                id: node.get('id'),
                url: node.get('url')
            },
+           isForTheme: true,
            title: 'Theme Builder',
            save: function(comp) {
+               var mask = new Ext.LoadMask(me, {
+                   msg: 'Please wait...'
+               });
+               mask.show();
                var components = comp.query("[cls=websitebuilder-component-panel]"),
                    headerComp = components.first(),
                    footerComp = components.last();
@@ -288,7 +293,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                        footer: footerHTML
                    },
                    success: function(response) {
-                       
+                       mask.hide();
                    }
                });
            }

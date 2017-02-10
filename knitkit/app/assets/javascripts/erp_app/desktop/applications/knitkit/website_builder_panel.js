@@ -15,6 +15,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     title: "Website Builder",
     autoScroll: true,
     theme: null,
+    isForTheme: false, 
     items: [],
     initComponent: function() {
         var me = this;
@@ -548,7 +549,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     addFieldDropZones: function() {
 
         var me = this;
-        if (false) {
+        if (me.isForTheme) {
             me.add([{
                 xtype: 'websitebuilderdropzone',
                 html: '<div>Drop Header Here</div>'

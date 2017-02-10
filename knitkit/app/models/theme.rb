@@ -338,6 +338,12 @@ class Theme < ActiveRecord::Base
       contents.gsub!("<%= stylesheet_link_tag 'knitkit/custom' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
       contents.gsub!("<%= javascript_include_tag 'knitkit/theme' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
 
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/header' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','website_builder/css/style-header.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/content' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','website_builder/css/style-content.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/footer' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','website_builder/css/style-footer.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/build' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','website_builder/css/build.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/video' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','website_builder/css/video.css' %>") unless path.scan('base.html.erb').empty?
+      
       path = case type
                when :widgets
                  path.gsub(options[:path_to_replace], "#{self.url}/widgets/#{options[:widget_name]}")
