@@ -1,9 +1,5 @@
 <div class="container">
-  <div class="page-header">
-    <h1><%= @website_section.title %></h1>
-  </div>
-
   <% @contents.each do |content| %>
-      <%= render_editable_content(content) %>
+    <%= render_content(content.internal_identifier, @website_section) %>
   <% end %>
 </div>
