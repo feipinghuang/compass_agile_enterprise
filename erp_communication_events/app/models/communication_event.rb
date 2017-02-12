@@ -125,7 +125,9 @@ class CommunicationEvent < ActiveRecord::Base
       role_type = RoleType.iid(role_type)
     end
 
-    communication_event_pty_roles.create(party: party, role_type: role_type)
+    unless communication_event_pty_roles.where(party_id: party, role_type_id: role_type).first
+      communication_event_pty_roles.create(party: party, role_type: role_type)
+    end
   end
 
   def remove_parties(role_type)

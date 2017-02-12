@@ -70,7 +70,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
 
       # filter by BizTxnAcctType
       unless filters[:biz_txn_acct_type_iids].blank?
-        statement = statement.joins(:biz_txn_acct_type).where(biz_txn_acct_type: {internal_identifier: filters[:biz_txn_acct_type_iids]})
+        statement = statement.joins(:biz_txn_acct_type).where(biz_txn_acct_types: {internal_identifier: filters[:biz_txn_acct_type_iids]})
       end
 
       # filter by Status
@@ -133,9 +133,24 @@ class BizTxnAcctRoot < ActiveRecord::Base
   end
 
   def dba_organization
-    biz_txn_acct_party_roles.joins(:biz_txn_acct_pty_rtype).where(biz_txn_acct_pty_rtypes: {internal_identifier: 'dba_org'}).first.try(:party)
+    _dba_org = find_party_by_role('dba_org')
+
+    unless _dba_org
+      _dba_org = find_party_by_role('subscription_owner').try(:dba_organization)
+    end
+
+    unless _dba_org
+      _dba_org = find_party_by_role('account_owner').try(:dba_organization)
+    end
+
+    unless _dba_org
+      _dba_org = find_party_by_role('owner').try(:dba_organization)
+    end
+
+    _dba_org
   end
-  alias dba_org dba_organization
+  alias :dba_org :dba_organization
+  alias :tenant :dba_organization
 
   def to_label
     "#{description}"

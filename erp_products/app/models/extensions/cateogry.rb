@@ -21,8 +21,8 @@ module ErpProducts
 
     module CategoryExtension
 
-      def to_data_hash
-        data = super
+      def to_data_hash(context={})
+        data = super(context)
 
         data[:product_type_count] = product_type_count
 

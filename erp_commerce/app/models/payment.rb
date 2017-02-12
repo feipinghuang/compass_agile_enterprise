@@ -22,6 +22,12 @@ class Payment < ActiveRecord::Base
   belongs_to :financial_txn, :dependent => :destroy
   has_many   :payment_gateways
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.financial_txn.find_party_by_role('payor').dba_organization
+  end
+  alias :tenant :dba_organization
+
   aasm_column :current_state
 
   aasm_initial_state :pending

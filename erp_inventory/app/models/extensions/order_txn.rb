@@ -24,13 +24,12 @@ OrderTxn.class_eval do
       end
 
       if inventory_entry
-        InventoryTxn.create!(
+        order_line_item.inventory_txns.create!(
           quantity: (0 - order_line_item.quantity),
           is_sell: true,
           comments: "Online Sale #{self.description}",
           inventory_entry: inventory_entry,
-          tenant_id: self.find_party_by_role('order_roles_dba_org').id,
-          created_by: order_line_item
+          tenant_id: self.find_party_by_role('order_roles_dba_org').id
         )
       end
 
@@ -44,12 +43,9 @@ OrderTxn.class_eval do
     # TODO this needs to account for inventory at more than one location
 
     order_line_items.each do |order_line_item|
-      inventory_txn = InventoryTxn.where(created_by_id: order_line_item.id, created_by_type: 'OrderLineItem').first
-
-      if inventory_txn
+      order_line_item.inventory_txns.each do |inventory_txn|
         inventory_txn.apply!
       end
-
     end # order_line_items.each
   end
 
@@ -59,12 +55,9 @@ OrderTxn.class_eval do
     # TODO this needs to account for inventory at more than one location
 
     order_line_items.each do |order_line_item|
-      inventory_txn = InventoryTxn.where(created_by_id: order_line_item.id, created_by_type: 'OrderLineItem').first
-
-      if inventory_txn
+      order_line_item.inventory_txns.each do |inventory_txn|
         inventory_txn.unapply!
       end
-
     end # order_line_items.each
   end
 
@@ -74,7 +67,7 @@ module ErpInventory
   module Extensions
     module OrderTxnExtension
 
-      @@order_status_shipped_iid = 'order_statuses_shipped'
+      @@order_status_shipped_iids = ['sales_order_statuses_shipped']
 
       # set current status of entity.
       #
@@ -112,12 +105,12 @@ module ErpInventory
             status = status.internal_identifier
           end
 
-          if status == @@order_status_shipped_iid
+          if @@order_status_shipped_iids.include?(status)
             self.apply_inventory!
           else
             # if there were InventoryTxns that were applied and this task went from complete to pending we
             # need to unapply those InventoryTxns
-            if _current_status && _current_status == @@order_status_shipped_iid
+            if _current_status && @@order_status_shipped_iids.include?(_current_status)
               self.unapply_inventory!
             end
           end

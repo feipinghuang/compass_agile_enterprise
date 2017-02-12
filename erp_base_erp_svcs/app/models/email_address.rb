@@ -14,6 +14,12 @@ class EmailAddress < ActiveRecord::Base
     with: /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]+\z/,
     message: "Must be a valid email address"
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.contact.dba_organization
+  end
+  alias :tenant :dba_organization
+
   def summary_line
     "#{description} : #{email_address}"
   end

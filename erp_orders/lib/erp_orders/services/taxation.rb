@@ -22,7 +22,7 @@ module ErpOrders
 
         # if the origin state is the same as the destination state
         # determine taxes else taxes are 0
-        if ctx[:origin_address][:state] == ctx[:destination_address][:state]
+        if ctx[:destination_address].nil? or ctx[:destination_address][:state].nil? or (ctx[:origin_address][:state] == ctx[:destination_address][:state])
           taxes = (tax_service[:state_tax_rate] * ctx[:amount]).round(2)
           taxed_record.taxed = true
           taxed_record.sales_tax = taxes

@@ -12,4 +12,3 @@
 //
 //= require inflection
 //= require ./layout
-//= require ./preference_window

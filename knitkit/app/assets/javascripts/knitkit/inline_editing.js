@@ -110,6 +110,8 @@ Knitkit.InlineEditing = {
             var ckeditorWrapper = jQuery("<div class='ckeditor_wrapper'></div>");
             var actionResultDiv = jQuery("<div class='editable-content-actionresult'></div>");
 
+            var CKEDITOR_BASEPATH = '/javascripts/ckeditor/';
+
             dialogHeader.append(closeLink);
             editableContentContainer.append(dialogHeader);
             editableContentContainer.append(ckeditorWrapper);

@@ -6,9 +6,54 @@ module RailsDbAdmin
       module ActionView
         module Helpers
           module ReportHelper
-            
+
+            def render_report(report_iid)
+              report = Report.iid(report_iid)
+
+              render partial: '/reports/body.html.erb', locals: {report: report}
+            end
+
+            def render_report_param(report, param)
+              param = Hash.symbolize_keys(param)
+
+              case param[:type]
+              when 'text'
+                content_tag :div, class: 'form-group' do
+                  label_tag param[:name], param[:display_name] + ': ', class: 'report-param'
+                  text_field_tag param[:name], required: param[:required], class: 'form-control'
+                end
+              else
+                content_tag :div, class: 'form-group' do
+                  buffer = label_tag param[:name], param[:display_name] + ': ', class: 'report-param'
+
+                  buffer += content_tag('div',
+                              class: 'input-group date datetimepicker',
+                  id: report.internal_identifier + param[:name] + '-datepicker') do
+
+                    html = text_field_tag param[:name],
+                      nil,
+                      name: param[:name],
+                      'date-format' => 'MM-DD-yyyy',
+                      class: 'form-control'
+
+                    html += content_tag 'span', class: 'input-group-addon' do
+                      content_tag 'span', '', class: 'glyphicon glyphicon-calendar'
+                    end
+
+                    html += %{
+                      <script type="text/javascript">
+                      jQuery('##{report.internal_identifier + param[:name] + '-datepicker'}').datetimepicker({format: 'MM/DD/YYYY'});
+                      </script>
+                    }.html_safe
+                  end
+                end
+
+              end
+
+            end
+
             def report_download_url(report_iid, format)
-              raw "/reports/display/#{report_iid}.#{format}"
+              raw "/compass_ae_reports/display/#{report_iid}.#{format}"
             end
 
             def report_download_link(report_iid, format, display=nil)
@@ -95,13 +140,13 @@ module RailsDbAdmin
               name = path.last
 
               directory = if path.length > 1
-                            #remove last element
-                            path.pop
+                #remove last element
+                path.pop
 
-                            "#{base_directory}/#{path.join('/')}"
-                          else
-                            base_directory
-                          end
+                "#{base_directory}/#{path.join('/')}"
+              else
+                base_directory
+              end
 
               return name, directory
             end

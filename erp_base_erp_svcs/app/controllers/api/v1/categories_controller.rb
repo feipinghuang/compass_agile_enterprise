@@ -12,9 +12,10 @@ module Api
           sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
           sort = sort_hash[:property] || 'description'
           dir = sort_hash[:direction] || 'ASC'
-          limit = params[:limit] || 25
-          start = params[:start] || 0
         end
+
+        limit = params[:limit] || 25
+        start = params[:start] || 0
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
@@ -27,21 +28,7 @@ module Api
         categories = categories.by_tenant(dba_organizations)
 
         if query_filter[:with_products]
-          category_ids_with_products = []
-
-          Category.by_tenant(dba_organizations)
-          .joins(:category_classifications)
-          .joins("join product_types on product_types.id = category_classifications.classification_id
-                and category_classifications.classification_type = 'ProductType' ").uniq.each do |category|
-
-            category_ids_with_products.push(category.id)
-            category_ids_with_products = category_ids_with_products.concat(category.ancestors.collect(&:id))
-
-          end
-
-          category_ids_with_products = category_ids_with_products.uniq
-
-          categories = categories.where(categories: {id: category_ids_with_products})
+          categories = categories.where(categories: {id: Category.with_products(dba_organizations)})
         end
 
         respond_to do |format|
@@ -62,6 +49,7 @@ module Api
                              categories: categories.collect { |item| item.to_data_hash }}
           end
           format.tree do
+
             if params[:parent_id]
               render :json => {success: true,
                                categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories})}
@@ -78,14 +66,23 @@ module Api
 
           end
           format.all_representation do
+
+            total_count = categories.count
+
+            if start and limit
+              categories = categories.offset(start).limit(limit)
+            end
+
             if params[:parent_id].present?
               render :json => {success: true,
-                               categories: BizTxnAcctRoot.to_all_representation(Category.find(params[:parent_id]))}
+                               total_count: total_count,
+                               categories: Category.to_all_representation(Category.find(params[:parent_id]))}
             else
 
 
               render :json => {success: true,
-                               categories: BizTxnAcctRoot.to_all_representation(nil, [], 0, categories.roots)}
+                               total_count: total_count,
+                               categories: Category.to_all_representation(nil, [], 0, categories.roots)}
             end
           end
         end

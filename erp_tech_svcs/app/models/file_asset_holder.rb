@@ -12,7 +12,7 @@
 class FileAssetHolder < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
-  belongs_to :file_asset
+  belongs_to :file_asset, class_name: 'FileAsset', foreign_key: 'file_asset_id'
   belongs_to :file_asset_holder, :polymorphic => true
 
   # setup scoping

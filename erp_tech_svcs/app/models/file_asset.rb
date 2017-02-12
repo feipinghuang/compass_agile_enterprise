@@ -73,7 +73,7 @@ class FileAsset < ActiveRecord::Base
     self.check_name_uniqueness
   end
 
-  has_many :file_asset_holders, dependent: :destroy, class_name: 'FileAssetHolder', foreign_key: 'file_asset_id'
+  has_many :file_asset_holders, class_name: 'FileAssetHolder', foreign_key: 'file_asset_id', dependent: :destroy
 
   acts_as_taggable
 
@@ -553,6 +553,26 @@ class Swf < FileAsset
   self.file_type = :swf
   self.content_type = 'application/x-shockwave-flash'
   self.valid_extensions = %w(.swf .SWF)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/shockwave_file.png')}"
+  end
+end
+
+class Mp3 < FileAsset
+  self.file_type = :mp3
+  self.content_type = 'audio/mpeg'
+  self.valid_extensions = %w(.mp3)
+
+  def thumbnail_src
+    "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/shockwave_file.png')}"
+  end
+end
+
+class Wav < FileAsset
+  self.file_type = :wav
+  self.content_type = 'audio/wav'
+  self.valid_extensions = %w(.wav)
 
   def thumbnail_src
     "#{ErpTechSvcs::Config.file_protocol}://#{File.join(ErpTechSvcs::Config.installation_domain, '/assets/shockwave_file.png')}"
