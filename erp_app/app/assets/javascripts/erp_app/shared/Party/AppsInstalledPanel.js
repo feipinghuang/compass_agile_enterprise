@@ -223,11 +223,14 @@ Ext.define("CompassAE.ErpApp.Shared.Party.AppsInstalledPanel", {
                             var applicationIids = Ext.Array.pluck(response.applications, 'internal_identifier');
 
                             if (me.down('#userAppsTree')) {
-                                me.down('#userAppsTree').getRootNode().cascadeBy(function(node) {
-                                    if (Ext.Array.contains(applicationIids, node.get('internalIdentifier'))) {
-                                        node.set('checked', true);
-                                    }
-                                });
+
+                                setTimeout( function(){
+                                    me.down('#userAppsTree').getRootNode().cascadeBy(function(node) {
+                                        if (Ext.Array.contains(applicationIids, node.get('internalIdentifier'))) {
+                                            node.set('checked', true);
+                                        }
+                                    });
+                                }, 1000);
                             }
 
                             dfd.resolve();
