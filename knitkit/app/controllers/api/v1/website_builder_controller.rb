@@ -4,6 +4,10 @@ module Api
 
       before_filter :set_website, :only => [:save_website, :active_website_theme, :render_component, :render_layout_file]
 
+      acts_as_themed_controller
+
+      skip_before_filter :add_theme_view_paths, except: [:render_component]
+
       def components
         render json: {
           success: true,
@@ -31,6 +35,10 @@ module Api
         @website_builder = true
 
         render template: "/components/#{component_iid}", layout: 'knitkit/base'
+      end
+
+      def website
+        @website
       end
 
       def save_website
