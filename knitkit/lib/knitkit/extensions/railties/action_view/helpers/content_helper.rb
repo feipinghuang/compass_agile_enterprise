@@ -18,13 +18,13 @@ module Knitkit
             end
 
             def render_editable_content(content_version, additional_css_classes=[])
-              raw "<div class='knitkit_content #{additional_css_classes.join(' ')}'
-                        contentid='#{content_version.content.id}'
-                        lastupdate='#{content_version.content.updated_at.strftime("%m/%d/%Y %I:%M%p")}'>#{content_version.body_html}</div>"
+                 return raw "<div class='knitkit_content #{additional_css_classes.join(' ')}'
+                          contentid='#{content_version.content.id}'
+                          lastupdate='#{content_version.content.updated_at.strftime("%m/%d/%Y %I:%M%p")}'>#{content_version.body_html}</div>"
             end
 
             # render a piece of content by internal identifier regardless if it belongs to a section or not
-            def render_content(iid)
+            def render_content(iid, website_section = nil)
               content = Content.find_by_internal_identifier(iid)
               content_version = Content.get_published_version(@active_publication, content) unless @active_publication.nil?
               content_version = content if @active_publication.nil? or content_version.nil?
@@ -32,10 +32,18 @@ module Knitkit
               if content_version.nil?
                 ''
               else
-                raw "<div class='knitkit_content'
-                        contentid='#{content.id}'
-                        lastupdate='#{content_version.updated_at.strftime("%m/%d/%Y %I:%M%p")}'>
-                        #{(content_version.body_html.nil? ? '' : content_version.body_html)}</div>"
+                if content && website_section
+                  website_section_content = WebsiteSectionContent.where("content_id =? and website_section_id =?", content_version.content.id, website_section.id).first
+                  raw "<div class='knitkit_content'
+                          contentid='#{content.id}'
+                          lastupdate='#{content_version.updated_at.strftime("%m/%d/%Y %I:%M%p")}'>
+                          #{(website_section_content.body_html.nil? ? '' : website_section_content.body_html)}</div>"
+                else
+                  raw "<div class='knitkit_content'
+                          contentid='#{content.id}'
+                          lastupdate='#{content_version.updated_at.strftime("%m/%d/%Y %I:%M%p")}'>
+                          #{(content_version.body_html.nil? ? '' : content_version.body_html)}</div>"
+                end
               end
             end
 

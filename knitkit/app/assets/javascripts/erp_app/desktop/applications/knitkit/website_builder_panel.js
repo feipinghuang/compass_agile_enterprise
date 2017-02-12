@@ -2,6 +2,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.ApplicationManagement.WebsiteBui
     extend: 'Ext.Component',
     alias: 'widget.websitebuilderdropzone',
     lastDropZone: false,
+    componentId: null,
     cls: 'website-builder-dropzone',
     height: 150,
     html: '<div>Drop Component Here</div>'
@@ -13,179 +14,188 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     alias: 'widget.websitebuilderpanel',
     title: "Website Builder",
     autoScroll: true,
+    theme: null,
+    isForTheme: false, 
     items: [],
-
-    dockedItems: [{
-        xtype: 'toolbar',
-        items: [{
-            text: 'Add Row',
-            iconCls: 'icon-add',
-            handler: function(btn) {
-                var me = btn.up('websitebuilderpanel');
-
-                Ext.widget('window', {
-                    title: 'Add Row',
-                    buttonAlign: 'center',
-                    items: [{
-                        bodyPadding: '5px',
-                        xtype: 'container',
-                        layout: 'hbox',
-                        items: [{
-                            xtype: 'container',
-                            layout: 'vbox',
-                            align: 'center',
-                            items: [{
-                                xtype: 'label',
-                                text: 'One Column',
-                                width: 100,
-                                style: {
-                                    textAlign: 'center'
-                                }
-                            }, {
-                                xtype: 'image',
-                                src: '/website_builder/page_layouts/one_col.png',
-                                height: 100,
-                                width: 100,
-                                style: {
-                                    padding: '5px'
-                                }
-                            }, {
-                                xtype: 'radio',
-                                height: 50,
-                                width: 100,
-                                itemId: 'oneCol',
-                                checked: true,
-                                name: 'cols',
-                                style: {
-                                    textAlign: 'center'
-                                }
-                            }]
-                        }, {
-                            xtype: 'container',
-                            layout: 'vbox',
-                            align: 'center',
-                            items: [{
-                                xtype: 'label',
-                                text: 'Two Column',
-                                width: 100,
-                                style: {
-                                    textAlign: 'center'
-                                }
-                            }, {
-                                xtype: 'image',
-                                src: '/website_builder/page_layouts/two_col.png',
-                                height: 100,
-                                width: 100,
-                                style: {
-                                    padding: '5px'
-                                }
-                            }, {
-                                xtype: 'radio',
-                                height: 50,
-                                width: 100,
-                                itemId: 'twoCol',
-                                name: 'cols',
-                                style: {
-                                    textAlign: 'center'
-                                }
-                            }]
-                        }, {
-                            xtype: 'container',
-                            layout: 'vbox',
-                            align: 'center',
-                            items: [{
-                                xtype: 'label',
-                                text: 'Three Column',
-                                width: 100,
-                                style: {
-                                    textAlign: 'center'
-                                }
-                            }, {
-                                xtype: 'image',
-                                src: '/website_builder/page_layouts/three_col.png',
-                                height: 100,
-                                width: 100,
-                                style: {
-                                    padding: '5px'
-                                }
-                            }, {
-                                xtype: 'radio',
-                                height: 50,
-                                width: 100,
-                                itemId: 'threeCol',
-                                name: 'cols',
-                                style: {
-                                    textAlign: 'center'
-                                }
-                            }]
-                        }]
-                    }],
-                    buttons: [{
-                        text: 'Select',
-                        handler: function(btn) {
-                            var win = btn.up('window');
-
-                            if (win.down('#oneCol').getValue()) {
-                                me.add({
-                                    xtype: 'websitebuilderdropzone',
-                                    flex: 1
-
-                                });
-                            }
-
-                            if (win.down('#twoCol').getValue()) {
-                                me.add({
-                                    xtype: 'container',
-                                    layout: 'hbox',
-                                    items: [{
-                                        xtype: 'websitebuilderdropzone',
-                                        flex: 1
-
-                                    }, {
-                                        xtype: 'websitebuilderdropzone',
-                                        flex: 1
-
-                                    }]
-                                });
-                            }
-
-                            if (win.down('#threeCol').getValue()) {
-                                me.add({
-                                    xtype: 'container',
-                                    layout: 'hbox',
-                                    items: [{
-                                        xtype: 'websitebuilderdropzone',
-                                        flex: 1
-
-                                    }, {
-                                        xtype: 'websitebuilderdropzone',
-                                        flex: 1
-
-                                    }, {
-                                        xtype: 'websitebuilderdropzone',
-                                        flex: 1
-
-                                    }]
-                                });
-                            }
-
-                            win.close();
-                        }
-                    }, {
-                        text: 'Cancel',
-                        handler: function(btn) {
-                            btn.up('window').close();
-                        }
-                    }],
-                }).show();
-            }
-        }]
-    }],
-
     initComponent: function() {
         var me = this;
 
+        if (!me.theme) {
+            me.dockedItems = [{
+                xtype: 'toolbar',
+                items: [{
+                    text: 'Add Row',
+                    iconCls: 'icon-add',
+                    handler: function(btn) {
+                        var me = btn.up('websitebuilderpanel');
+
+                        Ext.widget('window', {
+                            title: 'Add Row',
+                            buttonAlign: 'center',
+                            items: [{
+                                bodyPadding: '5px',
+                                xtype: 'container',
+                                layout: 'hbox',
+                                items: [{
+                                    xtype: 'container',
+                                    layout: 'vbox',
+                                    align: 'center',
+                                    items: [{
+                                        xtype: 'label',
+                                        text: 'One Column',
+                                        width: 100,
+                                        style: {
+                                            textAlign: 'center'
+                                        }
+                                    }, {
+                                        xtype: 'image',
+                                        src: '/website_builder/page_layouts/one_col.png',
+                                        height: 100,
+                                        width: 100,
+                                        style: {
+                                            padding: '5px'
+                                        }
+                                    }, {
+                                        xtype: 'radio',
+                                        height: 50,
+                                        width: 100,
+                                        itemId: 'oneCol',
+                                        checked: true,
+                                        name: 'cols',
+                                        style: {
+                                            textAlign: 'center'
+                                        }
+                                    }]
+                                }, {
+                                    xtype: 'container',
+                                    layout: 'vbox',
+                                    align: 'center',
+                                    items: [{
+                                        xtype: 'label',
+                                        text: 'Two Column',
+                                        width: 100,
+                                        style: {
+                                            textAlign: 'center'
+                                        }
+                                    }, {
+                                        xtype: 'image',
+                                        src: '/website_builder/page_layouts/two_col.png',
+                                        height: 100,
+                                        width: 100,
+                                        style: {
+                                            padding: '5px'
+                                        }
+                                    }, {
+                                        xtype: 'radio',
+                                        height: 50,
+                                        width: 100,
+                                        itemId: 'twoCol',
+                                        name: 'cols',
+                                        style: {
+                                            textAlign: 'center'
+                                        }
+                                    }]
+                                }, {
+                                    xtype: 'container',
+                                    layout: 'vbox',
+                                    align: 'center',
+                                    items: [{
+                                        xtype: 'label',
+                                        text: 'Three Column',
+                                        width: 100,
+                                        style: {
+                                            textAlign: 'center'
+                                        }
+                                    }, {
+                                        xtype: 'image',
+                                        src: '/website_builder/page_layouts/three_col.png',
+                                        height: 100,
+                                        width: 100,
+                                        style: {
+                                            padding: '5px'
+                                        }
+                                    }, {
+                                        xtype: 'radio',
+                                        height: 50,
+                                        width: 100,
+                                        itemId: 'threeCol',
+                                        name: 'cols',
+                                        style: {
+                                            textAlign: 'center'
+                                        }
+                                    }]
+                                }]
+                            }],
+                            buttons: [{
+                                text: 'Select',
+                                handler: function(btn) {
+                                    var win = btn.up('window')
+                                    indexToInsert = me.items.getCount() - 1;
+
+                                    if (win.down('#oneCol').getValue()) {
+                                        me.insert(indexToInsert, {
+                                            xtype: 'websitebuilderdropzone',
+                                            flex: 1
+
+                                        });
+                                    }
+
+                                    if (win.down('#twoCol').getValue()) {
+                                        me.insert(indexToInsert, {
+                                            xtype: 'container',
+                                            layout: 'hbox',
+                                            items: [{
+                                                xtype: 'websitebuilderdropzone',
+                                                flex: 1
+
+                                            }, {
+                                                xtype: 'websitebuilderdropzone',
+                                                flex: 1
+
+                                            }]
+                                        });
+                                    }
+
+                                    if (win.down('#threeCol').getValue()) {
+                                        me.insert(indexToInsert, {
+                                            xtype: 'container',
+                                            layout: 'hbox',
+                                            items: [{
+                                                xtype: 'websitebuilderdropzone',
+                                                flex: 1
+
+                                            }, {
+                                                xtype: 'websitebuilderdropzone',
+                                                flex: 1
+
+                                            }, {
+                                                xtype: 'websitebuilderdropzone',
+                                                flex: 1
+
+                                            }]
+                                        });
+                                    }
+
+                                    win.close();
+                                }
+                            }, {
+                                text: 'Cancel',
+                                handler: function(btn) {
+                                    btn.up('window').close();
+                                }
+                            }],
+                        }).show();
+                    }
+                }]
+            }];
+        }
+
+        me.on('beforerender', function() {
+            me.setWebsiteTheme();
+        })
+
         me.on('render', function() {
+
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getDragData: function(e) {
@@ -262,12 +272,19 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                                 if (responseObj.success) {
                                     var responseData = responseObj.data;
-
+                                    dropPanel.removeCls('website-builder-dropzone');
+                                    Ext.apply(dropPanel, {
+                                        cls: "websitebuilder-component-panel"
+                                    });
                                     dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
-                                        componetId: responseData.id,
                                         htmlSrc: responseData.url,
                                         panelId: dropPanel.id
                                     }));
+
+                                    Ext.apply(dropPanel, {
+                                        height: responseData.height,
+                                        componentId: responseData.iid
+                                    });
 
                                     Ext.get(dropPanel.id + "-remove").on("click", function() {
                                         me.insert(me.items.indexOf(dropPanel), {
@@ -322,9 +339,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                             });
                                         });
 
-                                        dropPanel.el.setHeight(iframe.dom.contentWindow.document.body.offsetHeight + 'px');
-
-                                        dropPanel.el.removeCls('website-builder-dropzone');
                                     });
 
                                     // containerPanel.removeFieldDropZone(target);
@@ -533,20 +547,81 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     },
 
     addFieldDropZones: function() {
+
         var me = this;
+        if (me.isForTheme) {
+            me.add([{
+                xtype: 'websitebuilderdropzone',
+                html: '<div>Drop Header Here</div>'
+            }, {
+                xtype: 'websitebuilderdropzone',
+                flex: 1,
+                cls: '',
+                style: {
+                    'text-align': 'center',
+                    'font-size': '20px',
+                    'font-weight': 'bold',
+                    'border': '1px solid grey',
+                    'padding': '50px',
+                    'margin': '25px'
+                },
+                html: '<div>Contents</div>'
+            }, {
+                xtype: 'websitebuilderdropzone',
+                html: '<div>Drop Footer Here</div>'
+            }]);
 
-        me.add([{
-            xtype: 'websitebuilderdropzone',
-            flex: 1
+        } else {
+            me.add([{
+                xtype: 'websitebuilderdropzone',
+                cls: '',
+                flex: 1,
+                html: '<div><iframe src="' + me.templatePreviewURL('header') + '" width="100%" height="100%"></div>'
 
-        }, {
-            xtype: 'websitebuilderdropzone',
-            flex: 1
+            }, {
+                xtype: 'websitebuilderdropzone',
+                flex: 1
 
-        }, {
-            xtype: 'websitebuilderdropzone',
-            flex: 1
-        }]);
+            }, {
+                xtype: 'websitebuilderdropzone',
+                cls: '',
+                flex: 1,
+                html: '<div><iframe src="' + me.templatePreviewURL('footer') + '" width="100%" height="100%"></div>'
+
+            }]);
+        }
+
+    },
+
+    templatePreviewURL: function(templateType) {
+        var me = this;
+        url = "";
+        if (me.theme && me.theme.id) {
+            url = '/knitkit/erp_app/desktop/theme_builder/' + me.theme.id + '/preview_layout?template_type=' + templateType;
+        }
+        return url;
+    },
+
+    setWebsiteTheme: function() {
+        var me = this,
+            websitesCombo = Ext.ComponentQuery.query("websitescombo").first(),
+            websiteId = websitesCombo.getValue();
+        Ext.Ajax.request({
+            method: "GET",
+            url: '/api/v1/website_builder/' + websiteId + '/active_website_theme.json',
+            async: false,
+            success: function(response) {
+                var responseObj = Ext.decode(response.responseText);
+                console.log(JSON.stringify(responseObj));
+                if (responseObj.success && responseObj.theme != "") {
+                    me.theme = responseObj.theme;
+                }
+            },
+
+            failure: function() {
+                // TODO: Could not load message count, should we display an error?
+            }
+        });
     }
 
 });

@@ -21,6 +21,13 @@
   <!-- Bootstrap theme helpers -->
   <%= javascript_include_tag 'knitkit/theme' %>
   <%= stylesheet_link_tag 'knitkit/custom' %>
+  
+  <!-- Website Builder styles -->
+  <%= stylesheet_link_tag 'knitkit/header' %>
+  <%= stylesheet_link_tag 'knitkit/content' %>
+  <%= stylesheet_link_tag 'knitkit/footer' %>
+  <%= stylesheet_link_tag 'knitkit/build' %>
+  <%= stylesheet_link_tag 'knitkit/video' %>
   <!-- end -->
 
   <!-- code mirror -->
@@ -33,42 +40,12 @@
 <body>
 
   <div id="wrap">
-
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="navbar-header pull-left">
-        <a class="navbar-brand" href="/home"><img src="/assets/knitkit/logo.png" alt="Logo"/></a>
-      </div>
-
-      <div class="navbar-header pull-right">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-      </div>
-
-      <%= render_widget :search,
-      :action => :index,
-      :params => {:redirect_results => true, :results_permalink => '/search-results'} %>
-
-
-      <%= render_widget :login,
-      :action => :login_header,
-      :params => {:login_url => '/login', :signup_url => '/sign-up'} %>
-
-      <div class="container-fluid">
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <%= content_for?(:menu) ? yield(:menu) : render_menu(@contents) %>
-          </ul>
-        </div>
-      </div>
-
-    </nav>
-
+    <div class="header">
+      <%= render :partial => 'shared/knitkit/header' %>
+    </div>
+    
     <div class="content-area">
       <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>
-
       <%= yield %>
     </div>
 

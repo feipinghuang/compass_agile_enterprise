@@ -84,6 +84,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                     }
                 }
             },
+
             failure: function() {
                 // TODO: Could not load message count, should we display an error?
             }
@@ -111,7 +112,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                             closable: true,
                             centerRegion: region,
                             save: function(comp) {
-                                var componentPanels = comp.query("panel[cls=websitebuilder-component-panel]"),
+                                var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
                                     components = [];
                                 Ext.Array.each(componentPanels, function(component, index) {
                                     iframe = component.el.query("#" + component.id + "-frame").first();
@@ -159,38 +160,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 componentHeight: data.height,
                 html: html
             };
-        });
-    },
-
-    saveWebsiteLayout: function(id, components) {
-        var me = this;
-        me.setWindowStatus('Saving...');
-        Ext.Ajax.request({
-            url: '/api/v1/website_builder/save_website.json',
-            method: 'POST',
-            params: {
-                id: id,
-                content: components
-            },
-            success: function(response) {
-                me.clearWindowStatus();
-                var obj = Ext.decode(response.responseText);
-                if (obj.success) {
-                    knitkitWindow = Ext.getCmp('knitkit');
-                    knitkitWindow.dockedItems.add({
-                        text: 'Preview',
-                        handler: function(btn) {
-                            // debugger;
-                        }
-                    })
-                } else {
-                    Ext.Msg.alert('Error', obj.message);
-                }
-            },
-            failure: function(response) {
-                me.clearWindowStatus();
-                Ext.Msg.alert('Error', 'Error saving layout');
-            }
         });
     },
 

@@ -3,7 +3,7 @@ module Knitkit
     before_filter :set_website
     before_filter :set_login_path, :set_active_publication, :load_sections, :set_section, :except => [:view_current_publication, :website_preview]
     acts_as_themed_controller
-
+    
     layout 'knitkit/base', :except => :website_preview
 
     def website_preview
