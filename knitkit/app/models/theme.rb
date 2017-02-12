@@ -309,9 +309,13 @@ class Theme < ActiveRecord::Base
   private
 
   def create_theme_files_for_directory_node(node, type, options={})
+    ignored_dirs = ['website_builder']
+
     if node
       node[:children].each do |child_node|
-        child_node[:leaf] ? save_theme_file(child_node[:id], type, options) : create_theme_files_for_directory_node(child_node, type, options)
+        unless ignored_dirs.any? { |w| child_node[:id] =~ /#{w}/ }
+          child_node[:leaf] ? save_theme_file(child_node[:id], type, options) : create_theme_files_for_directory_node(child_node, type, options)
+        end
       end
     end
   end
@@ -338,11 +342,11 @@ class Theme < ActiveRecord::Base
       contents.gsub!("<%= stylesheet_link_tag 'knitkit/custom' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
       contents.gsub!("<%= javascript_include_tag 'knitkit/theme' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
 
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/header' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','website_builder/css/style-header.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/content' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','website_builder/css/style-content.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/footer' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','website_builder/css/style-footer.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/build' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','website_builder/css/build.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/video' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','website_builder/css/video.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/header' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','header.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/content' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','content.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/footer' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','footer.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/build' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','build.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/video' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','video.css' %>") unless path.scan('base.html.erb').empty?
       
       path = case type
                when :widgets

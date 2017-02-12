@@ -24,6 +24,7 @@ Rails.application.routes.draw do
         collection do
           get :components
           get :get_component
+          get :render_component
           post :save_website
         end
         member do
@@ -67,7 +68,10 @@ Knitkit::Engine.routes.draw do
       resources :theme_builder, only: [] do
         member do
           put :update_layout
-          get :preview_layout
+        end
+
+        collection do
+          get :render_theme_component
         end
       end
 

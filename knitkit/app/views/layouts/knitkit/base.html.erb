@@ -20,44 +20,58 @@
 
   <!-- Bootstrap theme helpers -->
   <%= javascript_include_tag 'knitkit/theme' %>
-  <%= stylesheet_link_tag 'knitkit/custom' %>
-  
-  <!-- Website Builder styles -->
+  <%= stylesheet_link_tag 'knitkit/build' %>
   <%= stylesheet_link_tag 'knitkit/header' %>
   <%= stylesheet_link_tag 'knitkit/content' %>
   <%= stylesheet_link_tag 'knitkit/footer' %>
-  <%= stylesheet_link_tag 'knitkit/build' %>
   <%= stylesheet_link_tag 'knitkit/video' %>
-  <!-- end -->
-
+  
   <!-- code mirror -->
   <%= include_code_mirror_library %>
 
   <%= setup_js_authentication %>
 
+  <% if @website_builder %>
+  <!-- Website Builder styles -->
+  <%= stylesheet_link_tag 'knitkit/website_builder/medium-editor.min' %>
+  <%= stylesheet_link_tag 'knitkit/website_builder/medium-bootstrap' %>
+  <%= stylesheet_link_tag 'knitkit/website_builder/medium_editor_theme/default.min' %>
+  <!-- end -->
+  <% end %>
+
   <%= yield :head %>
 </head>
 <body>
+ 
+  <% if @website_builder %>
+    <%= yield %>
+  <% else %>
+    <div id="wrap">
+      <div class="header">
+        <%= render :partial => 'shared/knitkit/header' %>
+      </div>
+      
+      <div class="content-area">
+        <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>
+        <%= yield %>
+      </div>
 
-  <div id="wrap">
-    <div class="header">
-      <%= render :partial => 'shared/knitkit/header' %>
     </div>
-    
-    <div class="content-area">
-      <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>
-      <%= yield %>
+
+    <div class="footer">
+      <%= content_for?(:footer) ? yield(:footer) : (render :partial => 'shared/knitkit/footer') %>
+      <%= yield :foot %>
     </div>
+  <% end %> 
 
-  </div>
-
-  <div class="footer">
-    <%= content_for?(:footer) ? yield(:footer) : (render :partial => 'shared/knitkit/footer') %>
-    <%= yield :foot %>
-  </div>
   <%= set_authenticity_token %>
   <%= set_session_timeout %>
   <%= setup_inline_editing %>
 
+  <% if @website_builder %>
+  <!-- Website Builder javascript -->
+  <%= javascript_include_tag 'knitkit/website_builder/build/build.min' %>
+  <!-- end -->
+  <% end %>
 </body>
 </html>

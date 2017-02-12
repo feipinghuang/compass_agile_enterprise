@@ -15,7 +15,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     title: "Website Builder",
     autoScroll: true,
     theme: null,
-    isForTheme: false, 
+    isForTheme: false,
     items: [],
     initComponent: function() {
         var me = this;
@@ -192,7 +192,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         me.on('beforerender', function() {
             me.setWebsiteTheme();
-        })
+        });
 
         me.on('render', function() {
 
@@ -226,6 +226,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     return this.dragData.repairXY;
                 }
             });
+
             me.dropZone = Ext.create('Ext.dd.DropZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getTargetFromEvent: function(e) {
@@ -272,86 +273,15 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                                 if (responseObj.success) {
                                     var responseData = responseObj.data;
-                                    dropPanel.removeCls('website-builder-dropzone');
-                                    Ext.apply(dropPanel, {
-                                        cls: "websitebuilder-component-panel"
-                                    });
-                                    dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
-                                        htmlSrc: responseData.url,
-                                        panelId: dropPanel.id
-                                    }));
 
-                                    Ext.apply(dropPanel, {
-                                        height: responseData.height,
-                                        componentId: responseData.iid
-                                    });
+                                    me.replaceDropPanelWithContent(dropPanel, responseData.iid, responseData.height);
 
-                                    Ext.get(dropPanel.id + "-remove").on("click", function() {
-                                        me.insert(me.items.indexOf(dropPanel), {
-                                            xtype: 'websitebuilderdropzone',
-                                            flex: 1
-                                        });
-
-                                        dropPanel.destroy();
-                                    });
-
-                                    // Assigning click event inside iFrame content
-                                    var iframe = Ext.get(dropPanel.id + "-frame");
-
-                                    iframe.on('load', function() {
-                                        var iframePanel = this,
-                                            editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
-                                            websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
-
-                                        // // Loading websitebuilder CSS & JS dynamically
-                                        // Ext.ux.Loader.load(mediumCssUrls,
-                                        //     function() {
-                                        //         // callback when finished loading
-                                        //     },
-                                        //     iframePanel // scope
-                                        // );
-
-                                        Ext.Array.each(editableElements, function(editableElement) {
-                                            editableElement = Ext.get(editableElement);
-
-                                            editableElement.on('mouseover', function(event) {
-                                                if (!editableElement.dom.isContentEditable) {
-                                                    me.highlightElement(editableElement.dom);
-                                                }
-                                            });
-                                            editableElement.on('mouseout', function(event) {
-                                                if (!editableElement.dom.isContentEditable) {
-                                                    me.deHighlightElement(editableElement.dom);
-                                                }
-                                            });
-                                            editableElement.on('click', function(event) {
-                                                event.preventDefault();
-
-                                                if (!editableElement.dom.isContentEditable) {
-                                                    var contentEditableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
-                                                    Ext.Array.each(contentEditableElements, function(element) {
-                                                        me.removeEditable(element);
-                                                        me.deHighlightElement(element);
-                                                    });
-                                                }
-
-                                                me.buildPropertiesEditForm(this.dom);
-                                            });
-                                        });
-
-                                    });
-
-                                    // containerPanel.removeFieldDropZone(target);
-                                    // containerPanel.remove(panel);
-                                    // containerPanel.addFieldDropZones();
-                                    containerPanel.updateLayout();
                                 }
                             },
                             failure: function() {
                                 // TODO: Could not able to drop component, should we display an error?
                             }
                         });
-
                     }
                 },
 
@@ -366,12 +296,95 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 validDrop: function(target, dragData) {
                     return true;
                 }
-
             });
 
             me.addFieldDropZones();
         });
+
         me.callParent();
+    },
+
+    replaceDropPanelWithContent: function(dropPanel, componentIid, height) {
+        var me = this;
+        var websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
+        var websiteId = websitesCombo.getValue();
+        var containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
+
+        dropPanel.removeCls('website-builder-dropzone');
+
+        Ext.apply(dropPanel, {
+            cls: "websitebuilder-component-panel"
+        });
+
+        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
+            htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId,
+            panelId: dropPanel.id
+        }));
+
+        Ext.apply(dropPanel, {
+            height: height,
+            componentId: componentIid
+        });
+
+        Ext.get(dropPanel.id + "-remove").on("click", function() {
+            me.insert(me.items.indexOf(dropPanel), {
+                xtype: 'websitebuilderdropzone',
+                flex: 1
+            });
+
+            dropPanel.destroy();
+        });
+
+        // Assigning click event inside iFrame content
+        var iframe = Ext.get(dropPanel.id + "-frame");
+
+        iframe.on('load', function() {
+            var iframePanel = this,
+                editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
+                websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+
+            // // Loading websitebuilder CSS & JS dynamically
+            // Ext.ux.Loader.load(mediumCssUrls,
+            //     function() {
+            //         // callback when finished loading
+            //     },
+            //     iframePanel // scope
+            // );
+
+            Ext.Array.each(editableElements, function(editableElement) {
+                editableElement = Ext.get(editableElement);
+
+                editableElement.on('mouseover', function(event) {
+                    if (!editableElement.dom.isContentEditable) {
+                        me.highlightElement(editableElement.dom);
+                    }
+                });
+                editableElement.on('mouseout', function(event) {
+                    if (!editableElement.dom.isContentEditable) {
+                        me.deHighlightElement(editableElement.dom);
+                    }
+                });
+                editableElement.on('click', function(event) {
+                    event.preventDefault();
+
+                    if (!editableElement.dom.isContentEditable) {
+                        var contentEditableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
+                        Ext.Array.each(contentEditableElements, function(element) {
+                            me.removeEditable(element);
+                            me.deHighlightElement(element);
+                        });
+                    }
+
+                    me.buildPropertiesEditForm(this.dom);
+                });
+            });
+
+        });
+
+        // containerPanel.removeFieldDropZone(target);
+        // containerPanel.remove(panel);
+        // containerPanel.addFieldDropZones();
+        containerPanel.updateLayout();
     },
 
     makeEditable: function(element) {
@@ -547,8 +560,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     },
 
     addFieldDropZones: function() {
-
         var me = this;
+
         if (me.isForTheme) {
             me.add([{
                 xtype: 'websitebuilderdropzone',
@@ -573,32 +586,52 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         } else {
             me.add([{
-                xtype: 'websitebuilderdropzone',
-                cls: '',
+                xtype: 'component',
+                itemId: 'header',
+                constrain: true,
                 flex: 1,
-                html: '<div><iframe src="' + me.templatePreviewURL('header') + '" width="100%" height="100%"></div>'
+                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_header') + '" width="100%" height="100%">',
+                listeners: {
+                    render: function(comp) {
+                        Ext.get(comp.el.query('iframe')).on('load', function() {
+                            var iframe = this;
 
+                            comp.setHeight(iframe.contentWindow.document.body.clientHeight + 5);
+                        });
+                    }
+                }
             }, {
                 xtype: 'websitebuilderdropzone',
                 flex: 1
 
             }, {
-                xtype: 'websitebuilderdropzone',
-                cls: '',
+                xtype: 'component',
+                constrain: true,
                 flex: 1,
-                html: '<div><iframe src="' + me.templatePreviewURL('footer') + '" width="100%" height="100%"></div>'
+                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_footer') + '" width="100%" height="100%">',
+                listeners: {
+                    render: function(comp) {
+                        Ext.get(comp.el.query('iframe')).on('load', function() {
+                            var iframe = this;
 
+                            comp.setHeight(iframe.contentWindow.document.body.clientHeight + 5);
+                        });
+                    }
+                }
             }]);
+
         }
 
     },
 
     templatePreviewURL: function(templateType) {
         var me = this;
-        url = "";
-        if (me.theme && me.theme.id) {
-            url = '/knitkit/erp_app/desktop/theme_builder/' + me.theme.id + '/preview_layout?template_type=' + templateType;
-        }
+        var websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
+        var websiteId = websitesCombo.getValue();
+        var url = "";
+
+        url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_type=' + templateType;
+
         return url;
     },
 
@@ -606,6 +639,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var me = this,
             websitesCombo = Ext.ComponentQuery.query("websitescombo").first(),
             websiteId = websitesCombo.getValue();
+
         Ext.Ajax.request({
             method: "GET",
             url: '/api/v1/website_builder/' + websiteId + '/active_website_theme.json',
@@ -613,11 +647,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             success: function(response) {
                 var responseObj = Ext.decode(response.responseText);
                 console.log(JSON.stringify(responseObj));
-                if (responseObj.success && responseObj.theme != "") {
+                if (responseObj.success && responseObj.theme !== "") {
                     me.theme = responseObj.theme;
                 }
             },
-
             failure: function() {
                 // TODO: Could not load message count, should we display an error?
             }

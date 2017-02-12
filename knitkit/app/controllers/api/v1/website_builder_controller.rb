@@ -1,7 +1,8 @@
 module Api
   module V1
     class WebsiteBuilderController < BaseController
-      before_filter :set_website, :only => [:save_website, :active_website_theme]
+
+      before_filter :set_website, :only => [:save_website, :active_website_theme, :render_component, :render_layout_file]
 
       def components
         render json: {
@@ -22,6 +23,14 @@ module Api
           success: true,
           theme: (current_theme.to_data_hash rescue "")
         }
+      end
+
+      def render_component
+        component_iid = params[:component_iid]
+
+        @website_builder = true
+
+        render template: "/components/#{component_iid}", layout: 'knitkit/base'
       end
 
       def save_website
@@ -76,7 +85,7 @@ module Api
       end
 
       def current_theme
-          @theme ||=@website.themes.active.first
+        @theme ||=@website.themes.active.first
       end
 
       def set_website
