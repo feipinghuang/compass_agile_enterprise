@@ -90,57 +90,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
             }
         });
 
-
-        me.dockedItems = [{
-            dock: 'top',
-            xtype: 'container',
-            layout: {
-                type: 'hbox',
-                align: 'stretch'
-            },
-            items: [{
-                    xtype: 'button',
-                    flex: 1,
-                    text: 'Build Website',
-                    handler: function() {
-                        centerPanel = Ext.ComponentQuery.query("knitkit_centerregion").first();
-                        centerTabPanel = centerPanel.down('tabpanel');
-                        websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
-                        websiteId = websitesCombo.getValue();
-
-                        websiteBuilderPanel = Ext.createWidget('websitebuilderpanel', {
-                            closable: true,
-                            centerRegion: region,
-                            save: function(comp) {
-                                var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
-                                    components = [];
-                                Ext.Array.each(componentPanels, function(component, index) {
-                                    iframe = component.el.query("#" + component.id + "-frame").first();
-                                    page = iframe.contentDocument.documentElement.getElementsByClassName('page')[0];
-                                    components.push({
-                                        position: index,
-                                        content_iid: component.componentId,
-                                        body_html: page.outerHTML
-                                    });
-                                });
-                                me.saveWebsiteLayout(websiteId, JSON.stringify(components));
-                            }
-                        });
-
-                        centerTabPanel.add(websiteBuilderPanel);
-                        centerTabPanel.setActiveTab(websiteBuilderPanel);
-                    }
-                }, {
-                    xtype: 'button',
-                    flex: 1,
-                    text: 'Preview Website',
-                    handler: function() {
-                        var win = window.open('/website_preview', '_blank');
-                        win.focus();
-                    }
-                }] // eo container items
-        }]
-
         me.callParent(arguments);
     },
 
