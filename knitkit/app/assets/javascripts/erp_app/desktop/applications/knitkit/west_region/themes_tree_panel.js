@@ -249,11 +249,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             xtype: 'websitebuilderpanel',
             itemId: 'themeBuilder' + node.get('id'),
             closable: true,
-            theme: {
-                id: node.get('id'),
-                url: node.get('url')
-            },
-            isForTheme: true,
+            themeId: node.get('id'),
             title: 'Theme Builder',
             save: function(comp) {
                 var mask = new Ext.LoadMask(me, {
@@ -265,10 +261,18 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     headerComp = components.first(),
                     footerComp = components.last();
 
-                var headerFrame = headerComp.getEl().query("#" + headerComp.id + "-frame").first(),
-                    footerFrame = footerComp.getEl().query("#" + footerComp.id + "-frame").first();
-                var headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
+                var headerHTML = null,
+                    footerHTML = null;
+
+                if(headerComp) {
+                    var headerFrame = headerComp.getEl().query("#" + headerComp.id + "-frame").first();
+                    headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
+                }
+
+                if(footerComp) {
+                    var footerFrame = footerComp.getEl().query("#" + footerComp.id + "-frame").first();
                     footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
+                }
 
                 Compass.ErpApp.Utility.ajaxRequest({
                     url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',

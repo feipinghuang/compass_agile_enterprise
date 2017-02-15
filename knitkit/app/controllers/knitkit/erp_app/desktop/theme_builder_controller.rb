@@ -4,8 +4,8 @@ module Knitkit
       class ThemeBuilderController < Knitkit::ErpApp::Desktop::AppController
 
         before_filter :set_website, except: :update_layout
-
-        acts_as_themed_controller
+        
+        acts_as_themed_controller website_builder: true
 
         skip_before_filter :add_theme_view_paths, only: [:update_layout]
 
@@ -27,11 +27,16 @@ module Knitkit
         end
 
         def render_theme_component
-          path = params[:template_type]
-
+          path = params[:template_path]
+          type = params[:template_type]
           @website_builder = true
-
-          render template: path
+          theme_id = params[:theme_id]
+          theme = Theme.find_by_id(theme_id)
+          if theme and theme.is_layout_updated?
+            render template: path
+          else
+            render inline: "<div style='text-align:center;font-familiy:helvetica, arial, verdana, sans-serif;font-size:25px;font-weight:normal;color:#666;'>Drop #{type.capitalize} Here</div>"
+          end
         end
 
         protected

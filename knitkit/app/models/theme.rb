@@ -16,9 +16,10 @@ class Theme < ActiveRecord::Base
   @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/app/assets/images/knitkit"
   @knitkit_website_fonts_path = "#{Knitkit::Engine.root.to_s}/app/assets/fonts/knitkit"
 
+  is_json :meta_data
   protected_with_capabilities
   has_file_assets
-
+  
   def to_data_hash
       {
         id: self.id,
@@ -294,16 +295,26 @@ class Theme < ActiveRecord::Base
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_fonts_path, :preload => true), :fonts, :path_to_replace => Theme.knitkit_website_fonts_path)
   end
 
+  def is_layout_updated?
+    !!meta_data["is_layout_updated"]
+  end
+  
   def update_base_layout(options={})
+    binding.pry
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
     theme_path = File.join(path, "templates", "shared", "knitkit")
-    if options[:header_html]
+    is_layout_updated = false
+    if options[:header_html].present?
       file_support.update_file(File.join(theme_path, "_header.html.erb"), options[:header_html])
+      is_layout_updated = true
     end
 
-    if options[:footer_html]
+    if options[:footer_html].present?
       file_support.update_file(File.join(theme_path, "_footer.html.erb"), options[:footer_html])
+      is_layout_updated = true
     end
+    self.meta_data["is_layout_updated"] = is_layout_updated
+    self.save
   end
 
   private
