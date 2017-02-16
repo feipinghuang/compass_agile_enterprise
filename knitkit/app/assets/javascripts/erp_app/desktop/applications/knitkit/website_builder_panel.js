@@ -340,12 +340,16 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         });
 
         Ext.get(dropPanel.id + "-remove").on("click", function() {
-            me.insert(me.items.indexOf(dropPanel), {
-                xtype: 'websitebuilderdropzone',
-                flex: 1
-            });
+            parentContainer = dropPanel.up('container');
+            if (dropPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
 
-            dropPanel.destroy();
+                parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
+                    xtype: 'websitebuilderdropzone',
+                    flex: 1
+                });
+
+                dropPanel.destroy();
+            }
         });
 
         // Assigning click event inside iFrame content
@@ -591,8 +595,15 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         if (me.isForTheme) {
             me.add([{
-                xtype: 'websitebuilderdropzone',
-                html: '<div>Drop Header Here</div>'
+                xtype: 'container',
+                cls: 'dropzone-container',
+                layout: 'hbox',
+                items: [{
+                    xtype: 'websitebuilderdropzone',
+                    flex: 1,
+                    html: '<div>Drop Header Here</div>'
+
+                }]
             }, {
                 xtype: 'websitebuilderdropzone',
                 flex: 1,
@@ -607,8 +618,15 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 },
                 html: '<div>Contents</div>'
             }, {
-                xtype: 'websitebuilderdropzone',
-                html: '<div>Drop Footer Here</div>'
+                xtype: 'container',
+                cls: 'dropzone-container',
+                layout: 'hbox',
+                items: [{
+                    xtype: 'websitebuilderdropzone',
+                    flex: 1,
+                    html: '<div>Drop Footer Here</div>'
+
+                }]
             }]);
 
         } else {
@@ -628,9 +646,14 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     }
                 }
             }, {
-                xtype: 'websitebuilderdropzone',
-                flex: 1
+                xtype: 'container',
+                cls: 'dropzone-container',
+                layout: 'hbox',
+                items: [{
+                    xtype: 'websitebuilderdropzone',
+                    flex: 1
 
+                }]
             }, {
                 xtype: 'component',
                 constrain: true,
