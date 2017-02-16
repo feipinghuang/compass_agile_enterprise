@@ -134,15 +134,21 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                                     if (win.down('#oneCol').getValue()) {
                                         me.insert(indexToInsert, {
-                                            xtype: 'websitebuilderdropzone',
-                                            flex: 1
+                                            xtype: 'container',
+                                            cls: 'dropzone-container',
+                                            layout: 'hbox',
+                                            items: [{
+                                                xtype: 'websitebuilderdropzone',
+                                                flex: 1
 
+                                            }]
                                         });
                                     }
 
                                     if (win.down('#twoCol').getValue()) {
                                         me.insert(indexToInsert, {
                                             xtype: 'container',
+                                            cls: 'dropzone-container',
                                             layout: 'hbox',
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
@@ -159,6 +165,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                     if (win.down('#threeCol').getValue()) {
                                         me.insert(indexToInsert, {
                                             xtype: 'container',
+                                            cls: 'dropzone-container',
                                             layout: 'hbox',
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
@@ -199,16 +206,19 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getDragData: function(e) {
-                    var target = e.getTarget('.websitebuilder-component-panel');
-
-                    if (target) {
-                        var element = Ext.getCmp(target.id),
+                    var ele = e.getTarget('.icon-move'),
+                        targetId = null;
+                    if (ele) {
+                        targetId = ele.getAttribute('panelId');
+                    }
+                    if (targetId) {
+                        var element = Ext.getCmp(targetId),
                             dragEl = element.getEl(),
                             height = element.getEl().getHeight(),
                             width = element.getEl().getWidth(),
                             d = dragEl.dom.cloneNode(true);
                         d.id = Ext.id();
-                        Ext.fly(d).setHTML('<img src="' + element.imgSrc + '" style="width:186px;height:80px">');
+                        Ext.fly(d).setHTML('<img src="' + element.thumbnail + '" style="width:186px;height:80px">');
                         Ext.fly(d).setWidth(186);
                         Ext.fly(d).setHeight(80);
 
@@ -257,7 +267,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                 onNodeDrop: function(target, dd, e, data) {
                     if (this.validDrop(target, data)) {
-                        var panel = Ext.getCmp(data.panelId),
+                        var draggedPanel = Ext.getCmp(data.panelId),
                             containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
 
                         var dropPanel = Ext.getCmp(Ext.fly(target).dom.id);
@@ -274,7 +284,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 if (responseObj.success) {
                                     var responseData = responseObj.data;
 
-                                    me.replaceDropPanelWithContent(dropPanel, responseData.iid, responseData.height);
+                                    me.replaceDropPanelWithContent(dropPanel, responseData.iid, responseData.height, responseData.thumbnail);
+
+                                    me.removeContentFromDropPanel(draggedPanel);
 
                                 }
                             },
@@ -304,7 +316,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         me.callParent();
     },
 
-    replaceDropPanelWithContent: function(dropPanel, componentIid, height) {
+    replaceDropPanelWithContent: function(dropPanel, componentIid, height, thumbnail) {
         var me = this;
         var websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
         var websiteId = websitesCombo.getValue();
@@ -313,10 +325,11 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         dropPanel.removeCls('website-builder-dropzone');
 
         Ext.apply(dropPanel, {
-            cls: "websitebuilder-component-panel"
+            cls: "websitebuilder-component-panel",
+            thumbnail: thumbnail
         });
 
-        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
+        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting"  id="componentSetting"><div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
             htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId,
             panelId: dropPanel.id
         }));
@@ -382,9 +395,23 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         });
 
         // containerPanel.removeFieldDropZone(target);
-        // containerPanel.remove(panel);
         // containerPanel.addFieldDropZones();
         containerPanel.updateLayout();
+    },
+
+    removeContentFromDropPanel: function(draggedPanel) {
+        var me = this,
+            parentContainer = draggedPanel.up('container');
+        if (draggedPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
+
+            parentContainer.insert(parentContainer.items.indexOf(draggedPanel), {
+                xtype: 'websitebuilderdropzone',
+                flex: 1
+            });
+
+            draggedPanel.destroy();
+        }
+        me.updateLayout();
     },
 
     makeEditable: function(element) {
