@@ -345,6 +345,8 @@ module Knitkit
             :isActive => (theme.active == 1), :iconCls => 'icon-content',
             :isTheme => true,
             :id => theme.id,
+            :isHeaderPresent => theme.is_header_present?,
+            :isFooterPresent => theme.is_footer_present?,
             :children => []
           }
           if theme.active == 1

@@ -14,12 +14,13 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     alias: 'widget.websitebuilderpanel',
     title: "Website Builder",
     autoScroll: true,
-    themeId: null,
+    isForTheme: false,
+    themeLayoutConfig: {},
     items: [],
     initComponent: function() {
         var me = this;
 
-        if (!me.themeId) {
+        if (!me.isThemeMode()) {
             me.dockedItems = [{
                 xtype: 'toolbar',
                 items: [{
@@ -561,109 +562,129 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     addFieldDropZones: function() {
         var me = this;
         
-        if (me.themeId) {
-            me.add([{
-                xtype: 'websitebuilderdropzone',
-                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_header', 'header') + '" width="100%" height="100%" frameborder="0">' 
-            }, {
-                xtype: 'component',
-                flex: 1,
-                cls: '',
-                style: {
-                    'text-align': 'center',
-                    'font-size': '20px',
-                    'font-weight': 'bold',
-                    'border': '1px solid grey',
-                    'padding': '50px',
-                    'margin': '25px'
-                },
-                html: '<div>Contents</div>'
-            }, {
-                xtype: 'websitebuilderdropzone',
-                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_footer', 'footer') + '" width="100%" height="100%" frameborder="0">' 
-            }]);
-
+        if (me.isThemeMode()) {
+            me.add(
+                [
+                    me.buildLayoutConfig('header'),
+                    {
+                        xtype: 'component',
+                        flex: 1,
+                        cls: '',
+                        style: {
+                            'text-align': 'center',
+                            'font-size': '20px',
+                            'font-weight': 'bold',
+                            'border': '1px solid grey',
+                            'padding': '50px',
+                            'margin': '25px'
+                        },
+                        html: '<div>Contents</div>'
+                        
+                    },
+                    me.buildLayoutConfig('footer')
+                ]
+            );
+            
         } else {
-            me.add([{
-                xtype: 'component',
-                itemId: 'header',
-                constrain: true,
-                flex: 1,
-                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_header', 'header') + '" width="100%" height="100%">',
-                listeners: {
-                    render: function(comp) {
-                        Ext.get(comp.el.query('iframe')).on('load', function() {
-                            var iframe = this;
-
-                            comp.setHeight(iframe.contentWindow.document.body.clientHeight + 5);
-                        });
-                    }
-                }
-            }, {
+            me.add({
                 xtype: 'websitebuilderdropzone',
                 flex: 1
-
-            }, {
-                xtype: 'component',
-                constrain: true,
-                flex: 1,
-                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_footer', 'footer') + '" width="100%" height="100%" frameborder="0">',
-                listeners: {
-                    render: function(comp) {
-                        Ext.get(comp.el.query('iframe')).on('load', function() {
-                            var iframe = this;
-
-                            comp.setHeight(iframe.contentWindow.document.body.clientHeight + 5);
-                        });
-                    }
-                }
-            }]);
+            });
 
         }
 
     },
 
-    templatePreviewURL: function(templatePath, templateType) {
+    isThemeMode() {
+        return this.isForTheme && !Compass.ErpApp.Utility.isBlank(this.themeLayoutConfig);
+    },
+    
+    buildLayoutConfig: function(templateType) {
+        var me = this;
+        if(!me.isThemeMode()) {
+            throw("can't call this function for anything other than a theme builder");
+        }
+        // templateType can be header or footer for now and we assume that its in a shared partial
+        // in the themes view path
+        var templatePath = '/shared/knitkit/_' + templateType;
+        var layoutCompConfig = null;
+        
+        // if is header or footer is already present render it as a component else render websitebuilderdropzone
+        if(me.themeLayoutConfig['is' + templateType.capitalize() + 'Present']) {
+            layoutCompConfig = {
+                xtype: 'component',
+                html: new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;" id="{themeId}-move-{tempType}"></div><div class="icon-remove pull-left" id="{themeId}-remove-{tempType}"></div></div><iframe id="{themeId}-frame-{tempType}" src="' + me.templatePreviewURL(templatePath) + '" width="100%" height="100%" frameborder="0">').apply({
+                themeId: me.themeLayoutConfig.themeId,
+                tempType: templateType
+                }),
+                listeners: {
+                    render: function(comp) {
+                        Ext.get(me.themeLayoutConfig.themeId + '-remove-'+ templateType).on('click', function() {
+                            me.insert(me.items.indexOf(comp), {
+                                xtype: 'websitebuilderdropzone',
+                                itemId: 'layout' + templateType.capitalize(),
+                                flex: 1
+                            });
+                            comp.destroy();
+                        });
+                        
+                        var iframe = Ext.get(me.themeLayoutConfig.themeId + "-frame-" + templateType);
+                        
+                        iframe.on('load', function() {
+                            var iframePanel = this,
+                                editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
+                                websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+                            Ext.Array.each(editableElements, function(editableElement) {
+                                editableElement = Ext.get(editableElement);
+                                
+                                editableElement.on('mouseover', function(event) {
+                                    if (!editableElement.dom.isContentEditable) {
+                                        me.highlightElement(editableElement.dom);
+                                    }
+                                });
+                                editableElement.on('mouseout', function(event) {
+                                    if (!editableElement.dom.isContentEditable) {
+                                        me.deHighlightElement(editableElement.dom);
+                                    }
+                                });
+                                editableElement.on('click', function(event) {
+                                    event.preventDefault();
+                                    
+                                    if (!editableElement.dom.isContentEditable) {
+                                        var contentEditableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
+                                        Ext.Array.each(contentEditableElements, function(element) {
+                                            me.removeEditable(element);
+                                            me.deHighlightElement(element);
+                                        });
+                                    }
+                                    
+                                    me.buildPropertiesEditForm(this.dom);
+                                });
+                            });
+                            
+                        }); // iframe load
+                    } // render
+                } // listeners
+            }; // comp
+        } else {
+            layoutCompConfig = {
+                xtype: 'websitebuilderdropzone',
+                flex: 1,
+                html: '<div>Drop' + templateType.capitalize() + 'Here</div>'
+            };
+        }
+
+        return layoutCompConfig;
+    },
+
+    templatePreviewURL: function(templatePath) {
         var me = this;
         var websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
         var websiteId = websitesCombo.getValue();
         var url = "";
 
-        url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_path=' + templatePath + '&template_type=' + templateType;
-
-        if(me.themeId) {
-            url = url + '&theme_id=' + me.themeId;
-        }
-
+        url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_path=' + templatePath;
         return url;
-    },
-
-    buildLayoutConfig: function(layoutType) {
-        var me = this,
-            layoutPath = null;
-        if(layoutType == "header") {
-            layoutPath = '/shared/knitkit/_header';
-        } else if(layoutPath == "footer") {
-            layoutPath = '/shared/knitkit/_footer';
-        }
-        
-        return {
-            xtype: 'websitebuilderdropzone',
-            itemId: 'header',
-            constrain: true,
-            flex: 1,
-            html: '<iframe src="' + me.templatePreviewURL(layoutPath, layoutType) + '" width="100%" height="100%">',
-            listeners: {
-                render: function(comp) {
-                    Ext.get(comp.el.query('iframe')).on('load', function() {
-                        var iframe = this;
-                        
-                        comp.setHeight(iframe.contentWindow.document.body.clientHeight + 5);
-                    });
-                }
-            }
-        };
-
     },
 
     setWebsiteTheme: function() {

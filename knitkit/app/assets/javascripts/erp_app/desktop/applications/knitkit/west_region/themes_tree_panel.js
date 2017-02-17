@@ -249,7 +249,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             xtype: 'websitebuilderpanel',
             itemId: 'themeBuilder' + node.get('id'),
             closable: true,
-            themeId: node.get('id'),
+            isForTheme: true,
+            themeLayoutConfig: {
+                themeId: node.get('id'),
+                isHeaderPresent: node.get('isHeaderPresent'),
+                isFooterPresent: node.get('isFooterPresent')
+            },
             title: 'Theme Builder',
             save: function(comp) {
                 var mask = new Ext.LoadMask(me, {
@@ -257,13 +262,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 });
                 mask.show();
 
-                var components = comp.query("[cls=websitebuilder-component-panel]"),
-                    headerComp = components.first(),
-                    footerComp = components.last();
+                var headerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='header']").first(),
+                    footerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='footer']").first();
 
                 var headerHTML = null,
                     footerHTML = null;
-
+                
                 if(headerComp) {
                     var headerFrame = headerComp.getEl().query("#" + headerComp.id + "-frame").first();
                     headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
@@ -283,6 +287,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     },
                     success: function(response) {
                         mask.hide();
+                        // update comp config
+                        comp.themeLayoutConfig.isHeaderPresent = response.result.isHeaderPresent;
+                        comp.themeLayoutConfig.isFooterPresent = response.result.isFooterPresent;
+
+                        // update node
+                        node.set('isHeaderPresent', response.result.isHeaderPresent);
+                        node.set('isFooterPresent', response.result.isFooterPresent);
+                        node.commit();
                     }
                 });
             }
@@ -352,6 +364,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 'text',
                 'id',
                 'url',
+                'isHeaderPresent',
+                'isFooterPresent',
                 'leaf',
                 'handleContextMenu',
                 'contextMenuDisabled'

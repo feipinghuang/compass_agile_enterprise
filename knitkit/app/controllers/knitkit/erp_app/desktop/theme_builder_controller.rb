@@ -22,21 +22,20 @@ module Knitkit
           theme.update_base_layout({
                                      header_html: header_html,
                                      footer_html: footer_html
-          })
-          render json: {success: true}
+                                   })
+          render json: {
+                   success: true,
+                   result: {
+                     isHeaderPresent: theme.is_header_present?,
+                     isFooterPresent: theme.is_footer_present?
+                   }
+                 }
         end
 
         def render_theme_component
           path = params[:template_path]
-          type = params[:template_type]
           @website_builder = true
-          theme_id = params[:theme_id]
-          theme = Theme.find_by_id(theme_id)
-          if theme and theme.is_layout_updated?
-            render template: path
-          else
-            render inline: "<div style='text-align:center;font-familiy:helvetica, arial, verdana, sans-serif;font-size:25px;font-weight:normal;color:#666;'>Drop #{type.capitalize} Here</div>"
-          end
+          render template: path
         end
 
         protected

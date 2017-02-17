@@ -295,25 +295,29 @@ class Theme < ActiveRecord::Base
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_fonts_path, :preload => true), :fonts, :path_to_replace => Theme.knitkit_website_fonts_path)
   end
 
-  def is_layout_updated?
-    !!meta_data["is_layout_updated"]
+  def is_header_present?
+    !!meta_data["is_header_present"]
   end
-  
+
+  def is_footer_present?
+    !!meta_data["is_footer_present"]
+  end
+
   def update_base_layout(options={})
-    binding.pry
+    header = options[:header_html]
+    footer = options[:footer_html]
+    
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
     theme_path = File.join(path, "templates", "shared", "knitkit")
-    is_layout_updated = false
-    if options[:header_html].present?
-      file_support.update_file(File.join(theme_path, "_header.html.erb"), options[:header_html])
-      is_layout_updated = true
+    if header.present?
+      file_support.update_file(File.join(theme_path, "_header.html.erb"), header)
+      meta_data['is_header_present'] = true
     end
 
-    if options[:footer_html].present?
-      file_support.update_file(File.join(theme_path, "_footer.html.erb"), options[:footer_html])
-      is_layout_updated = true
+    if footer.present?
+      file_support.update_file(File.join(theme_path, "_footer.html.erb"), footer)
+      meta_data['is_footer_present'] = true
     end
-    self.meta_data["is_layout_updated"] = is_layout_updated
     self.save
   end
 
