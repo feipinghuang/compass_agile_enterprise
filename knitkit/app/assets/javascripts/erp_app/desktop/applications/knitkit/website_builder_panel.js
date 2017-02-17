@@ -243,6 +243,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                         Ext.get(el).removeCls('move');
                     });
 
+                    Ext.each(me.el.query('.dropzone-empty'), function(el) {
+                        Ext.get(el).remove();
+                    });
+
                     return this.dragData.repairXY;
                 }
             });
@@ -250,11 +254,28 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             me.dropZone = Ext.create('Ext.dd.DropZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getTargetFromEvent: function(e) {
-                    return e.getTarget('.website-builder-dropzone');
+                    return e.getTarget('.website-builder-dropzone') || e.getTarget('.component');
                 },
 
                 // On entry into a target node, highlight that node.
                 onNodeEnter: function(target, dd, e, dragData) {
+                    if (Ext.fly(target).hasCls('component')) {
+
+                        Ext.each(me.el.query('.dropzone-empty'), function(el) {
+                            Ext.get(el).remove();
+                        });
+
+                        var targetEl = Ext.fly(target);
+
+                        var topInsert = new Ext.Element(document.createElement('div'));
+                        topInsert.addCls('dropzone-empty');
+                        topInsert.insertBefore(targetEl);
+
+                        var bottomInsert = new Ext.Element(document.createElement('div'));
+                        bottomInsert.addCls('dropzone-empty');
+                        bottomInsert.insertAfter(targetEl);
+                    }
+
                     if (this.validDrop(target, dragData)) {
                         var dropComponent = Ext.getCmp(target.id);
                         if (dropComponent) {
@@ -308,6 +329,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                         Ext.each(me.el.query('.iframe-cover'), function(el) {
                             Ext.get(el).removeCls('move');
                         });
+
+                        Ext.each(me.el.query('.dropzone-empty'), function(el) {
+                            Ext.get(el).remove();
+                        });
                     }
                 },
 
@@ -343,7 +368,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             thumbnail: thumbnail
         });
 
-        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;">',
+        dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;">',
             '<div class="website-builder-reorder-setting" id="componentSetting">',
             '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
             '<div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div>',
