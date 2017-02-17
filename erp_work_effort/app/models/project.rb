@@ -3,6 +3,7 @@ class Project < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   has_many :work_efforts, :dependent => :destroy
+  has_and_belongs_to_many :biz_txn_acct_roots
 
   tracks_created_by_updated_by
   has_tracked_status
