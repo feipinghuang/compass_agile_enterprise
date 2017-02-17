@@ -1,13 +1,12 @@
 Ext.define('Compass.ErpApp.Desktop.Applications.ApplicationManagement.WebsiteBuilderDropZone', {
     extend: 'Ext.Component',
     alias: 'widget.websitebuilderdropzone',
-    lastDropZone: false,
+    autoRemovableDropZone: false,
     componentId: null,
     cls: 'website-builder-dropzone',
     height: 150,
     html: '<div>Drop Component Here</div>'
 });
-
 
 Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     extend: 'Ext.panel.Panel',
@@ -243,9 +242,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                         Ext.get(el).removeCls('move');
                     });
 
-                    Ext.each(me.el.query('.dropzone-empty'), function(el) {
-                        Ext.get(el).remove();
-                    });
+                    me.removeAutoRemovableDropZones();
 
                     return this.dragData.repairXY;
                 }
@@ -260,20 +257,37 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 // On entry into a target node, highlight that node.
                 onNodeEnter: function(target, dd, e, dragData) {
                     if (Ext.fly(target).hasCls('component')) {
+                        me.removeAutoRemovableDropZones();
+                        targetPanelId = target.getAttribute('panelId');
+                        targetPanel = Ext.getCmp(targetPanelId);
+                        parentContainer = targetPanel.up('container');
+                        websiteBuilderPanel = parentContainer.up('websitebuilderpanel');
+                        if (targetPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
+                            targetIndex = websiteBuilderPanel.items.indexOf(parentContainer);
+                            websiteBuilderPanel.insert(targetIndex, {
+                                xtype: 'container',
+                                cls: 'dropzone-container',
+                                layout: '',
+                                items: [{
+                                    xtype: 'websitebuilderdropzone',
+                                    flex: 1,
+                                    autoRemovableDropZone: true
+                                }]
+                            });
+                            websiteBuilderPanel.insert(targetIndex + 2, {
+                                xtype: 'container',
+                                cls: 'dropzone-container',
+                                layout: '',
+                                items: [{
+                                    xtype: 'websitebuilderdropzone',
+                                    flex: 1,
+                                    autoRemovableDropZone: true
+                                }]
+                            });
+                            websiteBuilderPanel.doLayout();
+                        }
 
-                        Ext.each(me.el.query('.dropzone-empty'), function(el) {
-                            Ext.get(el).remove();
-                        });
 
-                        var targetEl = Ext.fly(target);
-
-                        var topInsert = new Ext.Element(document.createElement('div'));
-                        topInsert.addCls('dropzone-empty');
-                        topInsert.insertBefore(targetEl);
-
-                        var bottomInsert = new Ext.Element(document.createElement('div'));
-                        bottomInsert.addCls('dropzone-empty');
-                        bottomInsert.insertAfter(targetEl);
                     }
 
                     if (this.validDrop(target, dragData)) {
@@ -303,6 +317,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                         var dropPanel = Ext.getCmp(Ext.fly(target).dom.id);
 
+                        Ext.apply(dropPanel, {
+                            autoRemovableDropZone: false
+                        });
+
                         Ext.Ajax.request({
                             method: "GET",
                             url: '/api/v1/website_builder/get_component.json',
@@ -330,9 +348,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             Ext.get(el).removeCls('move');
                         });
 
-                        Ext.each(me.el.query('.dropzone-empty'), function(el) {
-                            Ext.get(el).remove();
-                        });
+                        me.removeAutoRemovableDropZones();
                     }
                 },
 
@@ -362,13 +378,12 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
 
         dropPanel.removeCls('website-builder-dropzone');
-
         Ext.apply(dropPanel, {
             cls: "websitebuilder-component-panel",
             thumbnail: thumbnail
         });
 
-        dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;">',
+        dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;" panelId="{panelId}" >',
             '<div class="website-builder-reorder-setting" id="componentSetting">',
             '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
             '<div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div>',
@@ -390,7 +405,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         Ext.get(dropPanel.id + "-remove").on("click", function() {
             parentContainer = dropPanel.up('container');
             if (dropPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
-
                 parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
                     xtype: 'websitebuilderdropzone',
                     flex: 1
@@ -636,6 +650,19 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         dropZonePanel.destroy();
         // me.suspendLayout = false;
         // me.doLayout();
+    },
+
+    removeAutoRemovableDropZones: function() {
+        var me = this;
+        me.suspendLayout = true;
+        Ext.each(me.query('websitebuilderdropzone'), function(dropZone) {
+            if (dropZone.autoRemovableDropZone) {
+                // remove the removable drop zones
+                dropZone.destroy();
+            }
+        });
+        me.suspendLayout = false;
+        me.doLayout();
     },
 
     addFieldDropZones: function() {

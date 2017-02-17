@@ -177,7 +177,7 @@
 .dropzone-empty{
   border: dashed 2px #CCC;
   height: 150px !important;
-  margin: 5px;    
+  margin: 5px;
 }
 
 .website-builder-reorder-setting{
@@ -224,7 +224,7 @@
 
 .website-builder-dropzone {
     background: #f5f5f5;
-    margin: 10px 5px;
+    margin: 5px 2px;
     text-align: center;
     font-size: 25px;
     padding-top: 50px;
