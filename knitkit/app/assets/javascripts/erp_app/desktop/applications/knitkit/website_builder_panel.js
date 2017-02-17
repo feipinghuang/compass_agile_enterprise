@@ -206,8 +206,14 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getDragData: function(e) {
+
+                    Ext.each(me.el.query('.iframe-cover'), function(el) {
+                        Ext.get(el).addCls('move');
+                    });
+
                     var ele = e.getTarget('.icon-move'),
                         targetId = null;
+
                     if (ele) {
                         targetId = ele.getAttribute('panelId');
                     }
@@ -233,6 +239,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 },
 
                 getRepairXY: function() {
+                    Ext.each(me.el.query('.iframe-cover'), function(el) {
+                        Ext.get(el).removeCls('move');
+                    });
+
                     return this.dragData.repairXY;
                 }
             });
@@ -294,6 +304,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 // TODO: Could not able to drop component, should we display an error?
                             }
                         });
+
+                        Ext.each(me.el.query('.iframe-cover'), function(el) {
+                            Ext.get(el).removeCls('move');
+                        });
                     }
                 },
 
@@ -329,7 +343,16 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             thumbnail: thumbnail
         });
 
-        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting"  id="componentSetting"><div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
+        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;">',
+            '<div class="website-builder-reorder-setting" id="componentSetting">',
+            '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
+            '<div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div>',
+            '</div>',
+            '<div class="iframe-container">',
+            '<div class="iframe-cover"></div>',
+            '<iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe>',
+            '</div>',
+            '</div>').apply({
             htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId,
             panelId: dropPanel.id
         }));
@@ -477,10 +500,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     buttonLabels: 'fontawesome',
                     toolbar: {
                         buttons: websiteBuilderEditConfig.mediumButtons
-                    },
-                    extensions: {
-                        'highlighter': HighlighterButton
                     }
+                    //extensions: {
+                    //    'highlighter': HighlighterButton
+                    // }
 
                 });
         }
@@ -635,7 +658,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 itemId: 'header',
                 constrain: true,
                 flex: 1,
-                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_header') + '" width="100%" height="100%">',
+                cls: 'iframe-container',
+                html: '<div class="iframe-cover"></div><iframe src="' + me.templatePreviewURL('/shared/knitkit/_header') + '" width="100%" height="100%">',
                 listeners: {
                     render: function(comp) {
                         Ext.get(comp.el.query('iframe')).on('load', function() {
@@ -658,7 +682,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 xtype: 'component',
                 constrain: true,
                 flex: 1,
-                html: '<iframe src="' + me.templatePreviewURL('/shared/knitkit/_footer') + '" width="100%" height="100%">',
+                cls: 'iframe-container',
+                html: '<div class="iframe-cover"></div><iframe src="' + me.templatePreviewURL('/shared/knitkit/_footer') + '" width="100%" height="100%">',
                 listeners: {
                     render: function(comp) {
                         Ext.get(comp.el.query('iframe')).on('load', function() {
@@ -669,9 +694,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     }
                 }
             }]);
-
         }
-
     },
 
     templatePreviewURL: function(templateType) {
