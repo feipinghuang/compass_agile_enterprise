@@ -252,8 +252,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             isForTheme: true,
             themeLayoutConfig: {
                 themeId: node.get('id'),
-                isHeaderPresent: node.get('isHeaderPresent'),
-                isFooterPresent: node.get('isFooterPresent')
+                headerComponentIid: node.get('headerComponentIid'),
+                headerComponentHeight: node.get('headerComponentHeight'),
+                footerComponentIid: node.get('footerComponentIid'),
+                footerComponentHeight: node.get('footerComponentHeight')
             },
             title: 'Theme Builder',
             save: function(comp) {
@@ -282,18 +284,33 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',
                     method: 'PUT',
                     params: {
-                        header: headerHTML,
-                        footer: footerHTML
+                        header: Ext.encode({
+                            source: headerHTML,
+                            component_iid: comp.themeLayoutConfig.headerComponentIid,
+                            component_height: comp.themeLayoutConfig.headerComponentHeight
+                        }),
+                        footer: Ext.encode({
+                            source: footerHTML,
+                            component_iid: comp.themeLayoutConfig.footerComponentIid,
+                            component_height: comp.themeLayoutConfig.footerComponentHeight
+                        })
                     },
                     success: function(response) {
                         mask.hide();
-                        // update comp config
-                        comp.themeLayoutConfig.isHeaderPresent = response.result.isHeaderPresent;
-                        comp.themeLayoutConfig.isFooterPresent = response.result.isFooterPresent;
+                        // update website builder config
+                        comp.themeLayoutConfig.headerComponentIid = response.result.header.component_iid;
+                        comp.themeLayoutConfig.headerComponentHeight = response.result.header.component_height;
+                        
+                        comp.themeLayoutConfig.footerComponentIid = response.result.footer.component_iid;
+                        comp.themeLayoutConfig.footerComponentHeight = response.result.footer.component_height;
 
                         // update node
-                        node.set('isHeaderPresent', response.result.isHeaderPresent);
-                        node.set('isFooterPresent', response.result.isFooterPresent);
+                        node.set('headerComponentIid', response.result.header.component_iid);
+                        node.set('headerComponentHeight', response.result.header.component_height);
+
+                        node.set('footerComponentIid', response.result.footer.component_iid);
+                        node.set('footerComponentheight', response.result.footer.component_height);
+
                         node.commit();
                     }
                 });
@@ -364,8 +381,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 'text',
                 'id',
                 'url',
-                'isHeaderPresent',
-                'isFooterPresent',
+                'headerComponentIid',
+                'headerComponentHeight',
+                'footerComponentIid',
+                'footerComponentHeight',
                 'leaf',
                 'handleContextMenu',
                 'contextMenuDisabled'

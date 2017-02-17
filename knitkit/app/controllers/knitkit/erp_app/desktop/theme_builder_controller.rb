@@ -16,20 +16,28 @@ module Knitkit
         end
 
         def update_layout
-          theme = Theme.find(params[:id])
-          header_html = params[:header]
-          footer_html = params[:footer]
-          theme.update_base_layout({
-                                     header_html: header_html,
-                                     footer_html: footer_html
-                                   })
-          render json: {
-                   success: true,
-                   result: {
-                     isHeaderPresent: theme.is_header_present?,
-                     isFooterPresent: theme.is_footer_present?
+          begin
+            theme = Theme.find(params[:id])
+            header = JSON.parse(params[:header])
+            footer = JSON.parse(params[:footer])
+            
+            result = theme.update_base_layout({
+                                                header: header,
+                                                footer: footer
+                                              })
+            render json: {
+                     success: true,
+                     result: {
+                       header: result[:header],
+                       footer: result[:footer]
+                     }
                    }
-                 }
+          rescue Exception => ex
+            Rails.logger.error ex.message
+            Rails.logger.error ex.backtrace.join("\n")
+
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+          end
         end
 
         def render_theme_component

@@ -274,6 +274,19 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 if (responseObj.success) {
                                     var responseData = responseObj.data;
 
+                                    if(me.isThemeMode()) {
+                                        if(Ext.String.startsWith(responseData.iid, 'header')) {
+                                            me.themeLayoutConfig.headerComponentIid = responseData.iid;
+                                            me.themeLayoutConfig.headerComponentHeight = responseData.height;
+                                        }
+                                        
+                                        if(Ext.String.startsWith(responseData.iid, 'footer')) {
+                                            me.themeLayoutConfig.footerComponentIid = responseData.iid;
+                                            me.themeLayoutConfig.footerComponentHeight = responseData.height;
+                                        }
+
+
+                                    }
                                     me.replaceDropPanelWithContent(dropPanel, responseData.iid, responseData.height);
 
                                 }
@@ -610,7 +623,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var layoutCompConfig = null;
         
         // if is header or footer is already present render it as a component else render websitebuilderdropzone
-        if(me.themeLayoutConfig['is' + templateType.capitalize() + 'Present']) {
+        if(me.themeLayoutConfig[templateType + 'ComponentIid']) {
             layoutCompConfig = {
                 xtype: 'component',
                 html: new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;" id="{themeId}-move-{tempType}"></div><div class="icon-remove pull-left" id="{themeId}-remove-{tempType}"></div></div><iframe id="{themeId}-frame-{tempType}" src="' + me.templatePreviewURL(templatePath) + '" width="100%" height="100%" frameborder="0">').apply({
@@ -619,6 +632,11 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 }),
                 listeners: {
                     render: function(comp) {
+                        
+                        Ext.apply(comp, {
+                            height: me.themeLayoutConfig[templateType + 'ComponentHeight'],
+                            componentId: me.themeLayoutConfig[templateType + 'ComponentIid']
+                        });
                         Ext.get(me.themeLayoutConfig.themeId + '-remove-'+ templateType).on('click', function() {
                             me.insert(me.items.indexOf(comp), {
                                 xtype: 'websitebuilderdropzone',

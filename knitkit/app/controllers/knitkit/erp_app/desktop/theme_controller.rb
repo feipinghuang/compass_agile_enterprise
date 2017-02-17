@@ -345,14 +345,20 @@ module Knitkit
             :isActive => (theme.active == 1), :iconCls => 'icon-content',
             :isTheme => true,
             :id => theme.id,
-            :isHeaderPresent => theme.is_header_present?,
-            :isFooterPresent => theme.is_footer_present?,
             :children => []
           }
           if theme.active == 1
             theme_hash[:iconCls] = 'icon-add'
           else
             theme_hash[:iconCls] = 'icon-delete'
+          end
+
+          ['header', 'footer'].each do |comp_type|
+            layout_comp = theme.get_layout_component(comp_type)
+            if layout_comp.present?
+              theme_hash["#{comp_type}ComponentIid".to_sym] = layout_comp['component_iid']
+              theme_hash["#{comp_type}ComponentHeight".to_sym] = layout_comp['component_height']
+            end
           end
 
           ['stylesheets', 'javascripts', 'images', 'templates', 'widgets', 'fonts'].each do |resource_folder|
