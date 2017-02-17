@@ -280,38 +280,51 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
                 }
 
+                var params = {};
+
+                if(!Compass.ErpApp.Utility.isBlank(headerHTML)) {
+                    params.header = Ext.encode({
+                        source: headerHTML,
+                        component_iid: comp.themeLayoutConfig.headerComponentIid,
+                        component_height: comp.themeLayoutConfig.headerComponentHeight
+                    });
+                }
+
+                if(!Compass.ErpApp.Utility.isBlank(footerHTML)) {
+                    params.footer = Ext.encode({
+                        source: footerHTML,
+                        component_iid: comp.themeLayoutConfig.footerComponentIid,
+                        component_height: comp.themeLayoutConfig.footerComponentHeight
+                    });
+                }
+                
                 Compass.ErpApp.Utility.ajaxRequest({
                     url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',
                     method: 'PUT',
-                    params: {
-                        header: Ext.encode({
-                            source: headerHTML,
-                            component_iid: comp.themeLayoutConfig.headerComponentIid,
-                            component_height: comp.themeLayoutConfig.headerComponentHeight
-                        }),
-                        footer: Ext.encode({
-                            source: footerHTML,
-                            component_iid: comp.themeLayoutConfig.footerComponentIid,
-                            component_height: comp.themeLayoutConfig.footerComponentHeight
-                        })
-                    },
+                    params: params,
                     success: function(response) {
                         mask.hide();
                         // update website builder config
-                        comp.themeLayoutConfig.headerComponentIid = response.result.header.component_iid;
-                        comp.themeLayoutConfig.headerComponentHeight = response.result.header.component_height;
+                        if(response.result.header) {
+                            comp.themeLayoutConfig.headerComponentIid = response.result.header.component_iid;
+                            comp.themeLayoutConfig.headerComponentHeight = response.result.header.component_height;
+
+                            node.set('headerComponentIid', response.result.header.component_iid);
+                            node.set('headerComponentHeight', response.result.header.component_height);
+                            node.commit();
+
+                            
+                        }
+
+                        if(response.result.footer) {
+                            comp.themeLayoutConfig.footerComponentIid = response.result.footer.component_iid;
+                            comp.themeLayoutConfig.footerComponentHeight = response.result.footer.component_height;
+                            
+                            node.set('footerComponentIid', response.result.footer.component_iid);
+                            node.set('footerComponentheight', response.result.footer.component_height);
+                            node.commit();
+                        }
                         
-                        comp.themeLayoutConfig.footerComponentIid = response.result.footer.component_iid;
-                        comp.themeLayoutConfig.footerComponentHeight = response.result.footer.component_height;
-
-                        // update node
-                        node.set('headerComponentIid', response.result.header.component_iid);
-                        node.set('headerComponentHeight', response.result.header.component_height);
-
-                        node.set('footerComponentIid', response.result.footer.component_iid);
-                        node.set('footerComponentheight', response.result.footer.component_height);
-
-                        node.commit();
                     }
                 });
             }

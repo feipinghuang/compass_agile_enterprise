@@ -18,8 +18,8 @@ module Knitkit
         def update_layout
           begin
             theme = Theme.find(params[:id])
-            header = JSON.parse(params[:header])
-            footer = JSON.parse(params[:footer])
+            header = JSON.parse(params[:header]) rescue {}
+            footer = JSON.parse(params[:footer]) rescue {}
             
             result = theme.update_base_layout({
                                                 header: header,
