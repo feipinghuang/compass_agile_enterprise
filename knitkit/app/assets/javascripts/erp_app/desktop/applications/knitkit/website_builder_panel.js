@@ -329,9 +329,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             cls: "websitebuilder-component-panel"
         });
 
-        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{panelId}-remove" itemId="{panelId}"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{panelId}-frame" src="{htmlSrc}"></iframe></div>').apply({
-            htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId,
-            panelId: dropPanel.id
+        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{componentId}-remove"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{componentId}-frame" src="{htmlSrc}"></iframe></div>').apply({
+            componentId: componentIid,
+            htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId
         }));
 
         Ext.apply(dropPanel, {
@@ -339,7 +339,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             componentId: componentIid
         });
 
-        Ext.get(dropPanel.id + "-remove").on("click", function() {
+        Ext.get(componentIid + "-remove").on("click", function() {
             me.insert(me.items.indexOf(dropPanel), {
                 xtype: 'websitebuilderdropzone',
                 flex: 1
@@ -349,7 +349,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         });
 
         // Assigning click event inside iFrame content
-        var iframe = Ext.get(dropPanel.id + "-frame");
+        var iframe = Ext.get(componentIid + "-frame");
 
         iframe.on('load', function() {
             var iframePanel = this,
@@ -623,21 +623,25 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var layoutCompConfig = null;
         
         // if is header or footer is already present render it as a component else render websitebuilderdropzone
-        if(me.themeLayoutConfig[templateType + 'ComponentIid']) {
+        var componentIid = me.themeLayoutConfig[templateType + 'ComponentIid'],
+            componentHeight = me.themeLayoutConfig[templateType + 'ComponentHeight'];
+        
+        if(componentIid) {
             layoutCompConfig = {
                 xtype: 'component',
-                html: new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;" id="{themeId}-move-{tempType}"></div><div class="icon-remove pull-left" id="{themeId}-remove-{tempType}"></div></div><iframe id="{themeId}-frame-{tempType}" src="' + me.templatePreviewURL(templatePath) + '" width="100%" height="100%" frameborder="0">').apply({
-                themeId: me.themeLayoutConfig.themeId,
-                tempType: templateType
+                componentId: componentIid,
+                cls: 'websitebuilder-component-panel',
+                html: new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;" id="{compId}-move"></div><div class="icon-remove pull-left" id="{compId}-remove"></div></div><iframe id="{compId}-frame" src="' + me.templatePreviewURL(templatePath) + '" width="100%" height="100%" frameborder="0">').apply({
+                    compId: componentIid
                 }),
                 listeners: {
                     render: function(comp) {
                         
                         Ext.apply(comp, {
-                            height: me.themeLayoutConfig[templateType + 'ComponentHeight'],
-                            componentId: me.themeLayoutConfig[templateType + 'ComponentIid']
+                            height: componentHeight,
+                            componentId: componentIid
                         });
-                        Ext.get(me.themeLayoutConfig.themeId + '-remove-'+ templateType).on('click', function() {
+                        Ext.get(componentIid + '-remove').on('click', function() {
                             me.insert(me.items.indexOf(comp), {
                                 xtype: 'websitebuilderdropzone',
                                 itemId: 'layout' + templateType.capitalize(),
@@ -646,7 +650,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             comp.destroy();
                         });
                         
-                        var iframe = Ext.get(me.themeLayoutConfig.themeId + "-frame-" + templateType);
+                        var iframe = Ext.get(componentIid + "-frame");
                         
                         iframe.on('load', function() {
                             var iframePanel = this,
@@ -702,6 +706,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var url = "";
 
         url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_path=' + templatePath;
+        // append a random param to prevent the browser from caching its contents when this is requested from an iframe
+        url = url + '&cache_buster_token=' + Math.round(Math.random() * 10000000);
         return url;
     },
 

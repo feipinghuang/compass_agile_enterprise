@@ -597,7 +597,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
                     components = [];
                 Ext.Array.each(componentPanels, function(component, index) {
-                    iframe = component.el.query("#" + component.id + "-frame").first();
+                    iframe = component.el.query("#" + component.componentId + "-frame").first();
                     page = iframe.contentDocument.documentElement.getElementsByClassName('page')[0];
                     components.push({
                         position: index,
