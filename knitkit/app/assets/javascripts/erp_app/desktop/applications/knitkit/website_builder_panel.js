@@ -358,13 +358,13 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                     me.replaceDropPanelWithContent(dropPanel, responseData.iid, responseData.height, responseData.thumbnail);
 
                                     me.removeContentFromDropPanel(dropPanel, draggedPanel);
-                                    if(me.isThemeMode()) {
-                                        if(Ext.String.startsWith(responseData.iid, 'header')) {
+                                    if (me.isThemeMode()) {
+                                        if (Ext.String.startsWith(responseData.iid, 'header')) {
                                             me.themeLayoutConfig.headerComponentIid = responseData.iid;
                                             me.themeLayoutConfig.headerComponentHeight = responseData.height;
                                         }
-                                        
-                                        if(Ext.String.startsWith(responseData.iid, 'footer')) {
+
+                                        if (Ext.String.startsWith(responseData.iid, 'footer')) {
                                             me.themeLayoutConfig.footerComponentIid = responseData.iid;
                                             me.themeLayoutConfig.footerComponentHeight = responseData.height;
                                         }
@@ -418,9 +418,19 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             thumbnail: thumbnail
         });
 
-        dropPanel.update(new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;"></div><div class="icon-remove pull-left" id="{componentId}-remove"></div></div><iframe height="100%" width="100%" frameBorder="0" id="{componentId}-frame" src="{htmlSrc}"></iframe></div>').apply({
-            componentId: componentIid,
-            htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId
+        dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;" panelId="{panelId}" >',
+            '<div class="website-builder-reorder-setting" id="componentSetting">',
+            '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
+            '<div class="icon-remove pull-left" id="{componentId}-remove" itemId="{panelId}"></div>',
+            '</div>',
+            '<div class="iframe-container">',
+            '<div class="iframe-cover"></div>',
+            '<iframe height="100%" width="100%" frameBorder="0" id="{componentId}-frame" src="{htmlSrc}"></iframe>',
+            '</div>',
+            '</div>').apply({
+            htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId,
+            panelId: dropPanel.id,
+            componentId: componentIid
         }));
 
         Ext.apply(dropPanel, {
@@ -429,12 +439,15 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         });
 
         Ext.get(componentIid + "-remove").on("click", function() {
-            me.insert(me.items.indexOf(dropPanel), {
-                xtype: 'websitebuilderdropzone',
-                flex: 1
-            });
-            dropPanel.destroy();
-            
+            parentContainer = dropPanel.up('container');
+            if (dropPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
+                parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
+                    xtype: 'websitebuilderdropzone',
+                    flex: 1
+                });
+
+                dropPanel.destroy();
+            }
         });
 
         // Assigning click event inside iFrame content
@@ -693,8 +706,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         if (me.isThemeMode()) {
             me.add(
                 [
-                    me.buildLayoutConfig('header'),
-                    {
+                    me.buildLayoutConfig('header'), {
                         xtype: 'component',
                         flex: 1,
                         cls: '',
@@ -707,16 +719,22 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             'margin': '25px'
                         },
                         html: '<div>Contents</div>'
-                        
+
                     },
                     me.buildLayoutConfig('footer')
                 ]
             );
-            
+
         } else {
             me.add({
-                xtype: 'websitebuilderdropzone',
-                flex: 1
+                xtype: 'container',
+                cls: 'dropzone-container',
+                layout: 'hbox',
+                items: [{
+                    xtype: 'websitebuilderdropzone',
+                    flex: 1
+
+                }]
             });
 
         }
@@ -726,22 +744,22 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     isThemeMode() {
         return this.isForTheme && !Compass.ErpApp.Utility.isBlank(this.themeLayoutConfig);
     },
-    
+
     buildLayoutConfig: function(templateType) {
         var me = this;
-        if(!me.isThemeMode()) {
-            throw("can't call this function for anything other than a theme builder");
+        if (!me.isThemeMode()) {
+            throw ("can't call this function for anything other than a theme builder");
         }
         // templateType can be header or footer for now and we assume that its in a shared partial
         // in the themes view path
         var templatePath = '/shared/knitkit/_' + templateType;
         var layoutCompConfig = null;
-        
+
         // if is header or footer is already present render it as a component else render websitebuilderdropzone
         var componentIid = me.themeLayoutConfig[templateType + 'ComponentIid'],
             componentHeight = me.themeLayoutConfig[templateType + 'ComponentHeight'];
-        
-        if(componentIid) {
+
+        if (componentIid) {
             layoutCompConfig = {
                 xtype: 'component',
                 componentId: componentIid,
@@ -751,56 +769,56 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 }),
                 listeners: {
                     render: function(comp) {
-                        
-                        Ext.apply(comp, {
-                            height: componentHeight,
-                            componentId: componentIid
-                        });
-                        Ext.get(componentIid + '-remove').on('click', function() {
-                            me.insert(me.items.indexOf(comp), {
-                                xtype: 'websitebuilderdropzone',
-                                itemId: 'layout' + templateType.capitalize(),
-                                flex: 1
+
+                            Ext.apply(comp, {
+                                height: componentHeight,
+                                componentId: componentIid
                             });
-                            comp.destroy();
-                        });
-                        
-                        var iframe = Ext.get(componentIid + "-frame");
-                        
-                        iframe.on('load', function() {
-                            var iframePanel = this,
-                                editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
-                                websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
-                            Ext.Array.each(editableElements, function(editableElement) {
-                                editableElement = Ext.get(editableElement);
-                                
-                                editableElement.on('mouseover', function(event) {
-                                    if (!editableElement.dom.isContentEditable) {
-                                        me.highlightElement(editableElement.dom);
-                                    }
+                            Ext.get(componentIid + '-remove').on('click', function() {
+                                me.insert(me.items.indexOf(comp), {
+                                    xtype: 'websitebuilderdropzone',
+                                    itemId: 'layout' + templateType.capitalize(),
+                                    flex: 1
                                 });
-                                editableElement.on('mouseout', function(event) {
-                                    if (!editableElement.dom.isContentEditable) {
-                                        me.deHighlightElement(editableElement.dom);
-                                    }
-                                });
-                                editableElement.on('click', function(event) {
-                                    event.preventDefault();
-                                    
-                                    if (!editableElement.dom.isContentEditable) {
-                                        var contentEditableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
-                                        Ext.Array.each(contentEditableElements, function(element) {
-                                            me.removeEditable(element);
-                                            me.deHighlightElement(element);
-                                        });
-                                    }
-                                    
-                                    me.buildPropertiesEditForm(this.dom);
-                                });
+                                comp.destroy();
                             });
-                            
-                        }); // iframe load
-                    } // render
+
+                            var iframe = Ext.get(componentIid + "-frame");
+
+                            iframe.on('load', function() {
+                                var iframePanel = this,
+                                    editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
+                                    websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+                                Ext.Array.each(editableElements, function(editableElement) {
+                                    editableElement = Ext.get(editableElement);
+
+                                    editableElement.on('mouseover', function(event) {
+                                        if (!editableElement.dom.isContentEditable) {
+                                            me.highlightElement(editableElement.dom);
+                                        }
+                                    });
+                                    editableElement.on('mouseout', function(event) {
+                                        if (!editableElement.dom.isContentEditable) {
+                                            me.deHighlightElement(editableElement.dom);
+                                        }
+                                    });
+                                    editableElement.on('click', function(event) {
+                                        event.preventDefault();
+
+                                        if (!editableElement.dom.isContentEditable) {
+                                            var contentEditableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
+                                            Ext.Array.each(contentEditableElements, function(element) {
+                                                me.removeEditable(element);
+                                                me.deHighlightElement(element);
+                                            });
+                                        }
+
+                                        me.buildPropertiesEditForm(this.dom);
+                                    });
+                                });
+
+                            }); // iframe load
+                        } // render
                 } // listeners
             }; // comp
         } else {
