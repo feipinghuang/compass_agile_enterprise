@@ -353,6 +353,14 @@ module Knitkit
             theme_hash[:iconCls] = 'icon-delete'
           end
 
+          ['header', 'footer'].each do |comp_type|
+            layout_comp = theme.get_layout_component(comp_type)
+            if layout_comp.present?
+              theme_hash["#{comp_type}ComponentIid".to_sym] = layout_comp['component_iid']
+              theme_hash["#{comp_type}ComponentHeight".to_sym] = layout_comp['component_height']
+            end
+          end
+
           ['stylesheets', 'javascripts', 'images', 'templates', 'widgets', 'fonts'].each do |resource_folder|
             theme_hash[:children] << {
               :themeId => theme.id,

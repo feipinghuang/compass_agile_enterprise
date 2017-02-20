@@ -249,11 +249,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             xtype: 'websitebuilderpanel',
             itemId: 'themeBuilder' + node.get('id'),
             closable: true,
-            theme: {
-                id: node.get('id'),
-                url: node.get('url')
-            },
             isForTheme: true,
+            themeLayoutConfig: {
+                themeId: node.get('id'),
+                headerComponentIid: node.get('headerComponentIid'),
+                headerComponentHeight: node.get('headerComponentHeight'),
+                footerComponentIid: node.get('footerComponentIid'),
+                footerComponentHeight: node.get('footerComponentHeight')
+            },
             title: 'Theme Builder',
             save: function(comp) {
                 var mask = new Ext.LoadMask(me, {
@@ -261,24 +264,67 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 });
                 mask.show();
 
-                var components = comp.query("[cls=websitebuilder-component-panel]"),
-                    headerComp = components.first(),
-                    footerComp = components.last();
+                var headerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='header']").first(),
+                    footerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='footer']").first();
+                
+                var headerHTML = null,
+                    footerHTML = null;
+                
+                if(headerComp) {
+                    var headerFrame = headerComp.getEl().query("#" + headerComp.componentId + "-frame").first();
+                    headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
+                }
 
-                var headerFrame = headerComp.getEl().query("#" + headerComp.id + "-frame").first(),
-                    footerFrame = footerComp.getEl().query("#" + footerComp.id + "-frame").first();
-                var headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
+                if(footerComp) {
+                    var footerFrame = footerComp.getEl().query("#" + footerComp.componentId + "-frame").first();
                     footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
+                }
 
+                var params = {};
+
+                if(!Compass.ErpApp.Utility.isBlank(headerHTML)) {
+                    params.header = Ext.encode({
+                        source: headerHTML,
+                        component_iid: comp.themeLayoutConfig.headerComponentIid,
+                        component_height: comp.themeLayoutConfig.headerComponentHeight
+                    });
+                }
+
+                if(!Compass.ErpApp.Utility.isBlank(footerHTML)) {
+                    params.footer = Ext.encode({
+                        source: footerHTML,
+                        component_iid: comp.themeLayoutConfig.footerComponentIid,
+                        component_height: comp.themeLayoutConfig.footerComponentHeight
+                    });
+                }
+                
                 Compass.ErpApp.Utility.ajaxRequest({
                     url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',
                     method: 'PUT',
-                    params: {
-                        header: headerHTML,
-                        footer: footerHTML
-                    },
+                    params: params,
                     success: function(response) {
                         mask.hide();
+                        // update website builder config
+                        if(response.result.header) {
+                            comp.themeLayoutConfig.headerComponentIid = response.result.header.component_iid;
+                            comp.themeLayoutConfig.headerComponentHeight = response.result.header.component_height;
+
+                            node.set('headerComponentIid', response.result.header.component_iid);
+                            node.set('headerComponentHeight', response.result.header.component_height);
+                            node.commit();
+
+                            
+                        }
+
+                        if(response.result.footer) {
+                            comp.themeLayoutConfig.footerComponentIid = response.result.footer.component_iid;
+                            comp.themeLayoutConfig.footerComponentHeight = response.result.footer.component_height;
+                            
+                            node.set('footerComponentIid', response.result.footer.component_iid);
+                            node.set('footerComponentheight', response.result.footer.component_height);
+                            node.commit();
+                        }
+                        
                     }
                 });
             }
@@ -348,6 +394,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 'text',
                 'id',
                 'url',
+                'headerComponentIid',
+                'headerComponentHeight',
+                'footerComponentIid',
+                'footerComponentHeight',
                 'leaf',
                 'handleContextMenu',
                 'contextMenuDisabled'
