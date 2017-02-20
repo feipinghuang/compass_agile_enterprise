@@ -741,7 +741,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
     },
 
-    isThemeMode() {
+    isThemeMode: function() {
         return this.isForTheme && !Compass.ErpApp.Utility.isBlank(this.themeLayoutConfig);
     },
 
