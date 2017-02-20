@@ -16,6 +16,25 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     theme: null,
     isForTheme: false,
     items: [],
+
+    beforeLayout: function() {
+        var me = this;
+
+        me.callParent(arguments);
+        if (me.getEl().dom) {
+            me.savedScrollPos = me.body.dom.scrollTop;
+        }
+    },
+
+    afterLayout: function() {
+        var me = this;
+
+        me.callParent(arguments);
+        if (me.savedScrollPos) {
+            me.body.scrollTo('top', me.savedScrollPos);
+        }
+    },
+
     initComponent: function() {
         var me = this;
 
@@ -286,8 +305,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             });
                             websiteBuilderPanel.doLayout();
                         }
-
-
                     }
 
                     if (this.validDrop(target, dragData)) {
