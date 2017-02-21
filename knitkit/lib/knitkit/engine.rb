@@ -32,9 +32,10 @@ module Knitkit
 
       Rails.application.config.assets.paths << root.join("app", "assets", "images")
       Rails.application.config.assets.precompile += %w{ knitkit-web.css knitkit/custom.css knitkit-web.js knitkit/theme.js }
+      Rails.application.config.assets.precompile += %w{ knitkit/website_builder/medium-editor.min.js knitkit/website_builder/medium-bootstrap.js knitkit/website_builder/medium_editor_theme/default.min.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/knitkit/app.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/knitkit/app.css }
-
+      
       Rails.application.config.assets.precompile += %w{ erp_app/shared/knitkit_shared.css }
       ErpApp::Config.shared_css_assets += %w{ erp_app/shared/knitkit_shared.css }
     end
