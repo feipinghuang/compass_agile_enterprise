@@ -357,7 +357,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                                     me.replaceDropPanelWithContent(dropPanel, responseData.iid, responseData.height, responseData.thumbnail);
 
-                                    me.removeContentFromDropPanel(dropPanel, draggedPanel);
+                                    me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
                                     if (me.isThemeMode()) {
                                         if (Ext.String.startsWith(responseData.iid, 'header')) {
                                             me.themeLayoutConfig.headerComponentIid = responseData.iid;
@@ -501,7 +501,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         containerPanel.updateLayout();
     },
 
-    removeContentFromDropPanel: function(dropPanel, draggedPanel) {
+    removeContentFromDraggedPanel: function(dropPanel, draggedPanel) {
         var me = this,
             parentContainer = draggedPanel.up('container');
         if (draggedPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
