@@ -31,7 +31,7 @@ module Knitkit
             def current_themes
               # the lambda broke in rails 3.2, changing this to an instance variable
               # if website_builder options is true, add all themes irrespective of their active status
-              if Thread.current[:options][:website_builder]
+              if Thread.current[:options].is_a?(Hash) and Thread.current[:options][:website_builder]
                 @current_themes ||= self.website.themes.compact rescue []
               else
                 @current_themes ||= self.website.themes.collect{|t| t if t.active == 1}.compact rescue []
