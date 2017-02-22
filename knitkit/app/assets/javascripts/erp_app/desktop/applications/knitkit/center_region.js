@@ -556,7 +556,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         var me = this;
         me.setWindowStatus('Saving...');
         Ext.Ajax.request({
-            url: '/api/v1/website_builder/save_website.json',
+            url: '/knitkit/erp_app/desktop/website_builder/save_website.json',
             method: 'POST',
             params: {
                 id: websiteId,

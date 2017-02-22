@@ -201,7 +201,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                             westRegion = Ext.ComponentQuery.query('#knitkitWestRegion').first(),
                             themesTreePanel = westRegion.down('#themesTreePanel');
 
-
+                        
                         var loading = new Ext.LoadMask(window, {
                             msg: 'Please wait...'
                         });
@@ -259,11 +259,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             },
             title: 'Theme Builder',
             save: function(comp) {
-                var mask = new Ext.LoadMask(me, {
-                    msg: 'Please wait...'
-                });
-                mask.show();
-
+                centerPanel.setWindowStatus("Saving...");
                 var headerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='header']").first(),
                     footerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='footer']").first();
                 
@@ -303,7 +299,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     method: 'PUT',
                     params: params,
                     success: function(response) {
-                        mask.hide();
+                        centerPanel.clearWindowStatus();
                         // update website builder config
                         if(response.result.header) {
                             comp.themeLayoutConfig.headerComponentIid = response.result.header.component_iid;

@@ -63,7 +63,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
 
         Ext.Ajax.request({
             method: "GET",
-            url: '/api/v1/website_builder/components.json',
+            url: '/knitkit/erp_app/desktop/website_builder/components.json',
             success: function(response) {
                 var responseObj = Ext.decode(response.responseText);
 

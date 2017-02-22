@@ -19,18 +19,6 @@ Rails.application.routes.draw do
     namespace :v1 do
 
       resources :websites, defaults: { :format => 'json' }
-
-      resources :website_builder, defaults: { :format => 'json' } do
-        collection do
-          get :components
-          get :get_component
-          get :render_component
-          post :save_website
-        end
-        member do
-          get :active_website_theme
-        end
-      end
     end
   end
 
@@ -65,6 +53,18 @@ Knitkit::Engine.routes.draw do
         end
       end
 
+      resources :website_builder, defaults: { :format => 'json' } do
+        collection do
+          get :components
+          get :get_component
+          get :render_component
+          post :save_website
+        end
+        member do
+          get :active_website_theme
+        end
+      end
+      
       resources :theme_builder, only: [] do
         member do
           put :update_layout

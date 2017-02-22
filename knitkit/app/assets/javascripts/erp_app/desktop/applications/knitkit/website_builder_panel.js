@@ -345,7 +345,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
                         Ext.Ajax.request({
                             method: "GET",
-                            url: '/api/v1/website_builder/get_component.json',
+                            url: '/knitkit/erp_app/desktop/website_builder/get_component.json',
                             params: {
                                 id: data.componentId
                             },
@@ -428,7 +428,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             '<iframe height="100%" width="100%" frameBorder="0" id="{componentId}-frame" src="{htmlSrc}"></iframe>',
             '</div>',
             '</div>').apply({
-            htmlSrc: '/api/v1/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId,
+                htmlSrc: '/knitkit/erp_app/desktop/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId,
             panelId: dropPanel.id,
             componentId: componentIid
         }));
@@ -851,7 +851,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         Ext.Ajax.request({
             method: "GET",
-            url: '/api/v1/website_builder/' + websiteId + '/active_website_theme.json',
+            url: '/knitkit/erp_app/desktop/website_builder/' + websiteId + '/active_website_theme.json',
             async: false,
             success: function(response) {
                 var responseObj = Ext.decode(response.responseText);
