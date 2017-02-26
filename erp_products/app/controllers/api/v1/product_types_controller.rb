@@ -19,6 +19,10 @@ module Api
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
         context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
 
+        if params[:query]
+          query_filter[:keyword] = params[:query].strip
+        end
+
         # hook method to apply any scopes passed via parameters to this api
         product_types = ProductType.apply_filters(query_filter)
 
