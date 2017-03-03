@@ -158,7 +158,9 @@ class OrderLineItem < ActiveRecord::Base
     if product_offer
       product_offer
     else
-      if product_instance
+      if inventory_entry
+        inventory_entry
+      elsif product_instance
         product_instance
       else
         product_type

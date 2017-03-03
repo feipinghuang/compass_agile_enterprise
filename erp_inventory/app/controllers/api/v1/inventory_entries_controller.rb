@@ -45,6 +45,25 @@ module Api
         render :json => {success: true, total_count: total_count, inventory_entries: inventory_entries.collect(&:to_data_hash)}
       end
 
+=begin
+
+  @api {get} /api/v1/inventory_entries/:id Index
+  @apiVersion 1.0.0
+  @apiName GetInventoryEntry
+  @apiGroup InventoryEntry
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} inventory_entry InventoryEntry record
+  @apiSuccess {Number} inventory_entry.id Id of InventoryEntry
+
+=end
+
+      def show
+        inventory_entry = InventoryEntry.find(params[:id])
+
+        render :json => {success: true, inventory_entry: inventory_entry.to_data_hash}
+      end
+
     end # InventoryEntriesController
   end # V1
 end # Api

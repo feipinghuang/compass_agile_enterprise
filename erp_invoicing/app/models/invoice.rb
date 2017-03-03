@@ -129,7 +129,7 @@ class Invoice < ActiveRecord::Base
 
           invoice_item.invoice = invoice
 
-          charged_item = line_item.product_instance || line_item.product_offer ||line_item.product_type
+          charged_item = line_item.product_instance || line_item.product_offer || line_item.product_type || line_item.inventory_entry
 
           invoice_item.item_description = charged_item.description
           invoice_item.quantity = line_item.quantity
