@@ -113,6 +113,45 @@ Ext.define('Compass.ErpApp.Shared.RowEditingOverride', {
 Ext.define('Compass.ErpApp.Shared.RowEditingPluginOverride', {
     override: 'Ext.grid.plugin.RowEditing',
 
+    initEditTriggers: function() {
+        var me = this,
+            view = me.view;
+
+
+        if (me.triggerEvent == 'cellfocus') {
+            me.mon(view, 'cellfocus', me.onCellFocus, me);
+        } else if (me.triggerEvent == 'rowfocus') {
+            me.mon(view, 'rowfocus', me.onRowFocus, me);
+        } else if (me.triggerEvent == 'celllongpress') {
+            me.mon(view, 'cellmousedown', function() {
+                _arguments = arguments;
+
+                // Set timeout
+                me.pressTimer = window.setTimeout(function() {
+                    me.onCellClick.apply(me, _arguments);
+                }, 1000);
+                return false;
+            }, me);
+
+            me.mon(view, 'cellmouseup', function() {
+                clearTimeout(me.pressTimer);
+            }, me);
+        } else {
+
+            if (view.getSelectionModel().isCellModel) {
+                view.onCellFocus = Ext.Function.bind(me.beforeViewCellFocus, me);
+            }
+
+            me.mon(view, me.triggerEvent || ('cell' + (me.clicksToEdit === 1 ? 'click' : 'dblclick')), me.onCellClick, me);
+        }
+
+        me.initAddRemoveHeaderEvents();
+
+        view.on('render', me.initKeyNavHeaderEvents, me, {
+            single: true
+        });
+    },
+
     startEdit: function(record, columnHeader) {
         var me = this,
             editor = me.getEditor(),
