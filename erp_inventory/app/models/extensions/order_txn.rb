@@ -70,6 +70,8 @@ OrderTxn.class_eval do
       line_item = OrderLineItem.new
       line_item.inventory_entry_description = inventory_entry.description
       line_item.inventory_entry = inventory_entry
+      line_item.product_type = inventory_entry.product_type
+      line_item.product_type_description = inventory_entry.product_type.description
       line_item.sold_price = inventory_entry.try(:get_default_price).try(:money).try(:amount) || 0
       line_item.quantity = 1
       line_item.save
