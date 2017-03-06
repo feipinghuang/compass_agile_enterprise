@@ -43,6 +43,8 @@ module Api
           product_types = product_types.offset(start).limit(limit)
         end
 
+        product_types = product_types.order('description')
+
         if context[:view]
           if context[:view] == 'mobile'
             render :json => {success: true,
