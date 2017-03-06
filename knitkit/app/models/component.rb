@@ -5,7 +5,7 @@ class Component < Content
   def self.to_data_hash
     all.inject({}) do | data, component |
       data[component.component_type] = [ ] unless data[component.component_type].present?
-      data[component.component_type] << component.to_data_hash
+      data[component.component_type] << component.to_data_hash.merge(componentType: component.component_type)
       data
     end
   end

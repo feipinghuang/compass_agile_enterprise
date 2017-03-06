@@ -2,7 +2,7 @@ module Knitkit
   module ErpApp
     module Desktop
       class WebsiteBuilderController < Knitkit::ErpApp::Desktop::AppController
-
+        
         before_filter :set_website, :only => [:save_website, :active_website_theme, :render_component, :render_layout_file]
 
         acts_as_themed_controller website_builder: true
@@ -22,6 +22,7 @@ module Knitkit
                    data: find_component(params[:id]).to_data_hash
                  }
         end
+
 
         def active_website_theme
           render json: {
@@ -86,6 +87,22 @@ module Knitkit
             render :json => {:success => false, :message => ex.message}
           end
         end
+        
+        def get_widget_source
+          theme = Theme.find(params[:theme_id])
+          website = Website.find(params[:website_id])
+          widget_component = Component.where(internal_identifier: params[:component_iid]).first
+          file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+          path = File.join(file_support.root, 'public', 'sites', website.internal_identifier, 'themes', theme.theme_id, 'templates', 'components', "#{widget_component.internal_identifier}.html.erb")
+          content = file_support.get_contents(path).first
+          render json: {
+                   success: true,
+                   widget: {
+                     html: content
+                   }
+                 }
+        end
+
 
         private
 

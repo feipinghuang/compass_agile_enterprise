@@ -225,7 +225,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 getDragData: function(e) {
-
                     Ext.each(me.el.query('.iframe-cover'), function(el) {
                         Ext.get(el).addCls('move');
                     });
@@ -496,9 +495,98 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         });
 
+        //setup widget drop listeners
+        //setupWidgetDragDrop(iframe);
+
         // containerPanel.removeFieldDropZone(target);
         // containerPanel.addFieldDropZones();
         containerPanel.updateLayout();
+    },
+
+    // setup widgets drag and drop
+    setupWidgetDragDrop: function(iframe) {
+        var me = this;
+        var clientFrameWindow = iframe.el.dom.contentWindow;
+        var currentElement, currentElementChangeFlag, elementRectangle, countdown, dragoverqueue_processtimer;
+        //Add CSS File to iFrame
+        var style = jQuery("<style data-reserved-styletag></style>").html(GetInsertionCSS());
+        jQuery(clientFrameWindow.document.head).append(style);
+        
+        var htmlBody = jQuery(clientFrameWindow.document).find('body,html');
+        htmlBody.find('*').andSelf().on('dragenter', function(event) {
+            event.stopPropagation();
+            currentElement = jQuery(event.target);
+            currentElementChangeFlag = true;
+            elementRectangle = event.target.getBoundingClientRect();
+            countdown = 1;
+            
+        }).on('dragover', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (countdown % 15 != 0 && currentElementChangeFlag == false) {
+                countdown = countdown + 1;
+                return;
+            }
+            event = event || window.event;
+            
+            var x = event.originalEvent.clientX;
+            var y = event.originalEvent.clientY;
+            countdown = countdown + 1;
+            currentElementChangeFlag = false;
+            var mousePosition = {
+                x: x,
+                y: y
+            };
+            DragDropFunctions.AddEntryToDragOverQueue(currentElement, elementRectangle, mousePosition);
+        });
+        
+        jQuery(clientFrameWindow.document).find('body,html').on('drop', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('Drop event');
+            var e;
+            if (event.isTrigger)
+                e = triggerEvent.originalEvent;
+            else
+                e = event.originalEvent;
+            try {
+                var textData = e.dataTransfer.getData('text');
+                
+                if (e.dataTransfer.getData('Uid')) {
+                    var elm = jQuery(clientFrameWindow.document).find('[drag-uuid=' + e.dataTransfer.getData('Uid') + ']');
+                    elm.remove();
+                }
+                
+                var insertionPoint = jQuery("#clientframe").contents().find(".drop-marker");
+                var checkDiv = jQuery(textData);
+                insertionPoint.after(checkDiv);
+                insertionPoint.remove();
+                
+                jQuery(clientFrameWindow.document).find('[draggable=true]').unbind('dragstart');
+                jQuery(clientFrameWindow.document).find('[draggable=true]').on('dragstart', function(event) {
+                    console.log("Drag Started");
+                    dragoverqueue_processtimer = setInterval(function() {
+                        DragDropFunctions.ProcessDragOverQueue();
+                    }, 100);
+                    var insertingHTML = jQuery(this).attr('data-insert-html');
+                    
+                    var uid = '';
+                    for (var i = 0; i < 32; i++)
+                        uid += Math.floor(Math.random() * 16).toString(16).toUpperCase();
+                    
+                    jQuery(this).attr('drag-uuid', uid);
+                    
+                    event.originalEvent.dataTransfer.setData("Text", jQuery("<div />").append(jQuery(this).clone()).html());
+                    event.originalEvent.dataTransfer.setData("Uid", uid);
+                    
+                    event.originalEvent.dataTransfer.setDragImage(dragImg, 10, 10);
+                });
+                
+            } catch (e) {
+                console.log(e);
+            }
+        });
+
     },
 
     removeContentFromDraggedPanel: function(dropPanel, draggedPanel) {

@@ -8,6 +8,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
         me.on('render', function() {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
+                // Let the native drag and drop work for widgets
+                onBeforeDrag: function(data, e) {
+                    if(data.componentType == "widget") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
                 getDragData: function(e) {
                     var target = e.getTarget('.draggable-image-display');
                     if (target) {
@@ -16,12 +24,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
                             d = dragEl.dom.cloneNode(true);
                         d.id = Ext.id();
 
+                        
                         return {
                             panelConfig: element.initialConfig,
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
                             ddel: d,
-                            componentId: element.componentId
+                            componentId: element.componentId,
+                            componentType: element.componentType
                         };
                     }
                 },
@@ -71,15 +81,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                     var components = responseObj.components;
                     for (var component in components) {
                         if (components.hasOwnProperty(component)) {
-                            accordianComponentPanel = me.add({
+                            var accordianComponentPanel = me.add({
                                 xtype: 'knitkitaccordiancomponentpanel',
                                 title: Ext.String.capitalize(component) + ' Blocks'
                             });
 
+                            
                             accordianComponentPanel.add({
                                 xtype: 'knitkitdraggablepanel',
                                 items: me.getThumbnailPanelArray(components[component])
-                            })
+                            });
                         }
                     }
                 }
@@ -100,15 +111,47 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 html = '<img src="' + data.thumbnail + '"></img>';
             }
 
-            return {
+            var config = {
                 xtype: 'panel',
                 cls: 'draggable-image-display',
                 layout: 'fit',
                 autoScroll: true,
                 componentId: data.iid,
+                componentType: data.componentType,
                 componentHeight: data.height,
                 html: html
             };
+            // if this is a widget then attach drag listeners to make it droppable in an iframe
+            if(data.componentType == 'widget') {
+                Ext.apply(config,{
+                    listeners: {
+                        render: function(me) {
+                            var elem = document.getElementById(me.id);
+                            elem.setAttribute('draggable', true);
+
+                            // TODO: Make it work
+                            jQuery(elem).on('dragstart', function(event) {
+                                console.log("Drag Started");
+                                me.dragoverqueue_processtimer = setInterval(function() {
+                                    DragDropFunctions.ProcessDragOverQueue();
+                                }, 100);
+
+                                // widgets component ID would be used to set retrive its Source in the iFrame
+                                event.originalEvent.dataTransfer.setData("componentId", me.componentId);
+                            });
+                            jQuery(elem).on('dragend', function() {
+                                console.log("Drag End");
+                                clearInterval(me.dragoverqueue_processtimer);
+                                DragDropFunctions.removePlaceholder();
+                                DragDropFunctions.ClearContainerContext();
+                            });
+                            
+                        }
+                    }
+                });
+            }
+            
+            return config;
         });
     },
 

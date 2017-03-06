@@ -45,6 +45,7 @@ module Knitkit
           @website_builder = true
           render template: path
         end
+        
 
         protected
 

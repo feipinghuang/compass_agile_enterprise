@@ -27,3 +27,6 @@
 //= require_tree ./east_region
 //= require_tree ./top_menu
 //= require_tree ./west_region
+//= require ./../../../../knitkit/website_builder/jquery.min.js
+//= require ./dnd
+
