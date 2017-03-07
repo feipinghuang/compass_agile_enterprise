@@ -88,16 +88,16 @@ module Knitkit
           end
         end
         
-        def get_widget_source
-          theme = Theme.find(params[:theme_id])
+        def get_component_source
           website = Website.find(params[:website_id])
-          widget_component = Component.where(internal_identifier: params[:component_iid]).first
+          theme = website.themes.first
+          component = Component.where(internal_identifier: params[:component_iid]).first
           file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
-          path = File.join(file_support.root, 'public', 'sites', website.internal_identifier, 'themes', theme.theme_id, 'templates', 'components', "#{widget_component.internal_identifier}.html.erb")
+          path = File.join(file_support.root, 'public', 'sites', website.internal_identifier, 'themes', theme.theme_id, 'templates', 'components', "#{component.internal_identifier}.html.erb")
           content = file_support.get_contents(path).first
           render json: {
                    success: true,
-                   widget: {
+                   component: {
                      html: content
                    }
                  }

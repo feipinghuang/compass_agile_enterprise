@@ -1,4 +1,4 @@
-// TODO: Decouple this library to pass in the iframe ID which is currently hardcoded
+jQuery.noConflict();
 var DragDropFunctions = {
     dragoverqueue: [],
     GetMouseBearingsPercentage: function($element, elementRect, mousePos) {
@@ -28,7 +28,7 @@ var DragDropFunctions = {
         var mousePercents = this.GetMouseBearingsPercentage($element, elementRect, mousePos);
         if ((mousePercents.x > breakPointNumber.x && mousePercents.x < 100 - breakPointNumber.x) && (mousePercents.y > breakPointNumber.y && mousePercents.y < 100 - breakPointNumber.y)) {
             //Case 1 -
-            $tempelement = $element.clone();
+            var $tempelement = $element.clone();
             $tempelement.find(".drop-marker").remove();
             if ($tempelement.html() == "" && !this.checkVoidElement($tempelement)) {
                 if (mousePercents.y < 90)
@@ -48,24 +48,24 @@ var DragDropFunctions = {
                 //console.log("More than 1 child detected");
             }
         } else if ((mousePercents.x <= breakPointNumber.x) || (mousePercents.y <= breakPointNumber.y)) {
-            var validElement = null
+            var validElement = null;
             if (mousePercents.y <= mousePercents.x)
                 validElement = this.FindValidParent($element, 'top');
             else
                 validElement = this.FindValidParent($element, 'left');
             
             if (validElement.is("body,html"))
-                validElement = $("#clientframe").contents().find("body").children(":not(.drop-marker,[data-dragcontext-marker])").first();
+                validElement = jQuery("iframe").contents().find("body").children(":not(.drop-marker,[data-dragcontext-marker])").first();
             this.DecideBeforeAfter(validElement, mousePercents, mousePos);
         } else if ((mousePercents.x >= 100 - breakPointNumber.x) || (mousePercents.y >= 100 - breakPointNumber.y)) {
-            var validElement = null
+            var validElement = null;
             if (mousePercents.y >= mousePercents.x)
                 validElement = this.FindValidParent($element, 'bottom');
             else
                 validElement = this.FindValidParent($element, 'right');
 
             if (validElement.is("body,html"))
-                validElement = $("#clientframe").contents().find("body").children(":not(.drop-marker,[data-dragcontext-marker])").last();
+                validElement = jQuery("iframe").contents().find("body").children(":not(.drop-marker,[data-dragcontext-marker])").last();
             this.DecideBeforeAfter(validElement, mousePercents, mousePos);
         }
     },
@@ -79,7 +79,7 @@ var DragDropFunctions = {
          mousePercents = this.GetMouseBearingsPercentage($targetElement, $targetElement.get(0).getBoundingClientRect(), mousePos);
          } */
 
-        $orientation = ($targetElement.css('display') == "inline" || $targetElement.css('display') == "inline-block");
+        var $orientation = ($targetElement.css('display') == "inline" || $targetElement.css('display') == "inline-block");
         if ($targetElement.is("br"))
             $orientation = false;
 
@@ -99,7 +99,7 @@ var DragDropFunctions = {
     },
     checkVoidElement: function($element) {
         var voidelements = ['i', 'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'video', 'iframe', 'source', 'track', 'wbr'];
-        var selector = voidelements.join(",")
+        var selector = voidelements.join(",");
         if ($element.is(selector))
             return true;
         else
@@ -182,7 +182,7 @@ var DragDropFunctions = {
             console.log($element);
             console.log("AFTER");
             this.AddContainerContext($element, 'sibling');
-            break
+            break;
         case "inside-prepend":
             placeholder.find(".message").html($element.data('sh-dnd-error'));
             $element.prepend(placeholder);
@@ -200,10 +200,10 @@ var DragDropFunctions = {
         }
     },
     removePlaceholder: function() {
-        $("#clientframe").contents().find(".drop-marker").remove();
+        jQuery("iframe").contents().find(".drop-marker").remove();
     },
     getPlaceHolder: function() {
-        return $("<li class='drop-marker'></li>");
+        return jQuery("<li class='drop-marker'></li>");
     },
     PlaceInside: function($element) {
         var placeholder = this.getPlaceHolder();
@@ -247,10 +247,10 @@ var DragDropFunctions = {
         var childElement = $container.children(":not(.drop-marker,[data-dragcontext-marker])");
         if (childElement.length > 0) {
             childElement.each(function() {
-                if ($(this).is(".drop-marker"))
+                if (jQuery(this).is(".drop-marker"))
                     return;
 
-                var offset = $(this).get(0).getBoundingClientRect();
+                var offset = jQuery(this).get(0).getBoundingClientRect();
                 var distance = 0;
                 var distance1, distance2 = null;
                 var position = '';
@@ -342,7 +342,7 @@ var DragDropFunctions = {
                             x: xPosition2,
                             y: yPosition2,
                             'position': 'after'
-                        } //Right Bottom
+                        }; //Right Bottom
                     }
                 }
 
@@ -372,12 +372,12 @@ var DragDropFunctions = {
                     'yPosition1': yPosition1,
                     'yPosition2': yPosition2,
                     'position': position
-                }
+                };
             });
             if (previousElData !== null) {
                 var position = previousElData.position;
                 return {
-                    'el': $(previousElData.el),
+                    'el': jQuery(previousElData.el),
                     'position': position
                 };
             } else {
@@ -401,16 +401,16 @@ var DragDropFunctions = {
 
     },
     GetContextMarker: function() {
-        $contextMarker = $("<div data-dragcontext-marker><span data-dragcontext-marker-text></span></div>");
+        var $contextMarker = jQuery("<div data-dragcontext-marker><span data-dragcontext-marker-text></span></div>");
         return $contextMarker;
     },
     AddContainerContext: function($element, position) {
 
-        $contextMarker = this.GetContextMarker();
+        var $contextMarker = this.GetContextMarker();
         this.ClearContainerContext();
         if ($element.is('html,body')) {
             position = 'inside';
-            $element = $("#clientframe").contents().find("body");
+            $element = jQuery("iframe").contents().find("body");
         }
         switch (position) {
         case "inside":
@@ -419,10 +419,10 @@ var DragDropFunctions = {
                 $contextMarker.addClass('invalid');
             var name = this.getElementName($element);
             $contextMarker.find('[data-dragcontext-marker-text]').html(name);
-            if ($("#clientframe").contents().find("body [data-sh-parent-marker]").length != 0)
-                $("#clientframe").contents().find("body [data-sh-parent-marker]").first().before($contextMarker);
+            if (jQuery("iframe").contents().find("body [data-sh-parent-marker]").length != 0)
+                jQuery("iframe").contents().find("body [data-sh-parent-marker]").first().before($contextMarker);
             else
-                $("#clientframe").contents().find("body").append($contextMarker);
+                jQuery("iframe").contents().find("body").append($contextMarker);
             break;
         case "sibling":
             this.PositionContextMarker($contextMarker, $element.parent());
@@ -431,10 +431,10 @@ var DragDropFunctions = {
             var name = this.getElementName($element.parent());
             $contextMarker.find('[data-dragcontext-marker-text]').html(name);
             $contextMarker.attr("data-dragcontext-marker", name.toLowerCase());
-            if ($("#clientframe").contents().find("body [data-sh-parent-marker]").length != 0)
-                $("#clientframe").contents().find("body [data-sh-parent-marker]").first().before($contextMarker);
+            if (jQuery("iframe").contents().find("body [data-sh-parent-marker]").length != 0)
+                jQuery("iframe").contents().find("body [data-sh-parent-marker]").first().before($contextMarker);
             else
-                $("#clientframe").contents().find("body").append($contextMarker);
+                jQuery("iframe").contents().find("body").append($contextMarker);
             break;
         }
     },
@@ -443,14 +443,14 @@ var DragDropFunctions = {
         $contextMarker.css({
             height: (rect.height + 4) + "px",
             width: (rect.width + 4) + "px",
-            top: (rect.top + $($("#clientframe").get(0).contentWindow).scrollTop() - 2) + "px",
-            left: (rect.left + $($("#clientframe").get(0).contentWindow).scrollLeft() - 2) + "px"
+            top: (rect.top + jQuery(jQuery("iframe").get(0).contentWindow).scrollTop() - 2) + "px",
+            left: (rect.left + jQuery(jQuery("iframe").get(0).contentWindow).scrollLeft() - 2) + "px"
         });
-        if (rect.top + $("#clientframe").contents().find("body").scrollTop() < 24)
+        if (rect.top + jQuery("iframe").contents().find("body").scrollTop() < 24)
             $contextMarker.find("[data-dragcontext-marker-text]").css('top', '0px');
     },
     ClearContainerContext: function() {
-        $("#clientframe").contents().find('[data-dragcontext-marker]').remove();
+        jQuery("iframe").contents().find('[data-dragcontext-marker]').remove();
     },
     getElementName: function($element) {
         return $element.prop('tagName');
