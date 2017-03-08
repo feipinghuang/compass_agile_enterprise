@@ -73,7 +73,15 @@ namespace :knitkit do
                         title: 'Contact us',
                         type: 'widget',
                         thumbnail: '',
-                        height: 300}]
+                        height: 300
+                     },
+                     {  id: 'login_form',
+                        title: 'Login Form',
+                        type: 'widget',
+                        thumbnail: '',
+                        height: 300
+                     }
+                   ]
 
       Component.destroy_all
       COMPONENTS.each do |component|
