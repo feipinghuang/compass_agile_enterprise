@@ -90,15 +90,23 @@ module Knitkit
         
         def get_component_source
           website = Website.find(params[:website_id])
-          theme = website.themes.first
+          website_section = WebsiteSection.find(params[:website_section_id])
           component = Component.where(internal_identifier: params[:component_iid]).first
-          file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
-          path = File.join(file_support.root, 'public', 'sites', website.internal_identifier, 'themes', theme.theme_id, 'templates', 'components', "#{component.internal_identifier}.html.erb")
-          content = file_support.get_contents(path).first
+          website_section_content = WebsiteSectionContent.where(website_section_id: website_section.id, content_id: component.id).first
+          # if the component has been saved get its contents else get the component's HTML from the theme
+          html_content = if website_section_content
+                           website_section_content.body_html
+                         else
+                           theme = website.themes.first
+                           file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+                           path = File.join(file_support.root, 'public', 'sites', website.internal_identifier, 'themes', theme.theme_id, 'templates', 'components', "#{component.internal_identifier}.html.erb")
+                           file_support.get_contents(path).first
+                         end
+          
           render json: {
                    success: true,
                    component: {
-                     html: content
+                     html: html_content
                    }
                  }
         end

@@ -593,6 +593,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         item = Ext.createWidget('websitebuilderpanel', {
             closable: true,
             title: title,
+            websiteSectionId: websiteSectionId,
             save: function(comp) {
                 var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
                     components = [];

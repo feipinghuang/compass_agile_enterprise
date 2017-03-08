@@ -15,6 +15,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     title: "Website Builder",
     autoScroll: true,
     isForTheme: false,
+    websiteSectionId: null,
     themeLayoutConfig: {},
     items: [],
 
@@ -148,8 +149,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                             buttons: [{
                                 text: 'Select',
                                 handler: function(btn) {
-                                    var win = btn.up('window')
-                                    indexToInsert = me.items.getCount() - 1;
+                                    var win = btn.up('window');
+                                    var indexToInsert = me.items.getCount() - 1;
 
                                     if (win.down('#oneCol').getValue()) {
                                         me.insert(indexToInsert, {
@@ -277,14 +278,14 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 onNodeEnter: function(target, dd, e, dragData) {
                     if (Ext.fly(target).hasCls('component')) {
                         me.removeAutoRemovableDropZones();
-                        targetPanelId = target.getAttribute('panelId');
-                        targetPanel = Ext.getCmp(targetPanelId);
-                        parentContainer = targetPanel.up('container');
-                        websiteBuilderPanel = parentContainer.up('websitebuilderpanel');
+                        var targetPanelId = target.getAttribute('panelId'),
+                            targetPanel = Ext.getCmp(targetPanelId),
+                            parentContainer = targetPanel.up('container'),
+                            websiteBuilderPanel = parentContainer.up('websitebuilderpanel');
                         if (targetPanel.cls == "websitebuilder-component-panel" &&
                             parentContainer.hasCls('dropzone-container') &&
                             targetPanel.id !== dragData.panelId) {
-                            targetIndex = websiteBuilderPanel.items.indexOf(parentContainer);
+                            var targetIndex = websiteBuilderPanel.items.indexOf(parentContainer);
                             websiteBuilderPanel.insert(targetIndex, {
                                 xtype: 'container',
                                 cls: 'dropzone-container',
@@ -554,6 +555,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 method: 'GET',
                 params: {
                     website_id: websiteId,
+                    website_section_id: me.websiteSectionId,
                     component_iid: e.dataTransfer.getData('componentIid')
                 },
                 success: function(response) {
