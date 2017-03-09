@@ -117,7 +117,6 @@ Ext.define('Compass.ErpApp.Shared.RowEditingPluginOverride', {
         var me = this,
             view = me.view;
 
-
         if (me.triggerEvent == 'cellfocus') {
             me.mon(view, 'cellfocus', me.onCellFocus, me);
         } else if (me.triggerEvent == 'rowfocus') {
@@ -137,12 +136,15 @@ Ext.define('Compass.ErpApp.Shared.RowEditingPluginOverride', {
                 clearTimeout(me.pressTimer);
             }, me);
         } else {
-
             if (view.getSelectionModel().isCellModel) {
                 view.onCellFocus = Ext.Function.bind(me.beforeViewCellFocus, me);
             }
 
-            me.mon(view, me.triggerEvent || ('cell' + (me.clicksToEdit === 1 ? 'click' : 'dblclick')), me.onCellClick, me);
+            if (me.triggerEvent == 'focusedrowclick') {
+                me.mon(view, 'cellclick', me.onCellClick, me);
+            } else {
+                me.mon(view, me.triggerEvent || ('cell' + (me.clicksToEdit === 1 ? 'click' : 'dblclick')), me.onCellClick, me);
+            }
         }
 
         me.initAddRemoveHeaderEvents();
@@ -188,6 +190,30 @@ Ext.define('Compass.ErpApp.Shared.RowEditingPluginOverride', {
         if (me.validateEdit() && this.editing) {
             me.editing = false;
             me.fireEvent('edit', me, me.context);
+        }
+    },
+
+    onCellClick: function(view, cell, colIdx, record, row, rowIdx, e) {
+        var expanderSelector = view.expanderSelector,
+            columnHeader = view.ownerCt.getColumnManager().getHeaderAtIndex(colIdx),
+            editor = columnHeader.getEditor(record);
+
+        if (this.triggerEvent == 'focusedrowclick') {
+            var selection = this.grid.getSelectionModel().getSelection();
+
+            if (selection.length == 1 && selection.first().id == record.id) {
+                var me = this;
+
+                setTimeout(function() {
+                    if (!me.dblclicked && editor && !expanderSelector || !e.getTarget(expanderSelector)) {
+                        me.startEdit(record, columnHeader);
+                    }
+                }, 500);
+            }
+        } else {
+            if (editor && !expanderSelector || !e.getTarget(expanderSelector)) {
+                this.startEdit(record, columnHeader);
+            }
         }
     }
 
