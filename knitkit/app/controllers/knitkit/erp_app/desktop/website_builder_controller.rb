@@ -13,6 +13,7 @@ module Knitkit
           render json: {
                    success: true,
                    components: Component.order('id asc').to_data_hash
+                   
                  }
         end
 
@@ -33,10 +34,15 @@ module Knitkit
 
         def render_component
           component_iid = params[:component_iid]
-
+          component = Component.where(internal_identifier: component_iid).first
+          website_section_id = params[:website_section_id]
+          website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
           @website_builder = true
-
-          render template: "/components/#{component_iid}", layout: 'knitkit/base'
+          if website_section_content  
+            render text: ERB.new(website_section_content.body_html).result(binding), layout: 'knitkit/base'
+          else
+            render template: "/components/#{component_iid}", layout: 'knitkit/base'
+          end
         end
 
         def website
@@ -111,7 +117,23 @@ module Knitkit
                  }
         end
 
+        def section_components
+          website_section_id = params[:website_section_id]
+          website_section_contents = WebsiteSectionContent.where(website_section_id: website_section_id)
+          components = if website_section_contents.present?
+                         Component.joins("inner join website_section_contents on contents.id = website_section_contents.content_id").where("website_section_contents.website_section_id = #{website_section_id}").order("website_section_contents.position asc").to_data_hash
+                       else
+                         []
+                       end
+          render json: {
+                   success: true,
+                   components: components
+                 }
 
+        end
+
+        
+        
         private
 
         def find_component(component_id)
