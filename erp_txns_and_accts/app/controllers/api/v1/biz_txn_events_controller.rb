@@ -47,6 +47,28 @@ module Api
         render :json => {biz_txn_event: biz_txn_event.to_data_hash}
       end
 
+      def update_status
+        begin
+          ActiveRecord::Base.connection.transaction do
+            biz_txn_event = BizTxnEvent.find(params[:id])
+
+            biz_txn_event.current_status = params[:status]
+
+            render json: {success: true}
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          Rails.logger.error invalid.record.errors
+
+          render :json => {:success => false, :message => invalid.record.errors}
+        rescue StandardError => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render json: {success: false, message: ex.message}
+        end
+      end
 
     end # BizTxnEvents
   end # V1
