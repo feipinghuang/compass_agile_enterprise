@@ -3,8 +3,8 @@ module Api
     class CategoriesController < BaseController
 
       def index
-        sort = nil
-        dir = nil
+        sort = 'description'
+        dir = 'ASC'
         limit = nil
         start = nil
 
@@ -35,7 +35,7 @@ module Api
           format.json do
 
             if sort and dir
-              categories = categories.order("#{sort} #{dir}")
+              categories = categories.except(:order).order("#{sort} #{dir}")
             end
 
             total_count = categories.count
@@ -55,7 +55,7 @@ module Api
                                categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories})}
             else
               nodes = [].tap do |nodes|
-                categories.roots.each do |root|
+                categories.roots.except(:order).order("#{sort} #{dir}").each do |root|
                   nodes.push(root.to_tree_hash)
                 end
               end
