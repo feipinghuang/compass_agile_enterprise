@@ -33,8 +33,21 @@
 
 OrderLineItem.class_eval do
   has_many :inventory_txns, as: :created_by, dependent: :destroy
-  
+
   belongs_to :inventory_entry
+
+  # OVERRIDE
+  # Override to find ProductType through an InventoryEntry if it is present
+  #
+  def product_type
+    if product_type_id
+      ProductType.find(product_type_id)
+    elsif !inventory_entry_id.nil?
+      inventory_entry.product_type
+    else
+      nil
+    end
+  end
 
   # OVERRIDE
   # Override to check InventoryEntry as well as ProductType

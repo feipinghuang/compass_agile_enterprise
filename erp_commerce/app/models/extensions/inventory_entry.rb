@@ -19,6 +19,26 @@ module ErpCommerce
         data
       end
 
+      def get_default_price
+        pricing_plan = self.pricing_plans.first
+
+        if pricing_plan
+          self.pricing_plans.first.get_price
+        else
+          self.product_type.get_default_price
+        end
+      end
+
+      def get_current_simple_plan
+        plan = self.pricing_plans.where('is_simple_amount = ? and (from_date <= ? and thru_date >= ? or (from_date is null and thru_date is null))', true, Date.today, Date.today).first
+
+        unless plan
+          plan = self.product_type.get_current_simple_plan
+        end
+
+        plan
+      end
+
     end # UserExtension
   end # Extensions
 end # ErpCommerce
