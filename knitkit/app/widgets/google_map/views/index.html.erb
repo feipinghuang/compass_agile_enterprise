@@ -13,7 +13,7 @@
     };
 
     if (!window.mapJsLoaded) {
-        new OnDemandLoadByAjax().load('https://maps.google.com/maps/api/js?sensor=false&callback=loadMap_<%=@uuid%>');
+        new OnDemandLoadByAjax().load('https://maps.google.com/maps/api/js?sensor=false&key=AIzaSyBwxWKbuDm04EY_8hMB6M7kIebDwvimKpQ&callback=loadMap_<%=@uuid%>');
         window.mapJsLoaded = true;
     }
     else {

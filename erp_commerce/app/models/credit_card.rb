@@ -32,14 +32,31 @@ class CreditCard < ActiveRecord::Base
 
   #the function EncryptionKey.get_key is meant to be overridden to provide a means for implementations to specify their
   #own encryption schemes and locations. It will default to a simple string for development and testing
-  attr_encrypted :private_card_number, :key => Rails.application.config.erp_commerce.encryption_key, :attribute => :crypted_private_card_number
-  attr_encrypted :private_cvc, :key => Rails.application.config.erp_commerce.encryption_key, :attribute => :crypted_private_cvc
+  attr_encrypted :private_card_number,
+    key: Rails.application.config.erp_commerce.encryption_key,
+    attribute: :crypted_private_card_number,
+    algorithm: 'aes-256-cbc',
+    mode: :single_iv_and_salt,
+    insecure_mode: true
+
+  attr_encrypted :private_cvc,
+    key: Rails.application.config.erp_commerce.encryption_key,
+    attribute: :crypted_private_cvc,
+    algorithm: 'aes-256-cbc',
+    mode: :single_iv_and_salt,
+    insecure_mode: true
 
   class << self
     def mask_number(number)
       'XXXX-XXXX-XXXX-' + number[number.length-4..number.length]
     end
   end
+
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.cardholder.dba_organization
+  end
+  alias :tenant :dba_organization
 
   # These methods are exposed for the purposes of displaying a version of the card number
   # string containing the last four digits of the card number. The idea is to make it

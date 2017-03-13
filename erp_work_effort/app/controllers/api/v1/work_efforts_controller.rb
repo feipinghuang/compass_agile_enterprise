@@ -452,7 +452,7 @@ module Api
         end
 
         if data[:status].present?
-          if data[:status].is_a String
+          if data[:status].is_a? String
             work_effort.current_status = TrackedStatusType.iid(data[:status])
           else
             work_effort.current_status = TrackedStatusType.iid(data[:status][:tracked_status_type][:internal_identifier])

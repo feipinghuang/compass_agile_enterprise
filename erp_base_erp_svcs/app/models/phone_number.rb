@@ -13,6 +13,12 @@ class PhoneNumber < ActiveRecord::Base
                       message: "Not a valid North American phone number. Must be 10 digits, extensions are allowed in the format #123 or x123" 
     is_contact_mechanism
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.contact.dba_organization
+  end
+  alias :tenant :dba_organization
+
   def summary_line
     "#{description} : #{phone_number}"
   end

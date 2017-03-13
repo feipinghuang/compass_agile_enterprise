@@ -37,9 +37,10 @@ class InventoryTxn < ActiveRecord::Base
   before_destroy :unapply!, :revert_inventory_available!
 
   # Update number_available on InventoryEntry.
-  # If the quantity is < 0 then update number available as it will be used
   #
   def update_inventory_available!
+    # if quantity is less than 0 then we are removing inventory and it needs to be
+    # removed here
     if self.quantity < 0
       inventory_entry.number_available += self.quantity
       inventory_entry.save!
@@ -72,6 +73,8 @@ class InventoryTxn < ActiveRecord::Base
       inventory_entry.number_in_stock += self.quantity
       inventory_entry.save!
 
+      # if quantity is greater than 0 then we are adding inventory and it needs to be
+      # added here
       if self.quantity > 0
         inventory_entry.number_available += self.quantity
         inventory_entry.save!

@@ -117,6 +117,34 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
                 itemId: 'passwordConfirmation',
                 name: 'password_confirmation',
                 inputType: 'password'
+            }, {
+                fieldLabel: 'Time Zone',
+                xtype: 'combo',
+                name: 'time_zone',
+                itemId: 'timeZone',
+                allowBlank: false,
+                forceSelection: true,
+                queryMode: 'local',
+                displayField: 'value',
+                valueField: 'value',
+                store: {
+                    fields: ['value'],
+                    data: [{
+                        "value": "Pacific Time (US & Canada)"
+                    }, {
+                        "value": "Mountain Time (US & Canada)"
+                    }, {
+                        "value": "Central Time (US & Canada)"
+                    }, {
+                        "value": "Eastern Time (US & Canada)"
+                    }, {
+                        "value": "Alaska"
+                    }, {
+                        "value": "Hawaii"
+                    }, {
+                        "value": "Arizona"
+                    }]
+                }
             }]
         }, {
             xtype: 'fieldset',
@@ -258,6 +286,7 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
 
         me.down('#username').setValue(me.user.username);
         me.down('#email').setValue(me.user.email);
+        me.down('#timeZone').setValue(me.user.time_zone);
         me.down('#password').reset();
         me.down('#passwordConfirmation').reset();
         me.down('#password').allowBlank = true;

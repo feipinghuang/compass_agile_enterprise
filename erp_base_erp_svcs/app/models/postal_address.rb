@@ -21,6 +21,12 @@ class PostalAddress < ActiveRecord::Base
   belongs_to :geo_country
   belongs_to :geo_zone
 
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.contact.dba_organization
+  end
+  alias :tenant :dba_organization
+
   def summary_line
     "#{description} : #{address_line_1}, #{city}"
   end
@@ -42,7 +48,7 @@ class PostalAddress < ActiveRecord::Base
   end
 
   def to_data_hash
-    data = to_hash(only: [
+    to_hash(only: [
               :id,
               :address_line_1,
               :address_line_2,

@@ -27,6 +27,8 @@ class InventoryEntry < ActiveRecord::Base
 
   attr_protected :created_at, :updated_at
 
+  has_party_roles
+
   belongs_to :inventory_entry_record, :polymorphic => true
   belongs_to :product_type
   has_one :classification, :as => :classification, :class_name => 'CategoryClassification'
@@ -43,12 +45,21 @@ class InventoryEntry < ActiveRecord::Base
   has_many :inventory_entry_locations
   has_many :facilities, :through => :inventory_entry_locations
   belongs_to :unit_of_measurement
+  has_many :order_line_items
 
   attr_accessor :unavailable
 
   alias_method :storage_facilities, :facilities
 
   delegate :description, :sku, :unit_of_measurement, :to => :product_type, :prefix => true
+
+  def taxable?
+    self.product_type.taxable?
+  end
+
+  def revenue_gl_account
+    self.product_type.revenue_gl_account
+  end
 
   def current_location
     self.inventory_entry_locations

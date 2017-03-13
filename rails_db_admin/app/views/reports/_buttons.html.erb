@@ -1,0 +1,84 @@
+<div>
+
+	<button id="<%=report.internal_identifier%>executeBtn" type="button" class="btn btn-primary" >Execute</button>
+
+	<%  if report.meta_data['can_download_csv'] %>
+	<button id="<%=report.internal_identifier%>downloadCsvBtn" type="button" class="btn btn-primary" >Download CSV</button>
+	<% end %>
+
+	<%  if report.meta_data['can_print'] %>
+	<button id="<%=report.internal_identifier%>downloadPdf" type="button" class="btn btn-primary" >Download PDF</button>
+	<%  end %>
+
+</div>
+
+<script type="text/javascript">
+
+	<% if report.meta_data['params'] %>
+		var rules = {};
+
+		<% report.meta_data['params'].each do |param| %>
+			<% param = Hash.symbolize_keys(param) %>
+
+			<% if param[:required] %>
+				rules['<%= param[:name] -%>'] = {required: true}
+			<% end %>
+
+		<% end %>
+
+		$('#<%=report.internal_identifier%>reportParamsForm').validate({
+            rules: rules,
+            errorClass: 'error',
+            highlight: function(element) {
+                $(element).addClass('error');
+            },
+            errorPlacement: function(error, element) {
+                if (element.parent().hasClass('input-group')) {
+                    error.insertAfter(element.parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+	<% end %>
+
+	var getReportParams = function(form){
+		var params = {};
+		
+		$.each(form.serializeArray(), function(i, field) {
+    		params[field.name] = field.value;
+		});
+	
+		params['client_utc_offset'] = new Date().getTimezoneOffset();
+		params = encodeURIComponent(JSON.stringify(params));
+
+		return params;
+	};
+
+	$('#<%=report.internal_identifier%>executeBtn').click(function(){
+		var form = $('#<%=report.internal_identifier%>reportParamsForm');
+	
+		if (form.valid()) {
+			$('#iframeContainer<%=report.internal_identifier%>').show();
+			$('#<%=report.internal_identifier%>iFrame').attr('src', '/compass_ae_reports/display/<%= report.internal_identifier %>?report_params=' + getReportParams(form));
+		}
+	});
+
+	$('#<%=report.internal_identifier%>downloadCsvBtn').click(function(){
+		var form = $('#<%=report.internal_identifier%>reportParamsForm');
+		
+		if (form.valid()) {
+			window.open('/compass_ae_reports/display/<%= report.internal_identifier %>.csv?report_params=' + getReportParams(form), '_blank');
+		}
+	});
+
+	$('#<%=report.internal_identifier%>downloadPdf').click(function(){
+		var form = $('#<%=report.internal_identifier%>reportParamsForm');
+
+		if (form.valid()) {
+			window.open('/compass_ae_reports/display/<%= report.internal_identifier %>.pdf?report_params=' + getReportParams(form), '_blank');
+		}
+	});
+
+</script>

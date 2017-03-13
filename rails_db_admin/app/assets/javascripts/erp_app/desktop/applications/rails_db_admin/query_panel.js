@@ -165,7 +165,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                             reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
 
                             reportTitle = "Preview" + " (" + me.report.get('reportName') + ")";
-                        me.openIframeInTab(reportTitle, '/reports/display/' + me.report.get('internalIdentifier') + '?report_params=' + reportParamsWithValues);
+                        me.openIframeInTab(reportTitle, '/compass_ae_reports/display/' + me.report.get('internalIdentifier') + '?report_params=' + reportParamsWithValues);
                     }
                 }
             });
@@ -177,7 +177,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                     if (me.paramPanelIsValid()) {
                         var reportParamsPanel = me.down('reportparamspanel'),
                             reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
-                            url = '/reports/display/' + me.report.get('internalIdentifier') + '.csv?report_params=' + reportParamsWithValues;
+                            url = '/compass_ae_reports/display/' + me.report.get('internalIdentifier') + '.csv?report_params=' + reportParamsWithValues;
                         window.open(url);
                     }
                 }
@@ -190,7 +190,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.RailsDbAdmin.QueryPanel", {
                     if (me.paramPanelIsValid()) {
                         var reportParamsPanel = me.down('reportparamspanel'),
                             reportParamsWithValues = encodeURIComponent(JSON.stringify(reportParamsPanel.getReportParams())),
-                            url = '/reports/display/' + me.report.get('internalIdentifier') + '.pdf?report_params=' + reportParamsWithValues;
+                            url = '/compass_ae_reports/display/' + me.report.get('internalIdentifier') + '.pdf?report_params=' + reportParamsWithValues;
                         window.open(url, '_blank');
                     }
                 }
