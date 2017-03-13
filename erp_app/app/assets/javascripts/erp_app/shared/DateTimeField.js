@@ -127,6 +127,8 @@ Ext.define('Ext.ux.form.DateTimeField', {
             me.dateField.setValue(value);
 
             me.timeField.setValue(new Date(2008, 0, 1, value.getHours(), value.getMinutes(), value.getSeconds()));
+
+            me.timeField.getStore().clearFilter();
         }
     }
 });

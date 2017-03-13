@@ -268,3 +268,18 @@ Ext.override(Ext.grid.RowEditor, {
 Ext.JSON.encodeDate = function(o) {
     return '"' + Ext.Date.format(o, 'c') + '"';
 };
+
+// Bug fix for TimeField where getValue was returning the current year causing errors
+Ext.define('Compass.ErpApp.Shared.TimeFieldOverride', {
+    override: 'Ext.form.field.Time',
+
+    getValue: function() {
+        var v = this.rawToValue(this.callParent(arguments));
+
+        if (Ext.isDate(v)) {
+            v = this.getInitDate(v.getHours(), v.getMinutes());
+        }
+
+        return v;
+    }
+});
