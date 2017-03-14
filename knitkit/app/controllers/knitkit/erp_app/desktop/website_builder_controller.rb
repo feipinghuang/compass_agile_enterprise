@@ -39,7 +39,7 @@ module Knitkit
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
           @website_builder = true
           if website_section_content  
-            render text: ERB.new(website_section_content.body_html).result(binding), layout: 'knitkit/base'
+            render text: ERB.new(website_section_content.website_html).result(binding), layout: 'knitkit/base'
           else
             render template: "/components/#{component_iid}", layout: 'knitkit/base'
           end
@@ -101,7 +101,7 @@ module Knitkit
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section.id, content_id: component.id).first
           # if the component has been saved get its contents else get the component's HTML from the theme
           html_content = if website_section_content
-                           website_section_content.body_html
+                           website_section_content.website_html
                          else
                            theme = website.themes.first
                            file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
