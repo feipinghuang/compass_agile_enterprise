@@ -76,13 +76,13 @@ module Api
             if params[:parent_id].present?
               render :json => {success: true,
                                total_count: total_count,
-                               categories: Category.to_all_representation(Category.find(params[:parent_id]))}
+                               categories: Category.to_all_representation(Category.find(params[:parent_id]))}, content_type: 'application/json'
             else
 
 
               render :json => {success: true,
                                total_count: total_count,
-                               categories: Category.to_all_representation(nil, [], 0, categories.roots)}
+                               categories: Category.to_all_representation(nil, [], 0, categories.roots)}, content_type: 'application/json'
             end
           end
         end
