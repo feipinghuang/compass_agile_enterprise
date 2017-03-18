@@ -47,6 +47,8 @@ if (jQuery) {
     };
 
     Compass.ErpApp.JQuerySupport.setupProgressBars = function() {
+        Compass.ErpApp.JQuerySupport.removeProgressBar();
+
         $('[data-progress-bar="true"]').on('ajax:send', Compass.ErpApp.JQuerySupport.showProgressBar);
     };
 
@@ -60,7 +62,7 @@ if (jQuery) {
                 '<div class="modal-body">' +
                 '<div class="progress progress-striped active" style="margin-bottom:0;"><div class="progress-bar" style="width: 100%"></div></div>' +
                 '</div>' +
-                '</div></div></div>');
+                '</div></div></div>').appendTo(document.body);
         }
 
         $('#progressBar').modal();
