@@ -423,19 +423,19 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         });
 
         dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;" panelId="{panelId}" >',
-            '<div class="website-builder-reorder-setting" id="componentSetting">',
-            '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
-            '<div class="icon-remove pull-left" id="{componentId}-remove" itemId="{panelId}"></div>',
-            '</div>',
-            '<div class="iframe-container">',
-            '<div class="iframe-cover"></div>',
-            '<iframe height="100%" width="100%" frameBorder="0" id="{componentId}-frame" src="{htmlSrc}"></iframe>',
-            '</div>',
-            '</div>').apply({
-                htmlSrc: '/knitkit/erp_app/desktop/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId,
-            panelId: dropPanel.id,
-            componentId: componentIid
-        }));
+                                           '<div class="website-builder-reorder-setting" id="componentSetting">',
+                                           '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
+                                           '<div class="icon-remove pull-left" id="{componentId}-remove" itemId="{panelId}"></div>',
+                                           '</div>',
+                                           '<div class="iframe-container">',
+                                           '<div class="iframe-cover"></div>',
+                                           '<iframe height="100%" width="100%" frameBorder="0" id="{componentId}-frame" src="{htmlSrc}"></iframe>',
+                                           '</div>',
+                                           '</div>').apply({
+                                               htmlSrc: '/knitkit/erp_app/desktop/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId + '&cache_buster_token=' + Math.round(Math.random() * 10000000),
+                                               panelId: dropPanel.id,
+                                               componentId: componentIid
+                                           }));
 
         Ext.apply(dropPanel, {
             height: height,
@@ -499,7 +499,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             });
 
             //setup widget drop listeners
-            me.setupWidgetDragDropListeners(iframe);
+            me.setupIframeDragDropListeners(iframe.el.dom.contentWindow);
 
         });
 
@@ -509,79 +509,156 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         containerPanel.updateLayout();
     },
 
-    // setup widgets drag and drop
-    setupWidgetDragDropListeners: function(iframe) {
+    // setup iframe drag and drop
+    setupIframeDragDropListeners: function(iframeWindow) {
         var me = this;
-        var clientFrameWindow = iframe.el.dom.contentWindow;
         var currentElement, currentElementChangeFlag, elementRectangle, countdown, dragoverqueue_processtimer;
+        
+        var dragImg = new Image();
+        dragImg.src = '/assets/image/knitkit/website_builder/drag.png';
+        
         //Add CSS File to iFrame
         var style = jQuery("<style data-reserved-styletag></style>").html(GetInsertionCSS());
-        jQuery(clientFrameWindow.document.head).append(style);
+        jQuery(iframeWindow.document.head).append(style);
+
+        var win = Ext.getCmp('knitkit');
         
-        var htmlBody = jQuery(clientFrameWindow.document).find('body,html');
-        htmlBody.find('*').andSelf().on('dragenter', function(event) {
-            console.log('drag enter');
-            event.stopPropagation();
-            currentElement = jQuery(event.target);
-            currentElementChangeFlag = true;
-            elementRectangle = event.target.getBoundingClientRect();
-            countdown = 1;
-            
-        }).on('dragover', function(event) {
-            console.log('drag over');
-            event.preventDefault();
-            event.stopPropagation();
-            if (countdown % 15 != 0 && currentElementChangeFlag == false) {
+        jQuery(iframeWindow.document).find('html,body')
+            .on('dragenter', function(event) {
+                console.log('drag enter');
+                event.stopPropagation();
+                currentElement = jQuery(event.target);
+                elementRectangle = event.target.getBoundingClientRect();
+                countdown = 1;
+                
+            }).on('dragover', function(event) {
+                console.log('drag over');
+                event.preventDefault();
+                event.stopPropagation();
+                if (countdown % 15 != 0 && currentElementChangeFlag == false) {
+                    countdown = countdown + 1;
+                    return;
+                }
+                event = event || window.event;
+                
+                var x = event.originalEvent.clientX;
+                var y = event.originalEvent.clientY;
                 countdown = countdown + 1;
-                return;
-            }
-            event = event || window.event;
-            
-            var x = event.originalEvent.clientX;
-            var y = event.originalEvent.clientY;
-            countdown = countdown + 1;
-            currentElementChangeFlag = false;
-            var mousePosition = {
-                x: x,
-                y: y
-            };
-            DragDropFunctions.AddEntryToDragOverQueue(currentElement, elementRectangle, mousePosition);
-        });
-        
-        jQuery(clientFrameWindow.document).find('body,html').on('drop', function(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            var e = event.isTrigger ? triggerEvent.originalEvent : event.originalEvent ;
-            var websiteId = me.getWebsiteId();
-            Compass.ErpApp.Utility.ajaxRequest({
-                url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
-                method: 'GET',
-                params: {
-                    website_id: websiteId,
-                    website_section_id: me.websiteSectionId,
-                    component_iid: e.dataTransfer.getData('componentIid')
-                },
-                success: function(response) {
-                    var componentHTML = response.component.html;
+                currentElementChangeFlag = false;
+                var mousePosition = {
+                    x: x,
+                    y: y
+                };
+                DragDropFunctions.AddEntryToDragOverQueue(currentElement, elementRectangle, mousePosition);
+            }).on('drop', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                var iframe = jQuery(this);
+                var websiteId = me.getWebsiteId();
+                var uid = event.originalEvent.dataTransfer.getData('drag-uid');
+                var componentIid = event.originalEvent.dataTransfer.getData('componentIid');
+                // if this is a drop but the componentiid is blank it must be a move from the iframe
+                if (uid && Compass.ErpApp.Utility.isBlank(componentIid)) {
                     try {
                         var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
-                        var checkDiv = jQuery(componentHTML);
-                        insertionPoint.after(checkDiv);
+                        var dropComponent = jQuery(event.originalEvent.dataTransfer.getData('componentHTML'));
+                        var previousComponent = iframe.find('[drag-uid=' + uid + ']');
+                        previousComponent.remove();
+                        insertionPoint.after(dropComponent);
+                        dropComponent.css('cursor', 'move');
+                        dropComponent.attr('drag-uid', new Date().getTime());
+                        dropComponent.attr('draggable', true);
                         insertionPoint.remove();
-
-                        clearInterval(me.dragoverqueue_processtimer);
-                        DragDropFunctions.removePlaceholder();
-                        DragDropFunctions.ClearContainerContext();
                         
+                        if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
+                            win.dragoverqueueProcessTimerTask.stop();
+                            DragDropFunctions.removePlaceholder();
+                            DragDropFunctions.ClearContainerContext();
+                            win.dragoverqueueProcessTimerTask = null;
+                        }
+                        
+                        // attach drag listener
+                        me.attachIframeDragStartListener(iframeWindow);
                     } catch (e) {
                         console.log(e);
                     }
-                }
-            });
-            
-        });
+                } else {
+                    // this is a drop from the west region so load the component source from its iid
+                    me.fetchComponentSource(
+                        event.originalEvent.dataTransfer.getData('componentIid'),
+                        function(response) {
+                            var componentHTML = response.component.html;
+                            try {
+                                var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
+                                var dropComponent = jQuery(componentHTML);
+                                insertionPoint.after(dropComponent);
+                                dropComponent.css('cursor', 'move');
+                                dropComponent.attr('drag-uid', new Date().getTime());
+                                dropComponent.attr('draggable', true);
+                                insertionPoint.remove();
 
+                                // attach drag listener
+                                me.attachIframeDragStartListener(iframeWindow);
+
+
+                                
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
+                    );
+                }
+                
+                
+            });
+
+        me.attachIframeDragStartListener(iframeWindow);
+        
     },
+
+
+    fetchComponentSource: function(componentIid, success) {
+        var me = this;
+        Compass.ErpApp.Utility.ajaxRequest({
+            url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
+            method: 'GET',
+            params: {
+                website_id: me.getWebsiteId(),
+                website_section_id: me.websiteSectionId,
+                component_iid: componentIid
+            },
+            success: function(response) {
+                if (success) {
+                    success(response); 
+                }
+            }
+        });
+            
+    },
+
+    attachIframeDragStartListener: function(iframeWindow) {
+        var win = Ext.getCmp('knitkit');
+        var dragImg = new Image();
+        dragImg.src = '/assets/image/knitkit/website_builder/drag.png';
+
+        jQuery(iframeWindow.document).find('[draggable=true]').unbind('dragstart');
+        jQuery(iframeWindow.document).find('[draggable=true]').on('dragstart', function(event) {
+            var draggableElem = jQuery(this);
+            var uid = draggableElem.attr('drag-uid');
+            if(uid) {
+                if (!win.dragoverqueueProcessTimerTask) {
+                    win.dragoverqueueProcessTimerTask = new Compass.ErpApp.Utility.TimerTask(function() {
+                        DragDropFunctions.ProcessDragOverQueue();
+                    }, 100);
+                    win.dragoverqueueProcessTimerTask.start();
+                }
+                event.originalEvent.dataTransfer.setData("componentHtml", jQuery("<div />").append(draggableElem.clone()).html());
+                event.originalEvent.dataTransfer.setData("drag-uid", uid);
+                event.originalEvent.dataTransfer.setDragImage(dragImg, 10, 10);
+            }
+        });
+    },
+
 
     removeContentFromDraggedPanel: function(dropPanel, draggedPanel) {
         var me = this,
@@ -830,16 +907,16 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                         var components = Ext.Array.flatten(Ext.Object.getValues(response.components));
                         Ext.each(components, function(component){
                             console.log(component);
-                               var componentContainer = me.add({
+                            var componentContainer = me.add({
                                 xtype: 'container',
-                                   cls: 'dropzone-container',
-                                   layout: 'hbox',
-                                   items: [{
-                                       xtype: 'component',
-                                       flex: 1,
-                                       html: ''
-                                       
-                                   }]
+                                cls: 'dropzone-container',
+                                layout: 'hbox',
+                                items: [{
+                                    xtype: 'component',
+                                    flex: 1,
+                                    html: ''
+                                    
+                                }]
                             });
                             
                             me.replaceDropPanelWithContent(componentContainer.down('component'), component.iid, component.height, component.thumbnail);
@@ -881,55 +958,55 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 listeners: {
                     render: function(comp) {
 
-                            Ext.apply(comp, {
-                                height: componentHeight,
-                                componentId: componentIid
+                        Ext.apply(comp, {
+                            height: componentHeight,
+                            componentId: componentIid
+                        });
+                        Ext.get(componentIid + '-remove').on('click', function() {
+                            me.insert(me.items.indexOf(comp), {
+                                xtype: 'websitebuilderdropzone',
+                                itemId: 'layout' + templateType.capitalize(),
+                                flex: 1
                             });
-                            Ext.get(componentIid + '-remove').on('click', function() {
-                                me.insert(me.items.indexOf(comp), {
-                                    xtype: 'websitebuilderdropzone',
-                                    itemId: 'layout' + templateType.capitalize(),
-                                    flex: 1
+                            comp.destroy();
+                        });
+
+                        var iframe = Ext.get(componentIid + "-frame");
+
+                        iframe.on('load', function() {
+                            var iframePanel = this,
+                                editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
+                                websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+                            Ext.Array.each(editableElements, function(editableElement) {
+                                editableElement = Ext.get(editableElement);
+
+                                editableElement.on('mouseover', function(event) {
+                                    if (!editableElement.dom.isContentEditable) {
+                                        me.highlightElement(editableElement.dom);
+                                    }
                                 });
-                                comp.destroy();
+                                editableElement.on('mouseout', function(event) {
+                                    if (!editableElement.dom.isContentEditable) {
+                                        me.deHighlightElement(editableElement.dom);
+                                    }
+                                });
+                                editableElement.on('click', function(event) {
+                                    event.preventDefault();
+
+                                    if (!editableElement.dom.isContentEditable) {
+                                        var contentEditableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
+                                        Ext.Array.each(contentEditableElements, function(element) {
+                                            me.removeEditable(element);
+                                            me.deHighlightElement(element);
+                                        });
+                                    }
+
+                                    me.buildPropertiesEditForm(this.dom);
+                                });
                             });
 
-                            var iframe = Ext.get(componentIid + "-frame");
-
-                            iframe.on('load', function() {
-                                var iframePanel = this,
-                                    editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
-                                    websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
-                                Ext.Array.each(editableElements, function(editableElement) {
-                                    editableElement = Ext.get(editableElement);
-
-                                    editableElement.on('mouseover', function(event) {
-                                        if (!editableElement.dom.isContentEditable) {
-                                            me.highlightElement(editableElement.dom);
-                                        }
-                                    });
-                                    editableElement.on('mouseout', function(event) {
-                                        if (!editableElement.dom.isContentEditable) {
-                                            me.deHighlightElement(editableElement.dom);
-                                        }
-                                    });
-                                    editableElement.on('click', function(event) {
-                                        event.preventDefault();
-
-                                        if (!editableElement.dom.isContentEditable) {
-                                            var contentEditableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
-                                            Ext.Array.each(contentEditableElements, function(element) {
-                                                me.removeEditable(element);
-                                                me.deHighlightElement(element);
-                                            });
-                                        }
-
-                                        me.buildPropertiesEditForm(this.dom);
-                                    });
-                                });
-
-                            }); // iframe load
-                        } // render
+                        }); // iframe load
+                    } // render
                 } // listeners
             }; // comp
         } else {

@@ -126,23 +126,24 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 Ext.apply(config,{
                     listeners: {
                         render: function(me) {
+                            var win = Ext.getCmp('knitkit');
                             var elem = document.getElementById(me.id);
                             elem.setAttribute('draggable', true);
 
                             jQuery(elem).on('dragstart', function(event) {
                                 console.log("Drag Started");
-                                me.dragoverqueue_processtimer = setInterval(function() {
-                                    DragDropFunctions.ProcessDragOverQueue();
-                                }, 100);
-
+                                if (!win.dragoverqueueProcessTimerTask) {
+                                    win.dragoverqueueProcessTimerTask = new Compass.ErpApp.Utility.TimerTask(function() {
+                                        DragDropFunctions.ProcessDragOverQueue();
+                                    }, 100);
+                                    win.dragoverqueueProcessTimerTask.start();
+                                } 
+                                
                                 // widgets component IID would be used to set retrive its Source in the iFrame
                                 event.originalEvent.dataTransfer.setData("componentIid", me.componentId);
                             });
                             jQuery(elem).on('dragend', function() {
                                 console.log("Drag End");
-                                // clearInterval(me.dragoverqueue_processtimer);
-                                // DragDropFunctions.removePlaceholder();
-                                // DragDropFunctions.ClearContainerContext();
                             });
                             
                         }

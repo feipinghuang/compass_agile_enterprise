@@ -35,7 +35,7 @@ module Knitkit
           rescue Exception => ex
             Rails.logger.error ex.message
             Rails.logger.error ex.backtrace.join("\n")
-
+            
             ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
           end
         end
