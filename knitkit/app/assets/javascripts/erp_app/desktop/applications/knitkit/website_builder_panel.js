@@ -523,7 +523,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         var win = Ext.getCmp('knitkit');
         
-        jQuery(iframeWindow.document).find('html,body')
+        jQuery(iframeWindow.document).find('html,body').find('.dnd-drop-target')
             .on('dragenter', function(event) {
                 console.log('drag enter');
                 event.stopPropagation();
@@ -539,6 +539,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     countdown = countdown + 1;
                     return;
                 }
+                
                 event = event || window.event;
                 
                 var x = event.originalEvent.clientX;
@@ -549,23 +550,48 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     x: x,
                     y: y
                 };
+                if (!win.dragoverqueueProcessTimerTask) {
+                    win.dragoverqueueProcessTimerTask = new Compass.ErpApp.Utility.TimerTask(function() {
+                        DragDropFunctions.ProcessDragOverQueue();
+                    }, 100);
+                    win.dragoverqueueProcessTimerTask.start();
+                }
                 DragDropFunctions.AddEntryToDragOverQueue(currentElement, elementRectangle, mousePosition);
+            }).on('dragleave', function(event){
+                console.log('drag leave');
+                //return and remove placeholders if dropped out drop target
+                if (jQuery(event.target).parents('div[class="dnd-drop-target"]').length == 0) {
+                    if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
+                        win.dragoverqueueProcessTimerTask.stop();
+                        DragDropFunctions.removePlaceholder();
+                        DragDropFunctions.ClearContainerContext();
+                        win.dragoverqueueProcessTimerTask = null;
+                    }
+                    return;
+                }
             }).on('drop', function(event) {
                 event.preventDefault();
                 event.stopPropagation();
-                var iframe = jQuery(this);
+                var dropTarget = jQuery(this);
                 var websiteId = me.getWebsiteId();
                 var uid = event.originalEvent.dataTransfer.getData('drag-uid');
                 var componentIid = event.originalEvent.dataTransfer.getData('componentIid');
+                
                 // if this is a drop but the componentiid is blank it must be a move from the iframe
                 if (uid && Compass.ErpApp.Utility.isBlank(componentIid)) {
                     try {
                         var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
                         var dropComponent = jQuery(event.originalEvent.dataTransfer.getData('componentHTML'));
-                        var previousComponent = iframe.find('[drag-uid=' + uid + ']');
+                        var previousComponent = dropTarget.parents('body').find('[drag-uid=' + uid + ']');
+                        // don't drop a component is dropped over itself
+                        if(previousComponent.parent()[0] == dropTarget[0]) {
+                            return;
+                        }
+                        previousComponent.parent().removeClass('drop-target-select');
                         previousComponent.remove();
                         insertionPoint.after(dropComponent);
                         dropComponent.css('cursor', 'move');
+                        dropComponent.parent().addClass('drop-target-select');
                         dropComponent.attr('drag-uid', new Date().getTime());
                         dropComponent.attr('draggable', true);
                         insertionPoint.remove();
@@ -593,9 +619,18 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 var dropComponent = jQuery(componentHTML);
                                 insertionPoint.after(dropComponent);
                                 dropComponent.css('cursor', 'move');
+                                dropComponent.parent().addClass('drop-target-select');
                                 dropComponent.attr('drag-uid', new Date().getTime());
                                 dropComponent.attr('draggable', true);
                                 insertionPoint.remove();
+
+                                if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
+                                    win.dragoverqueueProcessTimerTask.stop();
+                                    DragDropFunctions.removePlaceholder();
+                                    DragDropFunctions.ClearContainerContext();
+                                    win.dragoverqueueProcessTimerTask = null;
+                                }
+
 
                                 // attach drag listener
                                 me.attachIframeDragStartListener(iframeWindow);
@@ -906,7 +941,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     } else {
                         var components = Ext.Array.flatten(Ext.Object.getValues(response.components));
                         Ext.each(components, function(component){
-                            console.log(component);
                             var componentContainer = me.add({
                                 xtype: 'container',
                                 cls: 'dropzone-container',
