@@ -28,7 +28,7 @@ CollectiveIdea::Acts::NestedSet::Model.class_eval do
         end
       else
         nested_set_scope.where(["#{quoted_left_column_name} > ? AND #{quoted_right_column_name} < ?", left, right]).
-          delete_all
+          destroy_all
       end
 
       # update lefts and rights for remaining nodes
