@@ -443,6 +443,8 @@ class OrderTxn < ActiveRecord::Base
   #
   # @return [Array] Array of parties
   def parties_by_role_types(*role_types)
+    role_types = role_types.flatten
+
     valid_order_line_items = order_line_items.select{|order_line_item| order_line_item.line_item_record.is_a? ProductType}
 
     parties = []
@@ -458,6 +460,8 @@ class OrderTxn < ActiveRecord::Base
   #
   # @return [Array] Array of line items grouped for passed party roles such as vendor
   def line_items_by_party_roles(*role_types)
+    role_types = role_types.flatten
+
     valid_order_line_items = order_line_items.select{|order_line_item| order_line_item.line_item_record.is_a? ProductType}
 
     valid_order_line_items.group_by do |order_line_item|
