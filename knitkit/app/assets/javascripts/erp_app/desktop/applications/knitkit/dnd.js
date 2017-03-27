@@ -30,7 +30,7 @@ var DragDropFunctions = {
             //Case 1 -
             var $tempelement = $element.clone();
             $tempelement.find(".drop-marker").remove();
-            if ($tempelement.html() == "" && !this.checkVoidElement($tempelement)) {
+            if (jQuery.trim($tempelement.html()) == "" && !this.checkVoidElement($tempelement)) {
                 if (mousePercents.y < 90)
                     return this.PlaceInside($element);
             } // else if ($tempelement.children().length == 0) {
@@ -405,7 +405,7 @@ var DragDropFunctions = {
         return $contextMarker;
     },
     AddContainerContext: function($element, position) {
-
+        
         var $contextMarker = this.GetContextMarker();
         this.ClearContainerContext();
         if ($element.is('html,body')) {
