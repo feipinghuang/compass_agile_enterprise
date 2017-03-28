@@ -39,7 +39,7 @@ module Knitkit
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
           @website_builder = true
           if website_section_content  
-            render text: ERB.new(website_section_content.website_html).result(binding), layout: 'knitkit/base'
+            render text: ERB.new(website_section_content.builder_html).result(binding), layout: 'knitkit/base'
           else
             render template: "/components/#{component_iid}", layout: 'knitkit/base'
           end
