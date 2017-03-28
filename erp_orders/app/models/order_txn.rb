@@ -432,7 +432,7 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def get_line_item_for_product_type(product_type, options)
-    line_items.detect { |oli| oli.equals?(product_type.id, options) }
+    line_items.detect { |oli| oli.equals?(product_type, options) }
   end
 
   def get_line_item_for_simple_product_offer(simple_product_offer)
