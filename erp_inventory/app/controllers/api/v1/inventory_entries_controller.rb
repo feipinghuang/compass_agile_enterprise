@@ -21,13 +21,13 @@ module Api
         limit = nil
         start = nil
 
-        unless params[:sort].blank?
-          sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
-          sort = sort_hash[:property] || 'description'
-          dir = sort_hash[:direction] || 'ASC'
-          limit = params[:limit] || 25
-          start = params[:start] || 0
-        end
+        sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
+
+        sort = sort_hash[:property] || 'description'
+        dir = sort_hash[:direction] || 'ASC'
+
+        limit = params[:limit].blank? ? nil : params[:limit]
+        start = params[:start].blank? ? nil : params[:start]
 
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
 
@@ -35,7 +35,7 @@ module Api
           query_filter[:keyword] = params[:query].strip
         end
 
-                # hook method to apply any scopes passed via parameters to this api
+        # hook method to apply any scopes passed via parameters to this api
         inventory_entries = InventoryEntry.apply_filters(query_filter)
 
         inventory_entries = inventory_entries.by_tenant(current_user.party.dba_organization)
