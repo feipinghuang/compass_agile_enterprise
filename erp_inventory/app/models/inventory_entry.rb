@@ -49,6 +49,29 @@ class InventoryEntry < ActiveRecord::Base
 
   delegate :description, :sku, :unit_of_measurement, :to => :product_type, :prefix => true
 
+  class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      unless statement
+        statement = InventoryEntry
+      end
+
+      if filters[:id]
+        statement = statement.where(id: filters[:id])
+      end
+
+      if filters and filters[:keyword]
+        statement = statement.where(InventoryEntry.arel_table[:description].matches('%' + filters[:keyword] + '%'))
+      end
+
+      statement
+    end
+  end
+
   def taxable?
     self.product_type.taxable?
   end
