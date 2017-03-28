@@ -60,7 +60,7 @@ OrderLineItem.class_eval do
   def equals?(record, options)
     equal = true;
 
-    if (record.is_a? ProductType && self.product_type_id == record.id) || (record.is_a? InventoryEntry && self.inventory_entry_id == record.inventory_entry_id)
+    if ((record.is_a? ProductType) && (self.product_type_id == record.id)) || ((record.is_a? InventoryEntry) && (self.inventory_entry_id == record.inventory_entry_id))
 
       self.selected_product_options.each do |selected_product_option|
         passed_option = options.find{ |option| selected_product_option.product_option_applicability_id == option[:product_option_applicability][:id] }
