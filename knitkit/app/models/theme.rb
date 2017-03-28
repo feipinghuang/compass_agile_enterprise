@@ -307,14 +307,18 @@ class Theme < ActiveRecord::Base
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
     theme_path = File.join(path, "templates", "shared", "knitkit")
     if header['source'].present?
-      file_support.update_file(File.join(theme_path, "_header.html.erb"), header['source'])
+      # strip off design specific HTML
+      website_header = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_layout_content(header['source'])
+      file_support.update_file(File.join(theme_path, "_header.html.erb"), website_header)
       meta_data['header'] ||= {}
       meta_data['header']['component_iid'] = header['component_iid']
       meta_data['header']['component_height'] = header['component_height']
     end
 
     if footer['source'].present?
-      file_support.update_file(File.join(theme_path, "_footer.html.erb"), footer['source'])
+      # strip off design specific HTML
+      website_footer = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_layout_content(footer['source'])
+      file_support.update_file(File.join(theme_path, "_footer.html.erb"), website_footer)
       meta_data['footer'] ||= {}
       meta_data['footer']['component_iid'] = footer['component_iid']
       meta_data['footer']['component_height'] = footer['component_height']

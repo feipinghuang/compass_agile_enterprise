@@ -133,10 +133,12 @@ class Content < ActiveRecord::Base
     website_section_content
   end
 
-  def update_html_and_position(section, website_html, position)
+  def update_html_and_position(section, builder_html, position)
       website_section_content = WebsiteSectionContent.where("content_id = ? and website_section_id = ? ", self.id, section.id).first
       unless website_section_content.nil?
-        website_section_content.website_html = website_html
+        website_section_content.builder_html = builder_html
+        # strip off design specific HTML
+        website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_content(builder_html)
         website_section_content.position = position
         website_section_content.save
       end

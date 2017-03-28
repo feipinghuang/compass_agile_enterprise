@@ -587,11 +587,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                         if(previousComponent.parent()[0] == dropTarget[0]) {
                             return;
                         }
-                        previousComponent.parent().removeClass('drop-target-select');
+                        previousComponent.parent().removeClass('dnd-drop-target-occupied');
                         previousComponent.remove();
                         insertionPoint.after(dropComponent);
-                        dropComponent.css('cursor', 'move');
-                        dropComponent.parent().addClass('drop-target-select');
+                        dropComponent.parent().addClass('dnd-drop-target-occupied');
                         dropComponent.attr('drag-uid', new Date().getTime());
                         dropComponent.attr('draggable', true);
                         insertionPoint.remove();
@@ -618,8 +617,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
                                 var dropComponent = jQuery(componentHTML);
                                 insertionPoint.after(dropComponent);
-                                dropComponent.css('cursor', 'move');
-                                dropComponent.parent().addClass('drop-target-select');
+                                dropComponent.parent().addClass('dnd-drop-target-occupied');
                                 dropComponent.attr('drag-uid', new Date().getTime());
                                 dropComponent.attr('draggable', true);
                                 insertionPoint.remove();

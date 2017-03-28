@@ -37,7 +37,7 @@ module Knitkit
                   raw "<div class='knitkit_content'
                           contentid='#{content.id}'
                           lastupdate='#{content_version.updated_at.strftime("%m/%d/%Y %I:%M%p")}'>
-                          #{(website_section_content.body_html.nil? ? '' : website_section_content.body_html)}</div>"
+                          #{(website_section_content.website_html.nil? ? '' : website_section_content.website_html)}</div>"
                 else
                   raw "<div class='knitkit_content'
                           contentid='#{content.id}'
