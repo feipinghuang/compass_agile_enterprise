@@ -48,7 +48,8 @@ class InventoryEntry < ActiveRecord::Base
 
   alias_method :storage_facilities, :facilities
 
-  delegate :description, :sku, :unit_of_measurement, :taxable?, :revenue_gl_account, :expense_gl_account, :to => :product_type, :prefix => true
+  delegate :description, :sku, :unit_of_measurement, to: :product_type, prefix: true
+  delegate :revenue_gl_account, :expense_gl_account, :taxable?, to: :product_type
 
   after_destroy :remove_inv_entry_relns
 
