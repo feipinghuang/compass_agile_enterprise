@@ -26,10 +26,14 @@ module ActionView
           @cached[key][name][prefix][partial][locals] = decorate(yield, path_info, details, locals)
         else
           @cached[key][name][prefix][partial][locals].each do |template|
-            @cached[key][name][prefix][partial][locals].delete_if{|item| item.identifier == template.identifier}
             #check if the file still exists
             if file_support.exists? template.identifier
-              @cached[key][name][prefix][partial][locals] << build_template(template.identifier, template.virtual_path, (details[:formats] || [:html] if template.formats.empty?), file_support, template.locals)
+              if mtime(template.identifier) > template.updated_at
+                @cached[key][name][prefix][partial][locals].delete_if{|item| item.identifier == template.identifier}
+                @cached[key][name][prefix][partial][locals] << build_template(template.identifier, template.virtual_path, (details[:formats] || [:html] if template.formats.empty?), file_support, template.locals)
+              end
+            else
+              @cached[key][name][prefix][partial][locals].delete_if{|item| item.identifier == template.identifier}
             end
           end
           @cached[key][name][prefix][partial][locals]
@@ -40,9 +44,9 @@ module ActionView
 
         scope = @cached[key][name][prefix][partial]
         cache = scope[locals]
-        mtime = cache && cache.map(&:updated_at).max
+        _mtime = cache && cache.map(&:updated_at).max
 
-        if !mtime || fresh.empty?  || fresh.any? { |t| t.updated_at > mtime }
+        if !_mtime || fresh.empty?  || fresh.any? { |t| t.updated_at > _mtime }
           scope[locals] = fresh
         else
           cache
@@ -63,7 +67,7 @@ module ActionView
       node.nil? ? [] : node[:children].select{|child| child[:leaf]}.collect{|child| child[:id]}.select{|p|!p.scan(full_path).empty?}
     end
 
-    def mtime(p, file_support)
+    def mtime(p)
       p = p.sub(%r{^/}, '')
       ErpTechSvcs::FileSupport::S3Manager.new.bucket.objects[p].last_modified
     end
@@ -73,8 +77,8 @@ module ActionView
     def build_template(p, virtual_path, formats, file_support, locals=nil)
       handler, format = extract_handler_and_format(p, formats)
       contents, message = file_support.get_contents(p)
-      
-      Template.new(contents, p, handler, :virtual_path => virtual_path, :format => format, :updated_at => mtime(p, file_support), :locals => locals)
+
+      Template.new(contents, p, handler, :virtual_path => virtual_path, :format => format, :updated_at => mtime(p), :locals => locals)
     end
   end
 end
