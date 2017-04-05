@@ -222,7 +222,6 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                         }
 
                         var fileType = record.data.id.split('.').pop();
-
                         if (Ext.Array.indexOf(['png', 'gif', 'jpg', 'jpeg', 'ico', 'bmp', 'tif', 'tiff'], fileType.toLowerCase()) > -1) {
                             self.fireEvent('showImage', this, record);
                         }
@@ -701,6 +700,72 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                 if (self.fireEvent('downloadfile', this, record)) {
                                     window.open((self.initialConfig['controllerPath'] || '/erp_app/desktop/file_manager/base') + "/download_file/?path=" + record.data.id, 'mywindow', 'width=400,height=200');
                                 }
+                            }
+                        }
+                    }, {
+                        text: 'Replace',
+                        iconCls: 'icon-document',
+                        listeners: {
+                            'click': function () {
+                                Ext.create("Ext.window.Window", {
+                                    modal: true,
+                                    title: 'Replace File',
+                                    buttonAlign: 'center',
+                                    items: {
+                                        xtype: 'form',
+                                        timeout: 300,
+                                        frame: false,
+                                        bodyStyle: 'padding:5px 5px 0',
+                                        fileUpload: true,
+                                        url: '/erp_app/desktop/file_manager/base/replace_file',
+                                        items: [
+                                            {
+                                                xtype: 'fileuploadfield',
+                                                width: '350px',
+                                                fieldLabel: 'Replace File',
+                                                buttonText: 'Upload',
+                                                buttonOnly: false,
+                                                allowBlank: false,
+                                                name: 'replace_file_data'
+                                            }
+                                        ]
+                                    },
+                                    buttons: [
+                                        {
+                                            text: 'Submit',
+                                            listeners: {
+                                                'click': function (button) {
+                                                    var window = this.up('window'),
+                                                        form = window.query('form')[0].getForm();
+                                                    if (form.isValid()) {
+                                                        form.submit({
+                                                            timeout: 300000,
+                                                            waitMsg: 'Replacing File...',
+                                                            params: {
+                                                                node: record.data.id
+                                                            },
+                                                            success: function (form, action) {
+                                                                window.close();
+                                                            },
+                                                            failure: function (form, action) {
+                                                                Ext.Msg.alert("Error", "Error replacing file");
+                                                            }
+                                                        });
+                                                    }
+                                                    else {
+                                                        Ext.Msg.alert("Warning", "Please select a file to replace");
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        {
+                                            text: 'Close',
+                                            handler: function (btn) {
+                                                btn.up('window').close();
+                                            }
+                                        }
+                                    ]
+                                }).show();
                             }
                         }
                     });

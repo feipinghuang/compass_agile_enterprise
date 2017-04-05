@@ -4,7 +4,7 @@ module ErpApp
 	module Desktop
 		module FileManager
 			class BaseController < ErpApp::Desktop::BaseController
-			  
+
 			  before_filter :set_file_support
 
         ROOT_NODE = 'root_node'
@@ -114,6 +114,16 @@ module ErpApp
           render :inline => result.to_json
         end
 
+        def replace_file
+          begin
+            contents, message = @file_support.get_contents(params["replace_file_data"].path)
+            @file_support.update_file(File.join(@file_support.root, params["node"]), contents)
+            render :json => {:success => true}
+          rescue Exception => e
+            render :json => {:success => false, :error => ex.message}
+          end
+        end
+
         protected
 
         def upload_file_to_path(upload_path, valid_file_type_regex=nil)
@@ -144,7 +154,7 @@ module ErpApp
         def set_file_support
           @file_support = ErpTechSvcs::FileSupport::Base.new
         end
-			
+
 			end
 		end
 	end
