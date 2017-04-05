@@ -19,6 +19,10 @@ module Api
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
+        if params[:parent_id]
+          query_filter[:parent_id] = params[:parent_id]
+        end
+
         # hook method to apply any scopes passed via parameters to this api
         categories = Category.apply_filters(query_filter)
 

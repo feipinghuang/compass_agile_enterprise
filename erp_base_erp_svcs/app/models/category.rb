@@ -66,6 +66,10 @@ class Category < ActiveRecord::Base
         end
       end
 
+      if filters[:parent_id]
+        statement = statement.where(categories: {parent_id: filters[:parent_id]})
+      end
+
       # filter by query which will filter on description
       if filters[:query]
         statement = statement.where('description ilike ?', "%#{filters[:query].strip}%")
