@@ -142,6 +142,26 @@ class Party < ActiveRecord::Base
   end
   alias :tenant :dba_organization
 
+  # if dba_org exists, delete it and replace it
+  # if it doesn't exist, create it
+  #
+  # @param party party of the dba org for this party
+  def set_dba_org(description, to_party_id, reln_type)
+      if dba_organization
+        dba_party_relationship = find_relationship_by_role_type('dba_org')
+        unless dba_party_relationship.nil?
+          dba_party_relationship.delete
+        end
+      end
+      create_relationship(description, to_party_id, reln_type)
+  end
+
+  def find_relationship_by_role_type(role_type_iid)
+    PartyRelationship.includes(:relationship_type).
+        where('party_id_from = ? or party_id_to = ?', id, id).
+        where('role_type_id_to' => RoleType.iid(role_type_iid)).first
+  end
+
   # Get any child DBA Organizations related this party
   #
   # @param dba_orgs [Array] Array of current DBA Organizations to add to
@@ -200,6 +220,7 @@ class Party < ActiveRecord::Base
 
     dba_orgs.uniq
   end
+
 
   # Gathers all party relationships that contain this particular party id
   # in either the from or to side of the relationship.
