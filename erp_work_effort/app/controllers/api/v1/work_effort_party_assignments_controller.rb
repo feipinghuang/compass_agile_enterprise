@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class WorkEffortPartyAssignmentsController < BaseController
 
@@ -209,4 +209,4 @@ module Api
 
     end # WorkEffortPartyAssignmentsController
   end # V1
-end # Api
+end # API

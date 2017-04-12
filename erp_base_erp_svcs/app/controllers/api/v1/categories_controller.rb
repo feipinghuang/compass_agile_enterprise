@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class CategoriesController < BaseController
 
@@ -179,4 +179,4 @@ module Api
 
     end # CategoriesController
   end # V1
-end # Api
+end # API
