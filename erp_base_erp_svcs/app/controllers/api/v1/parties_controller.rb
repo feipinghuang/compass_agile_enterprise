@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class PartiesController < BaseController
 
@@ -378,4 +378,4 @@ module Api
 
     end # PartiesController
   end # V1
-end # Api
+end # API

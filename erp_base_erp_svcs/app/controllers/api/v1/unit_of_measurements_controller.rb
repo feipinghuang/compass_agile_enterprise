@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class UnitOfMeasurementsController < BaseController
 
@@ -30,4 +30,4 @@ module Api
 
     end # UnitOfMeasurementsController
   end # V1
-end # Api
+end # API

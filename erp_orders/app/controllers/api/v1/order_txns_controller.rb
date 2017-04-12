@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class OrderTxnsController < BaseController
 
@@ -164,4 +164,4 @@ module Api
 
     end # OrderTxnsController
   end # V1
-end # Api
+end # API
