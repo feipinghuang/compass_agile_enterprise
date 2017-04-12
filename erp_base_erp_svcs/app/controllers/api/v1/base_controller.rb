@@ -10,7 +10,7 @@ module API
       protected
 
       def not_authenticated
-        render json: {success: false, message: 'Not Authenticated'}
+        render json: {success: false, message: 'Not Authenticated'}, status: 401
       end
 
     end
