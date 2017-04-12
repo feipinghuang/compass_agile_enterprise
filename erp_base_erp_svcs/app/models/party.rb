@@ -125,6 +125,8 @@ class Party < ActiveRecord::Base
       .where({party_relationships: {party_id_to: dba_organization}})
     end
 
+    alias :by_tenant :scope_by_dba_organization
+
     # Scopes parties by passed role types
     #
     # @param role_types [Array, RoleType] Array of RoleTypes to scope by
@@ -146,20 +148,29 @@ class Party < ActiveRecord::Base
   # if it doesn't exist, create it
   #
   # @param party party of the dba org for this party
-  def set_dba_org(description, to_party_id, reln_type)
-      if dba_organization
-        dba_party_relationship = find_relationship_by_role_type('dba_org')
-        unless dba_party_relationship.nil?
-          dba_party_relationship.delete
-        end
+  def set_dba_org(to_party_id, reln_type=nil,  description="DBA Organization")
+    if to_party_id.is_a? Party
+      to_party_id = to_party_id.id
+    end
+
+    if dba_organization
+      dba_party_relationship = find_relationship_by_role_type('dba_org')
+      unless dba_party_relationship.nil?
+        dba_party_relationship.delete
       end
-      create_relationship(description, to_party_id, reln_type)
+    end
+
+    reln_type ||= RelationshipType.iid('employee_to_dba_org')
+
+    create_relationship(description, to_party_id, reln_type)
   end
+
+  alias :set_tenant! :set_dba_org
 
   def find_relationship_by_role_type(role_type_iid)
     PartyRelationship.includes(:relationship_type).
-        where('party_id_from = ? or party_id_to = ?', id, id).
-        where('role_type_id_to' => RoleType.iid(role_type_iid)).first
+      where('party_id_from = ? or party_id_to = ?', id, id).
+      where('role_type_id_to' => RoleType.iid(role_type_iid)).first
   end
 
   # Get any child DBA Organizations related this party
