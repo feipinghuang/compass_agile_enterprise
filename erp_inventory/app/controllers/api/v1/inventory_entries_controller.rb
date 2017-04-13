@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class InventoryEntriesController < BaseController
 
@@ -74,4 +74,4 @@ module Api
 
     end # InventoryEntriesController
   end # V1
-end # Api
+end # API

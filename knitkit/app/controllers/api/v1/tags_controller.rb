@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class TagsController < BaseController
 
@@ -20,4 +20,4 @@ module Api
 
     end # TagsController
   end # V1
-end # Api
+end # API
