@@ -1,11 +1,11 @@
 require 'fileutils'
 
 module ErpApp
-	module Desktop
-		module FileManager
-			class BaseController < ErpApp::Desktop::BaseController
+  module Desktop
+    module FileManager
+      class BaseController < ErpApp::Desktop::BaseController
 
-			  before_filter :set_file_support
+        before_filter :set_file_support
 
         ROOT_NODE = 'root_node'
 
@@ -60,6 +60,12 @@ module ErpApp
             end
             render :json => {:success => true, :msg => messages.join(',')}
           rescue => ex
+            Rails.logger.error(ex.message)
+            Rails.logger.error(ex.backtrace.join("\n"))
+
+            # email notification
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
             render :json => {:success => false, :error => ex.message}
           end
         end
@@ -83,7 +89,13 @@ module ErpApp
               messages << message
             end
             render :json => {:success => true, :msg => messages.join(',')}
-          rescue Exception => e
+          rescue Exception => ex
+            Rails.logger.error(ex.message)
+            Rails.logger.error(ex.backtrace.join("\n"))
+
+            # email notification
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
             render :json => {:success => false, :error => ex.message}
           end
         end
@@ -117,9 +129,21 @@ module ErpApp
         def replace_file
           begin
             contents, message = @file_support.get_contents(params["replace_file_data"].path)
-            @file_support.update_file(File.join(@file_support.root, params["node"]), contents)
-            render :json => {:success => true}
-          rescue Exception => e
+
+            new_path = File.join(params["node"].split('/').reverse.drop(1).reverse.join('/'), params["replace_file_data"].original_filename)
+
+            @file_support.replace_file(params["node"],
+                                       new_path,
+                                       contents)
+
+            render :json => {:success => true, name: params["replace_file_data"].original_filename, path: new_path}
+          rescue Exception => ex
+            Rails.logger.error(ex.message)
+            Rails.logger.error(ex.backtrace.join("\n"))
+
+            # email notification
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
             render :json => {:success => false, :error => ex.message}
           end
         end
@@ -155,7 +179,7 @@ module ErpApp
           @file_support = ErpTechSvcs::FileSupport::Base.new
         end
 
-			end
-		end
-	end
+      end
+    end
+  end
 end
