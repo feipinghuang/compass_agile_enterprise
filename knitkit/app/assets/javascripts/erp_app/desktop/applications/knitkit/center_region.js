@@ -566,15 +566,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
             success: function(response) {
                 me.clearWindowStatus();
                 var obj = Ext.decode(response.responseText);
-                if (obj.success) {
-                    knitkitWindow = Ext.getCmp('knitkit');
-                    knitkitWindow.dockedItems.add({
-                        text: 'Preview',
-                        handler: function(btn) {
-                            // debugger;
-                        }
-                    })
-                } else {
+                if (!obj.success) {
                     Ext.Msg.alert('Error', obj.message);
                 }
             },
@@ -590,32 +582,38 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
         websiteId = websitesCombo.getValue();
 
-        item = Ext.createWidget('websitebuilderpanel', {
-            closable: true,
-            title: title,
-            websiteSectionId: websiteSectionId,
-            save: function(comp) {
-                var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
-                    components = [];
-                Ext.Array.each(componentPanels, function(component, index) {
-                    iframe = component.el.query("#" + component.componentId + "-frame").first();
-                    page = iframe.contentDocument.documentElement.getElementsByClassName('page')[0];
-                    components.push({
-                        position: index,
-                        content_iid: component.componentId,
-                        body_html: page.outerHTML
-                    });
-                });
-                me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(components));
-            }
-        });
+        var itemId = 'websiteSection' + websiteSectionId;
+        var item = this.workArea.down('#' + itemId);
 
-        this.workArea.add(item);
+        if (!item) {
+            item = Ext.createWidget('websitebuilderpanel', {
+                closable: true,
+                title: title,
+                itemId: itemId,
+                websiteSectionId: websiteSectionId,
+                save: function(comp) {
+                    var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
+                        components = [];
+                    Ext.Array.each(componentPanels, function(component, index) {
+                        iframe = component.el.query("#" + component.componentId + "-frame").first();
+                        page = iframe.contentDocument.documentElement.getElementsByClassName('page')[0];
+                        components.push({
+                            position: index,
+                            content_iid: component.componentId,
+                            body_html: page.outerHTML
+                        });
+                    });
+                    me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(components));
+                }
+            });
+
+            this.workArea.add(item);
+        }
+
         this.workArea.setActiveTab(item);
     },
 
     openIframeInTab: function(title, url) {
-        debugger;
         var item = Ext.create('Ext.panel.Panel', {
             iframeId: 'themes_iframe',
             closable: true,

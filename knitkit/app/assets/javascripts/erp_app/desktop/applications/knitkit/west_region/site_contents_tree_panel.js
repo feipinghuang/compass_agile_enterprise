@@ -249,10 +249,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
 
     listeners: {
         itemclick: function(view, record, htmlItem, index, e) {
-
             var url = null;
             var self = this;
+
             e.stopEvent();
+
             if (record.data['isSection']) {
                 self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId);
             } else if (record.data['objectType'] === "Article") {
@@ -313,19 +314,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
         itemcontextmenu: function(view, record, htmlItem, index, e) {
             e.stopEvent();
             var items = [];
-
-            if (!Compass.ErpApp.Utility.isBlank(record.data['url'])) {
-                items.push({
-                    text: 'View In Web Navigator',
-                    iconCls: 'icon-globe',
-                    listeners: {
-                        'click': function() {
-                            var webNavigator = window.compassDesktop.getModule('web-navigator-win');
-                            webNavigator.createWindow(record.data['url']);
-                        }
-                    }
-                });
-            }
 
             if (record.isRoot() && record.hasChildNodes()) {
                 items = [
