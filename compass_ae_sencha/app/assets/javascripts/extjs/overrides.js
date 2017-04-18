@@ -200,8 +200,7 @@ Ext.define('Compass.ErpApp.Shared.RowEditingPluginOverride', {
 
         if (this.triggerEvent == 'focusedrowclick') {
             var selection = this.grid.getSelectionModel().getSelection();
-
-            if (selection.length == 1 && selection.first().id == record.id) {
+            if (selection.length == 1 && selection.first().id == record.id && !(columnHeader.isCheckerHd || columnHeader.xtype == "actioncolumn")) {
                 var me = this;
 
                 setTimeout(function() {
