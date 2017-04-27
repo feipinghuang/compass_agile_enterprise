@@ -248,6 +248,10 @@ class FileAsset < ActiveRecord::Base
 
   def update_contents!(contents)
     self.data = contents
+
+    # update data_file_name as it sets it to string.io
+    self.update_attribute(:data_file_name, self.name)
+
     self.save!
   end
 
