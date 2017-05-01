@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
-  resources :rulesets do
-    resources :business_rules
+  namespace :api do
+    namespace :v1 do
+      resources :rulesets do
+        resources :business_rules
+      end
+    end
   end
 end
 
