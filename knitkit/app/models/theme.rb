@@ -15,7 +15,7 @@ class Theme < ActiveRecord::Base
   is_json :meta_data
   protected_with_capabilities
   has_file_assets
-  
+
   def to_data_hash
       {
         id: self.id,
@@ -317,16 +317,16 @@ class Theme < ActiveRecord::Base
   def get_layout_component(comp_type)
     meta_data[comp_type.to_s]
   end
-  
+
   def update_base_layout(options={})
     header = options[:header]
     footer = options[:footer]
-    
+
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
     theme_path = File.join(path, "templates", "shared", "knitkit")
     if header['source'].present?
       # strip off design specific HTML
-      website_header = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_layout_content(header['source'])
+      website_header = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(header['source'])
       file_support.update_file(File.join(theme_path, "_header.html.erb"), website_header)
       meta_data['header'] ||= {}
       meta_data['header']['component_iid'] = header['component_iid']
@@ -335,7 +335,7 @@ class Theme < ActiveRecord::Base
 
     if footer['source'].present?
       # strip off design specific HTML
-      website_footer = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_layout_content(footer['source'])
+      website_footer = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(footer['source'])
       file_support.update_file(File.join(theme_path, "_footer.html.erb"), website_footer)
       meta_data['footer'] ||= {}
       meta_data['footer']['component_iid'] = footer['component_iid']
@@ -345,7 +345,7 @@ class Theme < ActiveRecord::Base
     {
       header: meta_data['header'],
       footer: meta_data['footer']
-    } 
+    }
   end
 
   private
@@ -389,7 +389,7 @@ class Theme < ActiveRecord::Base
       contents.gsub!("<%= stylesheet_link_tag 'knitkit/footer' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','footer.css' %>") unless path.scan('base.html.erb').empty?
       contents.gsub!("<%= stylesheet_link_tag 'knitkit/build' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','build.css' %>") unless path.scan('base.html.erb').empty?
       contents.gsub!("<%= stylesheet_link_tag 'knitkit/video' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','video.css' %>") unless path.scan('base.html.erb').empty?
-      
+
       path = case type
                when :widgets
                  path.gsub(options[:path_to_replace], "#{self.url}/widgets/#{options[:widget_name]}")

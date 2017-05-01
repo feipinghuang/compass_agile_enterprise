@@ -138,7 +138,7 @@ class Content < ActiveRecord::Base
       unless website_section_content.nil?
         website_section_content.builder_html = builder_html
         # strip off design specific HTML
-        website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_content(builder_html)
+        website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(builder_html)
         website_section_content.position = position
         website_section_content.save
       end

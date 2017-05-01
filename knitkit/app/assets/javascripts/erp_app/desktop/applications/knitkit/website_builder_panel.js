@@ -444,7 +444,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         Ext.get(componentIid + "-remove").on("click", function() {
             parentContainer = dropPanel.up('container');
-            if (dropPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
+            if (dropPanel.cls == "websitebuilder-component-panel") {
                 parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
                     xtype: 'websitebuilderdropzone',
                     flex: 1
@@ -989,7 +989,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 }),
                 listeners: {
                     render: function(comp) {
-
                         Ext.apply(comp, {
                             height: componentHeight,
                             componentId: componentIid
