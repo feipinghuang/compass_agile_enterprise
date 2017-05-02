@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class BizTxnEventsController < BaseController
 
@@ -72,4 +72,4 @@ module Api
 
     end # BizTxnEvents
   end # V1
-end # Api
+end # API

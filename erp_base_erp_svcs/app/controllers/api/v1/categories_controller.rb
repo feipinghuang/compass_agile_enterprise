@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class CategoriesController < BaseController
 
@@ -18,6 +18,10 @@ module Api
         start = params[:start] || 0
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
+
+        if params[:parent_id]
+          query_filter[:parent_id] = params[:parent_id]
+        end
 
         # hook method to apply any scopes passed via parameters to this api
         categories = Category.apply_filters(query_filter)
@@ -175,4 +179,4 @@ module Api
 
     end # CategoriesController
   end # V1
-end # Api
+end # API

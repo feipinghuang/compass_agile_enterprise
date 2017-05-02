@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class BaseController < ActionController::Base
 
@@ -15,4 +15,4 @@ module Api
 
     end
   end # V1
-end # Api
+end # API
