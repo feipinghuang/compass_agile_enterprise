@@ -16,7 +16,7 @@ module API
 
  @apiSuccess {Boolean} success True if the request was successful
  @apiSuccess {Number} total_count Total count of Party records based on any filters applied
- @apiSuccess {Array} parties List of Party records
+ @apiSuccess {Object[]} parties List of Party records
  @apiSuccess {Number} parties.id Id of Party
 
 =end

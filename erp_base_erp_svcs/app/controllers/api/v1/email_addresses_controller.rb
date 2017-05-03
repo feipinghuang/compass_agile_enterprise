@@ -3,19 +3,25 @@ module API
     class EmailAddressesController < BaseController
 
 =begin
-
- @api {get} /api/v1/email_addresses Index
+ @api {get} /api/v1/email_addresses
  @apiVersion 1.0.0
  @apiName GetEmailAddresses
- @apiGroup Email Address
+ @apiGroup EmailAddress
+ @apiDescription Get Email Addresses
 
- @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+ @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Array} email_addresses List of EmailAddress records
- @apiSuccess {Number} email_addresses.id Id of EmailAddress
+ @apiSuccess {Boolean} success True if the request was successful.
+ @apiSuccess {Number} total_count Total count of records based on any filters applied.
+ @apiSuccess {Object[]} email_addresses List of EmailAddress records.
+ @apiSuccess {Number} email_addresses.id Id of EmailAddress.
 
+ @apiSuccessExample Success-Response:
+     HTTP/1.1 200 OK
+     {
+       "success": true,
+       "email_address": {"id": 1, "description": "Russell's Email", email_address":"rholmes@truenorthtechnology.com"}
+     }
 =end
 
       def index
@@ -58,17 +64,16 @@ module API
       end
 
 =begin
-
- @api {get} /api/v1/email_addresses/:id Index
+ @api {get} /api/v1/email_addresses/:id 
  @apiVersion 1.0.0
  @apiName GetEmailAddresses
- @apiGroup Email Address
+ @apiGroup EmailAddress
+ @apiDescription Get Email Address
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Array} email_addresses List of EmailAddress records
- @apiSuccess {Number} email_addresses.id Id of EmailAddress
-
+ @apiSuccess {Boolean} success True if the request was successful.
+ @apiSuccess {Number} total_count Total count of records based on any filters applied.
+ @apiSuccess {Object} email_address EmailAddress record.
+ @apiSuccess {Number} email_addresses.id Id of EmailAddress.
 =end
 
       def show
@@ -76,20 +81,19 @@ module API
       end
 
 =begin
-
-  @api {post} /api/v1/email_addresses Create
+  @api {post} /api/v1/email_addresses
   @apiVersion 1.0.0
   @apiName CreateEmailAddress
-  @apiGroup Email Address
+  @apiGroup EmailAddress
+  @apiDescription Create Email Address
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} email_address Email Address
-  @apiParam {String} description Description of Email Address
+  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+  @apiParam {String} email_address Email Address.
+  @apiParam {String} description Description of Email Address.
 
   @apiSuccess {Boolean} success True if the request was successful
   @apiSuccess {Object} email_address EmailAddress record
   @apiSuccess {Number} email_address.id Id of EmailAddress
-
 =end
 
       def create
@@ -134,20 +138,19 @@ module API
       end
 
 =begin
-
-  @api {put} /api/v1/email_addresses/:id Update
+  @api {put} /api/v1/email_addresses/:id Update Email Address
   @apiVersion 1.0.0
   @apiName UpdateEmailAddress
-  @apiGroup Email Address
+  @apiGroup EmailAddress
+  @apiDescription Update Email Address
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} [email_address] Email Address
-  @apiParam {String} [description] Description of Email Address
+  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+  @apiParam {String} [email_address] Email Address.
+  @apiParam {String} [description] Description of Email Address.
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} email_address EmailAddress record
-  @apiSuccess {Number} email_address.id Id of EmailAddress
-
+  @apiSuccess {Boolean} success True if the request was successful.
+  @apiSuccess {Object} email_address EmailAddress record.
+  @apiSuccess {Number} email_address.id Id of EmailAddress.
 =end
 
       def update
@@ -198,14 +201,13 @@ module API
       end
 
 =begin
-
-  @api {delete} /api/v1/email_addresses/:id Delete
+  @api {delete} /api/v1/email_addresses/:id Delete Email Address
   @apiVersion 1.0.0
   @apiName DeleteEmailAddress
-  @apiGroup Email Address
+  @apiGroup EmailAddress
+  @apiDescription Delete Email Address  
 
-  @apiSuccess {Boolean} success True if the request was successful
-
+  @apiSuccess {Boolean} success True if the request was successful.
 =end
 
       def destroy
