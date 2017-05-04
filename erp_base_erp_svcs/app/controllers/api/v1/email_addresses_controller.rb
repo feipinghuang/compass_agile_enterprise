@@ -35,7 +35,7 @@ module API
           email_addresses = email_addresses.for_party(Party.find(params[:party_id]), contact_purposes)
         else
           unless contact_purposes.empty?
-            email_addresses = email_addresses.where(contact_purposes: {id: contact_purposes})
+            email_addresses = email_addresses.joins(contact: :contact_purposes).where(contact_purposes: {id: contact_purposes})
           end
         end
 
