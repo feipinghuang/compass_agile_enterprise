@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class TrackedStatusTypesController < BaseController
 
@@ -24,6 +24,14 @@ module Api
             format.json do
               render :json => {success: true, tracked_status_types: parent.children.all.collect{|item| item.to_data_hash}}
             end
+            format.all_representation do
+
+              total_count = TrackedStatusType.count
+
+              render :json => {success: true,
+                               total_count: total_count,
+                               tracked_status_types: TrackedStatusType.to_all_representation(parent)}
+            end
           end
 
           # if parent id is passed find parent and get its children
@@ -36,6 +44,14 @@ module Api
             end
             format.json do
               render :json => {success: true, tracked_status_types: parent.children.all.collect{|item| item.to_data_hash}}
+            end
+            format.all_representation do
+
+              total_count = TrackedStatusType.count
+
+              render :json => {success: true,
+                               total_count: total_count,
+                               tracked_status_types: TrackedStatusType.to_all_representation(TrackedStatusType.find(params[:parent_id]))}
             end
           end
           # if ids are passed look up on the Tracked Status Types with the ids passed
@@ -55,11 +71,11 @@ module Api
             respond_to do |format|
               format.tree do
                 data = tracked_status_type.to_hash({
-                                             only: [:id, :parent_id, :internal_identifier],
-                                             leaf: tracked_status_type.leaf?,
-                                             text: tracked_status_type.to_label,
-                                             children: []
-                                         })
+                                                     only: [:id, :parent_id, :internal_identifier],
+                                                     leaf: tracked_status_type.leaf?,
+                                                     text: tracked_status_type.to_label,
+                                                     children: []
+                })
 
                 parent = nil
                 tracked_status_types.each do |tracked_status_type_hash|
@@ -81,7 +97,7 @@ module Api
 
           end
 
-          render :json => {success: true, tracked_status_types: role_types}
+          render :json => {success: true, tracked_status_types: tracked_status_type}
 
           # get all role types
         else
@@ -97,6 +113,15 @@ module Api
             end
             format.json do
               render :json => {success: true, tracked_status_types: TrackedStatusType.where('parent_id is null').all.collect{|item| item.to_data_hash}}
+            end
+            format.all_representation do
+
+              total_count = TrackedStatusType.count
+
+              render :json => {success: true,
+                               total_count: total_count,
+                               tracked_status_types: TrackedStatusType.to_all_representation(nil, [], 0, TrackedStatusType.roots)}
+
             end
           end
 
@@ -143,4 +168,4 @@ module Api
 
     end # TrackedStatusTypesController
   end # V1
-end # Api
+end # API

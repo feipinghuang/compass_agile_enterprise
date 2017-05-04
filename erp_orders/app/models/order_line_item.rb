@@ -59,6 +59,7 @@ class OrderLineItem < ActiveRecord::Base
   def dba_organization
     order_txn.find_party_by_role('dba_org')
   end
+  alias :tenant :dba_organization
 
   def destroy_order_line_item_relationships
     OrderLineItemRelationship.where("order_line_item_id_from = ? or order_line_item_id_to = ?", self.id, self.id).destroy_all
@@ -157,7 +158,9 @@ class OrderLineItem < ActiveRecord::Base
     if product_offer
       product_offer
     else
-      if product_instance
+      if inventory_entry
+        inventory_entry
+      elsif product_instance
         product_instance
       else
         product_type
@@ -173,7 +176,7 @@ class OrderLineItem < ActiveRecord::Base
 
   def find_party_by_role(role_type)
     order_line_item_pty_role = order_line_item_pty_roles.joins(:role_type).where(party_id: party).where(role_types: {internal_identifier: role_type}).first
-    
+
     if order_line_item_pty_role
       order_line_item_pty_role.party
     end
@@ -184,6 +187,57 @@ class OrderLineItem < ActiveRecord::Base
     order_line_item_dup.order_txn_id = nil
 
     order_line_item_dup
+  end
+
+  # Check if this Order Line Item is equal by product type and options selected
+  #
+  # @param {Integer} product_type Product type
+  # @param {Array} options Array of options
+  # @return {Boolean} true if it is equal
+  def equals?(product_type, options)
+    equal = true;
+
+    if self.product_type.id == product_type.id
+      self.selected_product_options.each do |selected_product_option|
+        passed_option = options.find{ |option| selected_product_option.product_option_applicability_id == option[:product_option_applicability][:id] }
+
+        if passed_option
+
+          if passed_option[:selected_options].length != selected_product_option.product_options.length
+            equal = false;
+
+            break
+          else
+            passed_option[:selected_options].each do |_selected_option|
+              selected_option = selected_product_option.product_options.find{ |option| option.id == _selected_option[:id] }
+
+              unless selected_option
+
+                equal = false;
+
+                break
+
+              end
+            end
+          end
+
+          if !equal
+            break
+          end
+
+        else
+          equal = false
+
+          break
+        end
+
+      end
+
+    else
+      equal = false
+    end
+
+    equal
   end
 
   def to_data_hash

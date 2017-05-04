@@ -6,6 +6,8 @@
 #   t.string :current_state
 #   t.text :custom_fields
 #
+#   t.integer :tenant_id
+#
 #   t.timestamps
 # end
 #
@@ -21,6 +23,8 @@ class Notification < ActiveRecord::Base
 
   # serialize custom attributes
   is_json :custom_fields
+
+  is_tenantable
 
   include AASM
 

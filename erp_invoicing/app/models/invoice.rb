@@ -24,14 +24,7 @@ class Invoice < ActiveRecord::Base
   has_file_assets
   can_be_generated
 
-  has_tracked_status({
-                       valid_transitions: {
-                         invoice_statuses_open: [:invoice_statuses_hold, :invoice_statuses_sent],
-                         invoice_statuses_sent: [:invoice_statuses_closed],
-                         invoice_statuses_hold: [:invoice_statuses_open, :invoice_statuses_sent],
-                         invoice_statuses_closed: []
-                       }
-  })
+  has_tracked_status
 
   tracks_created_by_updated_by
 
@@ -136,12 +129,17 @@ class Invoice < ActiveRecord::Base
 
           invoice_item.invoice = invoice
 
-          charged_item = line_item.product_instance || line_item.product_offer ||line_item.product_type
+          charged_item = line_item.inventory_entry || line_item.product_instance || line_item.product_offer || line_item.product_type 
 
-          invoice_item.item_description = charged_item.description
+          if charged_item.is_a? InventoryEntry
+            invoice_item.item_description = charged_item.product_type.description
+          else
+            invoice_item.item_description = charged_item.description
+          end
+          
           invoice_item.quantity = line_item.quantity
           invoice_item.unit_price = line_item.sold_price
-          invoice_item.amount = (line_item.quantity * line_item.sold_price)
+          invoice_item.amount = line_item.total_amount
           invoice_item.taxed = line_item.taxed?
           invoice_item.biz_txn_acct_root = charged_item.try(:revenue_gl_account)
           invoice_item.add_invoiced_record(charged_item)
@@ -158,6 +156,7 @@ class Invoice < ActiveRecord::Base
           invoice_item.invoice = invoice
           charged_item = charge_line.charged_item
           invoice_item.item_description = charge_line.description
+          invoice_item.type = InvoiceItemType.find_or_create(charge_line.charge_type.internal_identifier, charge_line.charge_type.description)
 
           # set data based on charged item either a OrderTxn or OrderLineItem
           if charged_item.is_a?(OrderLineItem)
@@ -354,11 +353,7 @@ class Invoice < ActiveRecord::Base
       end
     else
       unless self.balance.nil?
-        if has_invoice_items?
-          (self.balance - self.total_payments).round(2)
-        else
-          self.balance.round(2)
-        end
+        (self.balance - self.total_payments).round(2)
       end
     end
   end
@@ -413,9 +408,176 @@ class Invoice < ActiveRecord::Base
   def dba_organization
     find_parties_by_role_type('dba_org').first
   end
+  alias :tenant :dba_organization
 
   def to_data_hash
     to_hash(only: [:id, :created_at, :updated_at, :description, :invoice_number, :invoice_date, :due_date])
+  end
+
+  # Make payment on invoice
+  #
+  # @param {User} current_user Current User
+  # @param {String} payment_method Payment Method cash, check, credit
+  # @param {Float} amount Amount of payment
+  # @param {String} [token] Token from Payment Gateway
+  # @param {Boolean} [one_time_payment] If this is a one time payment
+  # @param {Hash} [card_information] Card information
+  # @param {Integer} [customer_id] Id of Customer
+  # @param {Integer} [website_id] Id of Website
+  # @return {Hash} results
+  def make_payment(current_user, payment_method, amount, token=nil, one_time_payment=false, card_information={}, customer_id=nil, website_id=nil)
+    begin
+      # create money and financial txn records
+      money = Money.new
+      money.currency = Currency.usd
+      money.amount = amount
+      money.description = "Invoice ##{self.invoice_number} Payment"
+      money.save!
+
+      financial_txn = FinancialTxn.new
+      financial_txn.money = money
+      financial_txn.apply_date = Date.today
+      financial_txn.save!
+
+      biz_txn_event = financial_txn.root_txn
+
+      # tie financial_txn to dba_org
+      dba_org_role_type = BizTxnPartyRoleType.find_or_create('dba_org', 'Doing Business As Organization')
+      tpr = BizTxnPartyRole.new
+      tpr.biz_txn_event = biz_txn_event
+      tpr.party = current_user.party.dba_organization
+      tpr.biz_txn_party_role_type = dba_org_role_type
+      tpr.save
+
+      # tie financial_txn to customer
+      biz_txn_role_type = BizTxnPartyRoleType.iid('payor')
+      tpr = BizTxnPartyRole.new
+      tpr.biz_txn_event = biz_txn_event
+      tpr.party = self.find_party_by_role('customer')
+      tpr.biz_txn_party_role_type = biz_txn_role_type
+      tpr.save
+
+      # set txn type
+      if payment_method == 'cash' or payment_method == 'check'
+        financial_txn.root_txn.txn_type = BizTxnType.find_or_create(payment_method, payment_method.humanize, BizTxnType.iid('payment_transaction'))
+      else
+        financial_txn.root_txn.txn_type = BizTxnType.find_or_create('credit_card', 'Credit Card', BizTxnType.iid('payment_transaction'))
+      end
+
+      financial_txn.save
+
+      if payment_method == 'cash' or payment_method == 'check'
+        authorization_code = reference_number = "#{payment_method}_#{SecureRandom.hex(5)}"
+
+        payment = Payment.new
+        payment.success = true
+        payment.reference_number = reference_number
+        payment.authorization_code = authorization_code
+        payment.financial_txn = financial_txn
+        payment.capture
+        payment.save!
+
+      else
+        stripe_external_system = ExternalSystem.with_party_role(current_user.party.dba_organization, RoleType.iid('owner'))
+        .where('external_systems.internal_identifier' => 'stripe').first
+
+        if payment_method == 'credit' && token
+          if one_time_payment
+            credit_card = CreditCard.new(credit_card_token: token)
+            credit_card.card_number = card_information[:card_number]
+            credit_card.expiration_month = card_information[:exp_month]
+            credit_card.expiration_year = card_information[:exp_year]
+
+            result = CreditCardAccount.new.purchase(financial_txn,
+                                                    nil,
+                                                    CompassAeBusinessSuite::ActiveMerchantWrappers::StripeWrapper,
+                                                    {
+                                                      private_key: stripe_external_system.private_key,
+                                                      public_key: stripe_external_system.public_key
+            }, credit_card)
+          else
+            credit_card = nil
+            customer = Party.find(customer_id)
+
+            # we need to store the new card and then charge it
+            result = CreditCard.validate_and_update({
+                                                      party: customer,
+                                                      card_number: card_information[:card_number],
+                                                      token: token,
+                                                      cvc: nil,
+                                                      name_on_card: card_information[:name_on_card],
+                                                      exp_month: card_information[:exp_month],
+                                                      exp_year: card_information[:exp_year],
+
+                                                    },
+                                                    customer.primary_credit_card,
+                                                    [stripe_external_system])
+
+            # if adding the card was successful then retrieve it
+            # if not leave it nil and message will be returned
+            if result[:success]
+              credit_card = result[:credit_card]
+              # manually save credit card to stripe because we need to use it to purchase
+              credit_card_handler = MasterDataManagement::ExternalSystems::EventHandlers::Stripe::CreditCard.new(credit_card.mdm_entity, stripe_external_system)
+              if credit_card_handler.create(credit_card, {}) === false
+                credit_card.notify_except(stripe_external_system)
+                credit_card.destroy!
+                credit_card = nil
+              end
+            end
+          end
+
+        else
+          credit_card = CreditCard.find(payment_method)
+        end
+
+        # if we have a stored credit card charge it
+        if credit_card && !one_time_payment
+          credit_card_account = credit_card.credit_card_account_party_role.credit_card_account
+          # check if the credit card as a stripe mapping, if it does purchase with existing else do
+          # one time purchase but save the txn to the card as it will by synced to Stripe later.
+          result = credit_card_account.purchase_with_existing_card(financial_txn,
+                                                                   CompassAeBusinessSuite::ActiveMerchantWrappers::StripeWrapper,
+                                                                   {
+                                                                     private_key: stripe_external_system.private_key,
+                                                                     public_key: stripe_external_system.public_key
+          })
+
+          # add financial txn to CreditCardAccount
+          credit_card_account.account_root.biz_txn_events << financial_txn.root_txn
+          credit_card_account.account_root.save
+        end
+
+        payment = result[:payment]
+      end
+
+      if payment && payment.success
+        payment_application = PaymentApplication.new
+        payment_application.financial_txn = financial_txn
+        payment_application.payment_applied_to = self
+        payment_application.applied_money_amount_id = money.id
+        payment_application.save!
+
+        payment_application.apply_payment
+
+        if self.calculate_balance == 0
+          self.current_status = 'invoice_statuses_closed'
+        end
+
+        PaymentMailer.delay.payment_success(payment_application.id, website_id)
+      else
+        PaymentMailer.delay.payment_failure(self.id, self.find_party_by_role('customer').id, website_id)
+      end
+
+      # touch payment to trigger sync
+      payment.touch
+      payment.force_sync!
+
+      {success: true}
+
+    rescue Stripe::CardError => e
+      {success: false, message: e.message}
+    end
   end
 
   private

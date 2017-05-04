@@ -32,6 +32,8 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
   belongs_to :party
   belongs_to :role_type
 
+  validates_uniqueness_of :party_id, scope: [:work_effort_id, :role_type_id]
+
   has_tracked_status
   tracks_created_by_updated_by
 
@@ -48,9 +50,20 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
         statement = statement.scope_by_project(filters[:project_id])
       end
 
+      # filter by project
+      unless filters[:project_ids].blank?
+        statement = statement.scope_by_project(filters[:project_ids])
+      end
+
       # filter by work_effort
       unless filters[:work_effort_id].blank?
-        statement = statement.scope_by_work_effort(filters[:work_effort_id])
+        if filters[:work_effort_id].is_a? String
+          ids = filters[:work_effort_id].split(',')
+        else
+          ids = filters[:work_effort_id]
+        end
+
+        statement = statement.scope_by_work_effort(ids)
       end
 
       # filter by status
@@ -101,7 +114,7 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_work_effort(work_effort)
-      where('work_effort_id' => work_effort)
+      where(work_effort_id: work_effort)
     end
 
     # scope by party

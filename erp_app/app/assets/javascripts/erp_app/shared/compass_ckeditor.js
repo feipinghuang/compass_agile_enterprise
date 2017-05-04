@@ -41,7 +41,7 @@ Ext.onReady(function () {
                 {
                     indent: true
                 });
-            
+
             //set focus
             ev.editor.focus();
 
@@ -102,7 +102,8 @@ Ext.define("Compass.ErpApp.Shared.CKeditor", {
     },
 
     setupCkEditor: function () {
-        var me = this;
+        var me = this,
+            CKEDITOR_BASEPATH = '/javascripts/ckeditor/';
 
         Ext.applyIf(this.initialConfig.ckEditorConfig, {
             resize_enabled: false,

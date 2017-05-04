@@ -1,10 +1,10 @@
-module Api
+module API
   module V1
     class CategoriesController < BaseController
 
       def index
-        sort = nil
-        dir = nil
+        sort = 'description'
+        dir = 'ASC'
         limit = nil
         start = nil
 
@@ -12,11 +12,16 @@ module Api
           sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
           sort = sort_hash[:property] || 'description'
           dir = sort_hash[:direction] || 'ASC'
-          limit = params[:limit] || 25
-          start = params[:start] || 0
         end
 
+        limit = params[:limit] || 25
+        start = params[:start] || 0
+
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
+
+        if params[:parent_id]
+          query_filter[:parent_id] = params[:parent_id]
+        end
 
         # hook method to apply any scopes passed via parameters to this api
         categories = Category.apply_filters(query_filter)
@@ -27,14 +32,14 @@ module Api
         categories = categories.by_tenant(dba_organizations)
 
         if query_filter[:with_products]
-          categories = categories.where(categories: {id: Category.with_products(dba_organizations, {current_user: current_user})})
+          categories = categories.where(categories: {id: Category.with_products(dba_organizations)})
         end
 
         respond_to do |format|
           format.json do
 
             if sort and dir
-              categories = categories.order("#{sort} #{dir}")
+              categories = categories.except(:order).order("#{sort} #{dir}")
             end
 
             total_count = categories.count
@@ -51,11 +56,11 @@ module Api
 
             if params[:parent_id]
               render :json => {success: true,
-                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories}, {dba_organization: dba_organizations, current_user: current_user})}
+                               categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories})}
             else
               nodes = [].tap do |nodes|
-                categories.roots.each do |root|
-                  nodes.push(root.to_tree_hash({}, {dba_organization: dba_organizations, current_user: current_user}))
+                categories.roots.except(:order).order("#{sort} #{dir}").each do |root|
+                  nodes.push(root.to_tree_hash)
                 end
               end
 
@@ -65,14 +70,23 @@ module Api
 
           end
           format.all_representation do
+
+            total_count = categories.count
+
+            if start and limit
+              categories = categories.offset(start).limit(limit)
+            end
+
             if params[:parent_id].present?
               render :json => {success: true,
-                               categories: BizTxnAcctRoot.to_all_representation(Category.find(params[:parent_id]))}
+                               total_count: total_count,
+                               categories: Category.to_all_representation(Category.find(params[:parent_id]))}, content_type: 'application/json'
             else
 
 
               render :json => {success: true,
-                               categories: BizTxnAcctRoot.to_all_representation(nil, [], 0, categories.roots)}
+                               total_count: total_count,
+                               categories: Category.to_all_representation(nil, [], 0, categories.roots)}, content_type: 'application/json'
             end
           end
         end
@@ -165,4 +179,4 @@ module Api
 
     end # CategoriesController
   end # V1
-end # Api
+end # API

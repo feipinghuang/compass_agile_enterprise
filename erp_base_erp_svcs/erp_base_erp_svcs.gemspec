@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.files       = Dir["{public,app,config,db,lib,tasks}/**/*"] + ["GPL-3-LICENSE", "Rakefile", "README.md"]
   s.test_files  = Dir["spec/**/*"]
 
-  s.add_dependency('attr_encrypted','~> 1.2')
+  s.add_dependency('attr_encrypted','~> 3.0.3')
   s.add_dependency('awesome_nested_set','~> 2.1')
   s.add_dependency('data_migrator','~> 2.0')
   s.add_dependency('has_many_polymorphic','~> 2.0')

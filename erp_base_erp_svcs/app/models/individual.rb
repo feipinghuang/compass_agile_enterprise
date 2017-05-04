@@ -35,7 +35,12 @@ class Individual < ActiveRecord::Base
 
   has_one :party, :as => :business_party
 
-  attr_encrypted :ssn, :key => Rails.application.config.erp_base_erp_svcs.encryption_key, :attribute => :encrypted_ssn
+  attr_encrypted :ssn,
+    key: Rails.application.config.erp_base_erp_svcs.encryption_key,
+    attribute: :encrypted_ssn,
+    algorithm: 'aes-256-cbc',
+    mode: :single_iv_and_salt,
+    insecure_mode: true
 
   def after_initialize
     self.salt ||= Digest::SHA256.hexdigest((Time.now.to_i * rand(5)).to_s)
@@ -51,6 +56,12 @@ class Individual < ActiveRecord::Base
       self.ssn_last_four = social_security_number.split(//).last(4).join
     end
   end
+
+  # Get dba_organzation info eventually going to be tenant
+  def dba_organization
+    self.party.dba_organization
+  end
+  alias :tenant :dba_organization
 
   def formatted_ssn_label
     (self.ssn_last_four.blank?) ? "" : "XXX-XX-#{self.ssn_last_four}"

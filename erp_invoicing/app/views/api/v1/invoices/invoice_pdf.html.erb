@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+
+<%
+   @customer = @invoice.find_party_by_role(RoleType.customer)
+   @doc_type = :invoice
+   @account_number = @customer.custom_fields['account_number']
+
+   if @customer.nil?
+     @customer = @invoice.find_party_by_role(RoleType.vendor)
+     @doc_type = :remittance
+     @account_number = @customer.custom_fields['account_number']
+   end
+%>
+
+<head>
+  <title><%= @doc_type == :invoice ? 'Invoice' : 'Remittance' %></title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+  <style>
+    /* reset */
+
+    * {
+      border: 0;
+      box-sizing: content-box;
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      font-style: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+      list-style: none;
+      margin: 5px;
+      padding: 0;
+      text-decoration: none;
+      vertical-align: top;
+    }
+
+    /* heading */
+
+    h1 {
+      font: bold 100% sans-serif;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    /* table */
+
+    table {
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 2px;
+    }
+
+    th, td {
+      border-width: 1px;
+      padding: 0.5em;
+      position: relative;
+      text-align: left;
+    }
+
+    th {
+      background: #EEE;
+      border-color: #BBB;
+    }
+
+    td {
+      border-color: #DDD;
+    }
+
+    body {
+      background: #FFF;
+    }
+
+    th, td {
+      border-style: solid;
+    }
+
+    /* header */
+
+    header h1 {
+      background: #000;
+      border-radius: 0.25em;
+      color: #FFF;
+      margin: 0 0 1em;
+      padding: 0.5em 0;
+    }
+
+    header address {
+      float: left;
+      font-style: normal;
+      line-height: 1.25;
+      margin: 0 1em 1em 0;
+    }
+
+    header address p {
+      margin: 0 0 0.25em;
+    }
+
+    header span, header img {
+      display: block;
+      float: right;
+    }
+
+    header img {
+      max-height: 100%;
+      max-width: 100%;
+    }
+
+    /* article */
+
+    article div.address {
+      font-size: 125%;
+      font-weight: bold;
+    }
+
+    /* table meta & balance */
+
+    table.meta {
+      margin-right: 0;
+      margin-left: auto;
+    }
+
+    table.balance {
+      margin-right: 0;
+      margin-left: auto;
+      width: 50%;
+      padding-bottom: 5em;
+    }
+
+    table.meta:after, table.balance:after {
+      clear: both;
+      content: "";
+      display: table;
+    }
+
+    /* table meta */
+
+    table.meta th {
+      width: 40%;
+    }
+
+    table.meta td {
+      width: 60%;
+    }
+
+    /* table items */
+
+    table.inventory {
+      clear: both;
+      width: 100%;
+    }
+
+    table.inventory th {
+      font-weight: bold;
+      text-align: center;
+    }
+
+    table.inventory th:nth-child(1) {
+      width: 200px;
+    }
+
+    table.inventory th:nth-child(2) {
+      width: 35px;
+    }
+
+    table.inventory th:nth-child(3) {
+      width: 35px;
+    }
+
+    table.inventory th:nth-child(4) {
+      width: 50px;
+    }
+
+    table.inventory th:nth-child(5) {
+      width: 50px;
+    }
+
+    table.inventory th:nth-child(6) {
+      width: 50px;
+    }
+
+    table.inventory td:nth-child(2) {
+      text-align: left;
+    }
+
+    table.inventory td:nth-child(3) {
+      text-align: right;
+    }
+
+    table.inventory td:nth-child(4) {
+      text-align: right;
+    }
+
+    table.inventory td:nth-child(5) {
+      text-align: right;
+    }
+
+    table.inventory td:nth-child(6) {
+      text-align: right;
+    }
+
+    /* table balance */
+
+    table.balance th, table.balance td {
+      width: 50%;
+    }
+
+    table.balance td {
+      text-align: right;
+    }
+
+    /* aside */
+
+    div.aside h1 {
+      border: none;
+      border-width: 0 0 1px;
+      margin: 0 0 1em;
+    }
+
+    div.aside h1 {
+      border-color: #999;
+      border-bottom-style: solid;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <h1><%= @doc_type == :invoice ? 'Invoice' : 'Remittance' %></h1>
+    <address>
+      <pre><%= raw @company_address %></pre>
+    </address>
+    <div style="height:50px;width:50px;float:right;">
+      <% if @logo_url.nil? %>
+       <div>&nbsp;</div>
+      <% else %>
+        <img alt="LOGO" style="height:100px;" src="<%= @logo_url %>" %>">
+      <% end %>
+    </div>
+  </header>
+
+  <article>
+
+    <table style="padding:0;margin:0;">
+      <tr>
+        <td style="border:none;padding:0;"> <div class="address">
+
+          <p><%= @customer.description %></p>
+
+          <% @address = @customer.find_contact_mechanism_with_purpose(PostalAddress, ContactPurpose.billing) %>
+
+          <% if @address %>
+            <p>
+              <%= @address.address_line_1 %>
+              <% unless @address.address_line_2.blank? %>
+                <br/><%= @address.address_line_2 %>
+              <% end %>
+              <br><%= @address.city %>,
+              <%= @address.state %> <%= @address.zip %>
+            </p>
+          <% else %>
+            <p>No Address</p>
+          <% end %>
+
+          <% @phone_number = @customer.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.billing) %>
+
+          <% if @phone_number %>
+            <p><%= @phone_number.phone_number %></p>
+          <% else %>
+            <p>No Phone Number</p>
+          <% end %>
+
+        </div></td>
+        <td style="border:none;padding:0;"> <table class="meta">
+          <% unless @account_number.blank? %>
+            <tr>
+              <th><span>Account Number</span></th>
+              <td><span><%= @account_number %></span></td>
+            </tr>
+          <% end %>
+          <tr>
+            <th><span><%= @doc_type == :invoice ? 'Invoice' : 'Remittance' %> #</span></th>
+            <td><span><%= @invoice.invoice_number %></span></td>
+          </tr>
+          <tr>
+            <th><span>Date</span></th>
+            <td><span><%= @invoice.invoice_date ? @invoice.invoice_date.strftime('%b %d, %Y') : '' %></span></td>
+          </tr>
+          <tr>
+            <th><span>Due Date</span></th>
+            <td><span><%= @invoice.due_date ? @invoice.due_date.strftime('%b %d, %Y') : '' %></span></td>
+          </tr>
+          <tr>
+            <th><span>Terms</span></th>
+            <td><span><%= @invoice.custom_fields['terms'] %></span></td>
+          </tr>
+          <tr>
+            <th><span>Amount Due</span></th>
+            <td>
+              <span><%= number_to_currency(@invoice.balance) %></span>
+            </td>
+          </tr>
+        </table></td>
+      </tr>
+    </table>
+
+    <% if @invoice.items.count > 0 %>
+
+      <table class="inventory">
+        <thead>
+        <tr>
+          <th><span>Description</span></th>
+          <th class="qty"><span>Qty</span></th>
+          <th><span>Rate</span></th>
+          <th><span>Tax</span></th>
+          <th><span>Total</span></th>
+        </tr>
+        </thead>
+        <tbody>
+        <% @invoice.items.each do |invoice_item| %>
+          <tr>
+            <td><span><%= raw invoice_item.item_description %></span></td>
+            <td class="qty"><span><%= invoice_item.quantity || '1' %></span></td>
+            <td>
+              <span><%= number_to_currency(invoice_item.unit_price) %></span>
+            </td>
+            <td>
+              <% if invoice_item.taxed? %>
+                <span><%= number_to_currency(invoice_item.sales_tax) %></span>
+              <% else %>
+                <span>N/A</span>
+              <% end %>
+            </td>
+            <td>
+              <span><%= number_to_currency invoice_item.total_amount %></span>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+
+    <% end %>
+
+    <div style="clear:both;"></div>
+
+    <table class="balance">
+      <tr>
+        <th><span>Sub Total</span></th>
+        <td><span><%= number_to_currency(@invoice.sub_total) %></span>
+        </td>
+      </tr>
+      <tr>
+        <th><span>Sales Tax</span></th>
+        <td><span><%= @invoice.sales_tax.nil? ? number_to_currency(0) : number_to_currency(@invoice.sales_tax) %></span>
+        </td>
+      </tr>
+      <tr>
+        <th><span>Total</span></th>
+        <td><span><%= number_to_currency(@invoice.balance) %></span>
+        </td>
+      </tr>
+      <tr>
+        <th><span>Amount Paid</span></th>
+        <td><span><%= number_to_currency(@invoice.total_payments) %></span></td>
+      </tr>
+      <tr>
+        <th><span>Balance Due</span></th>
+        <td><span><%= number_to_currency(@invoice.calculate_balance) %></span></td>
+      </tr>
+    </table>
+
+  </article>
+
+  <div class="aside">
+    <h1><span>Additional Notes</span></h1>
+
+    <p><%= raw @invoice.message -%></p>
+  </div>
+</div>
+
+<footer>
+  <h1><span contenteditable>Thank You</span></h1>
+</footer>
+
+</body>
+</html>

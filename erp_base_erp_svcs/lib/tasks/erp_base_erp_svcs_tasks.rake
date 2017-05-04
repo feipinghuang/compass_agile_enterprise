@@ -123,6 +123,12 @@ namespace :compass_ae do
         end
       end
 
+      puts "setting CompassAE instance owner"
+      compass_ae_org = Organization.where(description: 'CompassAE').first
+      if compass_ae_org
+        CompassAeInstance.first.add_party_with_role(compass_ae_org.party, 'compass_ae_instance_owner')
+      end
+
     end
 
   end # upgrade

@@ -5,7 +5,7 @@ Party.class_eval do
     statement = OrderTxn
 
     unless statuses.empty?
-      statement = statement.with_current_status({'order_statuses' => statuses})
+      statement = statement.with_current_status({'sales_order_statuses' => statuses})
     end
 
     statement = statement.joins(:biz_txn_event => :biz_txn_party_roles)

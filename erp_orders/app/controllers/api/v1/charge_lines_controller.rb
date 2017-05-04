@@ -1,4 +1,4 @@
-module Api
+module API
   module V1
     class ChargeLinesController < BaseController
 
@@ -9,7 +9,7 @@ module Api
   @apiName GetChargelines
   @apiGroup ChargeLine
  
-  @param {String} [type] the type of charges to filter by.  Should of an internal identifier for a ChargeType	
+  @apiParam {String} [type] the type of charges to filter by.  Should of an internal identifier for a ChargeType	
 
   @apiSuccess {Boolean} success True if the request was successful
   @apiSuccess {Array} charge_lines ChargeLine records
@@ -64,9 +64,9 @@ module Api
   @apiName CreateChargeline
   @apiGroup ChargeLine
  
-  @param {Decimal} amount the amount of the charge
-  @param {String} desciption the description of the charge
-  @param {String} [type] the type of charges to filter by.  Should of an internal identifier for a ChargeType	
+  @apiParam {Decimal} amount the amount of the charge
+  @apiParam {String} desciption the description of the charge
+  @apiParam {String} [type] the type of charges to filter by.  Should of an internal identifier for a ChargeType	
 
   @apiSuccess {Boolean} success True if the request was successful
   @apiSuccess {Array} charge_line Newly created ChargeLine
@@ -125,9 +125,9 @@ module Api
   @apiName UpdateChargeline
   @apiGroup ChargeLine
  
-  @param {Decimal} amount the amount of the charge
-  @param {String} desciption the description of the charge
-  @param {String} [type] the type of charges to filter by.  Should of an internal identifier for a ChargeType	
+  @apiParam {Decimal} amount the amount of the charge
+  @apiParam {String} desciption the description of the charge
+  @apiParam {String} [type] the type of charges to filter by.  Should of an internal identifier for a ChargeType	
 
   @apiSuccess {Boolean} success True if the request was successful
   @apiSuccess {Array} charge_line updated ChargeLine
@@ -175,4 +175,4 @@ module Api
 
     end # ChargeLinesController
   end # V1
-end # Api
+end # API

@@ -40,6 +40,8 @@
 #   t.string :auth_token
 #   t.datetime :auth_token_expires_at
 #
+#   t.string :time_zone
+#
 #   t.timestamps
 # end
 #
@@ -95,6 +97,12 @@ class User < ActiveRecord::Base
 
       if filters[:username]
         statement = statement.where('username like ? or email like ?', "%#{filters[:username]}%", "%#{filters[:username]}%")
+      end
+
+      if filters[:role_types]
+        role_types = RoleType.find_child_role_types(filters[:role_types].split(',')).collect{|role_type| role_type.internal_identifier}.uniq
+
+        statement = statement.joins(party: {party_roles: :role_type}).where(role_types: {internal_identifier: role_types})
       end
 
       statement
@@ -377,6 +385,7 @@ class User < ActiveRecord::Base
                      :last_activity_at,
                      :failed_logins_count,
                      :created_at,
+                     :time_zone,
                      :updated_at
                    ],
                    display_name: party.description,
