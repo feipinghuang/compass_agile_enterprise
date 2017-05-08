@@ -21,7 +21,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
     beforeLayout: function() {
         var me = this;
-
+        
         me.callParent(arguments);
         if (me.getEl().dom) {
             me.savedScrollPos = me.body.dom.scrollTop;
@@ -40,6 +40,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     initComponent: function() {
         var me = this;
 
+        me.componentLayoutConfig = {};
+        
         if (!me.isThemeMode()) {
             me.dockedItems = [{
                 xtype: 'toolbar',
@@ -47,8 +49,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     text: 'Add Row',
                     iconCls: 'icon-add',
                     handler: function(btn) {
-                        var me = btn.up('websitebuilderpanel');
-
                         Ext.widget('window', {
                             title: 'Add Row',
                             buttonAlign: 'center',
@@ -415,7 +415,12 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var me = this;
         var websiteId = me.getWebsiteId();
         var containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
-
+        
+        me.componentLayoutConfig[componentIid] = {
+            height: height,
+            thumbnail: thumbnail
+        };
+        
         dropPanel.removeCls('website-builder-dropzone');
         Ext.apply(dropPanel, {
             cls: "websitebuilder-component-panel",
@@ -424,6 +429,8 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
 
         dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;" panelId="{panelId}" >',
                                            '<div class="website-builder-reorder-setting" id="componentSetting">',
+                                           '<div class="icon-edit-code pull-left" id="{componentId}-source" style="margin-right:5px;"></div>',
+
                                            '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
                                            '<div class="icon-remove pull-left" id="{componentId}-remove" itemId="{panelId}"></div>',
                                            '</div>',
@@ -442,6 +449,121 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             componentId: componentIid
         });
 
+        Ext.get(componentIid + '-source').on('click', function(){
+            if(dropPanel.cls == 'websitebuilder-component-panel') {
+                me.fetchComponentSource(
+                    componentIid,
+                    function(responseObj) {
+                        console.log(responseObj.is_content_saved);
+                        if(!responseObj.is_content_saved) {
+                            Ext.Msg.alert('Error', 'The section must be saved to edit the source');
+                            return;
+                        }
+                        var source = responseObj.component.html;
+                        var parentContainer = dropPanel.up('container');
+                        var dropPanelIndex = parentContainer.items.indexOf(dropPanel);
+                        parentContainer.insert(dropPanelIndex, {
+                            xtype: 'codemirror',
+                            mode: 'ruby',
+                            showMode: false,
+                            sourceCode: source,
+                            width: 1300,
+                            height: 500,
+                            tbarItems: [
+                                {
+                                    text: 'Save & Show Design View',
+                                    iconCls: 'icon-save',
+                                    handler: function(btn) {
+                                        var myMask = new Ext.LoadMask(me, {
+                                            msg: "Please wait..."
+                                        });
+                                        myMask.show();
+                                        var componentSource = btn.up('codemirror').codeMirrorInstance.getValue();
+                                        me.saveComponentSource(
+                                            componentIid,
+                                            componentSource,
+                                            function() {
+                                                var componentContainer = me.insert(dropPanelIndex, {
+                                                    xtype: 'container',
+                                                    cls: 'dropzone-container',
+                                                    layout: 'hbox',
+                                                    items: [{
+                                                        xtype: 'component',
+                                                            flex: 1,
+                                                        html: ''
+                                                        
+                                                    }]
+                                                });
+                                                btn.up('codemirror').destroy();
+                                                var componentConfig = me.componentLayoutConfig[componentIid];
+                                                me.replaceDropPanelWithContent(
+                                                    componentContainer.down('component'),
+                                                    componentIid,
+                                                    componentConfig.height,
+                                                    componentConfig.thumbnail
+                                                );
+                                                myMask.hide();
+                                            },
+                                            function() {
+                                                myMask.hide();
+                                                Ext.Msg.alert('Error', 'Error saving source');
+                                            } 
+                                        );  
+                                    }
+                                },
+                                {
+                                    text: 'Close',
+                                    iconCls: 'icon-delete',
+                                    handler: function(btn) {
+                                        var componentContainer = me.insert(dropPanelIndex, {
+                                            xtype: 'container',
+                                            cls: 'dropzone-container',
+                                            layout: 'hbox',
+                                            items: [{
+                                                xtype: 'component',
+                                                flex: 1,
+                                                html: ''
+                                                
+                                            }]
+                                        });
+                                        btn.up('codemirror').destroy();
+                                        var componentConfig = me.componentLayoutConfig[componentIid];
+                                        me.replaceDropPanelWithContent(
+                                            componentContainer.down('component'),
+                                            componentIid,
+                                            componentConfig.height,
+                                            componentConfig.thumbnail
+                                        );
+                                        myMask.hide();
+                                    }
+                                }
+                            ],
+                            listeners: {
+                                save: function(codemirror, content) {
+                                    var myMask = new Ext.LoadMask(me, {
+                                        msg: "Please wait..."
+                                    });
+                                    myMask.show();
+                                    me.saveComponentSource(
+                                        componentIid,
+                                        content,
+                                        function(){
+                                            myMask.hide();
+                                        },
+                                        function() {
+                                            myMask.hide();
+                                        }
+                                    );
+                                }
+                            }
+                        })
+                        
+                        dropPanel.destroy();
+                    }
+                );
+            }
+        })
+
         Ext.get(componentIid + "-remove").on("click", function() {
             parentContainer = dropPanel.up('container');
             if (dropPanel.cls == "websitebuilder-component-panel") {
@@ -451,6 +573,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 });
 
                 dropPanel.destroy();
+                delete me.componentLayoutConfig[componentIid]
             }
         });
 
@@ -508,6 +631,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         // containerPanel.addFieldDropZones();
         containerPanel.updateLayout();
     },
+    
 
     // setup iframe drag and drop
     setupIframeDragDropListeners: function(iframeWindow) {
@@ -650,7 +774,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     },
 
 
-    fetchComponentSource: function(componentIid, success) {
+    fetchComponentSource: function(componentIid, success, failure) {
         var me = this;
         Compass.ErpApp.Utility.ajaxRequest({
             url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
@@ -664,9 +788,44 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 if (success) {
                     success(response); 
                 }
+            },
+            failure: function() {
+                if(failure) {
+                    failure();
+                } else {
+                    Ext.Msg.alert('Error', 'Error fetching source');
+                }
             }
         });
             
+    },
+
+
+
+    saveComponentSource: function(componentIid, componentSource, success, failure) {
+        var me = this;
+        Compass.ErpApp.Utility.ajaxRequest({
+            url: '/knitkit/erp_app/desktop/website_builder/save_component_source',
+            method: 'POST',
+            params: {
+                website_id: me.getWebsiteId(),
+                website_section_id: me.websiteSectionId,
+                component_iid: componentIid,
+                source: componentSource
+            },
+            success: function(response) {
+                if (success) {
+                    success(response); 
+                }
+            },
+            failure: function(response) {
+                if (failure) {
+                    failure(response);
+                } else {
+                    Ext.Msg.alert('Error', 'Error saving source');
+                }
+            }
+        });
     },
 
     attachIframeDragStartListener: function(iframeWindow) {
@@ -939,6 +1098,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     } else {
                         var components = Ext.Array.flatten(Ext.Object.getValues(response.components));
                         Ext.each(components, function(component){
+                            me.componentLayoutConfig[component.iid] = {
+                                height: component.height,
+                                thumbnail: component.thumbnail
+                            };
                             var componentContainer = me.add({
                                 xtype: 'container',
                                 cls: 'dropzone-container',

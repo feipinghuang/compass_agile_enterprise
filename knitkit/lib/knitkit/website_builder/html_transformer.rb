@@ -18,6 +18,8 @@ module Knitkit
           #strip off website builder editable contents
           
           editedContents = doc.css('.editContent')
+          editedContents.remove_class('editContent')
+          editedContents.remove_attr('data-selector')
           editedContents.remove_class('medium-editor-element')
           editedContents.remove_attr('contenteditable')
           editedContents.remove_attr('spellcheck')

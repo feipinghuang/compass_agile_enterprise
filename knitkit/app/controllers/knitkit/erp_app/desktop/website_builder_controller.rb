@@ -99,8 +99,10 @@ module Knitkit
           website_section = WebsiteSection.find(params[:website_section_id])
           component = Component.where(internal_identifier: params[:component_iid]).first
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section.id, content_id: component.id).first
-          # if the component has been saved get its contents else get the component's HTML from the theme
+          is_content_saved = false
+          # if the component has been saved get its contents else get the component's HTML from the them
           html_content = if website_section_content
+                           is_content_saved = true
                            website_section_content.website_html
                          else
                            theme = website.themes.first
@@ -112,9 +114,45 @@ module Knitkit
           render json: {
                    success: true,
                    component: {
-                     html: html_content
-                   }
+                     html: html_content,
+                   },
+                   is_content_saved: is_content_saved
                  }
+        end
+
+        def save_component_source
+          begin
+            website_section = WebsiteSection.find(params[:website_section_id])
+            component = Component.where(internal_identifier: params[:component_iid]).first
+            component_source = params[:source]
+
+            # find website section
+            website_section_content = WebsiteSectionContent.where(
+              website_section_id: website_section.id,
+              content_id: component.id
+            ).first
+
+            # create a website section if not there
+            website_section_content = WebsiteSectionContent.new(
+              website_section_id: website_section.id,
+              content_id: component.id,
+              position: 0
+            ) unless website_section_content
+
+            # assign source
+            website_section_content.website_html = component_source
+            website_section_content.builder_html = component_source
+            website_section_content.save!
+            render json: {success: true}
+          rescue Exception => ex
+            Rails.logger.error ex.message
+            Rails.logger.error ex.backtrace.join("\n")
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+            
+            render json: {success: false}
+            
+          end
+            
         end
 
         def section_components
