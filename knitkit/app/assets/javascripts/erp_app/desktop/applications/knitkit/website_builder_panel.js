@@ -40,7 +40,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     initComponent: function() {
         var me = this;
 
-        me.componentLayoutConfig = {};
+        me.containerConfig = {};
         
         if (!me.isThemeMode()) {
             me.dockedItems = [{
@@ -411,15 +411,32 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         return websitesCombo.getValue();
     },
 
+
+    addContainerConfig: function(iid, config) {
+        this.containerConfig[iid] = {
+            height: config.height,
+            thumbnail: config.thumbnail
+        };
+    },
+
+
+    deleteContainerConfig: function(iid) {
+        delete this.containerConfig[iid]
+    },
+
+    getContainerConfig: function(iid) {
+        this.containerConfig[iid]
+    },
+    
     replaceDropPanelWithContent: function(dropPanel, componentIid, height, thumbnail) {
         var me = this;
         var websiteId = me.getWebsiteId();
         var containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
         
-        me.componentLayoutConfig[componentIid] = {
+        me.addContainerConfig(componentIid, {
             height: height,
             thumbnail: thumbnail
-        };
+        });
         
         dropPanel.removeCls('website-builder-dropzone');
         Ext.apply(dropPanel, {
@@ -495,7 +512,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                                     }]
                                                 });
                                                 btn.up('codemirror').destroy();
-                                                var componentConfig = me.componentLayoutConfig[componentIid];
+                                                var componentConfig = me.getContainerConfig(componentIid);
                                                 me.replaceDropPanelWithContent(
                                                     componentContainer.down('component'),
                                                     componentIid,
@@ -527,7 +544,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                             }]
                                         });
                                         btn.up('codemirror').destroy();
-                                        var componentConfig = me.componentLayoutConfig[componentIid];
+                                        var componentConfig = me.getComponentConfig(componentIid);
                                         me.replaceDropPanelWithContent(
                                             componentContainer.down('component'),
                                             componentIid,
@@ -573,7 +590,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 });
 
                 dropPanel.destroy();
-                delete me.componentLayoutConfig[componentIid]
+                me.deleteContainerConfig(componentIid)
             }
         });
 
@@ -1098,10 +1115,12 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     } else {
                         var components = Ext.Array.flatten(Ext.Object.getValues(response.components));
                         Ext.each(components, function(component){
-                            me.componentLayoutConfig[component.iid] = {
+                            
+                            me.addContainerConfig(component.iid, {
                                 height: component.height,
                                 thumbnail: component.thumbnail
-                            };
+                            });
+                            
                             var componentContainer = me.add({
                                 xtype: 'container',
                                 cls: 'dropzone-container',
