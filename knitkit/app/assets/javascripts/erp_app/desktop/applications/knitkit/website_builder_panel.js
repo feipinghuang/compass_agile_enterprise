@@ -425,7 +425,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     },
 
     getContainerConfig: function(iid) {
-        this.containerConfig[iid]
+        return this.containerConfig[iid]
     },
     
     replaceDropPanelWithContent: function(dropPanel, componentIid, height, thumbnail) {
