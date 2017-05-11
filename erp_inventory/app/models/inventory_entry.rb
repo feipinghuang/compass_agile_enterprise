@@ -23,6 +23,8 @@
 class InventoryEntry < ActiveRecord::Base
   is_tenantable
 
+  is_repeatable :starttime, :endtime
+
   attr_protected :created_at, :updated_at
 
   has_party_roles
@@ -45,6 +47,8 @@ class InventoryEntry < ActiveRecord::Base
   belongs_to :unit_of_measurement
   has_many :order_line_items, dependent: :destroy
   has_many :inventory_txns, dependent: :destroy
+
+  attr_accessor :unavailable
 
   alias_method :storage_facilities, :facilities
 
