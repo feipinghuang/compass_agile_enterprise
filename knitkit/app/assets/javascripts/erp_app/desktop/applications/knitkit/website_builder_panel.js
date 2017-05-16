@@ -481,7 +481,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                         var dropPanelIndex = parentContainer.items.indexOf(dropPanel);
                         parentContainer.insert(dropPanelIndex, {
                             xtype: 'codemirror',
-                            mode: 'ruby',
+                            mode: 'rhtml',
                             showMode: false,
                             sourceCode: source,
                             width: 1300,
@@ -544,7 +544,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                             }]
                                         });
                                         btn.up('codemirror').destroy();
-                                        var componentConfig = me.getComponentConfig(componentIid);
+                                        var componentConfig = me.getContainerConfig(componentIid);
                                         me.replaceDropPanelWithContent(
                                             componentContainer.down('component'),
                                             componentIid,
@@ -714,15 +714,14 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 event.preventDefault();
                 event.stopPropagation();
                 var dropTarget = jQuery(this);
-                var websiteId = me.getWebsiteId();
                 var uid = event.originalEvent.dataTransfer.getData('drag-uid');
-                var componentIid = event.originalEvent.dataTransfer.getData('componentIid');
+                var widgetName = event.originalEvent.dataTransfer.getData('widgetName');
                 
                 // if this is a drop but the componentiid is blank it must be a move from the iframe
-                if (uid && Compass.ErpApp.Utility.isBlank(componentIid)) {
+                if (uid && Compass.ErpApp.Utility.isBlank(widgetName)) {
                     try {
                         var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
-                        var dropComponent = jQuery(event.originalEvent.dataTransfer.getData('componentHTML'));
+                        var dropComponent = jQuery(event.originalEvent.dataTransfer.getData('widgetHTML'));
                         var previousComponent = dropTarget.parents('body').find('[drag-uid=' + uid + ']');
                         // don't drop a component is dropped over itself
                         if(previousComponent.parent()[0] == dropTarget[0]) {
@@ -750,35 +749,44 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     }
                 } else {
                     // this is a drop from the west region so load the component source from its iid
-                    me.fetchComponentSource(
-                        event.originalEvent.dataTransfer.getData('componentIid'),
-                        function(response) {
-                            var componentHTML = response.component.html;
-                            try {
-                                var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
-                                var dropComponent = jQuery(componentHTML);
-                                insertionPoint.after(dropComponent);
-                                dropComponent.parent().addClass('dnd-drop-target-occupied');
-                                dropComponent.attr('drag-uid', new Date().getTime());
-                                dropComponent.attr('draggable', true);
-                                insertionPoint.remove();
+                    var widgetsPanel = me.up('window').down('knitkit_WidgetsPanel');
+                    var widgetData = widgetsPanel.getWidgetData(widgetName);
+                    widgetData.onDrop(
+                        function(content) {
+                            Compass.ErpApp.Utility.ajaxRequest({
+                                url: '/knitkit/erp_app/desktop/website_builder/widget_source',
+                                method: 'GET',
+                                params: {
+                                    content: content
+                                },
+                                success: function(responseObj) {
+                                    try {
+                                        insertionPoint = jQuery("iframe").contents().find(".drop-marker");
+                                        dropComponent = jQuery(responseObj.source);
+                                        insertionPoint.after(dropComponent);
+                                        dropComponent.parent().addClass('dnd-drop-target-occupied');
+                                        dropComponent.attr('drag-uid', new Date().getTime());
+                                        dropComponent.attr('draggable', true);
+                                        insertionPoint.remove();
 
-                                if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
-                                    win.dragoverqueueProcessTimerTask.stop();
-                                    DragDropFunctions.removePlaceholder();
-                                    DragDropFunctions.ClearContainerContext();
-                                    win.dragoverqueueProcessTimerTask = null;
-                                }
+                                        if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
+                                            win.dragoverqueueProcessTimerTask.stop();
+                                            DragDropFunctions.removePlaceholder();
+                                            DragDropFunctions.ClearContainerContext();
+                                            win.dragoverqueueProcessTimerTask = null;
+                                        }
+                                        
+                                        
+                                        // attach drag listener
+                                        me.attachIframeDragStartListener(iframeWindow);
 
-
-                                // attach drag listener
-                                me.attachIframeDragStartListener(iframeWindow);
-
-
-                                
-                            } catch (e) {
-                                console.log(e);
-                            }
+                                    } catch (e) {
+                                        console.log(e);
+                                    }
+                                },
+                                errorMessage: "Error fetching widget source"
+                            })
+                            
                         }
                     );
                 }
@@ -790,7 +798,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         
     },
 
-
+    
     fetchComponentSource: function(componentIid, success, failure) {
         var me = this;
         Compass.ErpApp.Utility.ajaxRequest({
@@ -817,8 +825,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             
     },
 
-
-
     saveComponentSource: function(componentIid, componentSource, success, failure) {
         var me = this;
         Compass.ErpApp.Utility.ajaxRequest({
@@ -844,12 +850,12 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
             }
         });
     },
-
+    
     attachIframeDragStartListener: function(iframeWindow) {
         var win = Ext.getCmp('knitkit');
         var dragImg = new Image();
         dragImg.src = '/assets/image/knitkit/website_builder/drag.png';
-
+        
         jQuery(iframeWindow.document).find('[draggable=true]').unbind('dragstart');
         jQuery(iframeWindow.document).find('[draggable=true]').on('dragstart', function(event) {
             var draggableElem = jQuery(this);
@@ -861,7 +867,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     }, 100);
                     win.dragoverqueueProcessTimerTask.start();
                 }
-                event.originalEvent.dataTransfer.setData("componentHtml", jQuery("<div />").append(draggableElem.clone()).html());
+                event.originalEvent.dataTransfer.setData("widgetHTML", jQuery("<div />").append(draggableElem.clone()).html());
                 event.originalEvent.dataTransfer.setData("drag-uid", uid);
                 event.originalEvent.dataTransfer.setDragImage(dragImg, 10, 10);
             }

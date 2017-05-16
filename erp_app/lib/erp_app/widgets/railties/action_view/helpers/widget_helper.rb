@@ -4,7 +4,7 @@ module ErpApp
       module ActionView
         module Helpers
           module WidgetHelper
-
+            
             def render_widget(name, opts={})
               action = opts[:action] || :index
               params = opts[:params].nil? ? {} : opts[:params]

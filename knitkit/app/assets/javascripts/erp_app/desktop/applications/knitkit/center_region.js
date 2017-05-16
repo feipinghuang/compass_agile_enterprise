@@ -600,7 +600,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                         components.push({
                             position: index,
                             content_iid: component.componentId,
-                            body_html: page.outerHTML
+                            body_html: Ext.String.htmlDecode(page.outerHTML)
                         });
                     });
                     me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(components));

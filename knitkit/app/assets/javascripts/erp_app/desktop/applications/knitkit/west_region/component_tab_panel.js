@@ -71,37 +71,46 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
     initComponent: function() {
         var me = this;
 
-        Ext.Ajax.request({
+        me.setupComponents().then(function(){
+            me.add({
+                xtype: 'knitkitaccordiancomponentpanel',
+                title: 'Widgets',
+                items: [{
+                    xtype: 'knitkit_WidgetsPanel'
+                }]
+            });
+        });
+        
+        me.callParent(arguments);
+    },
+    
+    setupComponents: function() {
+        var me = this;
+        var dfd = Ext.create('Ext.ux.Deferred');
+        Compass.ErpApp.Utility.ajaxRequest({
             method: "GET",
             url: '/knitkit/erp_app/desktop/website_builder/components.json',
-            success: function(response) {
-                var responseObj = Ext.decode(response.responseText);
-
-                if (responseObj.success) {
-                    var components = responseObj.components;
-                    for (var component in components) {
-                        if (components.hasOwnProperty(component)) {
-                            var accordianComponentPanel = me.add({
-                                xtype: 'knitkitaccordiancomponentpanel',
-                                title: Ext.String.capitalize(component) + ' Blocks'
-                            });
-
-                            
-                            accordianComponentPanel.add({
-                                xtype: 'knitkitdraggablepanel',
-                                items: me.getThumbnailPanelArray(components[component])
-                            });
-                        }
-                    }
-                }
+            success: function(responseObj) {
+                var components = responseObj.components;
+                Ext.Object.each(components, function(component){
+                    var accordianComponentPanel = me.add({
+                        xtype: 'knitkitaccordiancomponentpanel',
+                        title: Ext.String.capitalize(component) + ' Blocks'
+                    });
+                    accordianComponentPanel.add({
+                        xtype: 'knitkitdraggablepanel',
+                        items: me.getThumbnailPanelArray(components[component])
+                    });
+                });
+                dfd.resolve(); 
             },
-
             failure: function() {
-                // TODO: Could not load message count, should we display an error?
+                Ext.Msg.alert('Error', 'Error loading components');
+                dfd.reject();
             }
         });
 
-        me.callParent(arguments);
+        return dfd.promise();
     },
 
     getThumbnailPanelArray: function(components) {
@@ -111,7 +120,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 html = '<img src="' + data.thumbnail + '"></img>';
             }
 
-            var config = {
+            return {
                 xtype: 'panel',
                 cls: 'draggable-image-display',
                 layout: 'fit',
@@ -121,37 +130,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 componentHeight: data.height,
                 html: html
             };
-            // if this is a widget then attach drag listeners to make it droppable in an iframe
-            if(data.componentType == 'widget') {
-                Ext.apply(config,{
-                    listeners: {
-                        render: function(me) {
-                            var win = Ext.getCmp('knitkit');
-                            var elem = document.getElementById(me.id);
-                            elem.setAttribute('draggable', true);
-
-                            jQuery(elem).on('dragstart', function(event) {
-                                console.log("Drag Started");
-                                if (!win.dragoverqueueProcessTimerTask) {
-                                    win.dragoverqueueProcessTimerTask = new Compass.ErpApp.Utility.TimerTask(function() {
-                                        DragDropFunctions.ProcessDragOverQueue();
-                                    }, 100);
-                                    win.dragoverqueueProcessTimerTask.start();
-                                } 
-                                
-                                // widgets component IID would be used to set retrive its Source in the iFrame
-                                event.originalEvent.dataTransfer.setData("componentIid", me.componentId);
-                            });
-                            jQuery(elem).on('dragend', function() {
-                                console.log("Drag End");
-                            });
-                            
-                        }
-                    }
-                });
-            }
             
-            return config;
         });
     },
 

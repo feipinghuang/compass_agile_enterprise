@@ -4,7 +4,7 @@ module Knitkit
       class << self
         
         def reduce_to_website_html(html)
-          doc = Nokogiri::HTML::DocumentFragment.parse(html)
+          doc = Nokogiri::HTML::DocumentFragment.parse(escape_erb(html))
           # find and strip off drag drop attributes from drop component
           doc.css('.dnd-drop-target > [draggable="true"]').each do |tag|
             tag.attributes['draggable'].remove
@@ -49,10 +49,16 @@ module Knitkit
             tag.attributes['style'].value = updated_styles.join('; ')
           end
           
-          doc.to_s
+          CGI.unescape_html(doc.to_s)
+        end
+        
+        def escape_erb(html)
+          html.
+            gsub("<%", "&lt;%").
+            gsub("%>", "%&gt;").
+            gsub(/&lt;%=?(.*?) %&gt;/) {|w| CGI.escape_html(w)}
         end
       end
-
     end
   end
 end

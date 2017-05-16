@@ -6,9 +6,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.EastRegion", {
         this.imageAssetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel', {
             module: config.module
         });
-        this.widgetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel', {
-            module: config.module
-        });
         this.fileAssetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel', {
             module: config.module
         });

@@ -4,11 +4,11 @@ module Knitkit
       class WebsiteBuilderController < Knitkit::ErpApp::Desktop::AppController
         
         before_filter :set_website, :only => [:save_website, :active_website_theme, :render_component, :render_layout_file]
-
+        
         acts_as_themed_controller website_builder: true
         
-        skip_before_filter :add_theme_view_paths, except: [:render_component]
-
+        skip_before_filter :add_theme_view_paths, except: [:render_component, :widget_source]
+        
         def components
           render json: {
                    success: true,
@@ -23,7 +23,7 @@ module Knitkit
                    data: find_component(params[:id]).to_data_hash
                  }
         end
-
+        
 
         def active_website_theme
           render json: {
@@ -38,8 +38,8 @@ module Knitkit
           website_section_id = params[:website_section_id]
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
           @website_builder = true
-          if website_section_content  
-            render text: ERB.new(website_section_content.builder_html).result(binding), layout: 'knitkit/base'
+          if website_section_content
+            render inline: website_section_content.builder_html, layout: 'knitkit/base'
           else
             render template: "/components/#{component_iid}", layout: 'knitkit/base'
           end
@@ -82,7 +82,7 @@ module Knitkit
                   Rails.logger.error ex.backtrace.join("\n")
 
                   ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
-
+                  
                   result = {:success => false, :message => 'Could not create Section'}
                 end
 
@@ -170,7 +170,13 @@ module Knitkit
 
         end
 
-        
+
+        def widget_source
+          view_helper = ActionView::Base.new
+          widget_content = params[:content]
+          source = render_to_string
+          render json: {success: true, source: source}
+        end
         
         private
 
@@ -189,7 +195,7 @@ module Knitkit
         def set_website_section
           @website_section = WebsiteSection.find(params[:id])
         end
-        
+
       end # WebsitesController
     end # Desktop
   end # ErpApp

@@ -7,9 +7,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
         this.siteStructureTabPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel', {
             module: config.module
         });
+        
         this.componentTabPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
             module: config.module
         });
+
         this.items = [];
 
         this.items.push(this.siteStructureTabPanel);

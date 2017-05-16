@@ -64,6 +64,7 @@ Knitkit::Engine.routes.draw do
           get :get_component_source
           post :save_component_source
           get :section_components
+          get :widget_source
         end
         member do
           get :active_website_theme

@@ -68,18 +68,7 @@ namespace :knitkit do
                         title: 'Footer',
                         type: 'footer',
                         thumbnail: '/images/content_blocks/footer3.png',
-                        height: 715 },
-                     {  id: 'contact_us',
-                        title: 'Contact us',
-                        type: 'widget',
-                        thumbnail: '',
-                        height: 300
-                     },
-                     {  id: 'login_form',
-                        title: 'Login Form',
-                        type: 'widget',
-                        thumbnail: '',
-                        height: 300
+                        height: 715
                      }
                    ]
 
