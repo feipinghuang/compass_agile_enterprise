@@ -13,6 +13,7 @@ require "knitkit/version"
 require "knitkit/routing_filter/section_router.rb"
 require "knitkit/syntax_validator"
 require "knitkit/website_builder/html_transformer.rb"
+require "knitkit/website_builder/erb_evaluator.rb"
 require "knitkit/config"
 require "knitkit/engine"
 

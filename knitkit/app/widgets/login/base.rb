@@ -27,6 +27,17 @@ module Widgets
         render
       end
 
+      def website_builder
+        @logout_to  = params[:logout_to]
+        @login_to   = (session[:return_to_url] or params[:login_to])
+        @signup_url = params[:signup_url]
+        @reset_password_url = params[:reset_password_url]
+        @message = flash[:notice]
+        
+        render
+      end
+
+
       #should not be modified
       #modify at your own risk
       def locate
@@ -38,9 +49,13 @@ module Widgets
           "Login"
         end
 
-        def views_location
-          File.join(File.dirname(__FILE__),"/views")
+        def widget_name
+          File.basename(File.dirname(__FILE__))
         end
+        
+        # def views_location
+        #   File.join(File.dirname(__FILE__),"/views")
+        # end
           
         def base_layout
           begin

@@ -551,7 +551,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         this.workArea.add(item);
         this.workArea.setActiveTab(item);
     },
-
+    
     saveWebsiteLayout: function(websiteId, websiteSectionId, components) {
         var me = this;
         me.setWindowStatus('Saving...');

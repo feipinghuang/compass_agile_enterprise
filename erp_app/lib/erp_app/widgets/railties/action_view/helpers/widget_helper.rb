@@ -25,6 +25,19 @@ module ErpApp
               raw html
             end
 
+            def render_builder_widget(name, opts={})
+              #render widget
+              params = opts[:params].nil? ? {} : opts[:params]
+              uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+              action = "website_builder"
+              widget_obj = "::Widgets::#{name.to_s.camelize}::Base".constantize.new(self.controller, name.to_s, action, uuid, params, nil)
+              result = widget_obj.process(action)
+
+              html = "<div id=\"#{uuid}\" class='compass_ae-widget'>"
+              html << result
+              html << "</div>"
+            end
+
             def build_widget_url(action, id=nil, params={})
               url = if id
                       "/erp_app/widgets/#{@name}/#{action}/#{@uuid}/#{id}"

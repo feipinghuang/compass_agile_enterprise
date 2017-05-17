@@ -551,7 +551,6 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                             componentConfig.height,
                                             componentConfig.thumbnail
                                         );
-                                        myMask.hide();
                                     }
                                 }
                             ],
@@ -751,8 +750,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                     // this is a drop from the west region so load the component source from its iid
                     var widgetsPanel = me.up('window').down('knitkit_WidgetsPanel');
                     var widgetData = widgetsPanel.getWidgetData(widgetName);
-                    widgetData.onDrop(
-                        function(content) {
+                    widgetData.onAdd({
+                        websiteBuilder: true,
+                        success: function(content) {
                             Compass.ErpApp.Utility.ajaxRequest({
                                 url: '/knitkit/erp_app/desktop/website_builder/widget_source',
                                 method: 'GET',
@@ -785,10 +785,9 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                     }
                                 },
                                 errorMessage: "Error fetching widget source"
-                            })
-                            
-                        }
-                    );
+                            });
+                        }   
+                    });
                 }
                 
                 

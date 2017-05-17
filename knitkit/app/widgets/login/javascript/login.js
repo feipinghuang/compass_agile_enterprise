@@ -5,19 +5,30 @@ Compass.ErpApp.Widgets.Login = {
                                           "               :signup_url => '{loginWidgetSignUpUrl}'\n",
                                           "               }\n",
                                           "%>"),
-    loginPageTemplate: new Ext.Template("  <%= render_widget :login,\n",
-                                        "                    :params => {:login_to => '{loginWidgetLoginTo}',\n",
-                                        "                                :logout_to => '{loginWidgetLogoutTo}'\n",
-                                        "                                #:optional field if Sign Up widget is setup\n",
-                                        "                                #:signup_url => '{loginWidgetSignUpUrl}',\n",
-                                        "                                #:optional field if Reset Password widget is setup\n",
-                                        "                                #:reset_password_url => '{loginWidgetResetPasswordUrl}'\n",
-                                        "                              }\n",
-                                        "  %>"),
+    loginPageTemplate: new Ext.Template("<%= render_builder_widget :login,\n",
+                                        "    :params => {:login_to => '{loginWidgetLoginTo}',\n",
+                                        "    :logout_to => '{loginWidgetLogoutTo}'\n",
+                                        "    #:optional field if Sign Up widget is setup\n",
+                                        "    #:signup_url => '{loginWidgetSignUpUrl}',\n",
+                                        "    #:optional field if Reset Password widget is setup\n",
+                                        "    #:reset_password_url => '{loginWidgetResetPasswordUrl}'\n",
+                                        "    }\n",
+                                        "%>",
+                                        {
+                                            renderMethodName: function(websiteBuilder) {
+                                                if (websiteBuilder) {
+                                                    return "render_builder_widget";
+                                                } else {
+                                                    return "render_widget";
+                                                }
+                                            }
+                                        }
+                                       ),
 
-    addLogin: function (success) {
+    
+    addLogin: function (options) {
         var self = this;
-
+        var success = options.success;
         var addLoginWidgetWindow = Ext.create("Ext.window.Window", {
             layout: 'fit',
             width: 375,
@@ -128,7 +139,8 @@ Compass.ErpApp.Widgets.Login = {
                             var loginWidgetSignUpUrlField = basicForm.findField('loginWidgetSignUpUrl');
                             var loginWidgetResetPasswordUrlField = basicForm.findField('loginWidgetResetPasswordUrl');
                             var data = {
-                                action: action
+                                action: action,
+                                websiteBuilder: options.websiteBuilder
                             };
                             data.loginWidgetSignUpUrl = loginWidgetSignUpUrlField.getValue();
                             data.loginWidgetResetPasswordUrl = loginWidgetResetPasswordUrlField.getValue();
@@ -172,7 +184,7 @@ Compass.ErpApp.Widgets.Login = {
 Compass.ErpApp.Widgets.AvailableWidgets.push({
     name: 'Login',
     iconUrl: '/assets/icons/login/login_48x48.png',
-    onDrop: Compass.ErpApp.Widgets.Login.addLogin,
+    onAdd: Compass.ErpApp.Widgets.Login.addLogin,
     about: 'This widget creates a login form to allow users to log into the website.'
 });
 

@@ -172,9 +172,8 @@ module Knitkit
 
 
         def widget_source
-          view_helper = ActionView::Base.new
           widget_content = params[:content]
-          source = render_to_string
+          source = Knitkit::WebsiteBuilder::ErbEvaluator.evaluate(widget_content, self)
           render json: {success: true, source: source}
         end
         

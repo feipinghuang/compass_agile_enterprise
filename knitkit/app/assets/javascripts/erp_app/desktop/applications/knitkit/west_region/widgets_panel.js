@@ -5,7 +5,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel",{
     constructor : function(config) {
         var widgetsStore = Ext.create('Ext.data.Store',{
             autoDestroy: true,
-            fields:['name', 'iconUrl', 'onDrop', 'about'],
+            fields:['name', 'iconUrl', 'onAdd', 'about'],
             data: Compass.ErpApp.Widgets.AvailableWidgets
         });
         
