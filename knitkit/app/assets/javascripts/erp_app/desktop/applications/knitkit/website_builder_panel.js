@@ -427,6 +427,24 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     getContainerConfig: function(iid) {
         return this.containerConfig[iid]
     },
+
+    buildContainersPayload: function() {
+        var me = this,
+            containerPanels = me.query("[cls=websitebuilder-component-panel]");
+        return Ext.Array.map(containerPanels, function(container, index){
+            var iframe = container.el.query("#" + container.componentId + "-frame").first(),
+                containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
+                containerElem = jQuery(containerHTML);
+            // containerElem.find('.compass_ae-widget').replaceWith(function(){
+            //     return jQuery(jQuery(this).data('widget-content'));
+            // });
+            return {
+                position: index,
+                content_iid: container.componentId,
+                body_html: Ext.String.htmlDecode(containerElem[0].outerHTML)
+            }
+        });
+    },
     
     replaceDropPanelWithContent: function(dropPanel, componentIid, height, thumbnail) {
         var me = this;
@@ -767,6 +785,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         dropComponent.parent().addClass('dnd-drop-target-occupied');
                                         dropComponent.attr('drag-uid', new Date().getTime());
                                         dropComponent.attr('draggable', true);
+                                        dropComponent.attr('data-widget-content', content);
                                         insertionPoint.remove();
 
                                         if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {

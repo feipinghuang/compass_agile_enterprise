@@ -2,9 +2,17 @@ module Knitkit
   module WebsiteBuilder
     class HtmlTransformer
       class << self
-        
+
         def reduce_to_website_html(html)
           doc = Nokogiri::HTML::DocumentFragment.parse(escape_erb(html))
+          
+          #find widgets and replace them with their render statements
+          doc.css('.compass_ae-widget').each do |node|
+            render_statement = node.attributes['data-widget-content'].value.gsub("render_builder_widget", "render_widget")
+            node.add_next_sibling(escape_erb(render_statement))
+            node.remove
+          end
+          
           # find and strip off drag drop attributes from drop component
           doc.css('.dnd-drop-target > [draggable="true"]').each do |tag|
             tag.attributes['draggable'].remove
@@ -33,20 +41,23 @@ module Knitkit
 
           #preserve user added styles and reset everything else
           editedContents.each do |tag|
-            styles = tag.attributes['style'].value.split(';')
-            updated_styles = styles.collect do |style|
-              attr,value = style.split(':')
-              if attr == 'outline'
-                'outline: none';
-              elsif attr == 'cursor'
-                'cursor: inherit'
-              elsif attr == 'outline-offset'
-                'outline-offset: 0px'
-              else
-                "#{attr}:#{value}"
+            styles_attr = tag.attributes['style']
+            if styles_attr
+              styles = styles_attr.value.split(';')
+              updated_styles = styles.collect do |style|
+                attr,value = style.split(':')
+                if attr == 'outline'
+                  'outline: none';
+                elsif attr == 'cursor'
+                  'cursor: inherit'
+                elsif attr == 'outline-offset'
+                  'outline-offset: 0px'
+                else
+                  "#{attr}:#{value}"
+                end
               end
+              tag.attributes['style'].value = updated_styles.join('; ')
             end
-            tag.attributes['style'].value = updated_styles.join('; ')
           end
           
           CGI.unescape_html(doc.to_s)
@@ -58,6 +69,7 @@ module Knitkit
             gsub("%>", "%&gt;").
             gsub(/&lt;%=?(.*?) %&gt;/) {|w| CGI.escape_html(w)}
         end
+        
       end
     end
   end

@@ -592,18 +592,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 itemId: itemId,
                 websiteSectionId: websiteSectionId,
                 save: function(comp) {
-                    var componentPanels = comp.query("[cls=websitebuilder-component-panel]"),
-                        components = [];
-                    Ext.Array.each(componentPanels, function(component, index) {
-                        iframe = component.el.query("#" + component.componentId + "-frame").first();
-                        page = iframe.contentDocument.documentElement.getElementsByClassName('page')[0];
-                        components.push({
-                            position: index,
-                            content_iid: component.componentId,
-                            body_html: Ext.String.htmlDecode(page.outerHTML)
-                        });
-                    });
-                    me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(components));
+                    var containers = comp.buildContainersPayload() || [];
+                    me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(containers));
                 }
             });
 

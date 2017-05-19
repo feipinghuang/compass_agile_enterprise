@@ -39,7 +39,7 @@ module Knitkit
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
           @website_builder = true
           if website_section_content
-            render inline: website_section_content.builder_html, layout: 'knitkit/base'
+            render inline: website_section_content.builder_html.html_safe, layout: 'knitkit/base'
           else
             render template: "/components/#{component_iid}", layout: 'knitkit/base'
           end
@@ -53,7 +53,6 @@ module Knitkit
           begin
             result = {success: false}
             contents_data = JSON.parse(params["content"])
-
             if contents_data
               current_user.with_capability('create', 'WebsiteSection') do
                 begin

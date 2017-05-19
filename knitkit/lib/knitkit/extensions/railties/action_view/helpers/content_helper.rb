@@ -34,7 +34,7 @@ module Knitkit
               else
                 if content && website_section
                   website_section_content = WebsiteSectionContent.where("content_id =? and website_section_id =?", content_version.content.id, website_section.id).first
-                  raw "<div class='knitkit_content'
+                  render inline: "<div class='knitkit_content'
                           contentid='#{content.id}'
                           lastupdate='#{content_version.updated_at.strftime("%m/%d/%Y %I:%M%p")}'>
                           #{(website_section_content.website_html.nil? ? '' : website_section_content.website_html)}</div>"

@@ -1,4 +1,6 @@
-<%= form_tag '/session/sign_in', :remote => true, :id => 'login_form' do %>
+
+
+<%= form_tag "javascript:void(0);", { remote: true , onsubmit: "javascript: return false;" } do %>
 
   <div class="form-group">
     <label for="login">Username or Email address</label>
@@ -12,12 +14,12 @@
   <input type="hidden" name="logout_to" value="<%= @logout_to %>"/>
   <input type="hidden" name="login_to" value="<%= @login_to %>"/>
 
-<p class="text-center">
-  <%= submit_tag "Login", :disable_with => "Please wait...", :class => "btn btn-primary submit", :style => '' %>
-  <% unless @signup_url.blank? %> | <%= link_to 'Sign Up', @signup_url %>
-  <% end %>
-  <% unless @reset_password_url.blank? %> | <%= link_to 'Reset Password', @reset_password_url %>
-  <% end %>
-</p>
+  <p class="text-center">
+    <%= button_tag "Login", :disable_with => "Please wait...", :class => "btn btn-primary submit", :style => '' %>
+    <% unless @signup_url.blank? %> | <%= link_to 'Sign Up', @signup_url %>
+    <% end %>
+    <% unless @reset_password_url.blank? %> | <%= link_to 'Reset Password', @reset_password_url %>
+    <% end %>
+  </p>
 
 <% end %>
