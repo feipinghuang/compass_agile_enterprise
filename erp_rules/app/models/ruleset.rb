@@ -57,7 +57,23 @@ class Ruleset < ActiveRecord::Base
   end
 
   def to_data_hash
-    to_hash(only: [:id, :description, :created_at, :updated_at])
+    to_hash(only: [:id, :description, :internal_identifier, :created_at, :updated_at])
+  end
+
+  def to_tree
+    data = {
+      record_id: self.id,
+      text: self.description,
+      internal_identifier: self.internal_identifier,
+      children: [],
+      record_type: 'Ruleset'
+    }
+
+    self.business_rules.each do |business_rule|
+      data[:children].push({text: business_rule.description, leaf: true, children: []})
+    end
+
+    data
   end
 
 end

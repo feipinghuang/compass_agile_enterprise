@@ -25,7 +25,7 @@ module API
           statement = statement.where(UnitOfMeasurement.arel_table[:description].matches(params[:query] + '%').or(UnitOfMeasurement.arel_table[:internal_identifier].matches(params[:query] + '%')))
         end
 
-        render json: {unit_of_measurements: statement.all.collect(&:to_data_hash)}
+        render json: {success: true, unit_of_measurements: statement.all.collect(&:to_data_hash)}
       end
 
     end # UnitOfMeasurementsController

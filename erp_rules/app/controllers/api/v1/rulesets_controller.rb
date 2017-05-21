@@ -9,7 +9,7 @@ module API
           end
 
           format.tree do
-            render json: Ruleset.all.map{|ruleset| {text: ruleset.description, id: ruleset.id, children: [], leaf: true}}.to_json
+            render json: Ruleset.all.map{|ruleset| ruleset.to_tree}.to_json
           end
         end
       end

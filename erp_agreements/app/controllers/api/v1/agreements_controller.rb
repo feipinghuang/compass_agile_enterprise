@@ -26,6 +26,10 @@ module API
       def index
         agreements = Agreement.by_tenant(current_user.party.dba_organization)
 
+        if params[:id]
+          @query_filter[:id] = params[:id]
+        end
+
         if params[:party_id]
           @query_filter[:party] = params[:party_id]
         end
@@ -34,7 +38,7 @@ module API
           @query_filter[:role_types] = params[:role_types]
         end
 
-        agreements = agreements.apply_filters(@query_filter)
+        agreements = agreements.apply_filters(@query_filter, agreements)
 
         total_count = agreements.count
 

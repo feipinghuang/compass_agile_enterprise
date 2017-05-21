@@ -25,6 +25,13 @@ module IsInteger
   end
 end
 
+
+module IsDecimal
+  def is_decimal?
+    /^[0-9]+(\.[0-9]+)?$/ === self
+  end
+end
+
 module RandomString
   def random(size=25)
     charset = %w{A C D E F G H J K M N P Q R T V W X Y Z}
@@ -36,6 +43,7 @@ class String;
   include StringToBoolean
   include StringToInternalIdentifier
   include IsInteger
+  include IsDecimal
   extend RandomString
 end
 
