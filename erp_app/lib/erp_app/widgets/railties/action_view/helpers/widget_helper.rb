@@ -32,10 +32,10 @@ module ErpApp
               action = "website_builder"
               widget_obj = "::Widgets::#{name.to_s.camelize}::Base".constantize.new(self.controller, name.to_s, action, uuid, params, nil)
               result = widget_obj.process(action)
-
-              html = "<div id=\"#{uuid}\" class='compass_ae-widget' data-widget-name= '#{name.to_s}'>"
+              html = "<div id=\"#{uuid}\" class='compass_ae-widget' draggable=\"true\" data-widget-name= '#{name.to_s}'>"
               html << result
               html << "</div>"
+              raw html
             end
 
             def build_widget_url(action, id=nil, params={})

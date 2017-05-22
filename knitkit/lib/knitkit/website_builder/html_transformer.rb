@@ -3,15 +3,21 @@ module Knitkit
     class HtmlTransformer
       class << self
 
-        def reduce_to_website_html(html)
+        def reduce_to_builder_html(html)
           doc = Nokogiri::HTML::DocumentFragment.parse(escape_erb(html))
           
           #find widgets and replace them with their render statements
           doc.css('.compass_ae-widget').each do |node|
-            render_statement = node.attributes['data-widget-content'].value.gsub("render_builder_widget", "render_widget")
-            node.add_next_sibling(escape_erb(render_statement))
+            render_statement = node.parent.attributes['data-widget-statement'].value
+            node.add_next_sibling(escape_erb("<%= #{render_statement} %>"))
             node.remove
           end
+          
+          CGI.unescape_html(doc.to_s)
+        end
+
+        def reduce_to_website_html(html)
+          doc = Nokogiri::HTML::DocumentFragment.parse(replace_widget_statement(escape_erb(html)))
           
           # find and strip off drag drop attributes from drop component
           doc.css('.dnd-drop-target > [draggable="true"]').each do |tag|
@@ -20,6 +26,7 @@ module Knitkit
           end
 
           # strip off drag drop and related class
+          doc.css('.dnd-drop-target-occupied').remove_attr('data-widget-statement')
           doc.css('.dnd-drop-target').remove_class('dnd-drop-target')
           doc.css('.dnd-drop-target-occupied').remove_class('dnd-drop-target-occupied')
 
@@ -68,6 +75,10 @@ module Knitkit
             gsub("<%", "&lt;%").
             gsub("%>", "%&gt;").
             gsub(/&lt;%=?(.*?) %&gt;/) {|w| CGI.escape_html(w)}
+        end
+
+        def replace_widget_statement(html)
+          html.gsub('render_builder_widget', 'render_widget')
         end
         
       end

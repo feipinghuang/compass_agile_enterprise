@@ -5,7 +5,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel",{
     constructor : function(config) {
         var widgetsStore = Ext.create('Ext.data.Store',{
             autoDestroy: true,
-            fields:['name', 'iconUrl', 'onAdd', 'about'],
+            fields:['name', 'iconUrl', 'addWidget', 'about'],
             data: Compass.ErpApp.Widgets.AvailableWidgets
         });
         
@@ -29,7 +29,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel",{
                             text:'Add Widget',
                             iconCls:'icon-add',
                             handler:function(btn){
-                                record.data.onClick();
+                                record.data.addWidget({
+                                    websiteBuilder: false,
+                                    success: function(content) {
+                                        //add rendered template to center region editor
+                                        Ext.getCmp('knitkitCenterRegion').addContentToActiveCodeMirror(content);
+                                    }
+                                });
                             }
                         }]
                     });
@@ -54,7 +60,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel",{
                                 win.dragoverqueueProcessTimerTask.start();
                             } 
                             // widgets component IID would be used to set retrive its Source in the iFrame
-                            event.originalEvent.dataTransfer.setData("widgetName", node.id);
+                            event.originalEvent.dataTransfer.setData("widget-name", node.id);
                         });
                         jQuery(elem).on('dragend', function() {
                             console.log("Drag End");

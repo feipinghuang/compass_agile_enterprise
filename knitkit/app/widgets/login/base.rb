@@ -12,6 +12,8 @@ module Widgets
         render
       end
 
+      alias :website_builder :index
+
       def login_header
         @login_url     = params[:login_url]
         @signup_url    = params[:signup_url]
@@ -23,16 +25,6 @@ module Widgets
 
       def reset_password
         @login_url     = params[:login_url]
-        
-        render
-      end
-
-      def website_builder
-        @logout_to  = params[:logout_to]
-        @login_to   = (session[:return_to_url] or params[:login_to])
-        @signup_url = params[:signup_url]
-        @reset_password_url = params[:reset_password_url]
-        @message = flash[:notice]
         
         render
       end
@@ -53,10 +45,6 @@ module Widgets
           File.basename(File.dirname(__FILE__))
         end
         
-        # def views_location
-        #   File.join(File.dirname(__FILE__),"/views")
-        # end
-          
         def base_layout
           begin
             file = File.join(File.dirname(__FILE__),"/views/layouts/base.html.erb")

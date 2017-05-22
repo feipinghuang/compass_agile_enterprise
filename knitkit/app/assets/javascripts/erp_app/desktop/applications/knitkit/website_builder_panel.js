@@ -731,44 +731,52 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 event.preventDefault();
                 event.stopPropagation();
                 var dropTarget = jQuery(this);
-                var uid = event.originalEvent.dataTransfer.getData('drag-uid');
-                var widgetName = event.originalEvent.dataTransfer.getData('widgetName');
-                
-                // if this is a drop but the componentiid is blank it must be a move from the iframe
-                if (uid && Compass.ErpApp.Utility.isBlank(widgetName)) {
+                var uuid = event.originalEvent.dataTransfer.getData('uuid');
+                if (uuid) {
+                    var widgetStatement = event.originalEvent.dataTransfer.getData('widget-statement');
                     try {
                         var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
-                        var dropComponent = jQuery(event.originalEvent.dataTransfer.getData('widgetHTML'));
-                        var previousComponent = dropTarget.parents('body').find('[drag-uid=' + uid + ']');
-                        // don't drop a component is dropped over itself
-                        if(previousComponent.parent()[0] == dropTarget[0]) {
-                            return;
-                        }
-                        previousComponent.parent().removeClass('dnd-drop-target-occupied');
-                        previousComponent.remove();
-                        insertionPoint.after(dropComponent);
-                        dropComponent.parent().addClass('dnd-drop-target-occupied');
-                        dropComponent.attr('drag-uid', new Date().getTime());
-                        dropComponent.attr('draggable', true);
-                        insertionPoint.remove();
+                        Compass.ErpApp.Utility.ajaxRequest({
+                            url: '/knitkit/erp_app/desktop/website_builder/widget_source',
+                            method: 'GET',
+                            params: {
+                                content: '<%=' + widgetStatement + '%>'
+                            },
+                            success: function(responseObj) {
+                                var dropComponent = jQuery(responseObj.source);
+                                var previousComponent = dropTarget.parents('body').find('#' + uuid);
+                                // don't drop a component is dropped over itself
+                                if(previousComponent.parent()[0] == dropTarget[0]) {
+                                    return;
+                                }
+                                previousComponent.parent().removeAttr('data-widget-statement');
+                                previousComponent.parent().removeClass('dnd-drop-target-occupied');
+                                previousComponent.remove();
+                                insertionPoint.after(dropComponent);
+                                dropComponent.parent().addClass('dnd-drop-target-occupied');
+                                dropComponent.parent().attr('data-widget-statement', widgetStatement);
+                                insertionPoint.remove();
+                                
+                                if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
+                                    win.dragoverqueueProcessTimerTask.stop();
+                                    DragDropFunctions.removePlaceholder();
+                                    DragDropFunctions.ClearContainerContext();
+                                    win.dragoverqueueProcessTimerTask = null;
+                                }
+                                
+                                // attach drag listener
+                                me.attachIframeDragStartListener(iframeWindow);
+                            }
+                        });
                         
-                        if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
-                            win.dragoverqueueProcessTimerTask.stop();
-                            DragDropFunctions.removePlaceholder();
-                            DragDropFunctions.ClearContainerContext();
-                            win.dragoverqueueProcessTimerTask = null;
-                        }
-                        
-                        // attach drag listener
-                        me.attachIframeDragStartListener(iframeWindow);
                     } catch (e) {
                         console.log(e);
                     }
                 } else {
-                    // this is a drop from the west region so load the component source from its iid
+                    var widgetName = event.originalEvent.dataTransfer.getData('widget-name');
                     var widgetsPanel = me.up('window').down('knitkit_WidgetsPanel');
                     var widgetData = widgetsPanel.getWidgetData(widgetName);
-                    widgetData.onAdd({
+                    widgetData.addWidget({
                         websiteBuilder: true,
                         success: function(content) {
                             Compass.ErpApp.Utility.ajaxRequest({
@@ -783,9 +791,10 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         dropComponent = jQuery(responseObj.source);
                                         insertionPoint.after(dropComponent);
                                         dropComponent.parent().addClass('dnd-drop-target-occupied');
-                                        dropComponent.attr('drag-uid', new Date().getTime());
-                                        dropComponent.attr('draggable', true);
-                                        dropComponent.attr('data-widget-content', content);
+                                        // store widget render statement barring <%= %> in its parent data arribute
+                                        // we leave out the <%= %> to prevent it from getting evalauated when it renders
+                                        // in the builder view.
+                                        dropComponent.parent().attr('data-widget-statement', content.match(/<%=(((.|[\s\S])*?))%>/)[1]);
                                         insertionPoint.remove();
 
                                         if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
@@ -877,16 +886,16 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         jQuery(iframeWindow.document).find('[draggable=true]').unbind('dragstart');
         jQuery(iframeWindow.document).find('[draggable=true]').on('dragstart', function(event) {
             var draggableElem = jQuery(this);
-            var uid = draggableElem.attr('drag-uid');
-            if(uid) {
+            var uuid = draggableElem.attr('id');
+            if(uuid) {
                 if (!win.dragoverqueueProcessTimerTask) {
                     win.dragoverqueueProcessTimerTask = new Compass.ErpApp.Utility.TimerTask(function() {
                         DragDropFunctions.ProcessDragOverQueue();
                     }, 100);
                     win.dragoverqueueProcessTimerTask.start();
                 }
-                event.originalEvent.dataTransfer.setData("widgetHTML", jQuery("<div />").append(draggableElem.clone()).html());
-                event.originalEvent.dataTransfer.setData("drag-uid", uid);
+                event.originalEvent.dataTransfer.setData("uuid", uuid);
+                event.originalEvent.dataTransfer.setData("widget-statement", draggableElem.parent().data('widget-statement'))
                 event.originalEvent.dataTransfer.setDragImage(dragImg, 10, 10);
             }
         });

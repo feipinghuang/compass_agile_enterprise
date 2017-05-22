@@ -39,7 +39,7 @@ module Knitkit
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
           @website_builder = true
           if website_section_content
-            render inline: website_section_content.builder_html.html_safe, layout: 'knitkit/base'
+            render inline: website_section_content.builder_html, layout: 'knitkit/base'
           else
             render template: "/components/#{component_iid}", layout: 'knitkit/base'
           end
@@ -169,7 +169,7 @@ module Knitkit
 
         end
 
-
+        
         def widget_source
           widget_content = params[:content]
           source = Knitkit::WebsiteBuilder::ErbEvaluator.evaluate(widget_content, self)
