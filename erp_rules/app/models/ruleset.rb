@@ -66,11 +66,12 @@ class Ruleset < ActiveRecord::Base
       text: self.description,
       internal_identifier: self.internal_identifier,
       children: [],
-      record_type: 'Ruleset'
+      record_type: 'Ruleset',
+      iconCls: 'icon-ruleset'
     }
 
     self.business_rules.each do |business_rule|
-      data[:children].push({text: business_rule.description, leaf: true, children: []})
+      data[:children].push({text: business_rule.description, leaf: true, children: [], iconCls: 'icon-rule'})
     end
 
     data

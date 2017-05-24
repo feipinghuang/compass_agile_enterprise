@@ -33,14 +33,14 @@ module API
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
 
         query_filter[:query] = query
- 
+
         # hook method to apply any scopes passed via parameters to this api
         parties = Party.apply_filters(query_filter)
 
         unless params[:id].blank?
           parties = parties.where(id: params[:id].split(','))
         end
-        
+
         unless role_types.blank?
           if params[:include_child_roles].present? and params[:include_child_roles].to_bool
             role_types = RoleType.find_child_role_types(role_types.split(',')).collect{|role_type| role_type.internal_identifier}
@@ -291,6 +291,35 @@ module API
             render :json => {success: false}
           end # begin
         end # transaction
+      end
+
+=begin
+
+  @api {put} /api/v1/parties/:id/related_parties Get Parties Related To This Party
+  @apiVersion 1.0.0
+  @apiName RelatedParties
+  @apiGroup Party
+
+  @apiParam {String} [role_type_iids] Comma seperated list of RoleType Internal Identifiers to scope the related parties by
+
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object[]} parties Related parties
+
+=end
+
+      def related_parties
+        party = Party.find(params[:id])
+
+        if params[:role_type_iids]
+          parties = party.find_related_parties_with_role(params[:role_type_iids])
+        else
+          parties = party.find_related_parties(params[:role_type_iids])
+        end
+
+        total_count = parties.count
+        parties = parties.limit(@limit).offset(@offset)
+        
+        render json: {success: true, total_count: total_count, parties: parties.collect(&:to_data_hash)}
       end
 
       private

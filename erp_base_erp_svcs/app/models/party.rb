@@ -247,9 +247,15 @@ class Party < ActiveRecord::Base
     @relationships ||= PartyRelationship.where('party_id_from = ?', id)
   end
 
-  def find_related_parties_with_role(role_type_iid)
+  def find_related_parties_with_role(*role_type_iid)
+    Party.joins(party_roles: :role_type).joins("inner join party_relationships on (party_id_from = parties.id or party_id_to = parties.id)")
+    .where(RoleType.arel_table[:internal_identifier].in(role_type_iid))
+    .where("(party_id_from = #{id} or party_id_to = #{id})")
+    .where(Party.arel_table[:id].not_eq(id))
+  end
+
+  def find_related_parties
     Party.joins(:party_roles).joins("inner join party_relationships on (party_id_from = parties.id or party_id_to = parties.id)")
-    .where(PartyRole.arel_table[:role_type_id].eq(RoleType.iid(role_type_iid).id))
     .where("(party_id_from = #{id} or party_id_to = #{id})")
     .where(Party.arel_table[:id].not_eq(id))
   end
