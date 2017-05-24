@@ -3,6 +3,15 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :rulesets do
         resources :business_rules
+
+        member do
+          get :export
+        end
+
+        collection do
+          post :import
+        end
+
       end
     end
   end

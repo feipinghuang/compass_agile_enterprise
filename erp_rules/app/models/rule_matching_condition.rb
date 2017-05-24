@@ -60,4 +60,12 @@ class RuleMatchingCondition < ActiveRecord::Base
     to_hash(only: [:id, :description, :internal_identifier, :lhs, :operator, :rhs, :custom_statement])
   end
 
+  def export
+    data = to_data_hash
+
+    data.delete(:id)
+
+    data
+  end
+
 end
