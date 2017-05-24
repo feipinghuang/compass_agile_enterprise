@@ -3,9 +3,15 @@ module API
     class RulesetsController < BaseController
 
       def index
+        rulesets = Ruleset
+
         respond_to do |format|
           format.json do
-            render json: {success: true, rulesets: Ruleset.all.collect(&:to_data_hash)}
+            total_count = rulesets.count
+
+            rulesets = rulesets.limit(@limit).offset(@offset)
+
+            render json: {success: true, total_count: total_count, rulesets: Ruleset.all.collect(&:to_data_hash)}
           end
 
           format.tree do
