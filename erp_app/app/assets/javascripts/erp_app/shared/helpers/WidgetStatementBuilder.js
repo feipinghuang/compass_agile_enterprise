@@ -33,10 +33,10 @@ Ext.ns('Compass.ErpApp.Shared.Helpers').WidgetStatementBuilder = (function(){
 
 
     function _renderStatementParams(paramsArray, statementOffset) {
-        return Ext.Array.map(paramsArray, function(params){
+        return Ext.Array.map((paramsArray || []), function(params){
             var paramStr = Ext.String.repeat(' ', statementOffset + 7)
                 + (params.commented ? "# " : '')
-                + params.key + ": " + "'{" + params.value + "}'";
+                + (params.isVariable ? params.key + ": " + "'{" + params.value + "}'" : params.key + ": " + params.value);
             if(Compass.ErpApp.Utility.isBlank(params.comment)) {
                 return paramStr
             } else {

@@ -8,10 +8,12 @@ Compass.ErpApp.Widgets.Login = {
                 {
                     key: 'login_url',
                     value: 'loginWidgetLoginUrl',
+                    isVariable: true
                 },
                 {
                     key: 'signup_url',
-                    value: 'loginWidgetSignUpUrl'
+                    value: 'loginWidgetSignUpUrl',
+                    isVariable: true
                 }
             ]
             
@@ -24,23 +26,27 @@ Compass.ErpApp.Widgets.Login = {
             paramsArray: [
                 {
                     key: 'login_to',
-                    value: 'loginWidgetLoginTo'
+                    value: 'loginWidgetLoginTo',
+                    isVariable: true
                 },
                 {
                     key: 'logout_to',
-                    value: 'loginWidgetLogoutTo'
+                    value: 'loginWidgetLogoutTo',
+                    isVariable: true
                 },
                 {
                     key: 'signup_url',
                     value: 'loginWidgetSignUpUrl',
                     comment: 'optional field if Sign Up widget is setup',
-                    commented: true
+                    commented: true,
+                    isVariable: true
                 },
                 {
                     key: 'reset_password',
                     value: 'loginWidgetResetPasswordUrl',
                     commment: 'optional field if Reset Password widget is setup',
-                    commented: true
+                    commented: true,
+                    isVariable: true
                 }
             ]
         });
