@@ -673,7 +673,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
         var currentElement, currentElementChangeFlag, elementRectangle, countdown, dragoverqueue_processtimer;
         
         var dragImg = new Image();
-        dragImg.src = '/assets/image/knitkit/website_builder/drag.png';
+        dragImg.src = '/assets/knitkit/website_builder/drag.png';
         
         //Add CSS File to iFrame
         var style = jQuery("<style data-reserved-styletag></style>").html(GetInsertionCSS());
@@ -731,11 +731,21 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                 event.preventDefault();
                 event.stopPropagation();
                 var dropTarget = jQuery(this);
+                var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
+                //don't let the component drop before the drop markers appear
+                if(insertionPoint.length == 0) {
+                    if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
+                        win.dragoverqueueProcessTimerTask.stop();
+                        DragDropFunctions.removePlaceholder();
+                        DragDropFunctions.ClearContainerContext();
+                        win.dragoverqueueProcessTimerTask = null;
+                    }
+                    return;
+                }
                 var uuid = event.originalEvent.dataTransfer.getData('uuid');
                 if (uuid) {
-                    var widgetStatement = event.originalEvent.dataTransfer.getData('widget-statement');
                     try {
-                        var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
+                        var widgetStatement = event.originalEvent.dataTransfer.getData('widget-statement');
                         Compass.ErpApp.Utility.ajaxRequest({
                             url: '/knitkit/erp_app/desktop/website_builder/widget_source',
                             method: 'GET',
@@ -749,6 +759,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                 if(previousComponent.parent()[0] == dropTarget[0]) {
                                     return;
                                 }
+
                                 previousComponent.parent().removeAttr('data-widget-statement');
                                 previousComponent.parent().removeClass('dnd-drop-target-occupied');
                                 previousComponent.remove();
@@ -809,7 +820,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
                                         me.attachIframeDragStartListener(iframeWindow);
 
                                     } catch (e) {
-                                        console.log(e);
+                                        console.error(e);
                                     }
                                 },
                                 errorMessage: "Error fetching widget source"
@@ -881,7 +892,7 @@ Ext.define('Compass.ErpApp.Shared.WebsiteBuilderPanel', {
     attachIframeDragStartListener: function(iframeWindow) {
         var win = Ext.getCmp('knitkit');
         var dragImg = new Image();
-        dragImg.src = '/assets/image/knitkit/website_builder/drag.png';
+        dragImg.src = '/assets/knitkit/website_builder/drag.png';
         
         jQuery(iframeWindow.document).find('[draggable=true]').unbind('dragstart');
         jQuery(iframeWindow.document).find('[draggable=true]').on('dragstart', function(event) {
