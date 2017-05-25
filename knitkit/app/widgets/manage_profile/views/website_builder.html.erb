@@ -1,0 +1,174 @@
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#userInformation">
+          <img style="padding-right:10px;" src="/assets/widgets/manage_profile/user_information.png"><span>User Information</span>
+        </a>
+      </h4>
+    </div>
+    <div id="userInformation" class="panel-collapse collapse in">
+      <div class="panel-body">
+        <%= form_tag "javascript:void(0);", { remote: true , onsubmit: "javascript: return false;" } do %>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <%= text_field_tag :email, nil, :class => 'form-control', :required => true %>
+          </div>
+          <div class="form-group">
+            <label for="first_name">First Name</label>
+            <%= text_field_tag :first_name, nil, :class => 'form-control', :required => true %>
+          </div>
+          <div class="form-group">
+            <label for="last_name">Last Name</label>
+            <%= text_field_tag :last_name, nil, :class => 'form-control', :required => true %>
+          </div>
+          <div class="form-group">
+            <label for="middle_name">Middle Name</label>
+            <%= text_field_tag :middle_name, nil, :class => 'form-control' %>
+          </div>
+          <div class="form-group">
+            <%= button_tag "Submit", :class => "btn btn-lg btn-primary btn-block" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#password">
+          <img style="padding-right:10px;" src="/assets/widgets/manage_profile/password.png"><span>Password</span>
+        </a>
+      </h4>
+    </div>
+    <div id="password" class="panel-collapse collapse">
+      <div class="panel-body">
+        <%= form_tag "javascript:void(0);", { remote: true , onsubmit: "javascript: return false;" } do %>
+          <div class="form-group">
+            <label for="old_password">Old Password</label>
+            <%= password_field_tag :old_password, '', :class => 'form-control', :required => true %>
+          </div>
+          <div class="form-group">
+            <label for="new_password">New Password</label>
+            <%= password_field_tag :new_password, '', :class => 'form-control', :required => true %>
+            <span>Password must be between 8 and 20 characters with no spaces</span>
+          </div>
+          <div class="form-group">
+            <label for="password_confirmation">Confirm Password</label>
+            <%= password_field_tag :password_confirmation, '', :class => 'form-control', :required => true %>
+          </div>
+          <%= button_tag "Submit", :disable_with => "Please wait...", :class => "btn btn-lg btn-primary btn-block" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#contactInformation">
+          <img style="padding-right:10px;" src="/assets/widgets/manage_profile/contact_information.png"><span>Contact Information</span>
+        </a>
+      </h4>
+    </div>
+    <div id="contactInformation" class="panel-collapse collapse">
+      <div class="panel-body">
+        <ul class="nav nav-tabs" id="contactTabs">
+          <li><a href="#emailAddresses" data-toggle="tab">Email Addresses</a></li>
+          <li><a href="#phone" data-toggle="tab">Phone Numbers</a></li>
+          <li><a href="#address" data-toggle="tab">Addresses</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade" id="emailAddresses">
+            <div style="margin-top:5px;" id="emailMessageArea"></div>
+            <table class="table table-striped" id="emailsTable">
+              <thead>
+                <tr>
+                  <th>Email Address</th>
+                  <th>Contact Type</th>
+                  <th>&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="sample-email-1">
+                  <td></td>
+                  <td>support@truenorthtechnology.com</td>
+                  <td>
+                    <button type="button"
+                            class="emailDeleteBtn btn btn-danger"
+                            data-id="email-1">Delete
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" id="addEmailBtn" class="btn btn-success">Add Email</button>
+          </div>
+          <div class="tab-pane fade" id="phone">
+            <div style="margin-top:5px;" id="phoneMessageArea"></div>
+            <table class="table table-striped" id="phoneNumbersTable">
+              <thead>
+                <tr>
+                  <th>Phone Number</th>
+                  <th>Contact Type</th>
+                  <th>&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="sample-phone-1">
+                  <td>4076309287</td>
+                  <td>Work</td>
+                  <td>
+                    <button type="button"
+                            class="phoneDeleteBtn btn btn-danger"
+                            data-id="email-1">Delete
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" id="addPhoneBtn" class="btn btn-success">Add Phone Number</button>
+          </div>
+          <div class="tab-pane fade" id="address">
+            <div style="margin-top:5px;" id="addressMessageArea"></div>
+            <table class="table table-striped" id="addressesTable">
+              <thead>
+                <tr>
+                  <th>Address Line 1</th>
+                  <th>Address Line 2</th>
+                  <th>City</th>
+                  <th>State</th>
+                  <th>Postal Code</th>
+                  <th>Contact Type</th>
+                  <th>&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="sample-address-1">
+                  <td>1 South Orange Ave</td>
+                  <td>STE 305</td>
+                  <td>Orlando</td>
+                  <td>Florida</td>
+                  <td>32801</td>
+                  <td>Work</td>
+                  <td>
+                    <button type="button"
+                            class="addressDeleteBtn btn btn-danger"
+                            data-id="address-1">Delete
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" id="addAddressBtn" class="btn btn-success">Add Address</button>
+          </div>
+          <script type="text/javascript">
+           jQuery(function () {
+               debugger;
+               jQuery('#contactTabs a:first').tab('show')
+           });
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
