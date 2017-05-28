@@ -1,5 +1,4 @@
-<div id="container">
-  <%= form_remote_tag build_widget_url(:new) do %>
+<%= form_tag "javascript:void(0);", { remote: true , onsubmit: "javascript: return false;" } do %>
   <div class="form-group">
     <%= label_tag :first_name %>
     <%= text_field_tag "first_name", nil, :class => "form-control", :required => true %>
@@ -23,9 +22,12 @@
   <div id="captcha"></div>
   
   <p class="text-center">
-    <%= submit_tag "Submit", :disable_with => "Please wait...", :class => "btn btn-primary submit", :style => '' %>
+    <%= button_tag "Submit", :class => "btn btn-primary submit", :style => '' %>
   </p>
   
   <% end %>  
 
+  <script type="text/javascript">
+  Captcha.setup('captcha');
+  </script>
 </div>

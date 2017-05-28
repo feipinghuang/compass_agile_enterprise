@@ -88,7 +88,7 @@ namespace :knitkit do
                         title: 'Footer',
                         type: 'footer',
                         thumbnail: '/images/content_blocks/footer3.png',
-                        height: 715
+                        height: 245
                      }
                    ]
 
