@@ -502,6 +502,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             thumbnail: thumbnail
         });
 
+        var loadMask = new Ext.LoadMask(me, {
+            msg: "Please wait..."
+        });
+        loadMask.show();
+
         dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;" panelId="{panelId}" >',
             '<div class="website-builder-reorder-setting" id="componentSetting">',
             '<div class="icon-edit-code pull-left" id="{componentId}-source" style="margin-right:5px;"></div>',
@@ -649,11 +654,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         // Assigning click event inside iFrame content
         var iframe = Ext.get(componentIid + "-frame");
-
+        
         iframe.on('load', function() {
+            loadMask.hide();
             var iframePanel = this,
-                editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
-                websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
+                editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]");
 
             Ext.Array.each(editableElements, function(editableElement) {
                 editableElement = Ext.get(editableElement);
@@ -805,7 +810,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         });
 
                     } catch (e) {
-                        console.log(e);
+                        console.error(e);
                     }
                 } else {
                     var widgetName = event.originalEvent.dataTransfer.getData('widget-name');
