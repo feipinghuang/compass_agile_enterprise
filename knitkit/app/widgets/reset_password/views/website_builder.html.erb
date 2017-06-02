@@ -1,0 +1,10 @@
+<%= form_tag "javascript:void(0);", { remote: true , onsubmit: "javascript: return false;" } do %>
+  <input name="login" type="text" class="form-control" placeholder="Username / Email Address" required autofocus>
+  <br/>
+
+  <p class="text-center">
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+    <%= link_to 'Cancel', 'home' %>
+  </p>
+  
+<% end %>

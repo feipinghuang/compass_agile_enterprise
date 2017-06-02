@@ -1,16 +1,17 @@
 Compass.ErpApp.Widgets.ManageProfile = {
-    buildStatement: function(websiteBuilder){
-        return Compass.ErpApp.Shared.Helpers.WidgetStatementBuilder.buildTemplate({
-            widgetName: 'manage_profile',
-            websiteBuilder: websiteBuilder
-        }).apply();
+    buildTemplate: function(websiteBuilder){
+        if(websiteBuilder) {
+            return new Ext.Template("<%= render_builder_widget :manage_profile %>");
+        } else {
+            return new Ext.Template("<%= render_widget :manage_profile %>");
+        }
     },
 
     addWidget:function(options){
         var websiteBuilder = options.websiteBuilder,
             success = options.success;
         if(success) {
-            var statement = Compass.ErpApp.Widgets.ManageProfile.buildStatement(websiteBuilder);
+            var statement = Compass.ErpApp.Widgets.ManageProfile.buildTemplate(websiteBuilder).apply();
             success(statement);
         }
     }

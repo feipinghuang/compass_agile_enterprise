@@ -1,55 +1,46 @@
 Compass.ErpApp.Widgets.Login = {
     buildLoginHeaderTemplate: function(websiteBuilder) {
-        return Compass.ErpApp.Shared.Helpers.WidgetStatementBuilder.buildTemplate({
-            widgetName: 'login',
-            websiteBuilder: websiteBuilder,
-            action: 'login_header',
-            paramsArray: [
-                {
-                    key: 'login_url',
-                    value: 'loginWidgetLoginUrl',
-                    isVariable: true
-                },
-                {
-                    key: 'signup_url',
-                    value: 'loginWidgetSignUpUrl',
-                    isVariable: true
-                }
-            ]
-            
-        });
+        if(websiteBuilder) {
+            return new Ext.Template("<%= render_builder_widget :login,\n",
+                                    "                          :action => :login_header,\n",
+                                    "                          :params => {:login_url => '{loginWidgetLoginUrl}',\n",
+                                    "                                      :signup_url => '{loginWidgetSignUpUrl}'",
+                                    "                                     }\n",
+                                    "               %>")
+        } else {
+            return new Ext.Template("<%= render_widget :login,\n",
+                                    "                  :action => :login_header,\n",
+                                    "                  :params => {:login_url => '{loginWidgetLoginUrl}',\n",
+                                    "                              :signup_url => '{loginWidgetSignUpUrl}'",
+                                    "                             }\n",
+                                    "                %>")
+        }
     },
     buildLoginPageTemplate: function(websiteBuilder) {
-        return Compass.ErpApp.Shared.Helpers.WidgetStatementBuilder.buildTemplate({
-            widgetName: 'login',
-            websiteBuilder: websiteBuilder,
-            paramsArray: [
-                {
-                    key: 'login_to',
-                    value: 'loginWidgetLoginTo',
-                    isVariable: true
-                },
-                {
-                    key: 'logout_to',
-                    value: 'loginWidgetLogoutTo',
-                    isVariable: true
-                },
-                {
-                    key: 'signup_url',
-                    value: 'loginWidgetSignUpUrl',
-                    comment: 'optional field if Sign Up widget is setup',
-                    commented: true,
-                    isVariable: true
-                },
-                {
-                    key: 'reset_password',
-                    value: 'loginWidgetResetPasswordUrl',
-                    commment: 'optional field if Reset Password widget is setup',
-                    commented: true,
-                    isVariable: true
-                }
-            ]
-        });
+        if(websiteBuilder) {
+            return new Ext.Template("<%= render_builder_widget :login,\n",
+                                    "                           :params => {:login_to => '{loginWidgetLoginTo}',\n",
+                                    "                                       :logout_to => '{loginWidgetLogoutTo}'\n",
+                                    "                                       #optional field if Sign Up widget is setup\n",
+                                    "                                       #:signup_url => '{loginWidgetSignUpUrl}',\n",
+                                    "                                       #optional field if Reset Password widget is setup\n",
+                                    "                                       #:reset_password_url => '{loginWidgetResetPasswordUrl}'\n",
+                                    "                                       }\n",
+                                    "                %>")
+            
+        } else {
+            return new Ext.Template("<%= render_widget :login,\n",
+                                    "                  :params => {:login_to => '{loginWidgetLoginTo}',\n",
+                                    "                              :logout_to => '{loginWidgetLogoutTo}'\n",
+                                    "                              #optional field if Sign Up widget is setup\n",
+                                    "                              #:signup_url => '{loginWidgetSignUpUrl}',\n",
+                                    "                              #optional field if Reset Password widget is setup\n",
+                                    "                              #:reset_password_url => '{loginWidgetResetPasswordUrl}'\n",
+                                    "                              }\n",
+                                    "                %>")
+            
+        }
+
     },
     addWidget: function (options) {
         var self = this;

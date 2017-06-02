@@ -841,6 +841,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     
     endWidgetDragDrop: function() {
+        var win = this.up('window');
         if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
             win.dragoverqueueProcessTimerTask.stop();
             DragDropFunctions.removePlaceholder();

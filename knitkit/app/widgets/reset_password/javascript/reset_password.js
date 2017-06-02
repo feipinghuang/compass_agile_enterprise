@@ -1,21 +1,17 @@
 Compass.ErpApp.Widgets.ResetPassword = {
-    template: new Ext.Template('<%= render_widget :reset_password, :params => {:login_url => "/login"}%>'),
-    buildStatement: function(websiteBuilder) {
-        return Compass.ErpApp.Shared.Helpers.WidgetStatementBuilder.buildTemplate({
-            widgetName: 'reset_password',
-            websiteBuilder: websiteBuilder,
-            params: {
-                key: 'login_url',
-                value: '/login'
-            }
-        }).apply();
+    buildTemplate: function(websiteBuilder) {
+        if(websiteBuilder) {
+            return new Ext.Template("<%= render_builder_widget :reset_password, :params => {:login_url => '/login'}%>");
+        } else {
+            return new Ext.Template("<%= render_widget :reset_password, :params => {:login_url => '/login'}%>");
+        }
     },
     
-    addWidget:function(websiteBuilder){
+    addWidget:function(options){
         var websiteBuilder = options.websiteBuilder,
             success = options.success;
         if(options.success) {
-            var statement = this.buildStatement(websiteBuilder);
+            var statement = Compass.ErpApp.Widgets.ResetPassword.buildTemplate(websiteBuilder).apply();
             success(statement);
         }
     }

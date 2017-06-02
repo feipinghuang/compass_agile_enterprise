@@ -78,7 +78,7 @@ module Knitkit
         end
 
         def replace_widget_statement(html)
-          html.gsub('render_builder_widget', 'render_widget')
+          html.gsub("render_builder_widget", "render_widget")
         end
         
       end

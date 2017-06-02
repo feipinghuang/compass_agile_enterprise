@@ -1,16 +1,17 @@
 Compass.ErpApp.Widgets.ContactUs = {
-    buildStatement: function(websiteBuilder) {
-        return Compass.ErpApp.Shared.Helpers.WidgetStatementBuilder.buildTemplate({
-            widgetName: 'contact_us',
-            websiteBuilder: websiteBuilder
-        }).apply();
-        
+    buildTemplate: function(websiteBuilder) {
+        if(websiteBuilder) {
+            return new Ext.Template("<%= render_builder_widget :contact_us %>");
+        } else {
+            return new Ext.Template("<%= render_widget :contact_us %>");
+        }
+
     },
     addWidget: function (options) {
         var websiteBuilder = options.websiteBuilder,
             success = options.success;
         if(success) {
-            var statement = Compass.ErpApp.Widgets.ContactUs.buildStatement(websiteBuilder);
+            var statement = Compass.ErpApp.Widgets.ContactUs.buildTemplate(websiteBuilder).apply();
             success(statement);
         }
     }
