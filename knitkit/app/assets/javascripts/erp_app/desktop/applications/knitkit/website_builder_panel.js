@@ -748,12 +748,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 console.log('drag leave');
                 //return and remove placeholders if dropped out drop target
                 if (jQuery(event.target).parents('div[class="dnd-drop-target"]').length == 0) {
-                    if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
-                        win.dragoverqueueProcessTimerTask.stop();
-                        DragDropFunctions.removePlaceholder();
-                        DragDropFunctions.ClearContainerContext();
-                        win.dragoverqueueProcessTimerTask = null;
-                    }
+                    me.endWidgetDragDrop();
                     return;
                 }
             }).on('drop', function(event) {
@@ -763,12 +758,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
                 //don't let the component drop before the drop markers appear
                 if (insertionPoint.length == 0) {
-                    if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
-                        win.dragoverqueueProcessTimerTask.stop();
-                        DragDropFunctions.removePlaceholder();
-                        DragDropFunctions.ClearContainerContext();
-                        win.dragoverqueueProcessTimerTask = null;
-                    }
+                    me.endWidgetDragDrop();
                     return;
                 }
                 var uuid = event.originalEvent.dataTransfer.getData('uuid');
@@ -782,7 +772,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 content: '<%=' + widgetStatement + '%>'
                             },
                             success: function(responseObj) {
-                                var dropComponent = jQuery(responseObj.source);
                                 var previousComponent = dropTarget.parents('body').find('#' + uuid);
                                 // don't drop a component is dropped over itself
                                 if (previousComponent.parent()[0] == dropTarget[0]) {
@@ -792,17 +781,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 previousComponent.parent().removeAttr('data-widget-statement');
                                 previousComponent.parent().removeClass('dnd-drop-target-occupied');
                                 previousComponent.remove();
-                                insertionPoint.after(dropComponent);
+                                
+                                var dropComponent = me.insertWidget(responseObj.source);
                                 dropComponent.parent().addClass('dnd-drop-target-occupied');
                                 dropComponent.parent().attr('data-widget-statement', widgetStatement);
-                                insertionPoint.remove();
 
-                                if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
-                                    win.dragoverqueueProcessTimerTask.stop();
-                                    DragDropFunctions.removePlaceholder();
-                                    DragDropFunctions.ClearContainerContext();
-                                    win.dragoverqueueProcessTimerTask = null;
-                                }
+                                me.endWidgetDragDrop();
 
                                 // attach drag listener
                                 me.attachIframeDragStartListener(iframeWindow);
@@ -827,24 +811,15 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 },
                                 success: function(responseObj) {
                                     try {
-                                        insertionPoint = jQuery("iframe").contents().find(".drop-marker");
-                                        dropComponent = jQuery(responseObj.source);
-                                        insertionPoint.after(dropComponent);
+                                        var dropComponent = me.insertWidget(responseObj.source);
                                         dropComponent.parent().addClass('dnd-drop-target-occupied');
                                         // store widget render statement barring <%= %> in its parent data arribute
                                         // we leave out the <%= %> to prevent it from getting evalauated when it renders
                                         // in the builder view.
                                         dropComponent.parent().attr('data-widget-statement', content.match(/<%=(((.|[\s\S])*?))%>/)[1]);
-                                        insertionPoint.remove();
 
-                                        if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
-                                            win.dragoverqueueProcessTimerTask.stop();
-                                            DragDropFunctions.removePlaceholder();
-                                            DragDropFunctions.ClearContainerContext();
-                                            win.dragoverqueueProcessTimerTask = null;
-                                        }
-
-
+                                        me.endWidgetDragDrop();
+                                        
                                         // attach drag listener
                                         me.attachIframeDragStartListener(iframeWindow);
 
@@ -864,6 +839,50 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         me.attachIframeDragStartListener(iframeWindow);
     },
 
+    
+    endWidgetDragDrop: function() {
+        if (win.dragoverqueueProcessTimerTask && win.dragoverqueueProcessTimerTask.isRunning()) {
+            win.dragoverqueueProcessTimerTask.stop();
+            DragDropFunctions.removePlaceholder();
+            DragDropFunctions.ClearContainerContext();
+            win.dragoverqueueProcessTimerTask = null;
+        }
+    },
+    
+    insertWidget: function(widgetSource) {
+        // get the drop markers
+        var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
+        
+        // get the container frame from the insertion point
+        var containerFrame = document.getElementById(insertionPoint.parents('.item.content').attr('id') + '-frame'),
+            containerWindow = containerFrame.contentWindow,
+            containerDocument = containerFrame.contentDocument || containerWindow.document;
+
+        // The widget source contains DOM elements and script tags which needs
+        // to be executed in the context of the container iframe.
+        
+        var dropComponent = jQuery(widgetSource);
+        // accumulate scripts
+        scripts = [];
+        dropComponent.children().filter('script').each(function(){
+            scripts.push(jQuery(this).detach().html());
+        });
+        // insert widget DOM
+        insertionPoint.after(dropComponent);
+        
+        // execute accumulated scripts
+        scripts.forEach(function(script){
+            var expression = 'return function(window, document){\n' + script + '\n}',
+                scriptFunc = new Function(expression)();
+            scriptFunc.apply(containerWindow, [containerWindow, containerDocument]);
+        });
+
+        //remove drop markers 
+        insertionPoint.remove();
+        
+        return dropComponent;
+    },
+    
     fetchComponentSource: function(componentIid, success, failure) {
         var me = this;
         Compass.ErpApp.Utility.ajaxRequest({
