@@ -472,7 +472,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var me = this,
             containerPanels = me.query("[cls=websitebuilder-component-panel]");
         return Ext.Array.map(containerPanels, function(container, index) {
-            var iframe = container.el.query("#" + container.componentId + "-frame").first(),
+            var iframe = container.el.down('.iframe-container > iframe').el.dom,
                 containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
                 containerElem = jQuery(containerHTML);
             // containerElem.find('.compass_ae-widget').replaceWith(function(){
@@ -507,21 +507,25 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         });
         loadMask.show();
 
+        var iframeUuid = new Date().getTime(),
+            iframeId = componentIid + '-frame' + iframeUuid;
+        
         dropPanel.update(new Ext.XTemplate('<div class="component" style="height:100%;width:100%;position:relative;" panelId="{panelId}" >',
-            '<div class="website-builder-reorder-setting" id="componentSetting">',
-            '<div class="icon-edit-code pull-left" id="{componentId}-source" style="margin-right:5px;"></div>',
-
-            '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
-            '<div class="icon-remove pull-left" id="{componentId}-remove" itemId="{panelId}"></div>',
-            '</div>',
-            '<div class="iframe-container">',
-            '<iframe height="100%" width="100%" frameBorder="0" id="{componentId}-frame" src="{htmlSrc}"></iframe>',
-            '</div>',
-            '</div>').apply({
-            htmlSrc: '/knitkit/erp_app/desktop/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId + '&cache_buster_token=' + Math.round(Math.random() * 10000000),
-            panelId: dropPanel.id,
-            componentId: componentIid
-        }));
+                                           '<div class="website-builder-reorder-setting" id="componentSetting">',
+                                           '<div class="icon-edit-code pull-left" id="{componentId}-source" style="margin-right:5px;"></div>',
+                                           
+                                           '<div class="icon-move pull-left" panelId="{panelId}" style="margin-right:5px;"></div>',
+                                           '<div class="icon-remove pull-left" id="{componentId}-remove" itemId="{panelId}"></div>',
+                                           '</div>',
+                                           '<div class="iframe-container">',
+                                           '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" src="{htmlSrc}"></iframe>',
+                                           '</div>',
+                                           '</div>').apply({
+                                               htmlSrc: '/knitkit/erp_app/desktop/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId + '&cache_buster_token=' + Math.round(Math.random() * 10000000),
+                                               panelId: dropPanel.id,
+                                               componentId: componentIid,
+                                               iframeId: iframeId
+                                           }));
 
         Ext.apply(dropPanel, {
             height: height,
@@ -653,7 +657,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         });
 
         // Assigning click event inside iFrame content
-        var iframe = Ext.get(componentIid + "-frame");
+        var iframe = Ext.get(componentIid + "-frame"  + iframeUuid);
         
         iframe.on('load', function() {
             loadMask.hide();
@@ -689,7 +693,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
 
             //setup widget drop listeners
-            me.setupIframeDragDropListeners(iframe.el.dom.contentWindow);
+            me.setupIframeDragDropListeners(iframe.el.dom.contentWindow, iframeUuid);
 
         });
 
@@ -697,12 +701,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     },
 
     // setup iframe drag and drop
-    setupIframeDragDropListeners: function(iframeWindow) {
+    setupIframeDragDropListeners: function(iframeWindow, iframeUuid) {
         var me = this;
         var currentElement, currentElementChangeFlag, elementRectangle, countdown, dragoverqueue_processtimer;
 
         var dragImg = new Image();
         dragImg.src = '/assets/knitkit/website_builder/drag.png';
+
+        jQuery(iframeWindow.document.body).find('.page > .item.content').attr('data-frame-uuid', iframeUuid);
 
         //Add CSS File to iFrame
         var style = jQuery("<style data-reserved-styletag></style>").html(GetInsertionCSS());
@@ -853,9 +859,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     insertWidget: function(widgetSource) {
         // get the drop markers
         var insertionPoint = jQuery("iframe").contents().find(".drop-marker");
-        
+
+        var itemContent = insertionPoint.parents('.item.content'),
+            iframeId = itemContent.data('container') + '-frame' + itemContent.data('frame-uuid');
         // get the container frame from the insertion point
-        var containerFrame = document.getElementById(insertionPoint.parents('.item.content').attr('id') + '-frame'),
+        var containerFrame = document.getElementById(iframeId),
             containerWindow = containerFrame.contentWindow,
             containerDocument = containerFrame.contentDocument || containerWindow.document;
 
@@ -1127,13 +1135,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var componentIid = me.themeLayoutConfig[templateType + 'ComponentIid'],
             componentHeight = me.themeLayoutConfig[templateType + 'ComponentHeight'];
 
+        var iframeUuid = new Date().getTime(),
+            iframeId = componentIid + '-frame' + iframeUuid;
         if (componentIid) {
             layoutCompConfig = {
                 xtype: 'component',
                 componentId: componentIid,
                 cls: 'websitebuilder-component-panel',
-                html: new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;" id="{compId}-move"></div><div class="icon-remove pull-left" id="{compId}-remove"></div></div><iframe id="{compId}-frame" src="' + me.templatePreviewURL(templatePath) + '" width="100%" height="100%" frameborder="0">').apply({
-                    compId: componentIid
+                html: new Ext.XTemplate('<div style="height:100%;width:100%;position:relative;"><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-move pull-left" style="margin-right:5px;" id="{compId}-move"></div><div class="icon-remove pull-left" id="{compId}-remove"></div></div><iframe id="{iframeId}" src="' + me.templatePreviewURL(templatePath) + '" width="100%" height="100%" frameborder="0">').apply({
+                    compId: componentIid,
+                    iframeId: iframeId
                 }),
                 listeners: {
                     render: function(comp) {
@@ -1150,9 +1161,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 comp.destroy();
                             });
 
-                            var iframe = Ext.get(componentIid + "-frame");
+                        var iframe = Ext.get(componentIid + "-frame" + iframeUuid);
 
-                            iframe.on('load', function() {
+                        iframe.on('load', function() {
                                 var iframePanel = this,
                                     editableElements = Ext.get(iframePanel.el.dom.contentDocument.documentElement).query("[data-selector]"),
                                     websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;

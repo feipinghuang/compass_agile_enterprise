@@ -267,12 +267,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     footerHTML = null;
                 
                 if(headerComp) {
-                    var headerFrame = headerComp.getEl().query("#" + headerComp.componentId + "-frame").first();
+                    var headerFrame = headerComp.getEl().down('.iframe-container > iframe').el.dom;
                     headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
                 }
 
                 if(footerComp) {
-                    var footerFrame = footerComp.getEl().query("#" + footerComp.componentId + "-frame").first();
+                    var footerFrame = footerComp.getEl().down('.iframe-container > iframe').el.dom;
                     footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
                 }
 
