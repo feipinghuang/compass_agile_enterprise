@@ -1,60 +1,16 @@
-<% if @inline %>
-  <div class="col-md-2 pull-right">
-    <!-- this should not be necessary. aren't glyphicons included in  -->
-
-    <%= form_tag "javascript:void(0);", { remote: true , onsubmit: "javascript: return false;" } do %>
-      <div class="input-group">
-
-        <%= text_field_tag :search_query, @query, class: 'form-control', size: 25, required: true, placeholder: 'Search site...' %>
-        
-        <span class="input-group-btn">
-          <button type="submit" class="btn btn-default">
-            <span class="glyphicon glyphicon-search"></span>
-          </button>
-        </span>
-      </div>
-    <% end %>
-  </div>
-<% else %>
+<div class="col-md-2 pull-right">
+  <!-- this should not be necessary. aren't glyphicons included in  -->
+  
   <%= form_tag "javascript:void(0);", { remote: true , onsubmit: "javascript: return false;" } do %>
-    <div class="form-group">
-      <%= label_tag :search_for, 'Search For' %>
-      <%= text_field_tag :search_query, @query, class: 'form-control', required: true %>
+    <div class="input-group">
+      
+      <%= text_field_tag :search_query, @query, class: 'form-control', size: 25, required: true, placeholder: 'Search site...' %>
+      
+      <span class="input-group-btn">
+        <button type="submit" class="btn btn-default">
+          <span class="glyphicon glyphicon-search"></span>
+        </button>
+      </span>
     </div>
-
-    <p class="form-group">
-      <%= button_tag "Search", :disable_with => "Please wait...", :class => "btn btn-primary submit" %>
-    </p>
   <% end %>
-  <br/>
-  <div>
-    <% if @results %>
-      <% if @results.count == 0 %>
-        <h2>No Results</h2>
-      <% else %>
-        <% @results.each do |r| %>
-          <p>
-            <a href="<%= r[:link] %>"><%= r[:title] %></a><br/>
-            <%= sanitize(r[:content].body_html[0..500], :tags => []) unless r[:content].body_html.nil? %><br/>
-          </p>
-        <% end %>
-      <% end %>
-      <%=
-      will_paginate @results,
-      :renderer => Knitkit::Extensions::WillPaginate::LinkRenderer,
-      :params => {
-          :widget_name => 'search',
-          :widget_action => 'search',
-          :uuid => @uuid,
-          :query => @query,
-          :content_type => @content_type,
-          :section_unique_name => @section_unique_name,
-          :per_page => @per_page,
-          :controller => 'erp_app/widget_proxy',
-          :only_path => true,
-          :scope => erp_app
-      }
-      %>
-    <% end %>
-  </div>
-<% end %>
+</div>

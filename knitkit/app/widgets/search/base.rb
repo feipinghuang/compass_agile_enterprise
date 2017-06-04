@@ -25,7 +25,6 @@ module Widgets
       end
 
       def website_builder
-        @inline = true
         render
       end
 
