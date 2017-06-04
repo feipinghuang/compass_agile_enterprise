@@ -7,7 +7,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
         this.siteStructureTabPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel', {
             module: config.module
         });
-        
+
         this.componentTabPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
             module: config.module
         });
@@ -28,5 +28,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
         }, config);
 
         this.callParent([config]);
+    },
+
+    clearWebsite: function() {
+        this.siteStructureTabPanel.clearWebsite();
     }
 });
