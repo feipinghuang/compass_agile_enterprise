@@ -10,9 +10,10 @@ Compass.ErpApp.Widgets.Search = {
                 "   #                    Enter the permalink of results page if you want the search results to display on a new page\n",
                 "   # per_page: Number of results per page \n",
                 "   # class: CSS class for the form \n",
+                "%>\n",
                 "<%= render_builder_widget :search, \n",
-                "                  :action => get_widget_action,\n",
-                "                  :params => set_widget_params({\n",
+                "                          :action => get_widget_action,\n",
+                "                          :params => set_widget_params({\n",
                 "                               :content_type => '',\n",
                 "                               :section_to_search => '',\n",
                 "                               :results_permalink => '',\n",
@@ -44,7 +45,7 @@ Compass.ErpApp.Widgets.Search = {
         }
     },
 
-    addWidget:function(websiteBuilder){
+    addWidget:function(options){
         var websiteBuilder = options.websiteBuilder,
             success = options.success;
         var content = Compass.ErpApp.Widgets.Search.buildTemplate(websiteBuilder).apply();
@@ -58,6 +59,6 @@ Compass.ErpApp.Widgets.Search = {
 Compass.ErpApp.Widgets.AvailableWidgets.push({
     name:'Search',
     iconUrl:'/assets/icons/search/search_48x48.png',
-    onClick:Compass.ErpApp.Widgets.Search.addSearch,
+    addWidget:Compass.ErpApp.Widgets.Search.addWidget,
     about:'This widget allows users to search for content in a website.'
 });

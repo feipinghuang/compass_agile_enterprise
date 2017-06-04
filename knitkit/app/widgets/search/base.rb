@@ -24,6 +24,11 @@ module Widgets
         render
       end
 
+      def website_builder
+        @inline = true
+        render
+      end
+
       def search
         @query = params[:search_query].strip
         @content_type = params[:content_type]
