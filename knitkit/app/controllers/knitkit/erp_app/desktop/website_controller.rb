@@ -157,6 +157,15 @@ module Knitkit
                                         party: current_user.party.dba_organization,
                                         role_type: RoleType.iid('dba_org'))
 
+                #create a theme for the website
+                theme = Theme.create(
+                  website: website,
+                  name: "#{website.name} Theme",
+                  theme_id: "#{website.internal_identifier}-theme"
+                )
+                theme.create_theme_files!
+                theme.activate!
+
                 render :json => {:success => true, :website => website.to_hash(:only => [:id, :name],
                                                                                :configuration_id => website.configurations.first.id,
                                                                                :url => "http://#{website.config_value('primary_host')}")}
