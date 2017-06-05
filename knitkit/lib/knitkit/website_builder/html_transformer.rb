@@ -12,7 +12,6 @@ module Knitkit
             node.add_next_sibling(escape_erb("<%= #{render_statement} %>"))
             node.remove
           end
-          
           CGI.unescape_html(doc.to_s)
         end
 
@@ -74,7 +73,7 @@ module Knitkit
           html.
             gsub("<%", "&lt;%").
             gsub("%>", "%&gt;").
-            gsub(/&lt;%=?(.*?) %&gt;/) {|w| CGI.escape_html(w)}
+            gsub(/(?<=&lt;%)(.*?)(?=%&gt;)/) {|w| CGI.escape_html(w)}
         end
 
         def replace_widget_statement(html)
