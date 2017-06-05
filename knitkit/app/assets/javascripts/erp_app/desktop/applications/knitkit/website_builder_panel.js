@@ -773,7 +773,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         var widgetStatement = event.originalEvent.dataTransfer.getData('widget-statement');
                         Compass.ErpApp.Utility.ajaxRequest({
                             url: '/knitkit/erp_app/desktop/website_builder/widget_source',
-                            method: 'GET',
+                            method: 'POST',
                             params: {
                                 content: '<%=' + widgetStatement + '%>'
                             },
@@ -811,7 +811,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         success: function(content) {
                             Compass.ErpApp.Utility.ajaxRequest({
                                 url: '/knitkit/erp_app/desktop/website_builder/widget_source',
-                                method: 'GET',
+                                method: 'POST',
                                 params: {
                                     content: content
                                 },
