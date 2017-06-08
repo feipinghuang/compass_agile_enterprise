@@ -11,10 +11,20 @@ module Knitkit
           websites = Website.joins(:website_party_roles)
                          .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
                          .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
-
-          render :json => {:sites => websites.all.collect { |item| item.to_hash(:only => [:id, :name, :title, :subtitle],
-                                                                                :configuration_id => item.configurations.first.id,
-                                                                                :url => "#{request.protocol}#{item.config_value('primary_host')}") }}
+          
+          render json: {
+                   sites: websites.all.collect do |item|
+                     theme = item.themes.first
+                     item.to_hash(only: [:id, :name, :title, :subtitle],
+                                  configuration_id: item.configurations.first.id,
+                                  url: "#{request.protocol}#{item.config_value('primary_host')}",
+                                  theme: theme.to_hash(only: [:id],
+                                                       header: theme.meta_data['header'],
+                                                       footer: theme.meta_data['footer']
+                                                      )
+                                 )
+                   end
+                 }
         end
 
         def build_content_tree

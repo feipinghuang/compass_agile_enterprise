@@ -19,7 +19,7 @@ class Theme < ActiveRecord::Base
   def to_data_hash
       {
         id: self.id,
-        url: self.url
+        url: self.url,
       }
   end
 

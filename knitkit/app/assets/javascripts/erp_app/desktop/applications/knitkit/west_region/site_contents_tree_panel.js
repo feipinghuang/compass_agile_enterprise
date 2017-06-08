@@ -234,12 +234,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
     },
 
     clearWebsite: function() {
+        this.theme = null;
         var store = this.getStore();
         store.getProxy().extraParams = {};
         store.load();
     },
 
     selectWebsite: function(website) {
+        this.theme = website.theme;
         var store = this.getStore();
         store.getProxy().extraParams = {
             website_id: website.id
@@ -255,7 +257,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
             e.stopEvent();
 
             if (record.data['isSection']) {
-                self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId);
+                self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId, self.theme);
             } else if (record.data['objectType'] === "Article") {
                 url = '/knitkit/erp_app/desktop/articles/show/' + record.get('recordId');
 

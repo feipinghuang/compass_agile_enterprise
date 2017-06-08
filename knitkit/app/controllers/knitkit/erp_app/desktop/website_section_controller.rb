@@ -11,7 +11,7 @@ module Knitkit
             current_user.with_capability('create', 'WebsiteSection') do
               begin
                 ActiveRecord::Base.transaction do
-
+                  
                   @website = Website.find(params[:website_id])
                   @website_primary_host = @website.nil? ? nil : @website.config_value('primary_host')
 

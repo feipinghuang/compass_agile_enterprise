@@ -577,19 +577,25 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         });
     },
 
-    openWebsiteBuilderInTab: function(title, websiteSectionId) {
+    openWebsiteBuilderInTab: function(title, websiteSectionId, themeConfig) {
         var me = this;
         websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
         websiteId = websitesCombo.getValue();
-
+        
         var itemId = 'websiteSection' + websiteSectionId;
         var item = this.workArea.down('#' + itemId);
-
         if (!item) {
             item = Ext.createWidget('websitebuilderpanel', {
                 closable: true,
                 title: title,
                 itemId: itemId,
+                themeLayoutConfig: {
+                    themeId: themeConfig.id,
+                    headerComponentIid: (themeConfig.header || {}).component_iid,
+                    headerComponentHeight: (themeConfig.header || {}).component_height,
+                    footerComponentIid: (themeConfig.footer || {}).component_iid,
+                    footerComponentHeight: (themeConfig.footer || {}).component_height,
+                },
                 websiteSectionId: websiteSectionId,
                 save: function(comp) {
                     var containers = comp.buildContainersPayload() || [];

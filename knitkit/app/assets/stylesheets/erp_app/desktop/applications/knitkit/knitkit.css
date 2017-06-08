@@ -248,6 +248,16 @@
   margin: 25px;
 }
 
+.website-builder-toolbar-text {
+  font-size: 12px;
+  font-weight: bold;
+  font-family: helvetica,arial,verdana,sans-serif;
+  color: #666;
+  position: relative;
+  left: 21px;
+  top: 5px;
+}
+
 .iframe-container{
   position: relative;
   height: 100%;
