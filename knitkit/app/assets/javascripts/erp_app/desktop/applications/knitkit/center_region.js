@@ -598,7 +598,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 },
                 websiteSectionId: websiteSectionId,
                 save: function(comp) {
-                    var containers = comp.buildContainersPayload() || [];
+                    var containers = comp.buildContentBlocksPayload() || [];
                     me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(containers));
                 }
             });

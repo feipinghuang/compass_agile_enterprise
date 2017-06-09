@@ -264,6 +264,10 @@
   width: 100%;
 }
 
+.iframe-container iframe {
+  overflow:hidden;
+}
+
 .iframe-cover.move{
   position: absolute;
   top: 0;
