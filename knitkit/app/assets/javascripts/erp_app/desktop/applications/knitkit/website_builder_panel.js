@@ -480,7 +480,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     buildContentBlocksPayload: function() {
         var me = this,
-            containerPanels = me.query("[cls=websitebuilder-component-panel]");
+            containerPanels = me.query("[cls=websitebuilder-component-panel][isLayout!=true]");
         return Ext.Array.map(containerPanels, function(container, index) {
             var iframe = container.el.down('.iframe-container > iframe').el.dom,
                 containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
@@ -500,10 +500,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var options = options || {},
             canViewSource = (options.viewSource == undefined) ? true : options.viewSource,
             canMove = (options.move == undefined) ? true : options.move,
-            canRemove = (options.remove == undefined) ? true : options.remove;
+            canRemove = (options.remove == undefined) ? true : options.remove,
+            templateType = options.templateType;  
         
-        if(componentIid == 'header' || componentIid == 'footer') {
-            var componentPath = '/shared/knitkit/_' + componentIid;
+        if(templateType == 'header' || templateType == 'footer') {
+            var componentPath = '/shared/knitkit/_' + templateType;
             var url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_path=' + componentPath;
             
         } else {
@@ -706,36 +707,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         iframe.on('load', function() {
             loadMask.hide();
             var iframeNode = iframe.el.dom;
-            var editableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
 
-            Ext.Array.each(editableElements, function(editableElement) {
-                editableElement = Ext.get(editableElement);
-
-                editableElement.on('mouseover', function(event) {
-                    if (!editableElement.dom.isContentEditable) {
-                        me.highlightElement(editableElement.dom);
-                    }
-                });
-                editableElement.on('mouseout', function(event) {
-                    if (!editableElement.dom.isContentEditable) {
-                        me.deHighlightElement(editableElement.dom);
-                    }
-                });
-                editableElement.on('click', function(event) {
-                    event.preventDefault();
-
-                    if (!editableElement.dom.isContentEditable) {
-                        var contentEditableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
-                        Ext.Array.each(contentEditableElements, function(element) {
-                            me.removeEditable(element);
-                            me.deHighlightElement(element);
-                        });
-                    }
-
-                    me.buildPropertiesEditForm(this.dom);
-                });
-            });
-
+            //setup editable content listeners
+            me.setupEditableContentListeners(iframeNode);
+            
             //setup widget drop listeners
             me.setupIframeDragDropListeners(iframeNode);
 
@@ -744,10 +719,44 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         containerPanel.updateLayout();
     },
 
+
+    setupEditableContentListeners: function(iframeNode) {
+        var me = this;
+        var editableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
+
+        Ext.Array.each(editableElements, function(editableElement) {
+            editableElement = Ext.get(editableElement);
+
+            editableElement.on('mouseover', function(event) {
+                if (!editableElement.dom.isContentEditable) {
+                    me.highlightElement(editableElement.dom);
+                }
+            });
+            editableElement.on('mouseout', function(event) {
+                if (!editableElement.dom.isContentEditable) {
+                    me.deHighlightElement(editableElement.dom);
+                }
+            });
+            editableElement.on('click', function(event) {
+                event.preventDefault();
+
+                if (!editableElement.dom.isContentEditable) {
+                    var contentEditableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
+                    Ext.Array.each(contentEditableElements, function(element) {
+                        me.removeEditable(element);
+                        me.deHighlightElement(element);
+                    });
+                }
+
+                me.buildPropertiesEditForm(this.dom);
+            });
+        });
+    },
+
     // setup iframe drag and drop
     setupIframeDragDropListeners: function(iframeNode) {
         var me = this;
-        var currentElement, currentElementChangeFlag, elementRectangle, countdown, dragoverqueue_processtimer;
+        var currentElement, currentElementChangeFlag, elementRectangle, countdown
 
         var dragImg = new Image();
         dragImg.src = '/assets/knitkit/website_builder/drag.png';
@@ -889,7 +898,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         me.attachIframeDragStartListener(iframeNode);
     },
-
     
     endWidgetDragDrop: function() {
         var win = this.up('window');
@@ -1176,7 +1184,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 componentId: componentIid,
                 isLayout: true,
                 cls: 'websitebuilder-component-panel',
-                html: me.buildContentBlockTemplate(componentIid, options),
+                html: me.buildContentBlockTemplate(componentIid, Ext.apply(options,{templateType: templateType})),
                 listeners: {
                     render: function(comp) {
                         comp.setHeight(componentHeight);
@@ -1204,35 +1212,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         iframe.on('load', function() {
                             loadMask.hide();
                             var iframeNode = iframe.el.dom;
-                            var editableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
-                            Ext.Array.each(editableElements, function(editableElement) {
-                                editableElement = Ext.get(editableElement);
-                                
-                                editableElement.on('mouseover', function(event) {
-                                    if (!editableElement.dom.isContentEditable) {
-                                        me.highlightElement(editableElement.dom);
-                                    }
-                                });
-                                editableElement.on('mouseout', function(event) {
-                                    if (!editableElement.dom.isContentEditable) {
-                                        me.deHighlightElement(editableElement.dom);
-                                    }
-                                });
-                                editableElement.on('click', function(event) {
-                                    event.preventDefault();
-                                    
-                                    if (!editableElement.dom.isContentEditable) {
-                                        var contentEditableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
-                                        Ext.Array.each(contentEditableElements, function(element) {
-                                            me.removeEditable(element);
-                                            me.deHighlightElement(element);
-                                        });
-                                    }
-                                    
-                                    me.buildPropertiesEditForm(this.dom);
-                                });
-                            });
+
+                            //setup editable content listeners
+                            me.setupEditableContentListeners(iframeNode);
                             
+                            //setup widget drop listeners
+                            me.setupIframeDragDropListeners(iframeNode);
                         }); // iframe load
                     } // render
                 } // listeners
