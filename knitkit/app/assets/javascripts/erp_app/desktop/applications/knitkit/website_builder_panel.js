@@ -518,7 +518,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             iframeId = componentIid + '-frame' + iframeUuid;
         return new Ext.XTemplate(
             '<div class="component" style="height:100%;width:100%;position:relative;">',
-            '<tpl if="canViewSource && canMove && canRemove">',
+            '<tpl if="canViewSource || canMove || canRemove">',
             '<div class="website-builder-reorder-setting" id="componentSetting">',
             '<tpl if="canViewSource">',
             '<div class="icon-edit-code pull-left" id="{componentIid}-source" style="margin-right:5px;"></div>',
