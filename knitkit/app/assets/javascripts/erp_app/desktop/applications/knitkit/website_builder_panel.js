@@ -501,7 +501,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             canViewSource = (options.canViewSource == undefined) ? true : options.canViewSource,
             canMove = (options.canMove == undefined) ? true : options.canMove,
             canRemove = (options.canRemove == undefined) ? true : options.canRemove,
-            templateType = options.templateType;  
+            templateType = options.templateType;
         if(templateType == 'header' || templateType == 'footer') {
             var componentPath = '/shared/knitkit/_' + templateType;
             var url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_path=' + componentPath;
@@ -1099,12 +1099,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     addCurrentComponents: function() {
         var me = this;
-        var options = {
-            canViewSource: false,
-            canMove: false,
-            canRemove: true
-        };
         if (me.isThemeMode()) {
+            var options = {
+                canViewSource: false,
+                canMove: false,
+                canRemove: true
+            };
             me.add(
                 [
                     me.buildLayoutConfig('header', options), {
@@ -1195,7 +1195,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 cls: 'websitebuilder-component-panel',
                 listeners: {
                     render: function(comp) {
-                        me.loadContentBlock(comp, componentIid, componentHeight, null, options)
+                        me.loadContentBlock(comp, componentIid, componentHeight, null, Ext.apply(options, {templateType: templateType}))
                     } 
                 } 
             }; 
