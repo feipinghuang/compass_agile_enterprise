@@ -498,11 +498,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             websiteId = me.getWebsiteId();
 
         var options = options || {},
-            canViewSource = (options.viewSource == undefined) ? true : options.viewSource,
-            canMove = (options.move == undefined) ? true : options.move,
-            canRemove = (options.remove == undefined) ? true : options.remove,
+            canViewSource = (options.canViewSource == undefined) ? true : options.canViewSource,
+            canMove = (options.canMove == undefined) ? true : options.canMove,
+            canRemove = (options.canRemove == undefined) ? true : options.canRemove,
             templateType = options.templateType;  
-        
         if(templateType == 'header' || templateType == 'footer') {
             var componentPath = '/shared/knitkit/_' + templateType;
             var url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_path=' + componentPath;
@@ -548,11 +547,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             canRemove: canRemove
         });
     },
-    
-    loadContentBlock: function(dropPanel, componentIid, height, thumbnail) {
+
+    loadContentBlock: function(dropPanel, componentIid, height, thumbnail, options) {
         var me = this;
         var containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
-
+        
         me.addContentBlockConfig(componentIid, {
             height: height,
             thumbnail: thumbnail
@@ -571,8 +570,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         dropPanel.setHeight(height);
         dropPanel.componentId = componentIid;
-        
-        dropPanel.update(me.buildContentBlockTemplate(componentIid));
+        var options = options || {}
+        dropPanel.update(me.buildContentBlockTemplate(componentIid, options));
 
         var sourceElem = Ext.get(componentIid + '-source');
         if(sourceElem) {
@@ -625,7 +624,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                                     componentContainer.down('component'),
                                                     componentIid,
                                                     componentConfig.height,
-                                                    componentConfig.thumbnail
+                                                    componentConfig.thumbnail,
                                                 );
                                                 myMask.hide();
                                             },
@@ -656,7 +655,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             componentContainer.down('component'),
                                             componentIid,
                                             componentConfig.height,
-                                            componentConfig.thumbnail
+                                            componentConfig.thumbnail,
                                         );
                                     }
                                 }],
@@ -1100,10 +1099,15 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     addCurrentComponents: function() {
         var me = this;
+        var options = {
+            canViewSource: false,
+            canMove: false,
+            canRemove: true
+        };
         if (me.isThemeMode()) {
             me.add(
                 [
-                    me.buildLayoutConfig('header'), {
+                    me.buildLayoutConfig('header', options), {
                         xtype: 'component',
                         flex: 1,
                         cls: '',
@@ -1118,7 +1122,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         html: '<div>Contents</div>'
 
                     },
-                    me.buildLayoutConfig('footer')
+                    me.buildLayoutConfig('footer', options)
                 ]
             );
 
@@ -1161,7 +1165,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 }]
                             });
 
-                            me.loadContentBlock(componentContainer.down('component'), component.iid, component.height, component.thumbnail);
+                            me.loadContentBlock(
+                                componentContainer.down('component'),
+                                component.iid,
+                                component.height,
+                                component.thumbnail,
+                            );
                         });
                     }
                 }
@@ -1169,7 +1178,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         }
     },
-
+    
     buildLayoutConfig: function(templateType, options) {
         var me = this;
 
@@ -1177,51 +1186,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         // if is header or footer is already present render it as a component else render websitebuilderdropzone
         var componentIid = me.themeLayoutConfig[templateType + 'ComponentIid'],
             componentHeight = me.themeLayoutConfig[templateType + 'ComponentHeight'];
-
+        var layoutCompConfig = null;
         if (componentIid) {
             layoutCompConfig = {
                 xtype: 'component',
                 componentId: componentIid,
                 isLayout: true,
                 cls: 'websitebuilder-component-panel',
-                html: me.buildContentBlockTemplate(componentIid, Ext.apply(options,{templateType: templateType})),
                 listeners: {
                     render: function(comp) {
-                        comp.setHeight(componentHeight);
-                        comp.componentId = componentIid;
-                        
-                        var loadMask = new Ext.LoadMask(comp, {
-                            msg: "Please wait..."
-                        });
-                        loadMask.show();
-
-                        var removeElem = Ext.get(componentIid + '-remove');
-                        if(removeElem) {
-                            removeElem.on('click', function() {
-                                me.insert(me.items.indexOf(comp), {
-                                    xtype: 'websitebuilderdropzone',
-                                    itemId: 'layout' + templateType.capitalize(),
-                                    flex: 1
-                                });
-                                comp.destroy();
-                            });
-                        }
-                        
-                        var iframe = Ext.get(comp.el.down('div.iframe-container > iframe'));
-                        
-                        iframe.on('load', function() {
-                            loadMask.hide();
-                            var iframeNode = iframe.el.dom;
-
-                            //setup editable content listeners
-                            me.setupEditableContentListeners(iframeNode);
-                            
-                            //setup widget drop listeners
-                            me.setupIframeDragDropListeners(iframeNode);
-                        }); // iframe load
-                    } // render
-                } // listeners
-            }; // comp
+                        me.loadContentBlock(comp, componentIid, componentHeight, null, options)
+                    } 
+                } 
+            }; 
         } else {
             layoutCompConfig = {
                 xtype: 'websitebuilderdropzone',
@@ -1332,9 +1309,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         if(!me.isLayoutIncluded) {
             me.isLayoutIncluded = true;
             var options = {
-                viewSource: false,
-                move: false,
-                remove: false
+                canViewSource: false,
+                canMove: false,
+                canRemove: false
             };
             me.insert(0, me.buildLayoutConfig('header', options));
             me.add(me.buildLayoutConfig('footer', options));
