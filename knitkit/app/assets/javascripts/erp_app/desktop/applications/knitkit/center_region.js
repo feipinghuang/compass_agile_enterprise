@@ -591,10 +591,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 itemId: itemId,
                 themeLayoutConfig: {
                     themeId: themeConfig.id,
-                    headerComponentIid: (themeConfig.header || {}).component_iid,
-                    headerComponentHeight: (themeConfig.header || {}).component_height,
-                    footerComponentIid: (themeConfig.footer || {}).component_iid,
-                    footerComponentHeight: (themeConfig.footer || {}).component_height,
+                    header: {
+                        iid: (themeConfig.header || {}).component_iid,
+                        height: (themeConfig.header || {}).component_height
+                    },
+                    footer: {
+                        iid: (themeConfig.footer || {}).component_iid,
+                        height: (themeConfig.footer || {}).component_height,
+                    }
                 },
                 websiteSectionId: websiteSectionId,
                 save: function(comp) {

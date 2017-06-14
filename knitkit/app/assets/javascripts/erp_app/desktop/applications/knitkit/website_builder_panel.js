@@ -506,7 +506,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         });
     },
 
-    buildContentBlockTemplate: function(componentIid, options) {
+    buildContentBlockTemplate: function(dropPanel, componentIid, options) {
         var me = this,
             websiteId = me.getWebsiteId();
 
@@ -535,7 +535,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             '<div class="icon-edit-code pull-left" id="{componentIid}-source" style="margin-right:5px;"></div>',
             '</tpl>',
             '<tpl if="canMove">',
-            '<div class="icon-move pull-left" id="{componentIid}-move" style="margin-right:5px;"></div>',
+            '<div class="icon-move pull-left" id="{componentIid}-move" style="margin-right:5px;" panelId="{panelId}"></div>',
             '</tpl>',
             '<tpl if="canRemove">',
             '<div class="icon-remove pull-left" id="{componentIid}-remove"></div>',
@@ -551,6 +551,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             '</tpl>',
             '</div>'
         ).apply({
+            panelId: dropPanel.id,
             componentIid: componentIid,
             iframeId: iframeId,
             url: url,
@@ -583,7 +584,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         dropPanel.setHeight(height);
         dropPanel.componentId = componentIid;
         var options = options || {}
-        dropPanel.update(me.buildContentBlockTemplate(componentIid, options));
+        dropPanel.update(me.buildContentBlockTemplate(dropPanel, componentIid, options));
 
         var sourceElem = Ext.get(componentIid + '-source');
         if(sourceElem) {
