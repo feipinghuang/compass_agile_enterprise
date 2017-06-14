@@ -318,7 +318,7 @@ class Theme < ActiveRecord::Base
     meta_data[comp_type.to_s]
   end
 
-  def update_base_layout(options={})
+  def update_base_layout!(options={})
     header = options[:header]
     footer = options[:footer]
 
@@ -326,20 +326,28 @@ class Theme < ActiveRecord::Base
     theme_path = File.join(path, "templates", "shared", "knitkit")
     if header['source'].present?
       # strip off design specific HTML
-      website_header = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(header['source'])
+      header_design_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(header['source'])
+      website_header = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(header_design_html)
       file_support.update_file(File.join(theme_path, "_header.html.erb"), website_header)
       meta_data['header'] ||= {}
+      meta_data['header']['builder_html'] = header_design_html
       meta_data['header']['component_iid'] = header['component_iid']
       meta_data['header']['component_height'] = header['component_height']
+    else
+      reset_design_layout!('header')
     end
 
     if footer['source'].present?
       # strip off design specific HTML
-      website_footer = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(footer['source'])
+      footer_design_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(footer['source'])
+      website_footer = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(footer_design_html)
       file_support.update_file(File.join(theme_path, "_footer.html.erb"), website_footer)
       meta_data['footer'] ||= {}
+      meta_data['footer']['builder_html'] = footer_design_html
       meta_data['footer']['component_iid'] = footer['component_iid']
       meta_data['footer']['component_height'] = footer['component_height']
+    else
+      reset_design_layout!('footer')
     end
     self.save!
     {
@@ -347,6 +355,33 @@ class Theme < ActiveRecord::Base
       footer: meta_data['footer']
     }
   end
+
+  def init_design_layout!
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+    ['header', 'footer'].each do |template|
+      template_path = File.join(path, "templates", "shared", "knitkit", "_#{template}.html.erb")
+      template_contents = file_support.get_contents(template_path).first
+      meta_data[template] ||= {}
+      # copy the contents of the _header and _footer partials
+      # to builder_html and initial_builder_html. 
+      meta_data[template]['builder_html'] = template_contents
+      # we need to store the blueprint incase somebody deletes them
+      # we can reset the theme's state to what it was during creation
+      meta_data[template]['initial_builder_html'] = template_contents
+    end
+    self.save!
+  end
+  
+  def reset_design_layout!(template)
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+    template_path = File.join(path, "templates", "shared", "knitkit", "_#{template}.html.erb")
+    meta_data[template] ||= {}
+    # reset the builder_html to restore the template to its original value
+    meta_data[template]['builder_html'] = meta_data[template]['initial_builder_html']
+    self.save!
+    file_support.update_file(template_path, meta_data[template]['builder_html'])
+  end
+
 
   private
 

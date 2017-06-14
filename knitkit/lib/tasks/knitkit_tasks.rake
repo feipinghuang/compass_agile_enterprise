@@ -44,7 +44,12 @@ namespace :knitkit do
 
     desc 'Insert components for knitkit website'
     task :insert_components => :environment do |t, args|
-      COMPONENTS = [ { id: 'header2',
+      COMPONENTS = [ { id: 'header1',
+                       title: 'Header',
+                       type: 'header',
+                       thumbnail: '/images/content_blocks/header1.png',
+                       height: 581 },
+                     { id: 'header2',
                        title: 'Header',
                        type: 'header',
                        thumbnail: '/images/content_blocks/header2.png',

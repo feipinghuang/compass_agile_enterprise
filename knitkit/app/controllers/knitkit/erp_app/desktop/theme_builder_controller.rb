@@ -2,26 +2,23 @@ module Knitkit
   module ErpApp
     module Desktop
       class ThemeBuilderController < Knitkit::ErpApp::Desktop::AppController
-
         before_filter :set_website, except: :update_layout
-        
+
         acts_as_themed_controller website_builder: true
 
         skip_before_filter :add_theme_view_paths, only: [:update_layout]
-
-        layout 'knitkit/base', except: :update_layout
-
+        
         def website
           @website
         end
-
+        
         def update_layout
           begin
             theme = Theme.find(params[:id])
             header = JSON.parse(params[:header]) rescue {}
             footer = JSON.parse(params[:footer]) rescue {}
             
-            result = theme.update_base_layout({
+            result = theme.update_base_layout!({
                                                 header: header,
                                                 footer: footer
                                               })
@@ -41,18 +38,19 @@ module Knitkit
         end
 
         def render_theme_component
-          path = params[:template_path]
+          template_type = params[:template_type]
           @website_builder = true
-          render template: path
+          theme = @website.themes.first
+          builder_html = theme.meta_data[template_type]['builder_html']
+          render inline: builder_html, layout: 'knitkit/base'
         end
-        
 
         protected
-
+        
         def set_website
           @website = Website.find(params[:website_id])
         end
-
+        
       end # ThemeBuilderController
     end # Desktop
   end # ErpApp

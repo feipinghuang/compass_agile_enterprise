@@ -109,54 +109,104 @@ module Knitkit
         end
 
         def get_component_source
-          website = Website.find(params[:website_id])
-          website_section = WebsiteSection.find(params[:website_section_id])
-          component = Component.where(internal_identifier: params[:component_iid]).first
-          website_section_content = WebsiteSectionContent.where(website_section_id: website_section.id, content_id: component.id).first
-          is_content_saved = false
-          # if the component has been saved get its contents else get the component's HTML from the them
-          html_content = if website_section_content
-            is_content_saved = true
-            website_section_content.website_html
-          else
-            theme = website.themes.first
-            file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
-            path = File.join(file_support.root, 'public', 'sites', website.internal_identifier, 'themes', theme.theme_id, 'templates', 'components', "#{component.internal_identifier}.html.erb")
-            file_support.get_contents(path).first
+          begin
+            website = Website.find(params[:website_id])
+            component = Component.where(internal_identifier: params[:component_iid]).first
+            website_section_content = WebsiteSectionContent.where(
+              website_section_id: params[:website_section_id],
+              content_id: component.id).first
+            # we want to return the source only if its saved
+            is_content_saved = false
+            html_content = if website_section_content
+                             is_content_saved = true
+                             website_section_content.website_html
+                           elsif component.internal_identifier.match(/^(header|footer)/)
+                             is_content_saved = true
+                             template_type = component.internal_identifier.match(/^(header|footer)/)[0]
+                             theme = website.themes.first
+                             file_support = ErpTechSvcs::FileSupport::Base.new(
+                               storage: Rails.application.config.erp_tech_svcs.file_storage
+                             )
+                             path = File.join(
+                               file_support.root,
+                               'public',
+                               'sites',
+                               website.internal_identifier,
+                               'themes',
+                               theme.theme_id,
+                               'templates',
+                               'shared',
+                               'knitkit',
+                               "_#{template_type}.html.erb"
+                             )
+                             file_support.get_contents(path).first
+                           end
+            
+            if is_content_saved
+              render json: {
+                       success: true,
+                       component: {
+                         html: html_content,
+                       }
+                     }
+            else
+              render json: {success: false}
+            end
+          rescue Exception => ex
+            Rails.logger.error ex.message
+            Rails.logger.error ex.backtrace.join("\n")
+            ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+            
+            render json: {success: false}
           end
-
-          render json: {
-            success: true,
-            component: {
-              html: html_content,
-            },
-            is_content_saved: is_content_saved
-          }
         end
 
         def save_component_source
           begin
-            website_section = WebsiteSection.find(params[:website_section_id])
             component = Component.where(internal_identifier: params[:component_iid]).first
             component_source = params[:source]
+            website = Website.find(params[:website_id])
+            if component.internal_identifier.match(/^(header|footer)/)
+              template_type = component.internal_identifier.match(/^(header|footer)/)[0]
+              theme = website.themes.first
+              file_support = ErpTechSvcs::FileSupport::Base.new(
+                storage: Rails.application.config.erp_tech_svcs.file_storage
+              )
+              path = File.join(
+                file_support.root,
+                'public',
+                'sites',
+                website.internal_identifier,
+                'themes',
+                theme.theme_id,
+                'templates',
+                'shared',
+                'knitkit',
+                "_#{template_type}.html.erb"
+              )
+              file_support.update_file(path, component_source)
+              theme.meta_data[template_type]['builder_html'] = component_source
+              theme.save!
+            else
+              website_section_id = params[:website_section_id]
+              # find website section
+              website_section_content = WebsiteSectionContent.where(
+                website_section_id: website_section_id,
+                content_id: component.id
+              ).first
 
-            # find website section
-            website_section_content = WebsiteSectionContent.where(
-              website_section_id: website_section.id,
-              content_id: component.id
-            ).first
+              # create a website section if not there
+              website_section_content = WebsiteSectionContent.new(
+                website_section_id: website_section_id,
+                content_id: component.id,
+                position: 0
+              ) unless website_section_content
 
-            # create a website section if not there
-            website_section_content = WebsiteSectionContent.new(
-              website_section_id: website_section.id,
-              content_id: component.id,
-              position: 0
-            ) unless website_section_content
-
-            # assign source
-            website_section_content.website_html = component_source
-            website_section_content.builder_html = component_source
-            website_section_content.save!
+              # assign source
+              website_section_content.website_html = component_source
+              website_section_content.builder_html = component_source
+              website_section_content.save!
+            end
             render json: {success: true}
           rescue Exception => ex
             Rails.logger.error ex.message

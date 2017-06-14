@@ -244,7 +244,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
         var me = this,
             centerPanel = Ext.ComponentQuery.query("knitkit_centerregion").first(),
             centerTabPanel = centerPanel.down('tabpanel');
-
         var themeBuilderPanel = centerTabPanel.add({
             xtype: 'websitebuilderpanel',
             itemId: 'themeBuilder' + node.get('id'),
@@ -252,10 +251,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             isForTheme: true,
             themeLayoutConfig: {
                 themeId: node.get('id'),
-                headerComponentIid: node.get('headerComponentIid'),
-                headerComponentHeight: node.get('headerComponentHeight'),
-                footerComponentIid: node.get('footerComponentIid'),
-                footerComponentHeight: node.get('footerComponentHeight')
+                header: {
+                    iid: node.get('headerComponentIid'),
+                    height: node.get('headerComponentHeight'),
+                },
+                footer: {
+                    iid: node.get('footerComponentIid'),
+                    height: node.get('footerComponentHeight')
+                }
             },
             title: 'Theme Builder',
             save: function(comp) {
@@ -279,18 +282,20 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 var params = {};
 
                 if(!Compass.ErpApp.Utility.isBlank(headerHTML)) {
+                    var headerConfig = comp.getThemeLayoutConfig('header');
                     params.header = Ext.encode({
                         source: headerHTML,
-                        component_iid: comp.themeLayoutConfig.headerComponentIid,
-                        component_height: comp.themeLayoutConfig.headerComponentHeight
+                        component_iid: headerConfig.iid,
+                        component_height: headerConfig.height
                     });
                 }
 
                 if(!Compass.ErpApp.Utility.isBlank(footerHTML)) {
+                    var footerConfig = comp.getThemeLayoutConfig('footer');
                     params.footer = Ext.encode({
                         source: footerHTML,
-                        component_iid: comp.themeLayoutConfig.footerComponentIid,
-                        component_height: comp.themeLayoutConfig.footerComponentHeight
+                        component_iid: footerConfig.iid,
+                        component_height: footerConfig.height
                     });
                 }
                 
@@ -302,20 +307,22 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                         centerPanel.clearWindowStatus();
                         // update website builder config
                         if(response.result.header) {
-                            comp.themeLayoutConfig.headerComponentIid = response.result.header.component_iid;
-                            comp.themeLayoutConfig.headerComponentHeight = response.result.header.component_height;
 
+                            comp.addThemeLayoutConfig('header', {
+                                iid: response.result.header.component_iid,
+                                height: response.result.header.component_height
+                            });
+                            
                             node.set('headerComponentIid', response.result.header.component_iid);
                             node.set('headerComponentHeight', response.result.header.component_height);
                             node.commit();
-
-                            
                         }
 
                         if(response.result.footer) {
-                            comp.themeLayoutConfig.footerComponentIid = response.result.footer.component_iid;
-                            comp.themeLayoutConfig.footerComponentHeight = response.result.footer.component_height;
-                            
+                            comp.addThemeLayoutConfig('footer', {
+                                iid: response.result.footer.component_iid,
+                                height: response.result.footer.component_height
+                            });
                             node.set('footerComponentIid', response.result.footer.component_iid);
                             node.set('footerComponentheight', response.result.footer.component_height);
                             node.commit();

@@ -11,8 +11,21 @@ module Widgets
     
         render
       end
-
-      alias :website_builder :index
+      
+      def website_builder
+        if original_action == :index
+          @header = false
+          @logout_to  = params[:logout_to]
+          @login_to   = (session[:return_to_url] or params[:login_to])
+          @signup_url = params[:signup_url]
+          @reset_password_url = params[:reset_password_url]
+        elsif original_action == :login_header
+          @header = true
+          @login_url     = params[:login_url]
+          @signup_url    = params[:signup_url]
+        end
+        render
+      end
 
       def login_header
         @login_url     = params[:login_url]

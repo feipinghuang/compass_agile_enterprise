@@ -174,6 +174,7 @@ module Knitkit
                   theme_id: "#{website.internal_identifier}-theme"
                 )
                 theme.create_theme_files!
+                theme.init_design_layout!
                 theme.activate!
 
                 render :json => {:success => true, :website => website.to_hash(:only => [:id, :name],
