@@ -5,7 +5,7 @@ module Knitkit
 
         def reduce_to_builder_html(html)
           doc = Nokogiri::HTML::DocumentFragment.parse(escape_erb(html))
-          
+
           #find widgets and replace them with their render statements
           doc.css('.compass_ae-widget').each do |node|
             render_statement = node.parent.attributes['data-widget-statement'].value
@@ -17,7 +17,10 @@ module Knitkit
 
         def reduce_to_website_html(html)
           doc = Nokogiri::HTML::DocumentFragment.parse(replace_widget_statement(escape_erb(html)))
-          
+
+          # remove data-frame-uuid
+          doc.at_css('.page > .item.content').remove_attribute('data-frame-uuid')
+
           # find and strip off drag drop attributes from drop component
           doc.css('.dnd-drop-target > [draggable="true"]').each do |tag|
             tag.attributes['draggable'].remove
