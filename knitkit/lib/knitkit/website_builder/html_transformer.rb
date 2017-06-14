@@ -19,7 +19,8 @@ module Knitkit
           doc = Nokogiri::HTML::DocumentFragment.parse(replace_widget_statement(escape_erb(html)))
 
           # remove data-frame-uuid
-          doc.at_css('.page > .item.content').remove_attribute('data-frame-uuid')
+          item_content = doc.at_css('.page > .item')
+          item_content.remove_attribute('data-frame-uuid') if item_content
 
           # find and strip off drag drop attributes from drop component
           doc.css('.dnd-drop-target > [draggable="true"]').each do |tag|
