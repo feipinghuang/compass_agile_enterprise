@@ -133,6 +133,7 @@ class User < ActiveRecord::Base
     # @option options [String] :password Password for new User
     # @option options [String] :first_name First Name for new User
     # @option options [String] :last_name Last Name for new User
+    # @option options [Boolean] :auto_activate Auto Active the User
     # @option options [Array] :party_roles Party roles to add to the User
     # @option options [Array] :security_roles Security Roles to add to the User
     # @option options [Array] :applications Applications to add to the User
@@ -157,7 +158,11 @@ class User < ActiveRecord::Base
       user = User.where('username = ?', options[:username]).first
 
       unless user
-        user = create(username: options[:username], email: options[:email], password: options[:password])
+        user = new(username: options[:username], email: options[:email], password: options[:password])
+
+        if options[:auto_activate]
+          user.skip_activation_email = true
+        end
 
         individual = Individual.create(current_first_name: options[:first_name], current_last_name: options[:last_name])
 
