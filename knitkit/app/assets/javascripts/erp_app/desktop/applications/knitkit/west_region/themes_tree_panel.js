@@ -115,51 +115,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
         }).show();
     },
 
-    updateThemeActiveStatus: function(node, active) {
-        var self = this;
-
-        self.initialConfig['centerRegion'].setWindowStatus('Updating Status...');
-
-        Ext.Ajax.request({
-            url: '/knitkit/erp_app/desktop/theme/change_status',
-            method: 'POST',
-            params: {
-                theme_id: node.data.id,
-                website_id: node.data.siteId,
-                active: active
-            },
-            success: function(response) {
-                var obj = Ext.decode(response.responseText);
-                if (obj.success) {
-                    self.initialConfig['centerRegion'].clearWindowStatus();
-
-                    if (active) {
-                        // first update icon for all other theme nodes as they are now deactive
-                        var rootNode = node.getOwnerTree().getRootNode();
-                        rootNode.eachChild(function(childNode) {
-                            childNode.set('iconCls', 'icon-delete');
-                            childNode.set('isActive', false);
-                        });
-
-                        // then update this node to be active
-                        node.set('iconCls', 'icon-add');
-                        node.set('isActive', true);
-                    } else {
-                        node.set('iconCls', 'icon-delete');
-                        node.set('isActive', false);
-                    }
-                } else {
-                    Ext.Msg.alert('Error', 'Error updating status');
-                    self.initialConfig['centerRegion'].clearWindowStatus();
-                }
-            },
-            failure: function(response) {
-                self.initialConfig['centerRegion'].clearWindowStatus();
-                Ext.Msg.alert('Error', 'Error updating status');
-            }
-        });
-    },
-
     showUpdateThemeForm: function(node) {
         Ext.create("Ext.window.Window", {
             layout: 'fit',
@@ -201,7 +156,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                             westRegion = Ext.ComponentQuery.query('#knitkitWestRegion').first(),
                             themesTreePanel = westRegion.down('#themesTreePanel');
 
-                        
+
                         var loading = new Ext.LoadMask(window, {
                             msg: 'Please wait...'
                         });
@@ -265,23 +220,23 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 centerPanel.setWindowStatus("Saving...");
                 var headerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='header']").first(),
                     footerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='footer']").first();
-                
+
                 var headerHTML = null,
                     footerHTML = null;
-                
-                if(headerComp) {
+
+                if (headerComp) {
                     var headerFrame = headerComp.getEl().down('.iframe-container > iframe').el.dom;
                     headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
                 }
 
-                if(footerComp) {
+                if (footerComp) {
                     var footerFrame = footerComp.getEl().down('.iframe-container > iframe').el.dom;
                     footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
                 }
 
                 var params = {};
 
-                if(!Compass.ErpApp.Utility.isBlank(headerHTML)) {
+                if (!Compass.ErpApp.Utility.isBlank(headerHTML)) {
                     var headerConfig = comp.getThemeLayoutConfig('header');
                     params.header = Ext.encode({
                         source: headerHTML,
@@ -290,7 +245,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     });
                 }
 
-                if(!Compass.ErpApp.Utility.isBlank(footerHTML)) {
+                if (!Compass.ErpApp.Utility.isBlank(footerHTML)) {
                     var footerConfig = comp.getThemeLayoutConfig('footer');
                     params.footer = Ext.encode({
                         source: footerHTML,
@@ -298,7 +253,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                         component_height: footerConfig.height
                     });
                 }
-                
+
                 Compass.ErpApp.Utility.ajaxRequest({
                     url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',
                     method: 'PUT',
@@ -306,19 +261,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     success: function(response) {
                         centerPanel.clearWindowStatus();
                         // update website builder config
-                        if(response.result.header) {
+                        if (response.result.header) {
 
                             comp.addThemeLayoutConfig('header', {
                                 iid: response.result.header.component_iid,
                                 height: response.result.header.component_height
                             });
-                            
+
                             node.set('headerComponentIid', response.result.header.component_iid);
                             node.set('headerComponentHeight', response.result.header.component_height);
                             node.commit();
                         }
 
-                        if(response.result.footer) {
+                        if (response.result.footer) {
                             comp.addThemeLayoutConfig('footer', {
                                 iid: response.result.footer.component_iid,
                                 height: response.result.footer.component_height
@@ -327,7 +282,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                             node.set('footerComponentheight', response.result.footer.component_height);
                             node.commit();
                         }
-                        
+
                     }
                 });
             }
@@ -392,7 +347,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 'isTheme',
                 'themeId',
                 'name',
-                'isActive',
                 'siteId',
                 'text',
                 'id',
@@ -443,27 +397,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                         items.push(Compass.ErpApp.Desktop.Applications.Knitkit.newThemeMenuItem);
                         items.push(Compass.ErpApp.Desktop.Applications.Knitkit.uploadThemeMenuItem);
                     } else if (node.data['isTheme']) {
-                        if (node.data['isActive']) {
-                            items.push({
-                                text: 'Deactivate',
-                                iconCls: 'icon-delete',
-                                listeners: {
-                                    'click': function() {
-                                        self.updateThemeActiveStatus(node, false);
-                                    }
-                                }
-                            });
-                        } else {
-                            items.push({
-                                text: 'Activate',
-                                iconCls: 'icon-add',
-                                listeners: {
-                                    'click': function() {
-                                        self.updateThemeActiveStatus(node, true);
-                                    }
-                                }
-                            });
-                        }
                         items.push({
                             text: 'Delete Theme',
                             iconCls: 'icon-delete',

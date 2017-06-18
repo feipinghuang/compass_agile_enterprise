@@ -299,3 +299,32 @@ form.headerForm input {
 }
 
 /* end header 11 */
+
+/* search widget */
+.search-widget{
+  float:right !important;
+  width: 20%;
+  margin-top: 15px;
+}
+
+@media (max-width: 767px) {
+  .search-widget{
+  	width: 50%;
+  }
+}
+
+/* Login Widget  */
+.login-widget{
+  margin-top: 15px;
+  float:right !important;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+@media (max-width: 767px) {
+  .login-widget{
+  	margin-top:0;
+  	margin-left:0;
+  	clear:both;
+  }
+}

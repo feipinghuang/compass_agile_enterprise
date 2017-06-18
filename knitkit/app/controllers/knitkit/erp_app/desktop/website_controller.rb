@@ -9,22 +9,22 @@ module Knitkit
 
         def index
           websites = Website.joins(:website_party_roles)
-                         .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
-                         .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
-          
+          .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
+          .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
+
           render json: {
-                   sites: websites.all.collect do |item|
-                     theme = item.themes.first
-                     item.to_hash(only: [:id, :name, :title, :subtitle],
-                                  configuration_id: item.configurations.first.id,
-                                  url: "#{request.protocol}#{item.config_value('primary_host')}",
-                                  theme: theme.to_hash(only: [:id],
-                                                       header: theme.meta_data['header'],
-                                                       footer: theme.meta_data['footer']
-                                                      )
-                                 )
-                   end
-                 }
+            sites: websites.all.collect do |item|
+              theme = item.themes.first
+              item.to_hash(only: [:id, :name, :title, :subtitle],
+                           configuration_id: item.configurations.first.id,
+                           url: "#{request.protocol}#{item.config_value('primary_host')}",
+                           theme: theme.to_hash(only: [:id],
+                                                header: theme.meta_data['header'],
+                                                footer: theme.meta_data['footer']
+                                                )
+                           )
+            end
+          }
         end
 
         def build_content_tree
@@ -37,19 +37,19 @@ module Knitkit
               end
             else
               case params[:record_type]
-                when 'WebsiteSection'
-                  website_section = WebsiteSection.find(params[:record_id])
+              when 'WebsiteSection'
+                website_section = WebsiteSection.find(params[:record_id])
 
-                  # get child sections
-                  nodes = website_section.positioned_children.map { |child| build_section_hash(child) }
+                # get child sections
+                nodes = website_section.positioned_children.map { |child| build_section_hash(child) }
 
-                  # get child articles
-                  website_section.website_section_contents.order('position').each do |website_section_content|
-                    nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
-                  end
+                # get child articles
+                website_section.website_section_contents.order('position').each do |website_section_content|
+                  nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
+                end
 
-                else
-                  raise 'Unknown Node Type'
+              else
+                raise 'Unknown Node Type'
               end
             end
           end
@@ -82,11 +82,10 @@ module Knitkit
             end
           end
 
-          render :inline => "{\"success\":true, \"results\":#{published_websites.count},
-                            \"totalCount\":#{@website.published_websites.count},
-                            \"data\":#{published_websites.to_json(
-                     :only => [:comment, :id, :version, :created_at, :active],
-                     :methods => [:viewing, :published_by_username])} }"
+          published_data = published_websites.map{|item| item.to_hash(:only => [:comment, :id, :version, :created_at, :active],:methods => [:viewing, :published_by_username])}
+          data = {sucess: true, results: @website.published_websites.count, totalCount: @website.published_websites.count, data: published_data}
+
+          render json: data
         end
 
         def activate_publication

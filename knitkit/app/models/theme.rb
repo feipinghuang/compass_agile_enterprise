@@ -368,6 +368,8 @@ class Theme < ActiveRecord::Base
       # we need to store the blueprint incase somebody deletes them
       # we can reset the theme's state to what it was during creation
       meta_data[template]['initial_builder_html'] = template_contents
+
+      meta_data[template]['component_height'] = '100px'
     end
     self.save!
   end
@@ -381,7 +383,6 @@ class Theme < ActiveRecord::Base
     self.save!
     file_support.update_file(template_path, meta_data[template]['builder_html'])
   end
-
 
   private
 
@@ -399,31 +400,43 @@ class Theme < ActiveRecord::Base
 
   def save_theme_file(path, type, options)
     ignored_css = [
+        'captcha.css',
         'bootstrap.min.css',
+        'bootstrap-tagsinput.css',
         'inline_editing.css',
+        'font-awesome.css',
+        'flat-ui-pro.css',
+        'flat-ui-pro.map',
     ]
 
     ignored_js = [
         'additional-methods.min',
+        'bootstrap-tagsinput.js',
         'bootstrap.min.js',
+        'captcha.js',
         'confirm-bootstrap.js',
         'inline_editing.js',
         'jquery.maskedinput.min.js',
-        'jquery.validate.min.js'
+        'jquery.validate.min.js',
+        'js.cookie.js',
+        'jsrender.min.js'
     ]
 
     ignored_files = (ignored_css | ignored_js).flatten
 
     unless ignored_files.any? { |w| path =~ /#{w}/ }
       contents = IO.read(path)
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/custom' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= javascript_include_tag 'knitkit/theme' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
 
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/header' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','header.css' %>") unless path.scan('base.html.erb').empty?
+      # Update header and footer
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/header' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','header.css' %>") unless path.scan('_header.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/footer' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','footer.css' %>") unless path.scan('_footer.html.erb').empty?
+      
+      # Update base.html.erb
       contents.gsub!("<%= stylesheet_link_tag 'knitkit/content' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','content.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/footer' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','footer.css' %>") unless path.scan('base.html.erb').empty?
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/build' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','build.css' %>") unless path.scan('base.html.erb').empty?
       contents.gsub!("<%= stylesheet_link_tag 'knitkit/video' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','video.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/submenu' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','submenu.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/style' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','style.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= javascript_include_tag 'knitkit/theme' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
 
       path = case type
                when :widgets

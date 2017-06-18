@@ -13,23 +13,27 @@
   <%= javascript_include_tag 'erp_app/jquery_support' %>
   <%= javascript_include_tag 'erp_app/widgets' %>
 
-  <!-- Knitkit Helpers -->
+  <!-- CompassAE CSS -->
   <%= javascript_include_tag 'knitkit-web' %>
   <%= stylesheet_link_tag 'knitkit-web' %>
+  <%= stylesheet_link_tag 'knitkit/flat-ui-pro' %>
+  <%= stylesheet_link_tag 'knitkit/font-awesome' %>
   <!-- end -->
 
-  <!-- Bootstrap theme helpers -->
-  <%= javascript_include_tag 'knitkit/theme' %>
-  <%= stylesheet_link_tag 'knitkit/build' %>
-  <%= stylesheet_link_tag 'knitkit/header' %>
+  <!-- Customizable CSS -->
   <%= stylesheet_link_tag 'knitkit/content' %>
-  <%= stylesheet_link_tag 'knitkit/footer' %>
   <%= stylesheet_link_tag 'knitkit/video' %>
+  <%= stylesheet_link_tag 'knitkit/submenu' %>
+  <%= stylesheet_link_tag 'knitkit/style' %>
+  <!-- end -->
   
   <!-- code mirror -->
   <%= include_code_mirror_library %>
+  <!-- end -->
 
+  <!-- Authentication Hellpers -->
   <%= setup_js_authentication %>
+  <!-- end -->
 
   <% if @website_builder %>
   <!-- Website Builder styles -->
@@ -68,10 +72,11 @@
   <%= set_session_timeout %>
   <!-- <%= setup_inline_editing %> -->
 
-  <% if @website_builder %>
-  <!-- Website Builder javascript -->
-  <%= javascript_include_tag 'knitkit/website_builder/build/build.min' %>
+  <%= javascript_include_tag 'knitkit/website_builder/flat-ui-pro.min' %>
+
+  <!-- Customizable Javascript -->
+  <%= javascript_include_tag 'knitkit/theme' %>
   <!-- end -->
-  <% end %>
+
 </body>
 </html>

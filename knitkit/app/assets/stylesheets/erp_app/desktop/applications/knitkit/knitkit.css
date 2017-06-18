@@ -157,6 +157,14 @@
     width: auto !important;
 }
 
+/*
+* Website Builder CSS
+*/
+
+.draggable-images{
+  cursor: move;
+}
+
 .draggable-image-display  {
     width: 186px;
     height: 92px;

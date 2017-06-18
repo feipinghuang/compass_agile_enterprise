@@ -1,7 +1,7 @@
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.knitkitdraggablepanel',
-    cls: "draggableImages",
+    cls: "draggable-images",
     header: false,
     initComponent: function() {
         var me = this;
@@ -14,17 +14,23 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
                         return false;
                     } else {
 
-                        Ext.getCmp('knitkit').down('websitebuilderpanel').disableComponents();
+                        if (Ext.getCmp('knitkit').down('websitebuilderpanel'))
+                            Ext.getCmp('knitkit').down('websitebuilderpanel').disableComponents();
 
                         return true;
                     }
                 },
+
                 afterDragDrop: function(target, e, id) {
-                    Ext.getCmp('knitkit').down('websitebuilderpanel').enableComponents();
+                    if (Ext.getCmp('knitkit').down('websitebuilderpanel'))
+                        Ext.getCmp('knitkit').down('websitebuilderpanel').enableComponents();
                 },
+
                 afterInvalidDrop: function(target, e, id) {
-                    Ext.getCmp('knitkit').down('websitebuilderpanel').enableComponents();
+                    if (Ext.getCmp('knitkit').down('websitebuilderpanel'))
+                        Ext.getCmp('knitkit').down('websitebuilderpanel').enableComponents();
                 },
+
                 getDragData: function(e) {
                     var target = e.getTarget('.draggable-image-display');
                     if (target) {
@@ -32,7 +38,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
                             dragEl = element.getEl(),
                             d = dragEl.dom.cloneNode(true);
                         d.id = Ext.id();
-
 
                         return {
                             panelConfig: element.initialConfig,
@@ -68,6 +73,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
     alias: 'widget.knitkit_componenttabpanel',
     title: "Components",
     layout: 'accordion',
+
+    disabled: true,
 
     setWindowStatus: function(status) {
         this.findParentByType('statuswindow').setStatus(status);
@@ -106,6 +113,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                         xtype: 'knitkitaccordiancomponentpanel',
                         title: component.humanize().capitalize() + ' Blocks'
                     });
+
                     accordianComponentPanel.add({
                         xtype: 'knitkitdraggablepanel',
                         items: me.getThumbnailPanelArray(component, components[component])
@@ -131,7 +139,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 if (type == 'footer') {
                     html = '<img src="' + data.thumbnail + '"></img>';
                 } else {
-                    html = '<img style="height:89px;" src="' + data.thumbnail + '"></img>';
+                    html = '<img style="height:89px;width:100%;" src="' + data.thumbnail + '"></img>';
                 }
             }
 

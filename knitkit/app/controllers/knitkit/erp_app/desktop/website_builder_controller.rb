@@ -37,7 +37,9 @@ module Knitkit
           component = Component.where(internal_identifier: component_iid).first
           website_section_id = params[:website_section_id]
           website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
+
           @website_builder = true
+
           if website_section_content
             render inline: website_section_content.builder_html, layout: 'knitkit/base'
           else
@@ -64,21 +66,18 @@ module Knitkit
                       content.website_sections <<  website_section
                       content.update_html_and_position(website_section, data["body_html"], data["position"])
                     end
-
+                   
                     if website_section.save!
 
                       #TODO this should probably be moved into the view
-                      if website_section.altered?
-                        website = website_section.website
-                        if website_section.save
-                          website_section.publish(website, 'Auto Publish', website_section.version, current_user) if website.publish_on_save?
 
-                          result = {:success => true}
-                        else
-                          result = {:success => false}
-                        end
-                      else
+                      website = website_section.website
+                      if website_section.save
+                        website_section.publish(website, 'Auto Publish', website_section.version, current_user) if website.publish_on_save?
+
                         result = {:success => true}
+                      else
+                        result = {:success => false}
                       end
 
                       result = {:success => true}
@@ -114,41 +113,41 @@ module Knitkit
             component = Component.where(internal_identifier: params[:component_iid]).first
             website_section_content = WebsiteSectionContent.where(
               website_section_id: params[:website_section_id],
-              content_id: component.id).first
+            content_id: component.id).first
             # we want to return the source only if its saved
             is_content_saved = false
             html_content = if website_section_content
-                             is_content_saved = true
-                             website_section_content.website_html
-                           elsif component.internal_identifier.match(/^(header|footer)/)
-                             is_content_saved = true
-                             template_type = component.internal_identifier.match(/^(header|footer)/)[0]
-                             theme = website.themes.first
-                             file_support = ErpTechSvcs::FileSupport::Base.new(
-                               storage: Rails.application.config.erp_tech_svcs.file_storage
-                             )
-                             path = File.join(
-                               file_support.root,
-                               'public',
-                               'sites',
-                               website.internal_identifier,
-                               'themes',
-                               theme.theme_id,
-                               'templates',
-                               'shared',
-                               'knitkit',
-                               "_#{template_type}.html.erb"
-                             )
-                             file_support.get_contents(path).first
-                           end
-            
+              is_content_saved = true
+              website_section_content.website_html
+            elsif component.internal_identifier.match(/^(header|footer)/)
+              is_content_saved = true
+              template_type = component.internal_identifier.match(/^(header|footer)/)[0]
+              theme = website.themes.first
+              file_support = ErpTechSvcs::FileSupport::Base.new(
+                storage: Rails.application.config.erp_tech_svcs.file_storage
+              )
+              path = File.join(
+                file_support.root,
+                'public',
+                'sites',
+                website.internal_identifier,
+                'themes',
+                theme.theme_id,
+                'templates',
+                'shared',
+                'knitkit',
+                "_#{template_type}.html.erb"
+              )
+              file_support.get_contents(path).first
+            end
+
             if is_content_saved
               render json: {
-                       success: true,
-                       component: {
-                         html: html_content,
-                       }
-                     }
+                success: true,
+                component: {
+                  html: html_content,
+                }
+              }
             else
               render json: {success: false}
             end
@@ -156,7 +155,7 @@ module Knitkit
             Rails.logger.error ex.message
             Rails.logger.error ex.backtrace.join("\n")
             ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
-            
+
             render json: {success: false}
           end
         end

@@ -30,7 +30,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
         this.callParent([config]);
     },
 
+    selectWebsite: function(website) {
+        this.siteStructureTabPanel.selectWebsite(website);
+        this.componentTabPanel.enable();
+    },
+
     clearWebsite: function() {
         this.siteStructureTabPanel.clearWebsite();
+        this.componentTabPanel.disable();
     }
 });

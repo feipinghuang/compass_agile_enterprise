@@ -10,13 +10,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
     currentWebsite: null,
 
     init: function() {
-
         this.launcher = {
             text: 'Website Builder',
             iconCls: 'icon-knitkit',
             handler: this.createWindow,
             scope: this
-        }
+        };
     },
 
     initComponent: function() {
@@ -41,12 +40,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
 
         this.currentWebsite = null;
 
-        var eastRegion = Ext.ComponentQuery.query('#knitkitEastRegion').first();
-        eastRegion.fileAssetsPanel.clearWebsite();
-        eastRegion.imageAssetsPanel.clearWebsite();
-
-        var westRegion = Ext.ComponentQuery.query('#knitkitWestRegion').first();
-        westRegion.clearWebsite();
+        Ext.getCmp('knitkitEastRegion').clearWebsite();
+        Ext.getCmp('knitkitWestRegion').clearWebsite();
 
         menuBar.down('#themeMenuItem').disable();
         menuBar.down('#navigationMenuItem').disable();
@@ -60,7 +55,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         menuBar.down('#publishWebsiteMenuItem').disable();
         menuBar.down('#editWebsiteMenuItem').disable();
         menuBar.down('#exportTemplateMenuItem').disable();
-
     },
 
     selectWebsite: function(website) {
@@ -77,13 +71,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
 
         this.currentWebsite = website;
 
-        var eastRegion = Ext.getCmp('knitkitEastRegion');
-        eastRegion.fileAssetsPanel.selectWebsite(website);
-        eastRegion.imageAssetsPanel.selectWebsite(website);
-
-        var westRegion = Ext.getCmp('knitkitWestRegion');
-
-        westRegion.siteStructureTabPanel.selectWebsite(website);
+        Ext.getCmp('knitkitEastRegion').selectWebsite(website);
+        Ext.getCmp('knitkitWestRegion').selectWebsite(website);
 
         Compass.ErpApp.Shared.FileManagerTree.extraPostData = {
             website_id: website.id
@@ -114,7 +103,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         menuBar.down('#websiteInquiresMenuItem').enable();
         menuBar.down('#publishWebsiteMenuItem').enable();
         menuBar.down('#editWebsiteMenuItem').enable();
-
     },
 
     createWindow: function() {

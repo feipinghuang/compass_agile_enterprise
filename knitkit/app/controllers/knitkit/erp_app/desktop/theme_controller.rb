@@ -98,20 +98,6 @@ module Knitkit
           send_file(zip_path.to_s, :stream => false) rescue raise "Error sending #{zip_path} file"
         end
 
-        def change_status
-          begin
-            current_user.with_capability('view', 'Theme') do
-              #clear active themes
-              @website.deactivate_themes! if (params[:active] == 'true')
-              (params[:active] == 'true') ? @theme.activate! : @theme.deactivate!
-
-              render :json => {:success => true}
-            end
-          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
-            render :json => {:success => false, :message => ex.message}
-          end
-        end
-
         ##############################################################
         #
         # Overrides from ErpApp::Desktop::FileManager::BaseController
@@ -367,16 +353,11 @@ module Knitkit
             :text => "#{theme.name}[#{theme.theme_id}]",
             :handleContextMenu => true,
             :siteId => website.id,
-            :isActive => (theme.active == 1), :iconCls => 'icon-content',
+            :iconCls => 'icon-content',
             :isTheme => true,
             :id => theme.id,
             :children => []
           }
-          if theme.active == 1
-            theme_hash[:iconCls] = 'icon-add'
-          else
-            theme_hash[:iconCls] = 'icon-delete'
-          end
 
           ['header', 'footer'].each do |comp_type|
             layout_comp = theme.get_layout_component(comp_type)
