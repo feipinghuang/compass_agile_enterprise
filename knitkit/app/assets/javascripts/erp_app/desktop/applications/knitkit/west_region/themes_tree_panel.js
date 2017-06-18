@@ -418,6 +418,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                             themeNode = themeNode.parentNode;
                         }
                     }
+
                     self.initialConfig['centerRegion'].showImage(node, themeId);
                 },
                 'contentLoaded': function(fileManager, node, content) {
@@ -431,6 +432,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                         }
                     }
                     self.initialConfig['centerRegion'].editTemplateFile(node, content, [], themeId);
+                },
+                'filereplaced': function(fileTreePanel, node, result) {
+                    node.set('url', result.url);
                 },
                 'handleContextMenu': function(fileManager, node, item, index, e) {
                     var items = [];

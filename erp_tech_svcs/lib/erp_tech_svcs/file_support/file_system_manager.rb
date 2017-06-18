@@ -7,6 +7,14 @@ module ErpTechSvcs
         Rails.root.to_s
       end
 
+      def replace_file(old_path, new_path, contents)
+        create_name = File.basename(new_path);
+        create_path = new_path.split('/').reverse.drop(1).reverse.join('/')
+
+        create_file(create_path, create_name, contents)
+        delete_file(old_path)
+      end
+
       def update_file(path, content)
         File.open(path, 'wb+') { |f| f.write(content) }
       end
@@ -107,6 +115,7 @@ module ErpTechSvcs
       def get_contents(path)
         contents = nil
         message = nil
+
         unless File.exists? path
           message = FILE_DOES_NOT_EXIST
         else
