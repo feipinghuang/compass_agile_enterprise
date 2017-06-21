@@ -486,20 +486,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         return websitesCombo.getValue();
     },
 
-    addThemeLayoutConfig: function(templateType, config) {
-        this.themeLayoutConfig[templateType] = {
-            iid: config.iid
-        };
-    },
-
-    getThemeLayoutConfig: function(templateType) {
-        return this.themeLayoutConfig[templateType];
-    },
-
-    deleteThemeLayoutConfig: function(templateType) {
-        delete this.themeLayoutConfig[templateType];
-    },
-
     buildContentBlocksPayload: function() {
         var me = this,
             containerPanels = me.query("[cls=websitebuilder-component-panel][isLayout!=true]");
@@ -1273,7 +1259,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         // if is header or footer is already present render it as a component else render websitebuilderdropzone
         var layoutCompConfig = null;
-        var layoutConfig = me.getThemeLayoutConfig(templateType);
 
         layoutCompConfig = {
             xtype: 'component',
@@ -1281,7 +1266,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             cls: 'websitebuilder-component-panel',
             listeners: {
                 render: function(comp) {
-                    me.loadContentBlock(comp, templateType, null, Ext.apply(options, {
+                    me.loadContentBlock(comp, Ext.apply(options, {
                         templateType: templateType
                     }));
                 }
