@@ -399,7 +399,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 },
 
                 validDrop: function(target, dragData) {
-                    return true;
+                    if (Ext.get(target).id.indexOf('websitebuilderdropzone') === -1) {
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
             });
 
