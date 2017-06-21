@@ -3,6 +3,18 @@ module Knitkit
     class HtmlTransformer
       class << self
 
+        def insert_widget_statements(html)
+          html.scan(/<%=\s*render_widget\s*:\w*\s*%>(?!\s*<\/span>)/).each do |widget_statement|
+            trimmed_widget_statement = widget_statement.gsub('<%=', '')
+            trimmed_widget_statement = trimmed_widget_statement.gsub('%>', '')
+            trimmed_widget_statement.squeeze!
+
+            html.gsub!(widget_statement, "<span data-widget-statement='#{trimmed_widget_statement}'>#{widget_statement}</span>")
+          end
+
+          html
+        end
+
         def reduce_to_builder_html(html)
           doc = Nokogiri::HTML::DocumentFragment.parse(escape_erb(html))
 

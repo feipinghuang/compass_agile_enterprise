@@ -10,7 +10,6 @@ module Knitkit
         skip_before_filter :add_theme_view_paths, except: [:render_component, :widget_source]
 
         def components
-
           if params[:is_theme].to_bool
             components = Component.where(Component.matches_is_json('custom_data', 'header', 'component_type',).or(Component.matches_is_json('custom_data', 'footer', 'component_type')))
           else
@@ -64,9 +63,12 @@ module Knitkit
                 ActiveRecord::Base.transaction do
                   website_section = @website.website_sections.where(id: params[:website_section_id]).first
 
+                  # get the current list of website_section_contents as any ones that are not passed will be deleted
+                  current_website_section_contents = website_section.website_section_contents
+
                   contents_data.each do |data|
                     data = Hash.symbolize_keys(data)
-
+         
                     if data[:website_section_content_id]
                       website_section_content = WebsiteSectionContent.find(data[:website_section_content_id])
 
@@ -75,6 +77,8 @@ module Knitkit
                       website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
                       website_section_content.position = data[:position]
                       website_section_content.save!
+
+                      current_website_section_contents.delete_if{|item| item.id == website_section_content.id}
 
                     else
                       website_section_content = WebsiteSectionContent.new(website_section: website_section)
@@ -87,6 +91,9 @@ module Knitkit
                     end
 
                   end
+
+                  # delete any current website_section_contents that were not updates
+                  current_website_section_contents.destroy_all
 
                   website_section.publish(website, 'Auto Publish', website_section.version, current_user) if website.publish_on_save?
 
@@ -166,7 +173,7 @@ module Knitkit
           begin
             component_source = params[:source]
 
-            if params[:template_type]
+            if !params[:template_type].blank?
               theme = website.themes.first
 
               file_support = ErpTechSvcs::FileSupport::Base.new(
@@ -187,14 +194,14 @@ module Knitkit
               )
 
               file_support.update_file(path, component_source)
-              theme.meta_data[template_type]['builder_html'] = component_source
+              theme.meta_data[params[:template_type]]['builder_html'] = component_source
               theme.save!
             else
               website_section_content = WebsiteSectionContent.where(id: params[:website_section_content_id]).first
 
               # assign source
-              website_section_content.website_html = component_source
-              website_section_content.builder_html = component_source
+              website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.insert_widget_statements(component_source)
+              website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.insert_widget_statements(component_source)
               website_section_content.save!
             end
 

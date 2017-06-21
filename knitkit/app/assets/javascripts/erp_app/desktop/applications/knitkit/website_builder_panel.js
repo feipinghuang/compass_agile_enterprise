@@ -618,7 +618,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         function(responseObj) {
                             var source = responseObj.component.html;
                             var parentContainer = dropPanel.up('container');
-                            var dropPanelIndex = parentContainer.items.indexOf(dropPanel);
+                            var dropPanelIndex = dropPanel.up('websitebuilderpanel').items.indexOf(parentContainer);
                             var templateType = options.templateType;
                             var opts = {
                                 canViewSource: true,
@@ -654,11 +654,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                                         var componentSource = btn.up('codemirror').codeMirrorInstance.getValue();
 
-                                        me.saveComponentSource({
+                                        me.saveComponentSource(componentSource, {
                                                 templateType: templateType,
                                                 websiteSectionContentId: uniqueId
                                             },
-                                            componentSource,
                                             function() {
                                                 var componentContainer = me.insert(dropPanelIndex, {
                                                     xtype: 'container',
@@ -717,13 +716,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                         });
                                         myMask.show();
 
-
-
-                                        me.saveComponentSource({
+                                        me.saveComponentSource(content, {
                                                 templateType: templateType,
                                                 websiteSectionContentId: uniqueId
                                             },
-                                            content,
                                             function() {
                                                 myMask.hide();
                                             },
@@ -1057,7 +1053,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             url: '/knitkit/erp_app/desktop/website_builder/save_component_source',
             method: 'POST',
             params: {
-                website_id: me.getWebsiteId(),
+                id: me.getWebsiteId(),
                 website_section_content_id: options.websiteSectionContentId,
                 template_type: options.templateType,
                 source: componentSource
@@ -1071,7 +1067,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 if (failure) {
                     failure(response);
                 } else {
-                    Ext.Msg.alert('Error', 'Error saving source');
+                    Ext.Msg.error('Error', 'Error saving source');
                 }
             }
         });
