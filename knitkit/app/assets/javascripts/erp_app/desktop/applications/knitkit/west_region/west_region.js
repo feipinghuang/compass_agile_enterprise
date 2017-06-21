@@ -3,19 +3,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
     id: 'knitkitWestRegion',
     alias: 'widget.knitkit_westregion',
 
+    module: null,
+
     constructor: function(config) {
         this.siteStructureTabPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel', {
             module: config.module
         });
 
-        this.componentTabPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
-            module: config.module
-        });
-
-        this.items = [];
-
-        this.items.push(this.siteStructureTabPanel);
-        this.items.push(this.componentTabPanel);
+        this.items = [this.siteStructureTabPanel];
 
         config = Ext.apply({
             deferredRender: false,
@@ -30,13 +25,28 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
         this.callParent([config]);
     },
 
+    addComponentsTabPanel: function(isTheme) {
+        if (this.down('knitkit_componenttabpanel')) {
+            this.down('knitkit_componenttabpanel').destroy();
+        }
+
+        this.componentTabPanel = this.add(Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
+            module: this.module,
+            isTheme: isTheme
+        }));
+
+        this.setActiveTab(this.componentTabPanel);
+    },
+
+    removeComponentsTabPanel: function() {
+        this.down('knitkit_componenttabpanel').destroy();
+    },
+
     selectWebsite: function(website) {
         this.siteStructureTabPanel.selectWebsite(website);
-        this.componentTabPanel.enable();
     },
 
     clearWebsite: function() {
         this.siteStructureTabPanel.clearWebsite();
-        this.componentTabPanel.disable();
     }
 });

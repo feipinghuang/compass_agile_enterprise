@@ -194,11 +194,11 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
         }).show();
     },
 
-
     showThemeBuilderPanel: function(node) {
         var me = this,
             centerPanel = Ext.ComponentQuery.query("knitkit_centerregion").first(),
             centerTabPanel = centerPanel.down('tabpanel');
+
         var themeBuilderPanel = centerTabPanel.add({
             xtype: 'websitebuilderpanel',
             itemId: 'themeBuilder' + node.get('id'),
@@ -218,6 +218,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             title: 'Theme Builder',
             save: function(comp) {
                 centerPanel.setWindowStatus("Saving...");
+
                 var headerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='header']").first(),
                     footerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='footer']").first();
 
@@ -332,10 +333,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
 
         config = Ext.apply({
             autoLoadRoot: true,
-            rootVisible: true,
             multiSelect: true,
             title: 'Themes',
-            rootText: 'Themes',
+            rootVisible: false,
             handleRootContextMenu: true,
             controllerPath: '/knitkit/erp_app/desktop/theme',
             autoDestroy: true,
@@ -378,7 +378,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 'contentLoaded': function(fileManager, node, content) {
                     var themeId = null;
                     var themeNode = node;
-                    while (themeId == null && !Compass.ErpApp.Utility.isBlank(themeNode.parentNode)) {
+                    while (themeId === null && !Compass.ErpApp.Utility.isBlank(themeNode.parentNode)) {
                         if (themeNode.data.isTheme) {
                             themeId = themeNode.data.id;
                         } else {

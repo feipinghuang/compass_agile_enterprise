@@ -3,17 +3,23 @@ module Knitkit
     module Desktop
       class WebsiteBuilderController < Knitkit::ErpApp::Desktop::AppController
 
-        before_filter :set_website, :only => [:save_website, :active_website_theme, :render_component, :render_layout_file]
+        before_filter :set_website, :only => [:save_website, :active_website_theme, :render_component, :render_layout_file, :save_component_source]
 
         acts_as_themed_controller website_builder: true
 
         skip_before_filter :add_theme_view_paths, except: [:render_component, :widget_source]
 
         def components
+
+          if params[:is_theme].to_bool
+            components = Component.where(Component.matches_is_json('custom_data', 'header', 'component_type',).or(Component.matches_is_json('custom_data', 'footer', 'component_type')))
+          else
+            components = Component.with_json_attr('custom_data', 'component_type', 'content_section')
+          end
+
           render json: {
             success: true,
-            components: Component.order('id asc').to_data_hash
-
+            components: components.to_data_hash
           }
         end
 
@@ -24,7 +30,6 @@ module Knitkit
           }
         end
 
-
         def active_website_theme
           render json: {
             success: true,
@@ -33,17 +38,15 @@ module Knitkit
         end
 
         def render_component
-          component_iid = params[:component_iid]
-          component = Component.where(internal_identifier: component_iid).first
-          website_section_id = params[:website_section_id]
-          website_section_content = WebsiteSectionContent.where(website_section_id: website_section_id, content_id: component.id).first
-
+          @website_sections = @website.website_sections
           @website_builder = true
 
-          if website_section_content
+          if params[:website_section_content_id]
+            website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
+
             render inline: website_section_content.builder_html, layout: 'knitkit/base'
           else
-            render template: "/components/#{component_iid}", layout: 'knitkit/base'
+            render template: "/components/#{params[:component_iid]}", layout: 'knitkit/base'
           end
         end
 
@@ -55,53 +58,52 @@ module Knitkit
           begin
             result = {success: false}
             contents_data = JSON.parse(params["content"])
-            if contents_data
-              current_user.with_capability('create', 'WebsiteSection') do
-                begin
-                  ActiveRecord::Base.transaction do
-                    website_section = @website.website_sections.where(id: params[:website_section_id]).first
-                    website_section.website_section_contents.destroy_all
-                    contents_data.each do |data|
-                      content = Content.where(internal_identifier: data["content_iid"]).first
-                      content.website_sections <<  website_section
-                      content.update_html_and_position(website_section, data["body_html"], data["position"])
-                    end
-                   
-                    if website_section.save!
 
-                      #TODO this should probably be moved into the view
+            current_user.with_capability('create', 'WebsiteSection') do
+              begin
+                ActiveRecord::Base.transaction do
+                  website_section = @website.website_sections.where(id: params[:website_section_id]).first
 
-                      website = website_section.website
-                      if website_section.save
-                        website_section.publish(website, 'Auto Publish', website_section.version, current_user) if website.publish_on_save?
+                  contents_data.each do |data|
+                    data = Hash.symbolize_keys(data)
 
-                        result = {:success => true}
-                      else
-                        result = {:success => false}
-                      end
+                    if data[:website_section_content_id]
+                      website_section_content = WebsiteSectionContent.find(data[:website_section_content_id])
 
-                      result = {:success => true}
+                      website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
+                      # strip off design specific HTML
+                      website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
+                      website_section_content.position = data[:position]
+                      website_section_content.save!
+
                     else
-                      message = "<ul>"
-                      website_section.errors.collect do |e, m|
-                        message << "<li>#{e} #{m}</li>"
-                      end
-                      message << "</ul>"
-                      result = {:success => false, :message => message}
+                      website_section_content = WebsiteSectionContent.new(website_section: website_section)
+                      website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
+                      # strip off design specific HTML
+                      website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
+                      website_section_content.position = data[:position]
+                      website_section_content.save!
+
                     end
+
                   end
-                rescue => ex
-                  Rails.logger.error ex.message
-                  Rails.logger.error ex.backtrace.join("\n")
 
-                  ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+                  website_section.publish(website, 'Auto Publish', website_section.version, current_user) if website.publish_on_save?
 
-                  result = {:success => false, :message => 'Could not create Section'}
+                  result = {:success => true}
                 end
+              rescue => ex
+                Rails.logger.error ex.message
+                Rails.logger.error ex.backtrace.join("\n")
 
-                render :json => result
+                ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+                result = {:success => false, :message => 'Could not create Section'}
               end
+
+              render :json => result
             end
+
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
             render :json => {:success => false, :message => ex.message}
           end
@@ -110,16 +112,15 @@ module Knitkit
         def get_component_source
           begin
             website = Website.find(params[:website_id])
-            component = Component.where(internal_identifier: params[:component_iid]).first
-            website_section_content = WebsiteSectionContent.where(
-              website_section_id: params[:website_section_id],
-            content_id: component.id).first
-            # we want to return the source only if its saved
-            is_content_saved = false
-            html_content = if website_section_content
+
+            if params[:website_section_content_id]
+              website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
+
               is_content_saved = true
-              website_section_content.website_html
-            elsif component.internal_identifier.match(/^(header|footer)/)
+              html_content =website_section_content.website_html
+            else
+              component = Component.where(internal_identifier: params[:component_iid]).first
+
               is_content_saved = true
               template_type = component.internal_identifier.match(/^(header|footer)/)[0]
               theme = website.themes.first
@@ -138,7 +139,7 @@ module Knitkit
                 'knitkit',
                 "_#{template_type}.html.erb"
               )
-              file_support.get_contents(path).first
+              html_content = file_support.get_contents(path).first
             end
 
             if is_content_saved
@@ -151,6 +152,7 @@ module Knitkit
             else
               render json: {success: false}
             end
+
           rescue Exception => ex
             Rails.logger.error ex.message
             Rails.logger.error ex.backtrace.join("\n")
@@ -162,15 +164,15 @@ module Knitkit
 
         def save_component_source
           begin
-            component = Component.where(internal_identifier: params[:component_iid]).first
             component_source = params[:source]
-            website = Website.find(params[:website_id])
-            if component.internal_identifier.match(/^(header|footer)/)
-              template_type = component.internal_identifier.match(/^(header|footer)/)[0]
+
+            if params[:template_type]
               theme = website.themes.first
+
               file_support = ErpTechSvcs::FileSupport::Base.new(
                 storage: Rails.application.config.erp_tech_svcs.file_storage
               )
+
               path = File.join(
                 file_support.root,
                 'public',
@@ -181,32 +183,23 @@ module Knitkit
                 'templates',
                 'shared',
                 'knitkit',
-                "_#{template_type}.html.erb"
+                "_#{params[:template_type]}.html.erb"
               )
+
               file_support.update_file(path, component_source)
               theme.meta_data[template_type]['builder_html'] = component_source
               theme.save!
             else
-              website_section_id = params[:website_section_id]
-              # find website section
-              website_section_content = WebsiteSectionContent.where(
-                website_section_id: website_section_id,
-                content_id: component.id
-              ).first
-
-              # create a website section if not there
-              website_section_content = WebsiteSectionContent.new(
-                website_section_id: website_section_id,
-                content_id: component.id,
-                position: 0
-              ) unless website_section_content
+              website_section_content = WebsiteSectionContent.where(id: params[:website_section_content_id]).first
 
               # assign source
               website_section_content.website_html = component_source
               website_section_content.builder_html = component_source
               website_section_content.save!
             end
+
             render json: {success: true}
+
           rescue Exception => ex
             Rails.logger.error ex.message
             Rails.logger.error ex.backtrace.join("\n")
@@ -220,22 +213,20 @@ module Knitkit
 
         def section_components
           website_section_id = params[:website_section_id]
-          website_section_contents = WebsiteSectionContent.where(website_section_id: website_section_id)
-          components = if website_section_contents.present?
-            Component.joins("inner join website_section_contents on contents.id = website_section_contents.content_id").where("website_section_contents.website_section_id = #{website_section_id}").order("website_section_contents.position asc").to_data_hash
-          else
-            []
-          end
+          website_section_contents = WebsiteSectionContent.where(website_section_id: website_section_id).order('position asc')
+
           render json: {
             success: true,
-            components: components
+            website_section_contents: website_section_contents.collect(&:to_data_hash)
           }
-
         end
-
 
         def widget_source
           widget_content = params[:content]
+
+          # add website_builder = true to params
+          params[:website_builder] = true
+
           source = Knitkit::WebsiteBuilder::ErbEvaluator.evaluate(widget_content, self)
           render json: {success: true, source: source}
         end

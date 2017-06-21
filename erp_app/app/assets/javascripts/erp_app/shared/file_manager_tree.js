@@ -124,6 +124,7 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                 url: config['url'] || '/erp_app/desktop/file_manager/base/expand_directory',
                 timeout: 60000
             },
+            rootVisible: config.rootVisible || true,
             root: rootConfig,
             fields: config['fields'] || [{
                 name: 'text'

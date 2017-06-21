@@ -70,11 +70,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.AccordianComponentPanel'
 
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
     extend: 'Ext.panel.Panel',
+
     alias: 'widget.knitkit_componenttabpanel',
     title: "Components",
     layout: 'accordion',
 
-    disabled: true,
+    isTheme: false,
 
     setWindowStatus: function(status) {
         this.findParentByType('statuswindow').setStatus(status);
@@ -103,11 +104,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
     setupComponents: function() {
         var me = this;
         var dfd = Ext.create('Ext.ux.Deferred');
+
         Compass.ErpApp.Utility.ajaxRequest({
             method: "GET",
             url: '/knitkit/erp_app/desktop/website_builder/components.json',
+            params: {
+                is_theme: me.isTheme
+            },
             success: function(responseObj) {
                 var components = responseObj.components;
+
+                // clear any current accordions
+                me.removeAll(true);
+
                 Ext.Object.each(components, function(component) {
                     var accordianComponentPanel = me.add({
                         xtype: 'knitkitaccordiancomponentpanel',
