@@ -1,5 +1,1 @@
-<div class="container">
-  <% @contents.each do |content| %>
-    <%= render_content(content.internal_identifier, @website_section) %>
-  <% end %>
-</div>
+<%= render_section(@website_section) %>
