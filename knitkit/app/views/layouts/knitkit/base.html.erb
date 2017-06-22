@@ -69,7 +69,10 @@
   <% end %> 
 
   <%= set_authenticity_token %>
+  
+  <% unless @website_builder %>  
   <%= set_session_timeout %>
+  <% end %>  
 
   <!-- Customizable Javascript -->
   <%= javascript_include_tag 'knitkit/theme' %>

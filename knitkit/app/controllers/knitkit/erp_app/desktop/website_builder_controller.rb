@@ -88,6 +88,7 @@ module Knitkit
                       website_section_content.position = data[:position]
                       website_section_content.save!
 
+                      current_website_section_contents.delete_if{|item| item.id == website_section_content.id}
                     end
 
                   end

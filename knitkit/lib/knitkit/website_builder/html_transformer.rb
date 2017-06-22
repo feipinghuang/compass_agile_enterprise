@@ -24,6 +24,20 @@ module Knitkit
             node.add_next_sibling(escape_erb("<%= #{render_statement} %>"))
             node.remove
           end
+
+          # remove editor code
+          editedContents = doc.css('.editContent')
+          editedContents.remove_class('medium-editor-element')
+          editedContents.remove_attr('contenteditable')
+          editedContents.remove_attr('spellcheck')
+          editedContents.remove_attr('role')
+          editedContents.remove_attr('data-placeholder')
+          editedContents.remove_attr('data-medium-editor-element')
+          editedContents.remove_attr('aria-multiline')
+          editedContents.remove_attr('data-medium-editor-editor-index')
+          editedContents.remove_attr('medium-editor-index')
+          editedContents.remove_attr('data-medium-focused')
+
           CGI.unescape_html(doc.to_s)
         end
 
@@ -45,23 +59,8 @@ module Knitkit
           doc.css('.dnd-drop-target').remove_class('dnd-drop-target')
           doc.css('.dnd-drop-target-occupied').remove_class('dnd-drop-target-occupied')
 
-          #strip off website builder editable contents
-          
-          editedContents = doc.css('.editContent')
-          editedContents.remove_class('editContent')
-          editedContents.remove_attr('data-selector')
-          editedContents.remove_class('medium-editor-element')
-          editedContents.remove_attr('contenteditable')
-          editedContents.remove_attr('spellcheck')
-          editedContents.remove_attr('role')
-          editedContents.remove_attr('data-placeholder')
-          editedContents.remove_attr('data-medium-editor-element')
-          editedContents.remove_attr('aria-multiline')
-          editedContents.remove_attr('data-medium-editor-editor-index')
-          editedContents.remove_attr('medium-editor-index')
-          editedContents.remove_attr('data-medium-focused')
-
           #preserve user added styles and reset everything else
+          editedContents = doc.css('.editContent')
           editedContents.each do |tag|
             styles_attr = tag.attributes['style']
             if styles_attr
@@ -81,7 +80,7 @@ module Knitkit
               tag.attributes['style'].value = updated_styles.join('; ')
             end
           end
-          
+        
           CGI.unescape_html(doc.to_s)
         end
         

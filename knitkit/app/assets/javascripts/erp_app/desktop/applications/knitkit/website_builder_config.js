@@ -4,7 +4,7 @@ Ext.namespace('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder').conf
         'span.fa': ['color', 'font-size'],
         '.bg.bg1': ['background-color'],
         'nav a': ['color', 'font-weight', 'text-transform'],
-        'img': ['border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius', 'border-color', 'border-style', 'border-width'],
+        'img': ['border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius', 'border-color', 'border-style', 'border-width', 'src'],
         'hr.dashed': ['border-color', 'border-width'],
         '.divider > span': ['color', 'font-size'],
         'hr.shadowDown': ['margin-top', 'margin-bottom'],

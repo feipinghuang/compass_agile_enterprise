@@ -36,7 +36,7 @@ module Knitkit
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/knitkit/app.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/knitkit/app.css }
       Rails.application.config.assets.precompile += %w{ erp_app/shared/knitkit_shared.css }
-      Rails.application.config.assets.precompile += %w{ knitkit/website_builder/medium-editor.min.css knitkit/website_builder/medium-bootstrap.css knitkit/website_builder/medium_editor_theme/default.min.css }
+      Rails.application.config.assets.precompile += %w{ knitkit/website_builder/medium-editor.min.css knitkit/website_builder/medium-bootstrap.css knitkit/website_builder/medium_editor_theme/default.min.css knitkit/website_builder/buidler.css }
 
       ErpApp::Config.shared_css_assets += %w{ erp_app/shared/knitkit_shared.css }
     end

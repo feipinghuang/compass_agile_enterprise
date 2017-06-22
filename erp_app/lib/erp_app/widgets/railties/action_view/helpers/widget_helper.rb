@@ -4,12 +4,12 @@ module ErpApp
       module ActionView
         module Helpers
           module WidgetHelper
-            
+
             def render_widget(name, opts={})
               action = opts[:action] || :index
               params = opts[:params].nil? ? {} : opts[:params]
               render_inline = opts[:render_inline] === false ? false : true
-         
+
               uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
 
               if render_inline
@@ -35,15 +35,19 @@ module ErpApp
               #render widget
               params = opts[:params].nil? ? {} : opts[:params]
               uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+
               action = "website_builder"
               widget_obj = "::Widgets::#{name.to_s.camelize}::Base".constantize.new(self.controller, name.to_s, action, uuid, params, nil)
               widget_obj.define_singleton_method(:original_action) do
                 opts[:action] || :index
               end
+
               result = widget_obj.process(action)
-              html = "<div id=\"#{uuid}\" class='compass_ae-widget' draggable=\"true\" data-widget-name= '#{name.to_s}'>"
+
+              html = "<div id=\"#{uuid}\" class='compass_ae-widget' data-widget-name= '#{name.to_s}'>"
               html << result
               html << "</div>"
+
               raw html
             end
 

@@ -15,37 +15,30 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             var me = btn.up('knitkitcomponentpropertiesformpanel');
             me.updateHtmlProperties(btn.up('form'));
         }
-    }, {
-        xtype: 'tbfill'
-    }, {
-        xtype: 'button',
-        itemId: 'componentPropertiesResetButton',
-        hidden: true,
-        iconCls: 'icon-undo',
-        iconAlign: 'right',
-        text: 'Reset to original',
-        handler: function(btn) {
-
-        }
     }],
     autoScroll: true,
     boddyPadding: 10,
     style: {
         left: '10px'
     },
+
     defaults: {
         labelWidth: 80,
         width: 250
     },
+
     updateHtmlProperties: function(formPanel, params, successCallback) {
         var me = this,
             websiteBuilderPanel = Ext.ComponentQuery.query("websitebuilderpanel").first();
+
         if (formPanel.isValid()) {
             values = formPanel.form.getValues();
             Ext.Array.each(me.editableItems, function(editableItem) {
                 if (editableItem == 'content' && me.element.isContentEditable) {
                     websiteBuilderPanel.removeEditable(me.element);
                     websiteBuilderPanel.deHighlightElement(me.element);
+                } else if (editableItem == 'src') {
+                    jQuery(me.element).attr('src', values[editableItem]);
                 } else {
                     me.element.style[editableItem] = values[editableItem];
                 }

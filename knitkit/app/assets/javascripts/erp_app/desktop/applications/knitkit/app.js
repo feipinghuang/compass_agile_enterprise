@@ -28,4 +28,3 @@
 //= require_tree ./top_menu
 //= require_tree ./west_region
 //= require jquery
-//= require ./dnd
