@@ -10,15 +10,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 // Let the native drag and drop work for widgets
                 onBeforeDrag: function(data, e) {
-                    if (data.componentType == "widget") {
-                        return false;
-                    } else {
-                        var centerRegion = Ext.getCmp('knitkit').down('knitkit_centerregion');
-                        if (centerRegion.workArea.getActiveTab() && centerRegion.workArea.getActiveTab().xtype == "websitebuilderpanel")
-                            centerRegion.workArea.getActiveTab().disableComponents();
+                    var centerRegion = Ext.getCmp('knitkit').down('knitkit_centerregion');
+                    if (centerRegion.workArea.getActiveTab() && centerRegion.workArea.getActiveTab().xtype == "websitebuilderpanel")
+                        centerRegion.workArea.getActiveTab().disableComponents();
 
-                        return true;
-                    }
+                    return true;
                 },
 
                 afterDragDrop: function(target, e, id) {

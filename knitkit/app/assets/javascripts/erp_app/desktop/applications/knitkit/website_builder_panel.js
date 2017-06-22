@@ -19,6 +19,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     themeLayoutConfig: {},
     items: [],
     refershIntervals: {},
+    matchWebsiteSectionContents: {},
 
     beforeLayout: function() {
         var me = this;
@@ -346,6 +347,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                             me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
 
+                        } else if (data.widgetName) {
+                            me.loadContentBlock(dropPanel, {
+                                widgetName: data.widgetName
+                            });
+
                         } else {
                             if (data.uniqueId && data.uniqueId.toString().indexOf('_componentIid_') !== -1) {
                                 componentIid = data.uniqueId.toString().split('_componentIid_')[0];
@@ -491,28 +497,63 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         return websitesCombo.getValue();
     },
 
-    buildContentBlocksPayload: function() {
+    saveComponents: function(successCallback, failureCallback) {
         var me = this,
             containerPanels = me.query("[cls=websitebuilder-component-panel][isLayout!=true]");
 
-        return Ext.Array.map(containerPanels, function(container, index) {
+        components = Ext.Array.map(containerPanels, function(container, index) {
             var iframe = container.el.down('.iframe-container > iframe').el.dom,
                 containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
                 containerElem = jQuery(containerHTML);
 
+            var matchId = Math.round(Math.random() * 10000000);
+
+            me.matchWebsiteSectionContents[matchId] = container;
+
             var data = {
                 position: index,
-                body_html: Ext.String.htmlDecode(containerElem[0].outerHTML)
+                body_html: Ext.String.htmlDecode(containerElem[0].outerHTML),
+                match_id: matchId
             };
 
             // check if we are loading a compnent before it has been saved
-            if (container.uniqueId.toString().indexOf('_componentIid_') !== -1) {
-                data['component_iid'] = container.uniqueId.toString().split('_componentIid_')[0];
-            } else {
+            if (container.uniqueId.toString().indexOf('_componentIid_') === -1 && container.uniqueId.toString().indexOf('_widgetname_') === -1) {
                 data['website_section_content_id'] = container.uniqueId;
             }
 
             return data;
+        });
+
+        Ext.Ajax.request({
+            url: '/knitkit/erp_app/desktop/website_builder/save_website.json',
+            method: 'POST',
+            params: {
+                id: me.getWebsiteId(),
+                website_section_id: me.websiteSectionId,
+                content: JSON.stringify(components)
+            },
+            success: function(response) {
+                var responseObj = Ext.decode(response.responseText);
+
+                if (responseObj.success) {
+                    // set the unique ids for the containers
+                    Ext.each(responseObj.website_section_contents, function(websiteSectionContent) {
+                        me.matchWebsiteSectionContents[websiteSectionContent.match_id].uniqueId = websiteSectionContent.website_section_content_id;
+                        delete me.matchWebsiteSectionContents[websiteSectionContent.match_id];
+                    });
+
+                    if (successCallback)
+                        successCallback();
+                } else {
+                    if (failureCallback)
+                        failureCallback();
+                }
+            },
+
+            failure: function(response) {
+                if (failureCallback)
+                    failureCallback();
+            }
         });
     },
 
@@ -536,8 +577,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         } else if (websiteSectionContentId) {
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html?website_section_content_id=' + websiteSectionContentId + '&id=' + websiteId;
 
-        } else {
+        } else if (componentIid) {
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId;
+
+        } else {
+            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?id=' + websiteId;
         }
 
         // append a random param to prevent the browser from caching its contents when this is requested from an iframe
@@ -588,8 +632,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         } else if (options.websiteSectionContentId) {
             uniqueId = options.websiteSectionContentId;
 
+        } else if (options.widgetName) {
+            uniqueId = options.widgetName + '_widgetname_' + Math.round(Math.random() * 10000000);
+
         } else {
             uniqueId = options.componentIid + '_componentIid_' + Math.round(Math.random() * 10000000);
+
         }
 
         dropPanel.removeCls('website-builder-dropzone');
@@ -765,11 +813,48 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             //setup editable content listeners
             me.setupEditableContentListeners(iframeNode);
 
-            //setup widget drop listeners
-            me.setupIframeDragDropListeners(iframeNode);
+            if (options.widgetName) {
+                var widgetsPanel = me.up('window').down('knitkit_WidgetsPanel');
+                var widgetData = widgetsPanel.getWidgetData(options.widgetName);
 
-            //setup widget listeners
-            me.attachIframeWidgetListeners(iframeNode);
+                widgetData.addWidget({
+                    websiteBuilder: true,
+                    success: function(content) {
+                        Compass.ErpApp.Utility.ajaxRequest({
+                            url: '/knitkit/erp_app/desktop/website_builder/widget_source',
+                            method: 'POST',
+                            params: {
+                                content: content
+                            },
+                            success: function(responseObj) {
+                                try {
+                                    // get the container frame from the insertion point
+                                    var containerWindow = iframeNode.contentWindow,
+                                        containerDocument = iframeNode.contentDocument || containerWindow.document;
+
+                                    containerWindow.loadMe('<div class="page">' + responseObj.source + '</div>');
+                                    dropComponent = jQuery(containerDocument).find('.compass_ae-widget');
+
+                                    // store widget render statement barring <%= %> in its parent data arribute
+                                    // we leave out the <%= %> to prevent it from getting evalauated when it renders
+                                    // in the builder view.
+                                    dropComponent.parent().attr('data-widget-statement', content.match(/<%=(((.|[\s\S])*?))%>/)[1]);
+
+                                    // save the page
+                                    me.saveComponents();
+
+                                } catch (e) {
+                                    console.error(e);
+                                }
+                            },
+                            errorMessage: "Error fetching widget source"
+                        });
+                    }
+                });
+            } else {
+                // save the page
+                me.saveComponents();
+            }
 
             //disable navagation links
             jQuery(iframeNode).contents().find("a").each(function() {
@@ -817,166 +902,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 me.buildPropertiesEditForm(event.target);
             });
         });
-    },
-
-    // setup iframe drag and drop
-    setupIframeDragDropListeners: function(iframeNode) {
-        var me = this;
-        var currentElement, currentElementChangeFlag, elementRectangle, countdown;
-
-        var dragImg = new Image();
-        dragImg.src = '/assets/knitkit/website_builder/drag.png';
-
-        jQuery(iframeNode.contentDocument.body).find('.page > .item.content, .page > .item.header, .page > .item.footer').attr('data-frame-uuid', jQuery(iframeNode).attr('id'));
-
-        //Add CSS to iFrame
-        var styles = '.dnd-drop-target{border:1px solid #666;}';
-        styles += '.dnd-drop-target-occupied{border:4px solid #00FFFF !important;}';
-        styles += '.website-builder-reorder-setting{background-color: #ccc;padding: 10px;top: 0;right: 17px;height: 36px;border-radius: 5px;z-index: 500;position: absolute;}';
-        styles += '.icon-remove{background-image: url(/assets/icons/delete/delete_16x16.png) !important;filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="/assets/icons/delete/delete_16x16.png", sizingMethod="crop");height: 16px;width: 16px;cursor: pointer;float:left;}';
-        styles += '.icon-move{background-image: url(/assets/knitkit/icons/move-component.png) !important;filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="/assets/knitkit/icons/move-component.png", sizingMethod="crop");height: 16px;width: 16px;cursor: move;margin-right:5px;float:left;}';
-
-        var style = jQuery("<style data-reserved-styletag></style>").html(styles);
-        jQuery(iframeNode.contentDocument.head).append(style);
-
-        var win = Ext.getCmp('knitkit');
-
-        jQuery(iframeNode.contentDocument).find('html,body').find('.dnd-drop-target')
-            .off('dragover').on('dragover', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                jQuery(this).addClass('dnd-drop-target-occupied');
-
-            }).off('dragleave').on('dragleave', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                jQuery(this).removeClass('dnd-drop-target-occupied');
-
-            }).off('drop').on('drop', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                var dropTarget = jQuery(this);
-                var insertionPoint = jQuery("iframe").contents().find(".dnd-drop-target-occupied");
-                var uuid = event.originalEvent.dataTransfer.getData('uuid');
-
-                if (uuid) {
-                    try {
-                        var widgetStatement = event.originalEvent.dataTransfer.getData('widget-statement');
-                        Compass.ErpApp.Utility.ajaxRequest({
-                            url: '/knitkit/erp_app/desktop/website_builder/widget_source',
-                            method: 'POST',
-                            params: {
-                                content: '<%=' + widgetStatement + '%>'
-                            },
-                            success: function(responseObj) {
-                                var previousComponent = null;
-                                jQuery('iframe').each(function(index, iframe) {
-                                    previousComponent = jQuery(iframe).contents().find('#' + uuid);
-                                    if (previousComponent.length > 0) {
-                                        return false;
-                                    }
-                                });
-
-                                // don't drop a component is dropped over itself
-                                if (previousComponent.parent()[0] == dropTarget[0]) {
-                                    return;
-                                }
-
-                                previousComponent.parent().removeClass('dnd-drop-target-occupied');
-                                previousComponent.parent().append($('<div class="col dnd-drop-target"></div>'));
-                                me.setupIframeDragDropListeners(document.getElementById(previousComponent.parents('.item.content, .item.header, .item.footer').attr('data-frame-uuid')));
-
-                                previousComponent.remove();
-
-                                var dropComponent = me.insertWidget(responseObj.source);
-                                dropComponent.parent().attr('data-widget-statement', widgetStatement);
-
-                                me.attachIframeWidgetListeners(iframeNode);
-                            }
-                        });
-
-                    } catch (e) {
-                        console.error(e);
-                    }
-                } else {
-                    var widgetName = event.originalEvent.dataTransfer.getData('widget-name');
-                    var widgetsPanel = me.up('window').down('knitkit_WidgetsPanel');
-                    var widgetData = widgetsPanel.getWidgetData(widgetName);
-                    widgetData.addWidget({
-                        websiteBuilder: true,
-                        success: function(content) {
-                            Compass.ErpApp.Utility.ajaxRequest({
-                                url: '/knitkit/erp_app/desktop/website_builder/widget_source',
-                                method: 'POST',
-                                params: {
-                                    content: content
-                                },
-                                success: function(responseObj) {
-                                    try {
-                                        var dropComponent = me.insertWidget(responseObj.source);
-                                        // store widget render statement barring <%= %> in its parent data arribute
-                                        // we leave out the <%= %> to prevent it from getting evalauated when it renders
-                                        // in the builder view.
-                                        dropComponent.parent().attr('data-widget-statement', content.match(/<%=(((.|[\s\S])*?))%>/)[1]);
-
-                                        me.attachIframeWidgetListeners(iframeNode);
-
-                                    } catch (e) {
-                                        console.error(e);
-                                    }
-                                },
-                                errorMessage: "Error fetching widget source"
-                            });
-                        }
-                    });
-                }
-            });
-    },
-
-    insertWidget: function(widgetSource) {
-        // get the drop markers
-        var insertionPoint = jQuery("iframe").contents().find(".dnd-drop-target-occupied");
-
-        var itemContent = insertionPoint.parents('.item.content, .item.header, .item.footer'),
-            iframeId = itemContent.attr('data-frame-uuid'),
-            componentId = itemContent.attr('data-container');
-
-        // get the container frame from the insertion point
-        var containerFrame = document.getElementById(iframeId),
-            containerWindow = containerFrame.contentWindow,
-            containerDocument = containerFrame.contentDocument || containerWindow.document;
-
-        // The widget source contains DOM elements and script tags which needs
-        // to be executed in the context of the container iframe.
-
-        var dropComponent = jQuery(widgetSource);
-
-        // accumulate scripts
-        scripts = [];
-        dropComponent.children().filter('script').each(function() {
-            scripts.push(jQuery(this).detach().html());
-        });
-
-        // insert widget DOM
-        insertionPoint.after(dropComponent);
-
-        var expression = 'return function(window, document){$ = window.$}',
-            scriptFunc = new Function(expression)();
-        scriptFunc.apply(containerWindow, [containerWindow, containerDocument]);
-        // execute accumulated scripts
-        scripts.forEach(function(script) {
-            var expression = 'return function(window, document){\n' + script + '\n}',
-                scriptFunc = new Function(expression)();
-            scriptFunc.apply(containerWindow, [containerWindow, containerDocument]);
-        });
-
-        //remove drop markers 
-        insertionPoint.remove();
-
-        return dropComponent;
     },
 
     fetchComponentSource: function(uniqueId, success, failure) {
@@ -1038,36 +963,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 } else {
                     Ext.Msg.error('Error', 'Error saving source');
                 }
-            }
-        });
-    },
-
-    attachIframeWidgetListeners: function(iframeNode) {
-        var me = this;
-
-        // add remove buttons
-        jQuery(iframeNode.contentDocument).find('.compass_ae-widget > .website-builder-reorder-setting > .icon-remove').off('click');
-        jQuery(iframeNode.contentDocument).find('.compass_ae-widget > .website-builder-reorder-setting > .icon-move').off('dragstart');
-        jQuery(iframeNode.contentDocument).find('.compass_ae-widget > .website-builder-reorder-setting').remove();
-        jQuery(iframeNode.contentDocument).find('.compass_ae-widget').append('<div class="website-builder-reorder-setting"><div class="icon-move" draggable=true id="-remove"></div><div class="icon-remove" id="-remove"></div></div>');
-
-        jQuery(iframeNode.contentDocument).find('.compass_ae-widget > .website-builder-reorder-setting > .icon-remove').click(function() {
-            var uuid = $(this).parents('.compass_ae-widget').attr('id');
-            var previousComponent = $(this).parents('.compass_ae-widget').parents('body').find('#' + uuid);
-
-            previousComponent.parent().removeClass('dnd-drop-target-occupied');
-            previousComponent.parent().append($('<div class="col dnd-drop-target"></div>'));
-            me.attachIframeWidgetListeners(document.getElementById(previousComponent.parents('.item.content, .item.header, .item.footer').attr('data-frame-uuid')));
-
-            previousComponent.remove();
-        });
-
-        jQuery(iframeNode.contentDocument).find('.compass_ae-widget > .website-builder-reorder-setting > .icon-move').on('dragstart', function(event) {
-            var draggableElem = jQuery(this).parents('.compass_ae-widget');
-            var uuid = draggableElem.attr('id');
-            if (uuid) {
-                event.originalEvent.dataTransfer.setData("uuid", uuid);
-                event.originalEvent.dataTransfer.setData("widget-statement", draggableElem.parent().attr('data-widget-statement'));
             }
         });
     },

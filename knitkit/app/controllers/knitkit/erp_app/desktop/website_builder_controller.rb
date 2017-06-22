@@ -44,9 +44,17 @@ module Knitkit
             website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
 
             render inline: website_section_content.builder_html, layout: 'knitkit/base'
-          else
+
+          elsif params[:component_iid]
             render template: "/components/#{params[:component_iid]}", layout: 'knitkit/base'
+
+          else
+            render inline: '<script>function loadMe(html){$("body").append($($.parseHTML(html, document, true)));}</script>', layout: 'knitkit/base'
           end
+        end
+
+        def render_widget
+          params[:widget_name]
         end
 
         def website
@@ -55,7 +63,7 @@ module Knitkit
 
         def save_website
           begin
-            result = {success: false}
+            result = {success: false, website_section_contents:[]}
             contents_data = JSON.parse(params["content"])
 
             current_user.with_capability('create', 'WebsiteSection') do
@@ -80,6 +88,9 @@ module Knitkit
 
                       current_website_section_contents.delete_if{|item| item.id == website_section_content.id}
 
+                      # send back the match id so we can update the block
+                      result[:website_section_contents].push({match_id: data[:match_id], website_section_content_id: website_section_content.id})
+
                     else
                       website_section_content = WebsiteSectionContent.new(website_section: website_section)
                       website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
@@ -89,6 +100,9 @@ module Knitkit
                       website_section_content.save!
 
                       current_website_section_contents.delete_if{|item| item.id == website_section_content.id}
+
+                      # send back the match id so we can update the block
+                      result[:website_section_contents].push({match_id: data[:match_id], website_section_content_id: website_section_content.id})
                     end
 
                   end
@@ -98,7 +112,7 @@ module Knitkit
 
                   website_section.publish(website, 'Auto Publish', website_section.version, current_user) if website.publish_on_save?
 
-                  result = {:success => true}
+                  result[:success] = true
                 end
               rescue => ex
                 Rails.logger.error ex.message

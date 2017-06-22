@@ -484,6 +484,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         }
 
         self.workArea.setActiveTab(item);
+
         return false;
     },
 
@@ -554,7 +555,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
 
     saveWebsiteLayout: function(websiteId, websiteSectionId, components) {
         var me = this;
-        me.setWindowStatus('Saving...');
+
         Ext.Ajax.request({
             url: '/knitkit/erp_app/desktop/website_builder/save_website.json',
             method: 'POST',
@@ -602,8 +603,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
                 },
                 websiteSectionId: websiteSectionId,
                 save: function(comp) {
-                    var containers = comp.buildContentBlocksPayload() || [];
-                    me.saveWebsiteLayout(websiteId, websiteSectionId, JSON.stringify(containers));
+                    me.setWindowStatus('Saving...');
+
+                    comp.saveComponents(function() {
+                        me.clearWindowStatus();
+                    }, function() {
+                        me.clearWindowStatus();
+                        Ext.Msg.error('Error', 'Error saving website');
+                    });
                 }
             });
 

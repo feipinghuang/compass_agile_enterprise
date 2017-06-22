@@ -42,21 +42,52 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel", {
                     contextMenu.showAt(e.xy);
                 },
 
-                viewready: function(dataView) {
-                    var win = Ext.getCmp('knitkit');
-                    var panel = dataView.up('panel');
-                    var widgetsNodeList = panel.el.dom.querySelectorAll('div.thumb-wrap');
-                    var store = dataView.getStore();
+                render: function(dataView) {
+                    new Ext.dd.DragZone(dataView.getEl(), {
+                        ddGroup: 'websiteBuilderPanelDDgroup',
+                        // Let the native drag and drop work for widgets
+                        onBeforeDrag: function(data, e) {
+                            var centerRegion = Ext.getCmp('knitkit').down('knitkit_centerregion');
+                            if (centerRegion.workArea.getActiveTab() && centerRegion.workArea.getActiveTab().xtype == "websitebuilderpanel")
+                                centerRegion.workArea.getActiveTab().disableComponents();
 
-                    widgetsNodeList.forEach(function(node) {
-                        var elem = document.getElementById(node.id);
+                            return true;
+                        },
 
-                        elem.setAttribute('draggable', true);
+                        afterDragDrop: function(target, e, id) {
+                            var centerRegion = Ext.getCmp('knitkit').down('knitkit_centerregion');
+                            if (centerRegion.workArea.getActiveTab() && centerRegion.workArea.getActiveTab().xtype == "websitebuilderpanel")
+                                centerRegion.workArea.getActiveTab().enableComponents();
+                        },
 
-                        jQuery(elem).on('dragstart', function(event) {
-                            event.originalEvent.dataTransfer.setData("widget-name", node.id);
-                        });
+                        afterInvalidDrop: function(target, e, id) {
+                            var centerRegion = Ext.getCmp('knitkit').down('knitkit_centerregion');
+                            if (centerRegion.workArea.getActiveTab() && centerRegion.workArea.getActiveTab().xtype == "websitebuilderpanel")
+                                centerRegion.workArea.getActiveTab().enableComponents();
+                        },
 
+                        getDragData: function(e) {
+                            var sourceEl = e.getTarget(dataView.itemSelector, 10);
+
+                            if (sourceEl) {
+                                d = sourceEl.cloneNode(true);
+                                d.id = Ext.id();
+
+                                var draggedRecord = dataView.getRecord(sourceEl);
+
+                                return {
+                                    ddel: d,
+                                    sourceEl: sourceEl,
+                                    repairXY: Ext.fly(sourceEl).getXY(),
+                                    sourceStore: dataView.store,
+                                    widgetName: draggedRecord.get('name')
+                                };
+                            }
+                        },
+
+                        getRepairXY: function() {
+                            return this.dragData.repairXY;
+                        }
                     });
                 }
             }
