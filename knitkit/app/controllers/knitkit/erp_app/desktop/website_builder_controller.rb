@@ -13,7 +13,7 @@ module Knitkit
           if params[:is_theme].to_bool
             components = Component.where(Component.matches_is_json('custom_data', 'header', 'component_type',).or(Component.matches_is_json('custom_data', 'footer', 'component_type')))
           else
-            components = Component.with_json_attr('custom_data', 'component_type', 'content_section')
+            components = Component.where(Component.matches_is_json('custom_data', 'container_section', 'component_type',).or(Component.matches_is_json('custom_data', 'content_section', 'component_type')))
           end
 
           render json: {
@@ -84,6 +84,7 @@ module Knitkit
                       # strip off design specific HTML
                       website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
                       website_section_content.position = data[:position]
+                      website_section_content.col = data[:column]
                       website_section_content.save!
 
                       current_website_section_contents.delete_if{|item| item.id == website_section_content.id}
@@ -97,6 +98,7 @@ module Knitkit
                       # strip off design specific HTML
                       website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
                       website_section_content.position = data[:position]
+                      website_section_content.col = data[:column]
                       website_section_content.save!
 
                       current_website_section_contents.delete_if{|item| item.id == website_section_content.id}
@@ -234,12 +236,13 @@ module Knitkit
         end
 
         def section_components
-          website_section_id = params[:website_section_id]
-          website_section_contents = WebsiteSectionContent.where(website_section_id: website_section_id).order('position asc')
+          website_section_contents = WebsiteSection.find(params[:website_section_id]).website_section_contents.order("position, col")
+
+          website_section_contents_data = website_section_contents.collect(&:to_data_hash).group_by{|item| item[:position]}.values
 
           render json: {
             success: true,
-            website_section_contents: website_section_contents.collect(&:to_data_hash)
+            website_section_contents: website_section_contents_data
           }
         end
 

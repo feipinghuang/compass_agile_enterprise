@@ -54,25 +54,25 @@ namespace :knitkit do
                        type: 'header',
                        thumbnail: '/images/content_blocks/header2.png',
                        height: 581 },
-                     {  iid: 'one_column',
+                     {  iid: 'container_section1',
+                        title: 'Container Section',
+                        type: 'container_section',
+                        thumbnail: '/images/content_blocks/one_column.png',
+                        height: 550 },
+                     {  iid: 'container_section2',
+                        title: 'Container Section',
+                        type: 'container_section',
+                        thumbnail: '/images/content_blocks/three_column.png',
+                        height: 550 },
+                     {  iid: 'content_section1',
                         title: 'Content Section',
                         type: 'content_section',
                         thumbnail: '/images/content_blocks/one_column.png',
                         height: 550 },
-                     {  iid: 'one_column_widget',
-                        title: 'Content Section',
-                        type: 'content_section',
-                        thumbnail: '/images/content_blocks/one_column_widget.png',
-                        height: 550 },
-                     {  iid: 'three_column',
+                     {  iid: 'content_section2',
                         title: 'Content Section',
                         type: 'content_section',
                         thumbnail: '/images/content_blocks/three_column.png',
-                        height: 550 },
-                     {  iid: 'three_column_widget',
-                        title: 'Content Section',
-                        type: 'content_section',
-                        thumbnail: '/images/content_blocks/three_column_widget.png',
                         height: 550 },
                      { iid: 'footer1',
                        title: 'Footer',
@@ -84,8 +84,8 @@ namespace :knitkit do
                         type: 'footer',
                         thumbnail: '/images/content_blocks/footer2.png',
                         height: 245
-                     }
-                   ]
+                        }
+                     ]
 
       Component.destroy_all
       COMPONENTS.each do |component|

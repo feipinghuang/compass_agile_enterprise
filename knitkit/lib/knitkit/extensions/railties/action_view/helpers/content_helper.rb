@@ -26,9 +26,42 @@ module Knitkit
             def render_section(website_section)
               buffer = ::ActionView::OutputBuffer.new
 
-              WebsiteSectionContent.where("website_section_id = ?", website_section.id).order('position asc').each do |website_section_content|
-                buffer << (website_section_content.website_html.nil? ? '' : (raw website_section_content.website_html))
-              end
+              website_section_contents = website_section.website_section_contents.order("position, col")
+
+              website_section_contents.group_by(&:position).values.each do |row|
+
+                if row.count == 1
+                  website_section_content = row.first
+
+                  content = raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
+                else
+                  content = content_tag :div, class: 'container' do
+
+                    content_tag :div, class: 'row' do
+
+                      inner_buffer = ::ActionView::OutputBuffer.new
+
+                      row.each do |website_section_content|
+
+                        innner_content = content_tag :div, class: "col-md-#{(12/row.count)}" do
+
+                          raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
+
+                        end # col
+
+                        inner_buffer << innner_content
+                      end
+
+                      raw inner_buffer
+
+                    end # row
+
+                  end # container
+                end
+
+                buffer << content
+              end # each row
+
 
               render inline: buffer
             end
