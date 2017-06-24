@@ -1205,6 +1205,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             }
 
                         }, 500);
+                    } else {
+                        me.saveDisabled = false;
+                        loadMask.hide();
                     }
                 }
             });
