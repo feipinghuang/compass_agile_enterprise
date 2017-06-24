@@ -398,6 +398,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             autoRemovableDropZone: false
                         });
 
+                        if (draggedPanel && draggedPanel.componentType) {
+                            dropPanel.componentType = draggedPanel.componentType;
+                        }
+
                         if (data.websiteSectionContentId) {
                             me.loadContentBlock(dropPanel, {
                                 websiteSectionContentId: data.websiteSectionContentId
@@ -409,6 +413,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             me.loadContentBlock(dropPanel, {
                                 widgetName: data.widgetName
                             });
+
+                            dropPanel.componentType = 'widget';
 
                         } else {
                             if (me.isThemeMode()) {
@@ -680,14 +686,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         } else if (options.websiteSectionContentId) {
             uniqueId = options.websiteSectionContentId;
             dropPanel.websiteSectionContentId = options.websiteSectionContentId;
-
-        } else if (options.widgetName) {
-            uniqueId = options.widgetName + '_widgetname_' + Math.round(Math.random() * 10000000);
-            dropPanel.widgetName = options.widgetName;
-
-        } else {
-            uniqueId = options.componentIid + '_componentIid_' + Math.round(Math.random() * 10000000);
-            dropPanel.componentIid = options.componentIid;
 
         }
 
