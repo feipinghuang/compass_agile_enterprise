@@ -22,13 +22,6 @@ module Knitkit
           }
         end
 
-        def get_component
-          render json: {
-            success: true,
-            data: find_component(params[:id]).to_data_hash
-          }
-        end
-
         def active_website_theme
           render json: {
             success: true,
@@ -49,7 +42,7 @@ module Knitkit
             render template: "/components/#{params[:component_iid]}", layout: 'knitkit/base'
 
           else
-            render inline: '<script>function loadMe(html){$("body").append($($.parseHTML(html, document, true)));}</script>', layout: 'knitkit/base'
+            render inline: '<script>function loadMe(html){$("body").append($($.parseHTML(html, document, true))); $(".widget-place-holder").remove();}</script><div class="widget-place-holder" style="min-height:100px;"></div>', layout: 'knitkit/base'
           end
         end
 
@@ -73,7 +66,7 @@ module Knitkit
 
                   # get the current list of website_section_contents as any ones that are not passed will be deleted
                   current_website_section_contents = website_section.website_section_contents
-
+          
                   contents_data.each do |data|
                     data = Hash.symbolize_keys(data)
          

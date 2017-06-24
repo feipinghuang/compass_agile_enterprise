@@ -42,7 +42,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.DraggablePanel', {
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
                             ddel: d,
-                            componentId: element.componentId,
+                            componentIid: element.componentIid,
                             componentType: element.componentType
                         };
                     }
@@ -155,9 +155,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 cls: 'draggable-image-display',
                 layout: 'fit',
                 autoScroll: true,
-                componentId: data.iid,
-                componentType: data.componentType,
+                componentIid: data.iid,
                 componentHeight: data.height,
+                componentType: (type == 'container_section' ? 'container' : 'content'),
                 html: html
             };
 
@@ -166,7 +166,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
 
     constructor: function(config) {
         config = Ext.apply({
-
             region: 'west',
             split: true,
             width: 300,

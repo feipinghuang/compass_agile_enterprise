@@ -1,17 +1,42 @@
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZoneContainer', {
     extend: 'Ext.Container',
-    alias: 'widget.websitebuilderdropzonecontainer'
+    alias: 'widget.websitebuilderdropzonecontainer',
+    autoRemovableDropZone: false
 });
 
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZone', {
     extend: 'Ext.Component',
     alias: 'widget.websitebuilderdropzone',
-    autoRemovableDropZone: false,
-    replaceContentOfDraggedPanel: true,
     componentId: null,
     cls: 'website-builder-dropzone',
     height: 150,
-    html: '<div>Drop Component Here</div>'
+    componentType: null,
+    html: ['<div>Drop Component Here</div><div class="website-builder-reorder-setting" id="componentSetting">',
+        '<div class="icon-remove pull-left" id="remove"></div>',
+        '</div>'
+    ].join(''),
+    listeners: {
+        afterrender: function(comp) {
+            setTimeout(function() {
+                if (Ext.isEmpty(comp.el.query('.component')) && !Ext.isEmpty(comp.el.query('.icon-remove'))) {
+                    Ext.get(comp.el.query('.icon-remove')).on('click', function() {
+                        if (comp.up('websitebuilderdropzonecontainer').items.length === 1) {
+                            comp.up('websitebuilderdropzonecontainer').destroy();
+                        } else {
+                            // if this was a content component and its container only has one block now change it to a container
+                            if ((comp.up('websitebuilderdropzonecontainer').items.length === 2)) {
+                                Ext.each(comp.up('websitebuilderdropzonecontainer').query('websitebuilderdropzone'), function(component) {
+                                    component.componentType = 'container';
+                                });
+                            }
+
+                            comp.destroy();
+                        }
+                    });
+                }
+            }, 500);
+        }
+    }
 });
 
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
@@ -24,7 +49,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     themeLayoutConfig: {},
     items: [],
     refershIntervals: {},
+    rowHeights: {},
     matchWebsiteSectionContents: {},
+    saveDisabled: false,
+    contentToLoad: [],
 
     beforeLayout: function() {
         var me = this;
@@ -40,7 +68,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         me.callParent(arguments);
         if (me.savedScrollPos) {
-            me.body.scrollTo('top', me.savedScrollPos);
+            var heightDiff = null;
+            if (me.currentHeight) {
+                heightDiff = Ext.get(me.el.query('.x-panel-body')).first().query('div').first().clientHeight - me.currentHeight;
+            } else {
+                heightDiff = 0;
+            }
+
+            me.body.scrollTo('top', me.savedScrollPos + heightDiff);
         }
     },
 
@@ -172,6 +207,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             layout: 'hbox',
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
+                                                componentType: 'container',
                                                 flex: 1
                                             }]
                                         });
@@ -184,10 +220,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             layout: 'hbox',
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
+                                                componentType: 'content',
+                                                contentBlock: true,
                                                 flex: 1
 
                                             }, {
                                                 xtype: 'websitebuilderdropzone',
+                                                componentType: 'content',
+                                                contentBlock: true,
                                                 flex: 1
                                             }]
                                         });
@@ -200,13 +240,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             layout: 'hbox',
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
+                                                componentType: 'content',
+                                                contentBlock: true,
                                                 flex: 1
                                             }, {
                                                 xtype: 'websitebuilderdropzone',
+                                                componentType: 'content',
+                                                contentBlock: true,
                                                 flex: 1
 
                                             }, {
                                                 xtype: 'websitebuilderdropzone',
+                                                componentType: 'content',
+                                                contentBlock: true,
                                                 flex: 1
                                             }]
                                         });
@@ -255,16 +301,25 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 onBeforeDrag: function(data, e) {
                     me.disableComponents();
-                    me.addAutoRemovableDropZones(data.panelId);
+
+                    var img = new Ext.Element(document.createElement('img'));
+                    img.dom.src = '/assets/knitkit/website_builder/drag.png';
+                    this.proxy.ghost = img;
+
+                    if (data.componentType == 'container') {
+                        me.addAutoRemovableDropZones(data.panelId);
+                    }
                 },
 
                 afterDragDrop: function(target, e, id) {
                     me.enableComponents();
+
                     me.removeAutoRemovableDropZones();
                 },
 
                 afterInvalidDrop: function(target, e, id) {
                     me.enableComponents();
+
                     me.removeAutoRemovableDropZones();
                 },
 
@@ -291,7 +346,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
                             ddel: dragElDom,
-                            uniqueId: element.uniqueId,
+                            websiteSectionContentId: element.websiteSectionContentId,
+                            componentIid: element.componentIid,
+                            componentType: element.componentType,
                             isMove: true
                         };
                     }
@@ -337,13 +394,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         var draggedPanel = Ext.getCmp(data.panelId);
                         var dropPanel = Ext.getCmp(Ext.fly(target).dom.id);
 
-                        Ext.apply(dropPanel, {
+                        Ext.apply(dropPanel.up('websitebuilderdropzonecontainer'), {
                             autoRemovableDropZone: false
                         });
 
-                        if (data.uniqueId && data.uniqueId.toString().indexOf('_componentIid_') === -1) {
+                        if (data.websiteSectionContentId) {
                             me.loadContentBlock(dropPanel, {
-                                websiteSectionContentId: data.uniqueId
+                                websiteSectionContentId: data.websiteSectionContentId
                             });
 
                             me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
@@ -354,44 +411,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             });
 
                         } else {
-                            if (data.uniqueId && data.uniqueId.toString().indexOf('_componentIid_') !== -1) {
-                                componentIid = data.uniqueId.toString().split('_componentIid_')[0];
+                            if (me.isThemeMode()) {
+                                me.loadContentBlock(dropPanel, {
+                                    templateType: data.componentIid
+                                });
 
                             } else {
-                                componentIid = data.componentId;
+                                me.loadContentBlock(dropPanel, {
+                                    componentIid: data.componentIid
+                                });
+
                             }
 
-                            Ext.Ajax.request({
-                                method: "GET",
-                                url: '/knitkit/erp_app/desktop/website_builder/get_component.json',
-                                params: {
-                                    id: componentIid
-                                },
-                                success: function(response) {
-                                    var responseObj = Ext.decode(response.responseText);
-
-                                    if (responseObj.success) {
-                                        var responseData = responseObj.data;
-
-                                        if (me.isThemeMode()) {
-                                            me.loadContentBlock(dropPanel, {
-                                                templateType: responseData.iid
-                                            });
-
-                                        } else {
-                                            me.loadContentBlock(dropPanel, {
-                                                componentIid: responseData.iid
-                                            });
-
-                                        }
-
-                                        me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
-                                    }
-                                },
-                                failure: function() {
-                                    // TODO: Could not able to drop component, should we display an error?
-                                }
-                            });
+                            me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
                         }
 
                         me.removeAutoRemovableDropZones();
@@ -410,7 +442,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     if (Ext.get(target).id.indexOf('websitebuilderdropzone') === -1) {
                         return false;
                     } else {
-                        return true;
+                        var draggedPanel = Ext.getCmp(Ext.get(target).id);
+
+                        if (dragData.componentType == draggedPanel.componentType || dragData.componentType == 'widget') {
+                            return true;
+                        } else {
+                            return false;
+                        }
                     }
                 }
             });
@@ -445,37 +483,40 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             return (!Ext.isEmpty(container.el.query('.component')) && Ext.isEmpty(container.query('#' + panelId)));
         });
 
+        me.currentHeight = Ext.get(me.el.query('.x-panel-body')).first().query('div').first().clientHeight;
+
         Ext.each(components, function(component, index) {
             var componentIndex = me.items.indexOf(component);
 
             me.insert(componentIndex, {
-                xtype: 'container',
+                xtype: 'websitebuilderdropzonecontainer',
                 cls: 'dropzone-container',
+                autoRemovableDropZone: true,
                 layout: '',
                 items: [{
                     xtype: 'websitebuilderdropzone',
-                    flex: 1,
-                    autoRemovableDropZone: true,
-                    replaceContentOfDraggedPanel: false
+                    componentType: 'container',
+                    flex: 1
                 }]
             });
 
             if (index === (components.length - 1)) {
                 if (me.items.getAt(componentIndex + 1) && !Ext.isEmpty(me.items.getAt(componentIndex + 1).el.query('.component'))) {
                     me.insert(componentIndex + 2, {
-                        xtype: 'container',
+                        xtype: 'websitebuilderdropzonecontainer',
                         cls: 'dropzone-container',
+                        autoRemovableDropZone: true,
                         layout: '',
                         items: [{
                             xtype: 'websitebuilderdropzone',
-                            flex: 1,
-                            autoRemovableDropZone: true,
-                            replaceContentOfDraggedPanel: false
+                            componentType: 'container',
+                            flex: 1
                         }]
                     });
                 }
             }
         });
+
         me.suspendLayout = false;
         me.doLayout();
     },
@@ -483,7 +524,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     removeAutoRemovableDropZones: function() {
         var me = this;
         me.suspendLayout = true;
-        Ext.each(me.query('websitebuilderdropzone'), function(dropZone) {
+        Ext.each(me.query('websitebuilderdropzonecontainer'), function(dropZone) {
             if (dropZone.autoRemovableDropZone) {
                 // remove the removable drop zones
                 dropZone.destroy();
@@ -499,65 +540,69 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     },
 
     saveComponents: function(successCallback, failureCallback) {
-        var me = this,
-            containerPanels = me.query("websitebuilderdropzonecontainer"),
+        var me = this;
+
+        if (!me.saveDisabled) {
+            var containerPanels = me.query("websitebuilderdropzonecontainer");
             components = [];
 
-        Ext.each(containerPanels, function(container, rowIndex) {
-            Ext.each(container.query('websitebuilderdropzone'), function(component, columnIndex) {
-                if (component.el.down('.iframe-container > iframe')) {
-                    var iframe = component.el.down('.iframe-container > iframe').el.dom,
-                        containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
-                        containerElem = jQuery(containerHTML);
+            Ext.each(containerPanels, function(container, rowIndex) {
+                Ext.each(container.query('websitebuilderdropzone'), function(component, columnIndex) {
+                    if (component.el.down('.iframe-container > iframe')) {
+                        var iframe = component.el.down('.iframe-container > iframe').el.dom,
+                            containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
+                            containerElem = jQuery(containerHTML);
 
-                    var matchId = Math.round(Math.random() * 10000000);
+                        var matchId = Math.round(Math.random() * 10000000);
 
-                    me.matchWebsiteSectionContents[matchId] = container;
+                        me.matchWebsiteSectionContents[matchId] = component;
 
-                    var data = {
-                        position: rowIndex,
-                        column: columnIndex,
-                        body_html: Ext.String.htmlDecode(containerElem[0].outerHTML),
-                        match_id: matchId,
-                        website_section_content_id: component.websiteSectionId
-                    };
+                        var data = {
+                            position: rowIndex,
+                            column: columnIndex,
+                            body_html: Ext.String.htmlDecode(containerElem[0].outerHTML),
+                            match_id: matchId,
+                            website_section_content_id: component.websiteSectionContentId
+                        };
 
-                    components.push(data);
-                }
+                        components.push(data);
+                    }
+                });
             });
-        });
 
-        Ext.Ajax.request({
-            url: '/knitkit/erp_app/desktop/website_builder/save_website.json',
-            method: 'POST',
-            params: {
-                id: me.getWebsiteId(),
-                website_section_id: me.websiteSectionId,
-                content: JSON.stringify(components)
-            },
-            success: function(response) {
-                var responseObj = Ext.decode(response.responseText);
+            Ext.Ajax.request({
+                url: '/knitkit/erp_app/desktop/website_builder/save_website.json',
+                method: 'POST',
+                params: {
+                    id: me.getWebsiteId(),
+                    website_section_id: me.websiteSectionId,
+                    content: JSON.stringify(components)
+                },
+                success: function(response) {
+                    var responseObj = Ext.decode(response.responseText);
 
-                if (responseObj.success) {
-                    // set the unique ids for the containers
-                    Ext.each(responseObj.website_section_contents, function(websiteSectionContent) {
-                        me.matchWebsiteSectionContents[websiteSectionContent.match_id].uniqueId = websiteSectionContent.website_section_content_id;
-                        delete me.matchWebsiteSectionContents[websiteSectionContent.match_id];
-                    });
+                    if (responseObj.success) {
+                        // set the unique ids for the containers
+                        Ext.each(responseObj.website_section_contents, function(websiteSectionContent) {
+                            me.matchWebsiteSectionContents[websiteSectionContent.match_id].uniqueId = websiteSectionContent.website_section_content_id;
+                            me.matchWebsiteSectionContents[websiteSectionContent.match_id].websiteSectionContentId = websiteSectionContent.website_section_content_id;
+                            delete me.matchWebsiteSectionContents[websiteSectionContent.match_id];
+                        });
 
-                    if (successCallback)
-                        successCallback();
-                } else {
+                        if (successCallback)
+                            successCallback();
+                    } else {
+                        if (failureCallback)
+                            failureCallback();
+                    }
+                },
+
+                failure: function(response) {
                     if (failureCallback)
                         failureCallback();
                 }
-            },
-
-            failure: function(response) {
-                if (failureCallback)
-                    failureCallback();
-            }
-        });
+            });
+        }
     },
 
     buildContentBlockTemplate: function(dropPanel, options) {
@@ -634,14 +679,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         } else if (options.websiteSectionContentId) {
             uniqueId = options.websiteSectionContentId;
+            dropPanel.websiteSectionContentId = options.websiteSectionContentId;
 
         } else if (options.widgetName) {
             uniqueId = options.widgetName + '_widgetname_' + Math.round(Math.random() * 10000000);
+            dropPanel.widgetName = options.widgetName;
 
         } else {
             uniqueId = options.componentIid + '_componentIid_' + Math.round(Math.random() * 10000000);
+            dropPanel.componentIid = options.componentIid;
 
         }
+
+        options['uniqueId'] = uniqueId;
 
         dropPanel.removeCls('website-builder-dropzone');
 
@@ -649,13 +699,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             cls: "websitebuilder-component-panel"
         });
 
-        var loadMask = new Ext.LoadMask(me, {
-            msg: "Please wait..."
-        });
-        loadMask.show();
-
-        dropPanel.uniqueId = uniqueId;
-        options['uniqueId'] = uniqueId;
+        if (!me.saveDisabled) {
+            var loadMask = new Ext.LoadMask(me, {
+                msg: "Please wait..."
+            });
+            loadMask.show();
+        }
 
         dropPanel.update(me.buildContentBlockTemplate(dropPanel, options));
 
@@ -810,7 +859,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         }
 
         iframe.on('load', function() {
-            loadMask.hide();
+            if (!me.saveDisabled)
+                loadMask.hide();
+
             var iframeNode = iframe.el.dom;
 
             //setup editable content listeners
@@ -865,14 +916,24 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
 
             // start resize interval for iframe
-            containerPanel.refershIntervals[uniqueId] = setInterval(function() {
+            containerPanel.refershIntervals[iframeNode.id] = setInterval(function() {
                 if (!iframeNode || !iframeNode.contentDocument || !iframeNode.contentDocument.body) {
-                    clearInterval(containerPanel.refershIntervals[uniqueId]);
+                    clearInterval(containerPanel.refershIntervals[iframeNode.id]);
                 } else {
-                    dropPanel.setHeight(iframeNode.contentDocument.body.offsetHeight);
-                    containerPanel.updateLayout();
+                    if (!containerPanel.rowHeights[iframeNode.id]) {
+                        containerPanel.rowHeights[iframeNode.id] = iframeNode.contentDocument.body.offsetHeight;
+                        dropPanel.setHeight(iframeNode.contentDocument.body.offsetHeight);
+                        containerPanel.updateLayout();
+                    } else if (containerPanel.rowHeights[iframeNode.id] !== iframeNode.contentDocument.body.offsetHeight) {
+                        containerPanel.rowHeights[iframeNode.id] = iframeNode.contentDocument.body.offsetHeight;
+                        dropPanel.setHeight(iframeNode.contentDocument.body.offsetHeight);
+                        containerPanel.updateLayout();
+                    }
                 }
             }, 300);
+
+            if (options.websiteSectionContentId)
+                Ext.Array.remove(me.contentToLoad, options.websiteSectionContentId);
         });
     },
 
@@ -975,13 +1036,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             parentContainer = draggedPanel.up('websitebuilderdropzonecontainer');
 
         if (draggedPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
-            if (dropPanel.replaceContentOfDraggedPanel) {
+            if (parentContainer.query('websitebuilderdropzone').length === 1) {
+                parentContainer.destroy();
+            } else {
                 parentContainer.insert(parentContainer.items.indexOf(draggedPanel), {
                     xtype: 'websitebuilderdropzone',
+                    componentType: 'content',
                     flex: 1
                 });
+                draggedPanel.destroy();
             }
-            draggedPanel.destroy();
         }
 
         me.updateLayout();
@@ -1054,6 +1118,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     addCurrentComponents: function() {
         var me = this;
+
         if (me.isThemeMode()) {
             var options = {
                 canViewSource: true,
@@ -1083,6 +1148,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             );
 
         } else {
+            var loadMask = new Ext.LoadMask(me, {
+                msg: "Please wait..."
+            });
+            loadMask.show();
+
+            me.saveDisabled = true;
+
             Compass.ErpApp.Utility.ajaxRequest({
                 url: '/knitkit/erp_app/desktop/website_builder/section_components',
                 method: 'GET',
@@ -1090,6 +1162,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     website_section_id: me.websiteSectionId
                 },
                 success: function(response) {
+
+
                     if (!Compass.ErpApp.Utility.isBlank(response.website_section_contents)) {
                         Ext.each(response.website_section_contents, function(columns) {
                             var componentContainer = me.add({
@@ -1099,18 +1173,38 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 items: []
                             });
 
+                            var componentType = null;
+                            if (columns.length == 1) {
+                                componentType = 'container';
+                            } else {
+                                componentType = 'content';
+                            }
+
                             Ext.each(columns, function(column) {
                                 var component = componentContainer.add({
                                     xtype: 'websitebuilderdropzone',
                                     flex: 1,
+                                    componentType: 'container',
                                     html: ''
                                 });
 
                                 me.loadContentBlock(component, {
                                     websiteSectionContentId: column.id
                                 });
+
+                                me.contentToLoad.push(column.id);
                             });
                         });
+
+                        // wait for all content to load
+                        var loadInterval = setInterval(function() {
+                            if (me.contentToLoad.length === 0) {
+                                clearInterval(loadInterval);
+                                me.saveDisabled = false;
+                                loadMask.hide();
+                            }
+
+                        }, 500);
                     }
                 }
             });

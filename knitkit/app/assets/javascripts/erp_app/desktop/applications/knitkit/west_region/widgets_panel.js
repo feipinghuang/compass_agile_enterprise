@@ -80,7 +80,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel", {
                                     sourceEl: sourceEl,
                                     repairXY: Ext.fly(sourceEl).getXY(),
                                     sourceStore: dataView.store,
-                                    widgetName: draggedRecord.get('name')
+                                    widgetName: draggedRecord.get('name'),
+                                    componentType: 'widget'
                                 };
                             }
                         },
