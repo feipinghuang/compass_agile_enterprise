@@ -25,7 +25,7 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
 
-      add_index :website_hosts, :website_id
+      add_index :website_hosts, :website_id, :name => 'website_hosts_website_idx'
     end
 
     # website_inquiries
@@ -41,7 +41,7 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
 
-      add_index :website_inquiries, :website_id
+      add_index :website_inquiries, :website_id, name: 'inquiry_website_idx'
       add_index :website_inquiries, :created_by_id, :name => 'inquiry_created_by_idx'
     end
 
@@ -70,19 +70,19 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
       #indexes
-      add_index :website_sections, :permalink
-      add_index :website_sections, :website_id
-      add_index :website_sections, :position
-      add_index :website_sections, :parent_id
-      add_index :website_sections, :lft
-      add_index :website_sections, :rgt
-      add_index :website_sections, :version
-      add_index :website_sections, :internal_identifier, :name => 'section_iid_idx'
+      add_index :website_sections, :permalink, name: 'ws_permalink_idx'
+      add_index :website_sections, :website_id, name: 'ws_website_id_idx'
+      add_index :website_sections, :position, name: 'ws_position_idx'
+      add_index :website_sections, :parent_id, name: 'ws_parent_id_idx'
+      add_index :website_sections, :lft, name: 'ws_lft_idx'
+      add_index :website_sections, :rgt, name: 'ws_rgt_idx'
+      add_index :website_sections, :version, name: 'ws_version_idx'
+      add_index :website_sections, :internal_identifier, :name => 'ws_iid_idx'
 
       WebsiteSection.create_versioned_table
 
-      add_index :website_section_versions, :website_id, :name => 'website_section_versions_website_id_idx'
-      add_index :website_section_versions, :internal_identifier, :name => 'website_section_versions_internal_identifier_idx'
+      add_index :website_section_versions, :website_id, :name => 'ws_versions_website_id_idx'
+      add_index :website_section_versions, :internal_identifier, :name => 'ws_versions_internal_identifier_idx'
     end
 
     # contents
@@ -102,11 +102,11 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
       #indexes
-      add_index :contents, :type
-      add_index :contents, :created_by_id
-      add_index :contents, :updated_by_id
-      add_index :contents, :permalink
-      add_index :contents, :version
+      add_index :contents, :type, :internal_identifier, :name => 'contents_iid_idx'
+      add_index :contents, :created_by_id, :internal_identifier, :name => 'contents_created_by_id_idx'
+      add_index :contents, :updated_by_id, :internal_identifier, :name => 'contents_updated_by_id_idx'
+      add_index :contents, :permalink, :internal_identifier, :name => 'contents_permalink_idx'
+      add_index :contents, :version, :internal_identifier, :name => 'contents_version_idx'
       add_index :contents, :internal_identifier, :name => 'contents_iid_idx'
 
       Content.create_versioned_table
@@ -127,10 +127,10 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
       #indexes
-      add_index :website_section_contents, :website_section_id
-      add_index :website_section_contents, :content_id
-      add_index :website_section_contents, :position
-      add_index :website_section_contents, :content_area
+      add_index :website_section_contents, :website_section_id, :name => 'wsc_ws_id_idx'
+      add_index :website_section_contents, :content_id, :name => 'wsc_content_id_idx'
+      add_index :website_section_contents, :position, :name => 'wsc_position_idx'
+      add_index :website_section_contents, :content_area, :name => 'wsc_content_area_idx'
     end
 
     # themes
@@ -148,8 +148,8 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
       #indexes
-      add_index :themes, :website_id
-      add_index :themes, :active
+      add_index :themes, :website_id, :content_area, :name => 'theme_content_area_idx'
+      add_index :themes, :active, :content_area, :name => 'theme_active_idx'
     end
 
     # published_websites
