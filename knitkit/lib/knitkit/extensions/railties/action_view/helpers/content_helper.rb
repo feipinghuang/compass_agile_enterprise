@@ -30,34 +30,28 @@ module Knitkit
 
               website_section_contents.group_by(&:position).values.each do |row|
 
-                if row.count == 1
-                  website_section_content = row.first
+                content = content_tag :div, class: 'container' do
 
-                  content = raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
-                else
-                  content = content_tag :div, class: 'container' do
+                  content_tag :div, class: 'row' do
 
-                    content_tag :div, class: 'row' do
+                    inner_buffer = ::ActionView::OutputBuffer.new
 
-                      inner_buffer = ::ActionView::OutputBuffer.new
+                    row.each do |website_section_content|
 
-                      row.each do |website_section_content|
+                      innner_content = content_tag :div, class: "col-md-#{(12/row.count)}" do
 
-                        innner_content = content_tag :div, class: "col-md-#{(12/row.count)}" do
+                        raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
 
-                          raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
+                      end # col
 
-                        end # col
+                      inner_buffer << innner_content
+                    end
 
-                        inner_buffer << innner_content
-                      end
+                    raw inner_buffer
 
-                      raw inner_buffer
+                  end # row
 
-                    end # row
-
-                  end # container
-                end
+                end # container
 
                 buffer << content
               end # each row

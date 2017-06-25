@@ -13,7 +13,7 @@ module Knitkit
           if params[:is_theme].to_bool
             components = Component.where(Component.matches_is_json('custom_data', 'header', 'component_type',).or(Component.matches_is_json('custom_data', 'footer', 'component_type')))
           else
-            components = Component.where(Component.matches_is_json('custom_data', 'container_section', 'component_type',).or(Component.matches_is_json('custom_data', 'content_section', 'component_type')))
+            components = Component.where(Component.matches_is_json('custom_data', 'content_section', 'component_type'))
           end
 
           render json: {
@@ -36,10 +36,10 @@ module Knitkit
           if params[:website_section_content_id]
             website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
 
-            render inline: website_section_content.builder_html, layout: 'knitkit/base'
+            render inline: wrap_in_row(website_section_content.builder_html), layout: 'knitkit/base'
 
           elsif params[:component_iid]
-            render template: "/components/#{params[:component_iid]}", layout: 'knitkit/base'
+            render inline: wrap_in_row(render_to_string template: "/components/#{params[:component_iid]}"), layout: 'knitkit/base'
 
           else
             render inline: '<script>function loadMe(html){$("body").append($($.parseHTML(html, document, true))); $(".widget-place-holder").remove();}</script><div class="widget-place-holder" style="min-height:100px;"></div>', layout: 'knitkit/base'
@@ -66,10 +66,10 @@ module Knitkit
 
                   # get the current list of website_section_contents as any ones that are not passed will be deleted
                   current_website_section_contents = website_section.website_section_contents
-          
+
                   contents_data.each do |data|
                     data = Hash.symbolize_keys(data)
-         
+
                     if data[:website_section_content_id]
                       website_section_content = WebsiteSectionContent.find(data[:website_section_content_id])
 
@@ -265,6 +265,22 @@ module Knitkit
 
         def set_website_section
           @website_section = WebsiteSection.find(params[:id])
+        end
+
+        def wrap_in_row(html)
+          view = ActionView::Base.new
+
+          content = view.content_tag :div, class: 'container' do
+
+            view.content_tag :div, class: 'row' do
+
+              view.content_tag(:div, html.html_safe, class: "col-md-12")
+
+            end # row
+
+          end # container
+
+          view.raw content
         end
 
       end # WebsitesController
