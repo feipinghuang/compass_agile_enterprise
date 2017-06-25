@@ -936,7 +936,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             editableElement.on('click', function(event) {
                 event.preventDefault();
 
-                var contentEditableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
+                var contentEditableElements = [];
+
+                jQuery.each(jQuery('iframe'), function(index, iframe) {
+                    contentEditableElements = contentEditableElements.concat(Ext.get(iframe.contentDocument.documentElement).query("[data-selector]"));
+                });
+
                 Ext.Array.each(contentEditableElements, function(element) {
                     me.removeEditable(element);
                     me.deHighlightElement(element);
