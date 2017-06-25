@@ -8,6 +8,7 @@ Rails.application.routes.draw do
 
         member do
           put :update_status
+          get :parties
         end
       end
 
