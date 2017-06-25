@@ -1,3 +1,4 @@
+# This migration comes from knitkit (originally 20110211002317)
 class SetupKnitkit < ActiveRecord::Migration
   def self.up
 
@@ -102,11 +103,11 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
       #indexes
-      add_index :contents, :type, :internal_identifier, :name => 'contents_iid_idx'
-      add_index :contents, :created_by_id, :internal_identifier, :name => 'contents_created_by_id_idx'
-      add_index :contents, :updated_by_id, :internal_identifier, :name => 'contents_updated_by_id_idx'
-      add_index :contents, :permalink, :internal_identifier, :name => 'contents_permalink_idx'
-      add_index :contents, :version, :internal_identifier, :name => 'contents_version_idx'
+      add_index :contents, :type, :name => 'contents_type_idx'
+      add_index :contents, :created_by_id, :name => 'contents_created_by_id_idx'
+      add_index :contents, :updated_by_id, :name => 'contents_updated_by_id_idx'
+      add_index :contents, :permalink, :name => 'contents_permalink_idx'
+      add_index :contents, :version, :name => 'contents_version_idx'
       add_index :contents, :internal_identifier, :name => 'contents_iid_idx'
 
       Content.create_versioned_table
@@ -148,8 +149,8 @@ class SetupKnitkit < ActiveRecord::Migration
         t.timestamps
       end
       #indexes
-      add_index :themes, :website_id, :content_area, :name => 'theme_content_area_idx'
-      add_index :themes, :active, :content_area, :name => 'theme_active_idx'
+      add_index :themes, :website_id, :name => 'theme_content_area_idx'
+      add_index :themes, :active, :name => 'theme_active_idx'
     end
 
     # published_websites
