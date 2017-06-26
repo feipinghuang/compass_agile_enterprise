@@ -754,7 +754,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                                                 me.loadContentBlock(
                                                     component, {
-                                                        websiteSectionContentId: uniqueId
+                                                        websiteSectionContentId: dropPanel.websiteSectionContentId
                                                     }
                                                 );
 
@@ -796,7 +796,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                                         me.saveComponentSource(content, {
                                                 templateType: templateType,
-                                                websiteSectionContentId: uniqueId
+                                                websiteSectionContentId: dropPanel.websiteSectionContentId
                                             },
                                             function() {
                                                 myMask.hide();
