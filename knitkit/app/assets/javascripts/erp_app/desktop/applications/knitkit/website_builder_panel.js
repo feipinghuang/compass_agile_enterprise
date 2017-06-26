@@ -42,6 +42,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     matchWebsiteSectionContents: {},
     saveDisabled: false,
     contentToLoad: [],
+    mediumEditors: [],
 
     beforeLayout: function() {
         var me = this;
@@ -1047,43 +1048,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         element.cursor = 'pointer';
     },
 
-    enableMediumEditor: function(element, websiteBuilderEditConfig) {
-        rangy.init();
-
-        var HighlighterButton = MediumEditor.extensions.button.extend({
-            name: 'highlighter',
-            tagNames: ['mark'], // nodeName which indicates the button should be 'active' when isAlreadyApplied() is called
-            contentDefault: '<b>H</b>', // default innerHTML of the button
-            contentFA: '<i class="fa fa-paint-brush"></i>', // innerHTML of button when 'fontawesome' is being used
-            aria: 'Hightlight', // used as both aria-label and title attributes
-            action: 'highlight', // used as the data-action attribute of the button
-            iframeWin: {},
-            init: function() {
-                MediumEditor.extensions.button.prototype.init.call(this);
-                this.classApplier = rangy.createClassApplier('highlight', {
-                    elementTagName: 'mark',
-                    normalize: true
-                });
-                this.iframeWin = rangy.dom.getIframeWindow(this.window.frameElement);
-            },
-            handleClick: function(event) {
-                this.classApplier.toggleSelection(this.iframeWin);
-                return false;
+    addMediumEditor: function(element, websiteBuilderEditConfig) {
+        var theWindow = element.ownerDocument.defaultView,
+            theDoc = element.ownerDocument;
+        var editor = new MediumEditor(element, {
+            ownerDocument: theDoc,
+            contentWindow: theWindow,
+            buttonLabels: 'fontawesome',
+            toolbar: {
+                buttons: websiteBuilderEditConfig.mediumButtons
             }
         });
 
-        if (!element.hasAttribute('medium-editor-index')) {
-            var theWindow = element.ownerDocument.defaultView,
-                theDoc = element.ownerDocument,
-                editor = new MediumEditor(element, {
-                    ownerDocument: theDoc,
-                    contentWindow: theWindow,
-                    buttonLabels: 'fontawesome',
-                    toolbar: {
-                        buttons: websiteBuilderEditConfig.mediumButtons
-                    }
-                });
-        }
+        this.mediumEditors.push(editor);
     },
 
     addCurrentComponents: function() {
@@ -1235,7 +1212,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         if (dataSelector == '.editContent') {
             me.makeEditable(element);
-            me.enableMediumEditor(element, websiteBuilderEditConfig);
+            me.addMediumEditor(element, websiteBuilderEditConfig);
         }
 
         Ext.Array.each(editableItems, function(editableAttr) {
