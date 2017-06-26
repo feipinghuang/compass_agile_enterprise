@@ -126,6 +126,83 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         return false;
     },
 
+    editSaveSectionSource: function(websiteId, websiteSectionId, source, codeMirrorComp) {
+        var me = this;
+
+        me.setWindowStatus('Saving...');
+
+        Ext.Ajax.request({
+            url: '/knitkit/erp_app/desktop/website_builder/save_section_source',
+            method: 'POST',
+            params: {
+                id: websiteId,
+                website_section_id: websiteSectionId,
+                source: source
+            },
+            success: function(response) {
+                me.clearWindowStatus();
+
+                var obj = Ext.decode(response.responseText);
+
+                if (!obj.success) {
+                    Ext.Msg.error('Error', obj.message);
+                }
+
+                codeMirrorComp.focus();
+            },
+            failure: function(response) {
+                me.clearWindowStatus();
+                Ext.Msg.error('Error', 'Error saving source');
+            }
+        });
+    },
+
+    editSectionSource: function(sectionName, websiteId, websiteSectionId, content) {
+        var self = this;
+        var itemId = 'section-' + websiteSectionId;
+        var item = this.workArea.query('#' + itemId).first();
+
+        if (Compass.ErpApp.Utility.isBlank(item)) {
+            item = Ext.create("Ext.panel.Panel", {
+                layout: 'border',
+                title: sectionName,
+                save: function(comp) {
+                    var codeMirrorComp = comp.down('codemirror');
+                    var content = codeMirrorComp.getValue();
+                    self.saveSectionLayout(websiteId, websiteSectionId, content, codeMirrorComp);
+                },
+                closable: true,
+                itemId: itemId,
+                items: [{
+                    title: sectionName + ' - Source',
+                    disableSave: true,
+                    listeners: {
+                        save: function(codeMirrorComp, content) {
+                            self.saveSectionLayout(websiteId, websiteSectionId, content, codeMirrorComp);
+                        }
+                    },
+                    xtype: 'codemirror',
+                    mode: 'rhtml',
+                    region: 'center',
+                    sourceCode: content
+                }, {
+                    xtype: 'knitkit_versionswebsitesectiongridpanel',
+                    websiteSectionId: websiteSectionId,
+                    region: 'south',
+                    height: 150,
+                    collapsible: true,
+                    centerRegion: self,
+                    siteId: websiteId
+                }]
+            });
+
+            this.workArea.add(item);
+        }
+
+        this.workArea.setActiveTab(item);
+        return false;
+    },
+
     /* documentation using markdown */
 
     saveDocumentationMarkdown: function(id, comp, content, siteId) {

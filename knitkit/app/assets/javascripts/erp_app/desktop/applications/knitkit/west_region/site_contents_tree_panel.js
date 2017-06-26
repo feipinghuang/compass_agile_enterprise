@@ -11,6 +11,7 @@ Ext.define('SiteContentsModel', {
         'display_title',
         'leaf',
         'isSection',
+        'source_enabled',
         'isDocument',
         'contentInfo',
         'content_area',
@@ -228,7 +229,29 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                     }]);
             },
             failure: function(response) {
-                Ext.Msg.alert('Error', 'Error loading section layout.');
+                Ext.Msg.error('Error', 'Error loading section layout.');
+            }
+        });
+    },
+
+    editSectionSource: function(sectionName, sectionId, websiteId) {
+        var self = this;
+
+        Ext.Ajax.request({
+            url: '/knitkit/erp_app/desktop/section/enable_source_edit',
+            method: 'put',
+            params: {
+                id: sectionId
+            },
+            success: function(response) {
+                self.initialConfig['centerRegion'].editSectionSource(
+                    sectionName,
+                    websiteId,
+                    sectionId,
+                    response.responseText, []);
+            },
+            failure: function(response) {
+                Ext.Msg.error('Error', 'Error loading section source');
             }
         });
     },
@@ -257,7 +280,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
             e.stopEvent();
 
             if (record.data['isSection']) {
-                self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId, self.theme);
+                if (record.get('source_enabled')) {
+                    self.editSectionLayout(record.data.text, record.data.recordId, record.data['siteId']);
+                } else {
+                    self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId, self.theme);
+                }
+
             } else if (record.data['objectType'] === "Article") {
                 url = '/knitkit/erp_app/desktop/articles/show/' + record.get('recordId');
 

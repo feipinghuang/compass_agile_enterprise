@@ -7,6 +7,7 @@ require 'html_truncator'
 require 'visual_captcha'
 require 'kramdown'
 require 'routing_filter'
+require 'htmlbeautifier'
 
 require 'knitkit/extensions'
 require "knitkit/version"

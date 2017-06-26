@@ -208,6 +208,42 @@ class WebsiteSection < ActiveRecord::Base
     section_hash
   end
 
+  def to_html
+    view = ActionView::Base.new
+    buffer = ::ActionView::OutputBuffer.new
+
+    website_section_contents = self.website_section_contents.order("position, col")
+
+    website_section_contents.group_by(&:position).values.each do |row|
+
+      content = view.content_tag :div, class: 'container' do
+
+        view.content_tag :div, class: 'row' do
+
+          inner_buffer = ::ActionView::OutputBuffer.new
+
+          row.each do |website_section_content|
+
+            innner_content = view.content_tag :div, class: "col-md-#{(12/row.count)}" do
+
+              view.raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
+
+            end # col
+
+            inner_buffer << innner_content
+          end
+
+          view.raw inner_buffer
+
+        end # row
+
+      end # container
+
+      buffer << content
+    end # each row
+
+    buffer
+  end
 
   protected
 

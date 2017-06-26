@@ -24,40 +24,7 @@ module Knitkit
             end
 
             def render_section(website_section)
-              buffer = ::ActionView::OutputBuffer.new
-
-              website_section_contents = website_section.website_section_contents.order("position, col")
-
-              website_section_contents.group_by(&:position).values.each do |row|
-
-                content = content_tag :div, class: 'container' do
-
-                  content_tag :div, class: 'row' do
-
-                    inner_buffer = ::ActionView::OutputBuffer.new
-
-                    row.each do |website_section_content|
-
-                      innner_content = content_tag :div, class: "col-md-#{(12/row.count)}" do
-
-                        raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
-
-                      end # col
-
-                      inner_buffer << innner_content
-                    end
-
-                    raw inner_buffer
-
-                  end # row
-
-                end # container
-
-                buffer << content
-              end # each row
-
-
-              render inline: buffer
+              render inline: website_section.to_html
             end
 
             # render a piece of content by internal identifier regardless if it belongs to a section or not
