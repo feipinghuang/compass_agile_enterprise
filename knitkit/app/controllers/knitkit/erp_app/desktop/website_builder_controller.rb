@@ -3,29 +3,35 @@ module Knitkit
     module Desktop
       class WebsiteBuilderController < Knitkit::ErpApp::Desktop::AppController
 
-        before_filter :set_website, :only => [:save_website, :active_website_theme, :render_component, :render_layout_file, :save_component_source]
+        before_filter :set_website, :only => [:components, :save_website, :active_website_theme, :render_component, :render_layout_file, :save_component_source]
 
         acts_as_themed_controller website_builder: true
 
         skip_before_filter :add_theme_view_paths, except: [:render_component, :widget_source]
 
         def components
+          theme = @website.themes.active.first
+
+          components = []
+
           if params[:is_theme].to_bool
-            components = Component.where(Component.matches_is_json('custom_data', 'header', 'component_type',).or(Component.matches_is_json('custom_data', 'footer', 'component_type')))
+            components << theme.block_templates(:header)
+            components << theme.block_templates(:footer)
+            components.flatten!
           else
-            components = Component.where(Component.matches_is_json('custom_data', 'content_section', 'component_type'))
+            components = theme.block_templates(:content)
           end
 
           render json: {
             success: true,
-            components: components.to_data_hash
+            components: components
           }
         end
 
         def active_website_theme
           render json: {
             success: true,
-            theme: (current_theme.to_data_hash rescue "")
+            theme: (@website.themes.active.first.to_data_hash rescue "")
           }
         end
 
@@ -38,11 +44,12 @@ module Knitkit
 
             render inline: wrap_in_row(website_section_content.builder_html), layout: 'knitkit/base'
 
-          elsif params[:component_iid]
-            render inline: wrap_in_row(render_to_string template: "/components/#{params[:component_iid]}"), layout: 'knitkit/base'
+          elsif params[:component_name]
+            render inline: wrap_in_row(render_to_string template: "/components/#{params[:component_type]}/#{params[:component_name]}"), layout: 'knitkit/base'
 
           else
             render inline: '<script>function loadMe(html){$("body").append($($.parseHTML(html, document, true))); $(".widget-place-holder").remove();}</script><div class="widget-place-holder" style="min-height:100px;"></div>', layout: 'knitkit/base'
+
           end
         end
 
@@ -133,17 +140,15 @@ module Knitkit
             if params[:website_section_content_id]
               website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
 
-              is_content_saved = true
-              html_content =website_section_content.website_html
-            else
-              component = Component.where(internal_identifier: params[:component_iid]).first
+              html_content = website_section_content.website_html
 
-              is_content_saved = true
-              template_type = component.internal_identifier.match(/^(header|footer)/)[0]
+            else
               theme = website.themes.first
+
               file_support = ErpTechSvcs::FileSupport::Base.new(
                 storage: Rails.application.config.erp_tech_svcs.file_storage
               )
+
               path = File.join(
                 file_support.root,
                 'public',
@@ -154,21 +159,19 @@ module Knitkit
                 'templates',
                 'shared',
                 'knitkit',
-                "_#{template_type}.html.erb"
+                "_#{params[:component_name]}.html.erb"
               )
+
               html_content = file_support.get_contents(path).first
+
             end
 
-            if is_content_saved
-              render json: {
-                success: true,
-                component: {
-                  html: html_content,
-                }
+            render json: {
+              success: true,
+              component: {
+                html: html_content,
               }
-            else
-              render json: {success: false}
-            end
+            }
 
           rescue Exception => ex
             Rails.logger.error ex.message
@@ -250,14 +253,6 @@ module Knitkit
         end
 
         private
-
-        def find_component(component_id)
-          Content.where(internal_identifier: component_id).first
-        end
-
-        def current_theme
-          @theme ||=@website.themes.active.first
-        end
 
         def set_website
           @website = Website.find(params[:id])

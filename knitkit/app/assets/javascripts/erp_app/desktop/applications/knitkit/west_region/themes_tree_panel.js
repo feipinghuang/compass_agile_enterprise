@@ -219,8 +219,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             save: function(comp) {
                 centerPanel.setWindowStatus("Saving...");
 
-                var headerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='header']").first(),
-                    footerComp = comp.query("[cls=websitebuilder-component-panel][componentId^='footer']").first();
+                var headerComp = comp.query("[cls=websitebuilder-component-panel][componentType^='header']").first(),
+                    footerComp = comp.query("[cls=websitebuilder-component-panel][componentType^='footer']").first();
 
                 var headerHTML = null,
                     footerHTML = null;
@@ -235,55 +235,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                     footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
                 }
 
-                var params = {};
-
-                if (!Compass.ErpApp.Utility.isBlank(headerHTML)) {
-                    var headerConfig = comp.getThemeLayoutConfig('header');
-                    params.header = Ext.encode({
-                        source: headerHTML,
-                        component_iid: headerConfig.iid,
-                        component_height: headerConfig.height
-                    });
-                }
-
-                if (!Compass.ErpApp.Utility.isBlank(footerHTML)) {
-                    var footerConfig = comp.getThemeLayoutConfig('footer');
-                    params.footer = Ext.encode({
-                        source: footerHTML,
-                        component_iid: footerConfig.iid,
-                        component_height: footerConfig.height
-                    });
-                }
-
                 Compass.ErpApp.Utility.ajaxRequest({
                     url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',
                     method: 'PUT',
-                    params: params,
+                    params: {
+                        headerSource: headerHTML,
+                        footerSource: footerHTML
+                    },
                     success: function(response) {
                         centerPanel.clearWindowStatus();
-                        // update website builder config
-                        if (response.result.header) {
-
-                            comp.addThemeLayoutConfig('header', {
-                                iid: response.result.header.component_iid,
-                                height: response.result.header.component_height
-                            });
-
-                            node.set('headerComponentIid', response.result.header.component_iid);
-                            node.set('headerComponentHeight', response.result.header.component_height);
-                            node.commit();
-                        }
-
-                        if (response.result.footer) {
-                            comp.addThemeLayoutConfig('footer', {
-                                iid: response.result.footer.component_iid,
-                                height: response.result.footer.component_height
-                            });
-                            node.set('footerComponentIid', response.result.footer.component_iid);
-                            node.set('footerComponentheight', response.result.footer.component_height);
-                            node.commit();
-                        }
-
                     }
                 });
             }

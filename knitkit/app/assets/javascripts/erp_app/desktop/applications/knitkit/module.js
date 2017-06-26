@@ -61,7 +61,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         // get only the data for the website
         website = website.data;
 
-
         var self = this,
             desktop = self.app.getDesktop(),
             win = desktop.getWindow('knitkit'),

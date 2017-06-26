@@ -334,7 +334,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             repairXY: element.getEl().getXY(),
                             ddel: dragElDom,
                             websiteSectionContentId: element.websiteSectionContentId,
-                            componentIid: element.componentIid,
+                            componentName: element.componentName,
                             componentType: element.componentType,
                             isMove: true
                         };
@@ -404,17 +404,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             dropPanel.componentType = 'widget';
 
                         } else {
-                            if (me.isThemeMode()) {
-                                me.loadContentBlock(dropPanel, {
-                                    templateType: data.componentIid
-                                });
-
-                            } else {
-                                me.loadContentBlock(dropPanel, {
-                                    componentIid: data.componentIid
-                                });
-
-                            }
+                            me.loadContentBlock(dropPanel, {
+                                componentName: data.componentName,
+                                componentType: data.componentType
+                            });
 
                             me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
                         }
@@ -608,18 +601,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             canMove = (options.canMove === undefined) ? true : options.canMove,
             canRemove = (options.canRemove === undefined) ? true : options.canRemove,
             templateType = options.templateType,
-            componentIid = options.componentIid,
+            componentName = options.componentName,
+            componentType = options.componentType,
             websiteSectionContentId = options.websiteSectionContentId,
             url = null;
 
-        if (templateType == 'header' || templateType == 'footer') {
-            url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_type=' + templateType;
+        if (componentName) {
+            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?component_type=' + componentType + '&component_name=' + componentName + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId;
 
         } else if (websiteSectionContentId) {
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html?website_section_content_id=' + websiteSectionContentId + '&id=' + websiteId;
 
-        } else if (componentIid) {
-            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?component_iid=' + componentIid + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId;
+        } else if (templateType == 'header' || templateType == 'footer') {
+            url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&template_type=' + templateType;
 
         } else {
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html?id=' + websiteId;
@@ -887,7 +881,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                 });
             } else {
-                me.saveComponents();
+                if (!me.isThemeMode())
+                    me.saveComponents();
             }
 
             //disable navagation links
@@ -1097,24 +1092,30 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             };
 
             me.add(
-                [
-                    me.buildLayoutConfig('header', options), {
-                        xtype: 'component',
-                        flex: 1,
-                        cls: '',
-                        style: {
-                            'text-align': 'center',
-                            'font-size': '20px',
-                            'font-weight': 'bold',
-                            'border': '1px solid grey',
-                            'padding': '50px',
-                            'margin': '25px'
-                        },
-                        html: '<div>Contents</div>'
-
+                [{
+                    xtype: 'websitebuilderdropzonecontainer',
+                    cls: 'dropzone-container',
+                    layout: 'hbox',
+                    items: [me.buildLayoutConfig('header', options)]
+                }, {
+                    flex: 1,
+                    cls: '',
+                    style: {
+                        'text-align': 'center',
+                        'font-size': '20px',
+                        'font-weight': 'bold',
+                        'border': '1px solid grey',
+                        'padding': '50px',
+                        'margin': '25px'
                     },
-                    me.buildLayoutConfig('footer', options)
-                ]
+                    html: '<div>Contents</div>'
+
+                }, {
+                    xtype: 'websitebuilderdropzonecontainer',
+                    cls: 'dropzone-container',
+                    layout: 'hbox',
+                    items: [me.buildLayoutConfig('footer', options)]
+                }]
             );
 
         } else {
@@ -1132,8 +1133,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     website_section_id: me.websiteSectionId
                 },
                 success: function(response) {
-
-
                     if (!Compass.ErpApp.Utility.isBlank(response.website_section_contents)) {
                         Ext.each(response.website_section_contents, function(columns) {
                             var componentContainer = me.add({
@@ -1142,13 +1141,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 layout: 'hbox',
                                 items: []
                             });
-
-                            var componentType = null;
-                            if (columns.length == 1) {
-                                componentType = 'container';
-                            } else {
-                                componentType = 'content';
-                            }
 
                             Ext.each(columns, function(column) {
                                 var component = componentContainer.add({
@@ -1194,9 +1186,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var layoutCompConfig = null;
 
         layoutCompConfig = {
-            xtype: 'component',
+            xtype: 'websitebuilderdropzone',
             isLayout: true,
-            cls: 'websitebuilder-component-panel',
+            flex: 1,
+            componentType: templateType,
             listeners: {
                 render: function(comp) {
                     me.loadContentBlock(comp, Ext.apply(options, {
