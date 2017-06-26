@@ -1202,7 +1202,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         if (dataSelector == '.editContent') {
             me.makeEditable(element);
-            me.addMediumEditor(element, websiteBuilderEditConfig);
+            //me.addMediumEditor(element, websiteBuilderEditConfig);
+            $(element).focus();
         }
 
         Ext.Array.each(editableItems, function(editableAttr) {
