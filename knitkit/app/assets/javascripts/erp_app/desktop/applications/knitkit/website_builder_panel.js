@@ -42,7 +42,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     matchWebsiteSectionContents: {},
     saveDisabled: false,
     contentToLoad: [],
-    mediumEditors: [],
 
     beforeLayout: function() {
         var me = this;
@@ -1059,8 +1058,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 buttons: websiteBuilderEditConfig.mediumButtons
             }
         });
-
-        this.mediumEditors.push(editor);
     },
 
     addCurrentComponents: function() {
