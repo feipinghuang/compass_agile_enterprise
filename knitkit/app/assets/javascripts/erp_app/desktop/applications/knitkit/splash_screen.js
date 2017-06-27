@@ -82,7 +82,20 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SplashScreen", {
                                                     fieldLabel: 'Sub Title',
                                                     allowBlank: true,
                                                     name: 'subtitle'
-                                                }]
+                                                }],
+                                                listeners: {
+                                                    'render': function(form) {
+                                                        Ext.Ajax.request({
+                                                            url: '/knitkit/erp_app/desktop/site/get_current_host',
+                                                            success: function(response) {
+                                                                var obj = Ext.decode(response.responseText);
+                                                                if (obj.success) {
+                                                                    form.down('[name=host]').setValue(obj.host);
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                }
                                             }),
                                             buttons: [{
                                                 text: 'Submit',
