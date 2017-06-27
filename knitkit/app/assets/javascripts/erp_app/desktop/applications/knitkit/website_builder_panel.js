@@ -1204,6 +1204,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             me.makeEditable(element);
             //me.addMediumEditor(element, websiteBuilderEditConfig);
             $(element).focus();
+
+            $(element).off('keydown', me.editContentKeydownListener);
+            $(element).on('keydown', me.editContentKeydownListener);
         }
 
         Ext.Array.each(editableItems, function(editableAttr) {
@@ -1262,6 +1265,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         });
 
         propertiesEditFormPanel.down('#componentPropertiesSaveButton').show();
+    },
+
+    editContentKeydownListener: function(e) {
+        if (e.keyCode === 13) {
+            e.view.document.execCommand('insertHTML', false, '<br><br>');
+            // prevent the default behaviour of return key pressed
+            return false;
+        }
     },
 
     isThemeMode: function() {
