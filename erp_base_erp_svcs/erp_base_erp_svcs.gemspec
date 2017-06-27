@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Rick Koloski, Russell Holmes"]
   s.email       = ["russonrails@gmail.com"]
   s.homepage    = "http://development.compassagile.com"
-  
+
   s.files       = Dir["{public,app,config,db,lib,tasks}/**/*"] + ["GPL-3-LICENSE", "Rakefile", "README.md"]
   s.test_files  = Dir["spec/**/*"]
 
@@ -34,5 +34,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "spork", "~> 0.9"
   s.add_development_dependency "sqlite3", "~> 1.3"
   s.add_development_dependency "watchr", "~> 0.7"
+  s.add_dependency "acts_as_list", "~> 0.9.5"
 
 end
