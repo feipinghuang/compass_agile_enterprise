@@ -730,13 +730,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     text: 'Save & Show Design View',
                                     iconCls: 'icon-save',
                                     handler: function(btn) {
-                                        var myMask = new Ext.LoadMask(me, {
-                                            msg: "Please wait..."
-                                        });
-                                        myMask.show();
-
+                                        var centerRegion = Ext.getCmp('knitkitCenterRegion');
+                                        centerRegion.setWindowStatus('Saving...');
                                         var componentSource = btn.up('codemirror').codeMirrorInstance.getValue();
-
+                                        
                                         me.saveComponentSource(componentSource, {
                                                 templateType: templateType,
                                                 websiteSectionContentId: dropPanel.websiteSectionContentId
@@ -757,8 +754,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                                         websiteSectionContentId: dropPanel.websiteSectionContentId
                                                     }
                                                 );
-
-                                                myMask.hide();
+                                                centerRegion.clearWindowStatus();
                                             },
                                             function() {
                                                 myMask.hide();
@@ -789,20 +785,18 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 }],
                                 listeners: {
                                     save: function(codemirror, content) {
-                                        var myMask = new Ext.LoadMask(me, {
-                                            msg: "Please wait..."
-                                        });
-                                        myMask.show();
-
-                                        me.saveComponentSource(content, {
+                                        var centerRegion = Ext.getCmp('knitkitCenterRegion');
+                                        centerRegion.setWindowStatus('Saving...');
+                                        me.saveComponentSource(
+                                            content, {
                                                 templateType: templateType,
                                                 websiteSectionContentId: dropPanel.websiteSectionContentId
                                             },
                                             function() {
-                                                myMask.hide();
+                                                centerRegion.clearWindowStatus();
                                             },
                                             function() {
-                                                myMask.hide();
+                                                centerRegion.clearWindowStatus();
                                             }
                                         );
                                     }
@@ -1179,7 +1173,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     buildPropertiesEditForm: function(element) {
         var me = this,
             dataSelector = element.getAttribute('data-selector'),
-            websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config,
+            websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config
             editableItems = websiteBuilderEditConfig.editableItems[dataSelector],
             propertiesEditFormPanel = Ext.ComponentQuery.query("knitkitcomponentpropertiesformpanel").first(),
             eastRegionPanel = propertiesEditFormPanel.up('knitkit_eastregion'),
@@ -1204,9 +1198,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             me.makeEditable(element);
             //me.addMediumEditor(element, websiteBuilderEditConfig);
             $(element).focus();
-
+            
             $(element).off('keydown', me.editContentKeydownListener);
-            $(element).on('keydown', me.editContentKeydownListener);
+            $(element).on('keydown', {websiteBuilderPanelId: me.id}, me.editContentKeydownListener);
         }
 
         Ext.Array.each(editableItems, function(editableAttr) {
@@ -1268,9 +1262,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     },
 
     editContentKeydownListener: function(e) {
+        var me = Ext.getCmp(e.data.websiteBuilderPanelId);
         if (e.keyCode === 13) {
             e.view.document.execCommand('insertHTML', false, '<br><br>');
             // prevent the default behaviour of return key pressed
+            return false;
+        } else if ((e.ctrlKey || e.metaKey) && (e.keyCode == 83)) {
+            if(me.initialConfig.save)
+                me.initialConfig.save(me);
             return false;
         }
     },
