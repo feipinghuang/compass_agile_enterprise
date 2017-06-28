@@ -204,6 +204,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             itemId: 'themeBuilder' + node.get('id'),
             closable: true,
             isForTheme: true,
+            themeId: node.get('id'),
             themeLayoutConfig: {
                 themeId: node.get('id'),
                 header: {
@@ -219,38 +220,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
             save: function(comp) {
                 centerPanel.setWindowStatus("Saving...");
 
-                var headerComp = comp.query("[cls=websitebuilder-component-panel][componentType^='header']").first(),
-                    footerComp = comp.query("[cls=websitebuilder-component-panel][componentType^='footer']").first();
-
-                var headerHTML = null,
-                    footerHTML = null;
-
-                if (headerComp) {
-                    var headerFrame = headerComp.getEl().down('.iframe-container > iframe').el.dom;
-                    headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
-                }
-
-                if (footerComp) {
-                    var footerFrame = footerComp.getEl().down('.iframe-container > iframe').el.dom;
-                    footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
-                }
-
-                Compass.ErpApp.Utility.ajaxRequest({
-                    url: '/knitkit/erp_app/desktop/theme_builder/' + node.get('id') + '/update_layout',
-                    method: 'PUT',
-                    params: {
-                        headerSource: headerHTML,
-                        footerSource: footerHTML
-                    },
-                    success: function(response) {
-                        centerPanel.clearWindowStatus();
-                    }
+                comp.saveComponents(function() {
+                    centerPanel.clearWindowStatus();
                 });
             }
         });
 
         centerTabPanel.setActiveTab(themeBuilderPanel);
-
     },
 
     deleteTheme: function(theme) {
