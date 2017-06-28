@@ -2,6 +2,7 @@ require 'has_many_polymorphic'
 require 'attr_encrypted'
 require 'awesome_nested_set'
 require 'data_migrator'
+require 'acts_as_list'
 
 module ErpBaseErpSvcs
   class Engine < Rails::Engine

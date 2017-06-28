@@ -40,6 +40,8 @@
 #################################################
 
 class WorkEffort < ActiveRecord::Base
+
+  acts_as_list :position
   attr_protected :created_at, :updated_at
 
   cattr_accessor :task_status_complete_iid
@@ -483,8 +485,8 @@ class WorkEffort < ActiveRecord::Base
   # Calculate totals for children
   #
   def calculate_children_totals
-    self.start_at = self.descendants.order('start_at asc').first.start_at
-    self.end_at = self.descendants.order('end_at desc').last.end_at
+    self.start_at = self.descendants.order('start_at asc').first.start_at rescue nil
+    self.end_at = self.descendants.order('end_at desc').last.end_at rescue nil
 
     lowest_duration_unit = nil
     duration_total = nil
@@ -575,7 +577,8 @@ class WorkEffort < ActiveRecord::Base
                      :sequence,
                      :created_at,
                      :updated_at,
-                     :current_status
+                     :current_status,
+                     :position
                    ]
                    )
 
