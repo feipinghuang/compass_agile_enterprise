@@ -111,9 +111,9 @@ module Knitkit
               name = params[:name]
 
               theme = get_theme(path)
-              theme.add_file('#Empty File', File.join(path, name))
+              file = theme.add_file('#Empty File', File.join(path, name))
 
-              render :json => {:success => true, :node => @file_support.find_node(File.join(path, name), {:file_asset_holder => theme})}
+              render :json => {:success => true, :node => @file_support.find_node(File.join(path, file.name), {:file_asset_holder => theme})}
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
             render :json => {:success => false, :message => ex.message}
@@ -124,16 +124,19 @@ module Knitkit
           begin
             contents, message = @file_support.get_contents(params["replace_file_data"].path)
 
-            new_dir = params[:node].split('/').reverse.drop(1).reverse.join('/')
-            new_name = params["replace_file_data"].original_filename
-
-            new_path = File.join(new_dir, new_name)
+            if params["replace_file_data"].original_filename != params["node"].split('/').last
+              new_name = FileAsset.create_unique_name(File.dirname(params["node"]), params["replace_file_data"].original_filename)
+              new_path = File.join(params["node"].split('/').reverse.drop(1).reverse.join('/'), new_name)
+            else
+              new_name = params["replace_file_data"].original_filename
+              new_path = File.join(params["node"].split('/').reverse.drop(1).reverse.join('/'), params["replace_file_data"].original_filename)
+            end
 
             theme_file = get_theme_file(params[:node])
-            
+
             theme_file.replace!(params[:node], new_path, contents)
 
-            render :json => {:success => true, name: params["replace_file_data"].original_filename, path: new_path, url: theme_file.data.url}
+            render :json => {:success => true, name: new_name, path: new_path, url: theme_file.data.url}
           rescue Exception => ex
             Rails.logger.error(ex.message)
             Rails.logger.error(ex.backtrace.join("\n"))
@@ -141,7 +144,7 @@ module Knitkit
             # email notification
             ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-            render :json => {:success => false, :error => ex.message}
+            render :json => {:success => false,  :error => ex.message}
           end
         end
 
@@ -407,7 +410,7 @@ module Knitkit
             @website = Website.find(params[:website_id])
           end
         end
-        
+
       end #ThemeController
     end #Desktop
   end #ErpApp
