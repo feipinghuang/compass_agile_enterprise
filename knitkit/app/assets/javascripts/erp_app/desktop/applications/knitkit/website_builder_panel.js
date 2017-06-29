@@ -1,7 +1,10 @@
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZoneContainer', {
     extend: 'Ext.Container',
     alias: 'widget.websitebuilderdropzonecontainer',
-    autoRemovableDropZone: false
+    autoRemovableDropZone: false,
+    empty: function() {
+        return Ext.isEmpty(this.el.query('iframe'));
+    }
 });
 
 Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZone', {
@@ -11,19 +14,17 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZone',
     cls: 'website-builder-dropzone',
     height: 150,
     componentType: null,
-    html: ['<div>Drop Component Here</div><div class="website-builder-reorder-setting" id="componentSetting">',
-        '<div class="icon-remove pull-left" id="remove"></div>',
-        '</div>'
-    ].join(''),
+    html: '<div>Drop Component Here</div>',
+    empty: false,
     listeners: {
         afterrender: function(comp) {
-            setTimeout(function() {
-                if (Ext.isEmpty(comp.el.query('.component')) && !Ext.isEmpty(comp.el.query('.icon-remove'))) {
-                    Ext.get(comp.el.query('.icon-remove')).on('click', function() {
-                        comp.destroy();
-                    });
-                }
-            }, 500);
+            if (!comp.autoRemovableDropZone && comp.empty) {
+                comp.update('<div>Drop Component Here</div><div class="website-builder-reorder-setting" id="componentSetting"><div class="icon-remove pull-left" id="remove"></div></div>');
+
+                Ext.get(comp.el.query('.icon-remove')).on('click', function() {
+                    comp.destroy();
+                });
+            }
         }
     }
 });
@@ -55,7 +56,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var me = this;
 
         me.callParent(arguments);
-        if (me.savedScrollPos) {
+
+        if (me.savedScrollPos !== undefined) {
+            console.log(me.savedScrollPos)
             var heightDiff = null;
             if (me.currentHeight) {
                 heightDiff = Ext.get(me.el.query('.x-panel-body')).first().query('div').first().clientHeight - me.currentHeight;
@@ -195,6 +198,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             layout: 'hbox',
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
+                                                empty: true,
                                                 componentType: 'content',
                                                 flex: 1
                                             }]
@@ -209,12 +213,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
                                                 componentType: 'content',
+                                                empty: true,
                                                 contentBlock: true,
                                                 flex: 1
 
                                             }, {
                                                 xtype: 'websitebuilderdropzone',
                                                 componentType: 'content',
+                                                empty: true,
                                                 contentBlock: true,
                                                 flex: 1
                                             }]
@@ -229,17 +235,20 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             items: [{
                                                 xtype: 'websitebuilderdropzone',
                                                 componentType: 'content',
+                                                empty: true,
                                                 contentBlock: true,
                                                 flex: 1
                                             }, {
                                                 xtype: 'websitebuilderdropzone',
                                                 componentType: 'content',
+                                                empty: true,
                                                 contentBlock: true,
                                                 flex: 1
 
                                             }, {
                                                 xtype: 'websitebuilderdropzone',
                                                 componentType: 'content',
+                                                empty: true,
                                                 contentBlock: true,
                                                 flex: 1
                                             }]
@@ -467,6 +476,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var me = this;
         me.suspendLayout = true;
 
+        me.savedScrollPos = me.body.dom.scrollTop;
+
         var components = Ext.Array.filter(me.query('container'), function(container) {
             return (!Ext.isEmpty(container.el.query('.component')) && Ext.isEmpty(container.query('#' + panelId)));
         });
@@ -476,17 +487,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         Ext.each(components, function(component, index) {
             var componentIndex = me.items.indexOf(component);
 
-            me.insert(componentIndex, {
-                xtype: 'websitebuilderdropzonecontainer',
-                cls: 'dropzone-container',
-                autoRemovableDropZone: true,
-                layout: '',
-                items: [{
-                    xtype: 'websitebuilderdropzone',
-                    componentType: 'content',
-                    flex: 1
-                }]
-            });
+            if ((me.items.getAt(componentIndex - 1) && !me.items.getAt(componentIndex - 1).empty()) || (me.items.getAt(componentIndex + 1) && !me.items.getAt(componentIndex + 1).empty())) {
+                me.insert(componentIndex, {
+                    xtype: 'websitebuilderdropzonecontainer',
+                    cls: 'dropzone-container',
+                    autoRemovableDropZone: true,
+                    layout: '',
+                    items: [{
+                        xtype: 'websitebuilderdropzone',
+                        componentType: 'content',
+                        flex: 1
+                    }]
+                });
+            }
 
             if (index === (components.length - 1)) {
                 if (me.items.getAt(componentIndex + 1) && !Ext.isEmpty(me.items.getAt(componentIndex + 1).el.query('.component'))) {
@@ -849,6 +862,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 if (dropPanel.cls == "websitebuilder-component-panel") {
                     parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
                         xtype: 'websitebuilderdropzone',
+                        empty: true,
                         componentType: dropPanel.componentType,
                         flex: 1
                     });
@@ -1035,13 +1049,17 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             parentContainer = draggedPanel.up('websitebuilderdropzonecontainer');
 
         if (draggedPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
-            parentContainer.insert(parentContainer.items.indexOf(draggedPanel), {
-                xtype: 'websitebuilderdropzone',
-                componentType: 'content',
-                flex: 1
-            });
-            draggedPanel.destroy();
-
+            if (parentContainer.items.length > 2) {
+                parentContainer.insert(parentContainer.items.indexOf(draggedPanel), {
+                    xtype: 'websitebuilderdropzone',
+                    empty: true,
+                    componentType: 'content',
+                    flex: 1
+                });
+                draggedPanel.destroy();
+            } else {
+                parentContainer.destroy();
+            }
         }
 
         me.updateLayout();

@@ -287,3 +287,7 @@
   opacity: 1;
 }
 
+.dropzone-container{
+  position: relative;
+}
+
