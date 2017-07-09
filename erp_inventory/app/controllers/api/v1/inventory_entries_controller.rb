@@ -40,6 +40,10 @@ module API
 
         inventory_entries = inventory_entries.by_tenant(current_user.party.dba_organization)
 
+        if params[:id]
+          inventory_entries = inventory_entries.where(id: params[:id])
+        end
+
         if sort and dir
           inventory_entries = inventory_entries.order("#{sort} #{dir}")
         end
