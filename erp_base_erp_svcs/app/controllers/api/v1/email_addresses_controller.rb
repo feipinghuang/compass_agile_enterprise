@@ -3,19 +3,20 @@ module API
     class EmailAddressesController < BaseController
 
 =begin
-
- @api {get} /api/v1/email_addresses Index
+ @api {get} /api/v1/email_addresses
  @apiVersion 1.0.0
  @apiName GetEmailAddresses
- @apiGroup Email Address
+ @apiGroup EmailAddress
+ @apiDescription Get Email Addresses
 
- @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+ @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Array} email_addresses List of EmailAddress records
- @apiSuccess {Number} email_addresses.id Id of EmailAddress
-
+ @apiSuccess (200) {Object} get_email_addresses_response Response.
+ @apiSuccess (200) {Boolean} get_email_addresses_response.success True if the request was successful.
+ @apiSuccess (200) {Object[]} get_email_addresses_response.email_addresses
+ @apiSuccess (200) {Number} get_email_addresses_response.email_addresses.id Id.
+ @apiSuccess (200) {String} get_email_addresses_response.email_addresses.description Description.
+ @apiSuccess (200) {String} get_email_addresses_response.email_addresses.email_address Email Address.
 =end
 
       def index
@@ -34,7 +35,7 @@ module API
           email_addresses = email_addresses.for_party(Party.find(params[:party_id]), contact_purposes)
         else
           unless contact_purposes.empty?
-            email_addresses = email_addresses.where(contact_purposes: {id: contact_purposes})
+            email_addresses = email_addresses.joins(contact: :contact_purposes).where(contact_purposes: {id: contact_purposes})
           end
         end
 
@@ -58,38 +59,54 @@ module API
       end
 
 =begin
-
- @api {get} /api/v1/email_addresses/:id Index
+ @api {get} /api/v1/email_addresses/:id 
  @apiVersion 1.0.0
- @apiName GetEmailAddresses
- @apiGroup Email Address
+ @apiName GetEmailAddress
+ @apiGroup EmailAddress
+ @apiDescription Get Email Address
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Array} email_addresses List of EmailAddress records
- @apiSuccess {Number} email_addresses.id Id of EmailAddress
+ @apiParam {Number} id Id of Email Address to get.
+ 
+ @apiSuccess (200) {Object} get_email_address_response Response.
+ @apiSuccess (200) {Boolean} get_email_address_response.success True if the request was successful.
+ @apiSuccess (200) {Object} get_email_address_response.email_address
+ @apiSuccess (200) {Number} get_email_address_response.email_address.id Id.
+ @apiSuccess (200) {String} get_email_address_response.email_address.description Description.
+ @apiSuccess (200) {String} get_email_address_response.email_address.email_address Email Address.
 
+ @apiSuccessExample Success-Response:
+   HTTP/1.1 200 OK
+   {
+     "success": true,
+     "email_address": {"id": 1, "description": "Russell's Email", email_address":"rholmes@truenorthtechnology.com"}
+   }
 =end
 
       def show
-        render json: {success: true, email_address: EmailAddress.find(params[:id]).to_data_hash}
+        begin
+          render json: {success: true, email_address: EmailAddress.find(params[:id]).to_data_hash}
+        rescue ActiveRecord::RecordNotFound
+          render json: {success: false, error: 'Record not found'}, status: 404
+        end
       end
 
 =begin
-
-  @api {post} /api/v1/email_addresses Create
+  @api {post} /api/v1/email_addresses
   @apiVersion 1.0.0
   @apiName CreateEmailAddress
-  @apiGroup Email Address
+  @apiGroup EmailAddress
+  @apiDescription Create Email Address
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} email_address Email Address
-  @apiParam {String} description Description of Email Address
-
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} email_address EmailAddress record
-  @apiSuccess {Number} email_address.id Id of EmailAddress
-
+  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+  @apiParam {String} email_address Email Address.
+  @apiParam {String} description Description of Email Address.
+  
+  @apiSuccess (200) {Object} create_email_address_response Response.
+  @apiSuccess (200) {Boolean} create_email_address_response.success True if the request was successful.
+  @apiSuccess (200) {Object} create_email_address_response.email_address
+  @apiSuccess (200) {Number} create_email_address_response.email_address.id Id.
+  @apiSuccess (200) {String} create_email_address_response.email_address.description Description.
+  @apiSuccess (200) {String} create_email_address_response.email_address.email_address Email Address.
 =end
 
       def create
@@ -117,37 +134,40 @@ module API
             email_address.contact.save!
             email_address.save!
 
-            render :json => {success: true, email_address: email_address.to_data_hash}
+            render json: {success: true, email_address: email_address.to_data_hash}
           end
         rescue ActiveRecord::RecordInvalid => invalid
 
-          render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}
-        rescue => ex
+          render json: {success: false, message: invalid.record.errors.full_messages.join(', ')}, status: 500
+        rescue StandardError => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")
 
           # email error
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render :json => {success: false, message: ex.message}
+          render json: {success: false, message: ex.message}, status: 500
         end
       end
 
 =begin
-
-  @api {put} /api/v1/email_addresses/:id Update
+  @api {put} /api/v1/email_addresses/:id Update Email Address
   @apiVersion 1.0.0
   @apiName UpdateEmailAddress
-  @apiGroup Email Address
+  @apiGroup EmailAddress
+  @apiDescription Update Email Address
+  
+  @apiParam {Number} id Id of Email Address to update.
+  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+  @apiParam {String} [email_address] Email Address.
+  @apiParam {String} [description] Description of Email Address.
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} [email_address] Email Address
-  @apiParam {String} [description] Description of Email Address
-
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} email_address EmailAddress record
-  @apiSuccess {Number} email_address.id Id of EmailAddress
-
+  @apiSuccess (200) {Object} update_email_address_response Response.
+  @apiSuccess (200) {Boolean} update_email_address_response.success True if the request was successful.
+  @apiSuccess (200) {Object} update_email_address_response.email_address
+  @apiSuccess (200) {Number} update_email_address_response.email_address.id Id.
+  @apiSuccess (200) {String} update_email_address_response.email_address.description Description.
+  @apiSuccess (200) {String} update_email_address_response.email_address.email_address Email Address.
 =end
 
       def update
@@ -183,35 +203,44 @@ module API
 
             render :json => {success: true, email_address: email_address.to_data_hash}
           end
+        rescue ActiveRecord::RecordNotFound
+          render json: {success: false, error: 'Record not found'}, status: 404
+
         rescue ActiveRecord::RecordInvalid => invalid
 
-          render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}
-        rescue => ex
+          render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}, status: 500
+        rescue StandardError => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")
 
           # email error
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render :json => {success: false, message: ex.message}
+          render :json => {success: false, message: ex.message}, status: 500
         end
       end
 
 =begin
-
-  @api {delete} /api/v1/email_addresses/:id Delete
+  @api {delete} /api/v1/email_addresses/:id Delete Email Address
   @apiVersion 1.0.0
   @apiName DeleteEmailAddress
-  @apiGroup Email Address
+  @apiGroup EmailAddress
+  @apiDescription Delete Email Address  
 
-  @apiSuccess {Boolean} success True if the request was successful
-
+  @apiParam {Number} id Id of Email Address to get.
+  
+  @apiSuccess (200) {Object} delete_email_address_response Response.
+  @apiSuccess (200) {Boolean} delete_email_address_response.success True if the request was successful.
 =end
 
       def destroy
-        email_address = EmailAddress.find(params[:id])
+        begin
+          email_address = EmailAddress.find(params[:id])
 
-        render json: {success: email_address.destroy}
+          render json: {success: email_address.destroy}
+        rescue ActiveRecord::RecordNotFound
+          render json: {success: false, error: 'Record not found'}, status: 404
+        end
       end
 
     end # EmailAddressesController

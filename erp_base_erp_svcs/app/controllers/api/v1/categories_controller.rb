@@ -2,6 +2,19 @@ module API
   module V1
     class CategoriesController < BaseController
 
+=begin
+ @api {get} /api/v1/categories
+ @apiVersion 1.0.0
+ @apiName GetCategories
+ @apiGroup Category
+ @apiDescription Get Categories
+
+ @apiSuccess {Boolean} success True if the request was successful.
+ @apiSuccess {Number} total_count Total count of records based on any filters applied.
+ @apiSuccess {Object[]} categories List of Category records.
+ @apiSuccess {Number} categories.id Id of Category.
+=end
+
       def index
         sort = 'description'
         dir = 'ASC'

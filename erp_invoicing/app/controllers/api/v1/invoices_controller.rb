@@ -63,7 +63,7 @@ module API
         set_address_and_logo
 
         pdf = WickedPdf.new.pdf_from_string(render_to_string(:layout => false, :action => "invoice_pdf.html.erb"),
-                                            :margin => {:top => 0, :bottom => 15, :left => 10, :right => 10},
+                                            :margin => pdf_margin,
                                             :footer => pdf_footer)
 
         @invoice_file_name = @invoice.invoice_number
@@ -86,7 +86,7 @@ module API
         set_address_and_logo
 
         pdf = WickedPdf.new.pdf_from_string(render_to_string(:layout => false, :action => "invoice_pdf.html.erb"),
-                                            :margin => {:top => 0, :bottom => 15, :left => 10, :right => 10},
+                                            :margin => pdf_margin,
                                             :footer => pdf_footer)
 
         attachments = {"#{@invoice.invoice_number}.pdf" => pdf}
@@ -115,6 +115,15 @@ module API
          return {
              :right => 'Page [page] of [topage]'
          }
+       end
+
+       def pdf_margin
+          return {
+            :top => 0,
+            :bottom => 15,
+            :left => 10,
+            :right => 10
+          }
        end
 
       #
