@@ -2,6 +2,19 @@ module API
   module V1
     class RoleTypesController < BaseController
 
+=begin
+ @api {get} /api/v1/role_types
+ @apiVersion 1.0.0
+ @apiName GetRoleTypes
+ @apiGroup RoleType
+ @apiDescription Get Role Types
+
+ @apiSuccess {Boolean} success True if the request was successful.
+ @apiSuccess {Number} total_count Total count of records based on any filters applied.
+ @apiSuccess {Object[]} role_types List of RoleType records.
+ @apiSuccess {Number} role_types.id Id of RoleType.
+=end
+
       def index
         if params[:party_id].present?
           party = Party.find(params[:party_id])

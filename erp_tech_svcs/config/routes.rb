@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
 
+      get "get_auth_token" => 'base#get_auth_token', defaults: { :format => 'json' }
       post "generate_auth_token" => 'base#generate_auth_token', defaults: { :format => 'json' }
       delete "revoke_auth_token" => 'base#revoke_auth_token', defaults: { :format => 'json' }
       get "auth_token_valid" => 'base#auth_token_valid', defaults: { :format => 'json' }

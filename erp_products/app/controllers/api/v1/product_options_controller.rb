@@ -4,13 +4,20 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_options Index
+  @api {get} /api/v1/product_options
   @apiVersion 1.0.0
   @apiName GetProductOptions
   @apiGroup ProductOption
+  @apiDescription Get Product Option
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} product_options ProductOption records
+  @apiParam {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+  @apiParam {Number} [product_option_type_id] Id of ProductOptionType to filter by
+
+  @apiSuccess (200) {Object} get_product_options_response Response.
+  @apiSuccess (200) {Boolean} get_product_options_response.success If the request was sucessful
+  @apiSuccess (200) {Number} get_product_options_response.total_count Total count of records 
+  @apiSuccess (200) {Object[]} get_product_options_response.product_options ProductOption records
+  @apiSuccess (200) {Integer} get_product_options_response.product_options.id Id of ProductOption record  
 
 =end
 
@@ -52,13 +59,16 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_options/:id Show
+  @api {get} /api/v1/product_options/:id
   @apiVersion 1.0.0
   @apiName GetProductOption
   @apiGroup ProductOption
+  @apiDescription Show Product Option  
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} product_option ProductOption record
+  @apiSuccess (200) {Object} show_product_option_response Response.
+  @apiSuccess (200) {Boolean} show_product_option_response.success If the request was sucessful  
+  @apiSuccess (200) {Object} show_product_option_response.product_option ProductOption record
+  @apiSuccess (200) {Integer} show_product_option_response.product_option.id Id ProductOption record  
 
 =end
 
@@ -71,17 +81,20 @@ module API
 
 =begin
 
-  @api {post} /api/v1/product_options Create
+  @api {post} /api/v1/product_options
   @apiVersion 1.0.0
   @apiName CreateProductOption
   @apiGroup ProductOption
+  @apiDescription Create Product Option
 
-  @apiParam {Integer} product_option_type Id of ProductOptionType
+  @apiParam {Number} product_option_type Id of ProductOptionType
   @apiParam {String} description Description
   @apiParam {String} internal_identifier Internal Identifier
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} product_option ProductOption record
+  @apiSuccess (200) {Object} create_product_option_response Response.
+  @apiSuccess (200) {Boolean} create_product_option_response.success If the request was sucessful    
+  @apiSuccess (200) {Object} create_product_option_response.product_option ProductOption record
+  @apiSuccess (200) {Integer} create_product_option_response.product_option.id Id ProductOption record    
 
 =end
 
@@ -111,16 +124,19 @@ module API
 
 =begin
 
-  @api {put} /api/v1/product_options/:id Update
+  @api {put} /api/v1/product_options/:id
   @apiVersion 1.0.0
   @apiName UpdateProductOption
   @apiGroup ProductOption
+  @apiDescription Update Product Option  
   
   @apiParam {String} [description] Description
   @apiParam {String} [internal_identifier] Internal Identifier
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} product_option ProductOption record
+  @apiSuccess (200) {Object} update_product_option_response Response.
+  @apiSuccess (200) {Boolean} update_product_option_response.success If the request was sucessful      
+  @apiSuccess (200) {Object} update_product_option_response.product_option ProductOption record
+  @apiSuccess (200) {Integer} update_product_option_response.product_option.id Id ProductOption record      
 
 =end
 
@@ -150,12 +166,14 @@ module API
 
 =begin
 
-  @api {delete} /api/v1/product_options/:id Delete
+  @api {delete} /api/v1/product_options/:id
   @apiVersion 1.0.0
   @apiName DeleteProductOption
   @apiGroup ProductOption
+  @apiDescription Delete Product Option  
 
-  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess (200) {Object} delete_product_option_response Response.
+  @apiSuccess (200) {Boolean} delete_product_option_response.success If the request was sucessful        
 
 =end
 
