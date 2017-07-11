@@ -10,14 +10,14 @@ module API
   @apiGroup ProductOptionApplicability
   @apiDescription Get Product Option Applicability
 
-  @apiParam {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
-  @apiParam {Integer} [product_type_id] ProductType Id to filter by
+  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+  @apiParam (query) {Integer} [product_type_id] ProductType Id to filter by
 
   @apiSuccess (200) {Object} get_product_option_applicabilities_response Response.
   @apiSuccess (200) {Boolean} get_product_option_applicabilities_response.success If the request was sucessful
   @apiSuccess (200) {Integer} get_product_option_applicabilities_response.total_count Total count of records   
   @apiSuccess (200) {Object[]} get_product_option_applicabilities_response.product_option_applicabilities ProductOptionApplicability records
-  @apiSuccess (200) {Number} get_product_option_applicabilities_response.product_option_applicabilities.id Id of ProductOptionApplicability
+  @apiSuccess (200) {Integer} get_product_option_applicabilities_response.product_option_applicabilities.id Id of ProductOptionApplicability
 
 =end
 
@@ -67,7 +67,7 @@ module API
   @apiGroup ProductOptionApplicability
   @apiDescription Update Product Option Applicability Positions
 
-  @apiParam {String} [positions] JSON string of position array data [1,2,3]
+  @apiParam (query) {String} [positions] JSON string of position array data [1,2,3]
 
   @apiSuccess (200) {Object} product_option_applicabilities_update_positions_response Response.
   @apiSuccess (200) {Boolean} product_option_applicabilities_update_positions_response.success If the request was sucessful  
@@ -134,11 +134,11 @@ module API
   @apiGroup ProductOptionApplicability
   @apiDescription Create Product Option Applicability 
 
-  @apiParam {Integer} product_type_id Id of ProductType
-  @apiParam {String} description Description
-  @apiParam {String} product_option_type_id Id of ProductOptionType
-  @apiParam {Boolean} [multi_select] If it should be Multi Select
-  @apiParam {Boolean} [required] If it should be required
+  @apiParam (body) {Integer} product_type_id Id of ProductType
+  @apiParam (body) {String} description Description
+  @apiParam (body) {String} product_option_type_id Id of ProductOptionType
+  @apiParam (body) {Boolean} [multi_select] If it should be Multi Select
+  @apiParam (body) {Boolean} [required] If it should be required
 
   @apiSuccess (200) {Object} create_product_option_applicabilities_response Response.
   @apiSuccess (200) {Object} create_product_option_applicabilities_response.product_option_applicability ProductOptionApplicability record
@@ -204,10 +204,10 @@ module API
   @apiGroup ProductOptionApplicability
   @apiDescription Update Product Option Applicability  
   
-  @apiParam {String} [description] Description
-  @apiParam {String} [product_option_type_id] Id of ProductOptionType
-  @apiParam {Boolean} [multi_select] If it should be Multi Select
-  @apiParam {Boolean} [required] If it should be required
+  @apiParam (body) {String} [description] Description
+  @apiParam (body) {String} [product_option_type_id] Id of ProductOptionType
+  @apiParam (body) {Boolean} [multi_select] If it should be Multi Select
+  @apiParam (body) {Boolean} [required] If it should be required
 
   @apiSuccess (200) {Object} update_product_option_applicabilities_response Response.
   @apiSuccess (200) {Boolean} update_product_option_applicabilities_response.success If the request was sucessful     
@@ -271,6 +271,8 @@ module API
   @apiName DeleteProductOptionApplicability
   @apiGroup ProductOptionApplicability
   @apiDescription Delete Product Option Applicability
+
+  @apiParam (param) {Integer} id Id of record to delete 
 
   @apiSuccess (200) {Object} delete_product_option_applicabilities_response Response.
   @apiSuccess (200) {Boolean} delete_product_option_applicabilities_response.success If the request was sucessful  

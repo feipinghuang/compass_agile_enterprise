@@ -172,6 +172,8 @@ module API
   @apiGroup ProductOption
   @apiDescription Delete Product Option  
 
+  @apiParam (param) {Integer} id Id of record to delete 
+
   @apiSuccess (200) {Object} delete_product_option_response Response.
   @apiSuccess (200) {Boolean} delete_product_option_response.success If the request was sucessful        
 

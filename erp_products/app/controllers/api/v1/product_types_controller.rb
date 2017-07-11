@@ -10,10 +10,10 @@ module API
  @apiGroup ProductType
  @apiDescription Get Product Types
 
- @apiParam {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
- @apiParam {String} [query_filter] JSON string of data to filter by
- @apiParam {String} [context] JSON string of data in regards to the context the api is being called, {"view": "mobile"}
- @apiParam {String} [query] String to query the ProductTypes by
+ @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+ @apiParam (query) {String} [query_filter] JSON string of data to filter by
+ @apiParam (query) {String} [context] JSON string of data in regards to the context the api is being called, {"view": "mobile"}
+ @apiParam (query) {String} [query] String to query the ProductTypes by
 
  @apiSuccess (200) {Object} get_product_types_response Response.
  @apiSuccess (200) {Boolean} get_product_types_response.success True if the request was successful
@@ -82,7 +82,7 @@ module API
 
 =begin
 
- @api {get} /api/v1/product_type/:id
+ @api {get} /api/v1/product_types/:id
  @apiVersion 1.0.0
  @apiName GetProductType
  @apiGroup ProductType
@@ -104,18 +104,18 @@ module API
 
 =begin
 
- @api {post} /api/v1/product_type/
+ @api {post} /api/v1/product_types/
  @apiVersion 1.0.0
  @apiName CreateProductType
  @apiGroup ProductType
  @apiDescription Create Product Type
 
- @apiParam {String} description Description
- @apiParam {String} sku SKU to set
- @apiParam {String} unit_of_masurement Internal Identifier of UnitOfMeasurement
- @apiParam {String} [comment] Comment to set
- @apiParam {String} [party_role] RoleType Internal Identifier to set for the passed party
- @apiParam {Number} [party_id] Id of Party to associate to this ProductType, used to associate a Vendor to a ProductType for example
+ @apiParam (body) {String} description Description
+ @apiParam (body) {String} sku SKU to set
+ @apiParam (body) {String} unit_of_masurement Internal Identifier of UnitOfMeasurement
+ @apiParam (body) {String} [comment] Comment to set
+ @apiParam (body) {String} [party_role] RoleType Internal Identifier to set for the passed party
+ @apiParam (body) {Number} [party_id] Id of Party to associate to this ProductType, used to associate a Vendor to a ProductType for example
 
  @apiSuccess (200) {Object} create_product_type_response Response.
  @apiSuccess (200) {Boolean} create_product_type_response.success True if the request was successful
@@ -150,11 +150,11 @@ module API
               product_type_party_role.role_type = RoleType.iid(party_role)
               product_type_party_role.save
             end
+
+
+            render :json => {success: true,
+                             product_type: product_type.to_data_hash}
           end
-
-          render :json => {success: true,
-                           product_type: product_type.to_data_hash}
-
         rescue ActiveRecord::RecordInvalid => invalid
 
           render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}
@@ -172,16 +172,16 @@ module API
 
 =begin
 
- @api {put} /api/v1/product_type/:id
+ @api {put} /api/v1/product_types/:id
  @apiVersion 1.0.0
  @apiName UpdateProductType
  @apiGroup ProductType
  @apiDescription Update Product Type
 
- @apiParam {String} [description] Description
- @apiParam {String} [sku] SKU to set
- @apiParam {String} [unit_of_masurement] Internal Identifier of UnitOfMeasurement
- @apiParam {String} [comment] Comment to set
+ @apiParam (body) {String} [description] Description
+ @apiParam (body) {String} [sku] SKU to set
+ @apiParam (body) {String} [unit_of_masurement] Internal Identifier of UnitOfMeasurement
+ @apiParam (body) {String} [comment] Comment to set
 
  @apiSuccess (200) {Object} update_product_type_response Response.
  @apiSuccess (200) {Boolean} update_product_type_response.success True if the request was successful
@@ -235,11 +235,13 @@ module API
 
 =begin
 
- @api {delete} /api/v1/product_type/:id
+ @api {delete} /api/v1/product_types/:id
  @apiVersion 1.0.0
  @apiName DeleteProductType
  @apiGroup ProductType
  @apiDescription Delete Product Type
+
+ @apiParam (param) {Integer} id Id of record to delete 
 
  @apiSuccess (200) {Object} delete_product_type_response Response.
  @apiSuccess (200) {Boolean} delete_product_type_response.success True if the request was successful
