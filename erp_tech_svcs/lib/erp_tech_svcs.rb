@@ -19,6 +19,7 @@ require "erp_tech_svcs/engine"
 require 'erp_tech_svcs/erp_tech_svcs_audit_log'
 require 'erp_tech_svcs/delayed_jobs/notification_job'
 require 'erp_tech_svcs/delayed_jobs/delete_expired_sessions_job'
+require 'erp_tech_svcs/services/template_renderer'
 
 module ErpTechSvcs
 end
