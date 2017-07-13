@@ -9,10 +9,11 @@ module API
  @apiGroup Category
  @apiDescription Get Categories
 
- @apiSuccess (query) {Boolean} success True if the request was successful.
- @apiSuccess (query) {Number} total_count Total count of records based on any filters applied.
- @apiSuccess (query) {Object[]} categories List of Category records.
- @apiSuccess (query) {Number} categories.id Id of Category.
+ @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+ @apiParam (query) {String} [query_filter] JSON string of data to filter by
+ @apiParam (query) {Integer} [parent_id] Id of parent category to filter by
+ @apiParam (query) {Integer} [start] Start to for paging, defaults to 0
+ @apiParam (query) {Integer} [limit] Limit to for paging, defaults to 25
 
  @apiSuccess (200) {Object} get_categories_response Response.
  @apiSuccess (200) {Boolean} get_categories_response.success True if the request was successful
