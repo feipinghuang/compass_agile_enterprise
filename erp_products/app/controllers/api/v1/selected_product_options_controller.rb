@@ -10,12 +10,12 @@ module API
   @apiGroup SelectedProductOption
   @apiDescription Get Selected Product Options  
 
-  @apiParam {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
-  @apiParam {Number} [start] Start for paging
-  @apiParam {Number} [offset] Offset for paging
-  @apiParam {Number} [product_option_type_id] Id of ProductOptionType to filter by
-  @apiParam {String} [selected_record_type] Type of Selected Record to scope by
-  @apiParam {Number} [selected_record_id] Id of Selected Record to scope by
+  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+  @apiParam (query) {Number} [start] Start for paging
+  @apiParam (query) {Number} [offset] Offset for paging
+  @apiParam (query) {Number} [product_option_type_id] Id of ProductOptionType to filter by
+  @apiParam (query) {String} [selected_record_type] Type of Selected Record to scope by
+  @apiParam (query) {Number} [selected_record_id] Id of Selected Record to scope by
 
   @apiSuccess (200) {Object} get_selected_product_options Response.
   @apiSuccess (200) {Boolean} get_selected_product_options.success If the request was sucessful
