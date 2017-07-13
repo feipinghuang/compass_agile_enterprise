@@ -7,6 +7,7 @@ require 'factory_girl'
 require 'erp_dev_svcs/commands/build_gems'
 require 'erp_dev_svcs/factory_support'
 require "erp_dev_svcs/commands/new_gem_owner"
+require "erp_dev_svcs/commands/generate_api_docs"
 require 'erp_dev_svcs/controller_support/controller_support'
 
 module ErpDevSvcs

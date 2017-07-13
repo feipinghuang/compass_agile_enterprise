@@ -10,8 +10,8 @@ module API
   @apiGroup ProductOptionType
   @apiDescription Get Product Option Type
 
-  @apiParam {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
-  @apiParam {Number} [id] Id to filter by
+  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+  @apiParam (query) {Number} [id] Id to filter by
 
   @apiSuccess (200) {Object} get_product_option_types_response Response.
   @apiSuccess (200) {Boolean} get_product_option_types_response.success If the request was sucessful
