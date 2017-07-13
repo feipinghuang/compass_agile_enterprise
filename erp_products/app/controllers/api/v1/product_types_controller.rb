@@ -88,6 +88,8 @@ module API
  @apiGroup ProductType
  @apiDescription Get Product Type
 
+ @apiParam (query) {Integer} id Id of ProductType
+
  @apiSuccess (200) {Object} get_product_type_response Response.
  @apiSuccess (200) {Boolean} get_product_type_response.success True if the request was successful
  @apiSuccess (200) {Object} get_product_types_response.product_type ProductType record
@@ -178,6 +180,7 @@ module API
  @apiGroup ProductType
  @apiDescription Update Product Type
 
+ @apiParam (query) {Integer} id Id of ProductType
  @apiParam (body) {String} [description] Description
  @apiParam (body) {String} [sku] SKU to set
  @apiParam (body) {String} [unit_of_masurement] Internal Identifier of UnitOfMeasurement

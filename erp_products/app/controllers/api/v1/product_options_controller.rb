@@ -10,8 +10,8 @@ module API
   @apiGroup ProductOption
   @apiDescription Get Product Option
 
-  @apiParam {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
-  @apiParam {Number} [product_option_type_id] Id of ProductOptionType to filter by
+  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+  @apiParam (query) {Number} [product_option_type_id] Id of ProductOptionType to filter by
 
   @apiSuccess (200) {Object} get_product_options_response Response.
   @apiSuccess (200) {Boolean} get_product_options_response.success If the request was sucessful
@@ -65,6 +65,8 @@ module API
   @apiGroup ProductOption
   @apiDescription Show Product Option  
 
+  @apiParam (query) {Integer} id Id of ProductOption
+
   @apiSuccess (200) {Object} show_product_option_response Response.
   @apiSuccess (200) {Boolean} show_product_option_response.success If the request was sucessful  
   @apiSuccess (200) {Object} show_product_option_response.product_option ProductOption record
@@ -87,9 +89,9 @@ module API
   @apiGroup ProductOption
   @apiDescription Create Product Option
 
-  @apiParam {Number} product_option_type Id of ProductOptionType
-  @apiParam {String} description Description
-  @apiParam {String} internal_identifier Internal Identifier
+  @apiParam (body) {Number} product_option_type Id of ProductOptionType
+  @apiParam (body) {String} description Description
+  @apiParam (body) {String} internal_identifier Internal Identifier
 
   @apiSuccess (200) {Object} create_product_option_response Response.
   @apiSuccess (200) {Boolean} create_product_option_response.success If the request was sucessful    
@@ -130,8 +132,10 @@ module API
   @apiGroup ProductOption
   @apiDescription Update Product Option  
   
-  @apiParam {String} [description] Description
-  @apiParam {String} [internal_identifier] Internal Identifier
+  @apiParam (query) {Integer} id Id of ProductOption
+
+  @apiParam (body) {String} [description] Description
+  @apiParam (body) {String} [internal_identifier] Internal Identifier
 
   @apiSuccess (200) {Object} update_product_option_response Response.
   @apiSuccess (200) {Boolean} update_product_option_response.success If the request was sucessful      

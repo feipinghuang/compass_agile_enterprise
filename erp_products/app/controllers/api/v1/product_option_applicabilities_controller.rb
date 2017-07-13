@@ -112,6 +112,8 @@ module API
   @apiGroup ProductOptionApplicability
   @apiDescription Show Product Option Applicability   
 
+  @apiParam (query) {Integer} id Id of ProductOptionApplicability
+
   @apiSuccess (200) {Object} show_product_option_applicabilities_response Response.
   @apiSuccess (200) {Boolean} show_product_option_applicabilities_response.success If the request was sucessful   
   @apiSuccess (200) {Object} show_product_option_applicabilities_response.product_option_applicability ProductOptionApplicability record
@@ -204,6 +206,8 @@ module API
   @apiGroup ProductOptionApplicability
   @apiDescription Update Product Option Applicability  
   
+  @apiParam (query) {Integer} id Id of ProductOptionApplicability
+
   @apiParam (body) {String} [description] Description
   @apiParam (body) {String} [product_option_type_id] Id of ProductOptionType
   @apiParam (body) {Boolean} [multi_select] If it should be Multi Select
