@@ -285,8 +285,26 @@ class ProductType < ActiveRecord::Base
     Party.joins(:product_type_pty_roles).where(product_type_pty_roles: {product_type_id: self.id, role_type_id: role_types})
   end
 
+
   def has_dimensions?
     (cylindrical && length && width && weight) or (length && width && height && weight)
+  end
+
+  def product_feature_values
+    product_values = []
+    product_feature_applicabilities.each do |product_feature_applicabiity|
+      product_feature = ProductFeature.find(product_feature_applicabiity.product_feature_id)
+      product_values << ProductFeatureValue.find(product_feature.product_feature_value_id).description
+    end
+    product_values.join(",")
+  end
+
+  def has_features?
+    product_feature_applicabilities.count > 0
+  end
+
+  def has_variants?
+    children.length > 0
   end
 end
 
