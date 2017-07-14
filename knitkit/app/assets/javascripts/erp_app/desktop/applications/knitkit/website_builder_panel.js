@@ -552,12 +552,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
             if (headerComp) {
                 var headerFrame = headerComp.getEl().down('.iframe-container > iframe').el.dom;
-                headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
+                headerHTML = headerFrame.contentDocument.documentElement.getElementsByClassName('pen')[0].outerHTML;
             }
 
             if (footerComp) {
                 var footerFrame = footerComp.getEl().down('.iframe-container > iframe').el.dom;
-                footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML;
+                footerHTML = footerFrame.contentDocument.documentElement.getElementsByClassName('pen')[0].outerHTML;
             }
 
             Compass.ErpApp.Utility.ajaxRequest({
@@ -581,7 +581,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 Ext.each(container.query('websitebuilderdropzone'), function(component, columnIndex) {
                     if (component.el.down('.iframe-container > iframe')) {
                         var iframe = component.el.down('.iframe-container > iframe').el.dom,
-                            containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('page')[0].outerHTML,
+                            containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('pen')[0].outerHTML,
                             containerElem = jQuery(containerHTML);
 
                         var matchId = Math.round(Math.random() * 10000000);
@@ -878,10 +878,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 loadMask.hide();
 
             var iframeNode = iframe.el.dom;
-
-            //setup editable content listeners
-            me.setupEditableContentListeners(iframeNode);
-
+            
             if (options.widgetName) {
                 var widgetsPanel = me.up('window').down('knitkit_WidgetsPanel');
                 var widgetData = widgetsPanel.getWidgetData(options.widgetName);
@@ -924,6 +921,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                 });
             } else {
+                
+                if (iframeNode.id.startsWith('header-frame') || iframeNode.id.startsWith('footer-frame')) {
+                    iframeNode.contentWindow.eval("window.__pen__.destroy();");
+                } else {
+                    var iframeDoc = iframeNode.contentDocument;
+                    var css = iframeDoc.createElement("style");
+                    css.type = "text/css";
+                    css.innerHTML = "[contenteditable] {border: 1px solid;}";
+                    iframeDoc.body.appendChild(css);
+                    
+                    iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
+                    iframeNode.contentWindow.__pen__.setParentWindow(window);
+                }
                 if (options.autoSave) {
                     // save the page
                     me.saveComponents();
@@ -954,42 +964,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
             if (options.websiteSectionContentId)
                 Ext.Array.remove(me.contentToLoad, options.websiteSectionContentId);
-        });
-    },
-
-    setupEditableContentListeners: function(iframeNode) {
-        var me = this;
-        var editableElements = Ext.get(iframeNode.contentDocument.documentElement).query("[data-selector]");
-
-        Ext.Array.each(editableElements, function(editableElement) {
-            editableElement = Ext.get(editableElement);
-
-            editableElement.on('mouseover', function(event) {
-                me.highlightElement(event.target);
-            });
-
-            editableElement.on('mouseout', function(event) {
-                if (event.target != me.selectedEditableContent)
-                    me.deHighlightElement(event.target);
-            });
-
-            editableElement.on('click', function(event) {
-                event.preventDefault();
-
-                var contentEditableElements = [];
-
-                jQuery.each(jQuery('iframe'), function(index, iframe) {
-                    contentEditableElements = contentEditableElements.concat(Ext.get(iframe.contentDocument.documentElement).query("[data-selector]"));
-                });
-
-                Ext.Array.each(contentEditableElements, function(element) {
-                    me.removeEditable(element);
-                    me.deHighlightElement(element);
-                });
-
-                me.selectedEditableContent = event.target;
-                me.buildPropertiesEditForm(event.target);
-            });
         });
     },
 
@@ -1064,46 +1038,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         me.updateLayout();
     },
-
-    makeEditable: function(element) {
-        var websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
-        Ext.Array.each(websiteBuilderEditConfig.inlineEditableSettings, function(setting) {
-            element.setAttribute(setting.attrName, setting.attrValue);
-        });
-    },
-
-    removeEditable: function(element) {
-        var websiteBuilderEditConfig = Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilder.config;
-        Ext.Array.each(websiteBuilderEditConfig.inlineEditableSettings, function(setting) {
-            element.removeAttribute(setting.attrName, setting.attrValue);
-        });
-    },
-
-    highlightElement: function(element) {
-        element.style.outline = 'rgba(233, 94, 94, 0.498039) solid 2px';
-        element.style['outline-offset'] = '-2px';
-        element.cursor = 'pointer';
-    },
-
-    deHighlightElement: function(element) {
-        element.style.outline = 'none';
-        element.style['outline-offset'] = '0px';
-        element.cursor = 'pointer';
-    },
-
-    addMediumEditor: function(element, websiteBuilderEditConfig) {
-        var theWindow = element.ownerDocument.defaultView,
-            theDoc = element.ownerDocument;
-        var editor = new MediumEditor(element, {
-            ownerDocument: theDoc,
-            contentWindow: theWindow,
-            buttonLabels: 'fontawesome',
-            toolbar: {
-                buttons: websiteBuilderEditConfig.mediumButtons
-            }
-        });
-    },
-
     addCurrentComponents: function() {
         var me = this;
 
