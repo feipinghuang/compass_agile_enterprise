@@ -581,7 +581,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 Ext.each(container.query('websitebuilderdropzone'), function(component, columnIndex) {
                     if (component.el.down('.iframe-container > iframe')) {
                         var iframe = component.el.down('.iframe-container > iframe').el.dom,
-                            containerHTML = iframe.contentDocument.documentElement.getElementsByClassName('pen')[0].outerHTML,
+                            containerHTML = iframe.contentDocument.body.querySelector('.container > .row > .col-md-12').innerHTML,
                             containerElem = jQuery(containerHTML);
 
                         var matchId = Math.round(Math.random() * 10000000);

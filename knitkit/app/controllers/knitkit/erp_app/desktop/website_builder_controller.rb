@@ -73,7 +73,6 @@ module Knitkit
 
                   # get the current list of website_section_contents as any ones that are not passed will be deleted
                   current_website_section_contents = website_section.website_section_contents
-
                   contents_data.each do |data|
                     data = Hash.symbolize_keys(data)
 
