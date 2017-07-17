@@ -581,17 +581,26 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 Ext.each(container.query('websitebuilderdropzone'), function(component, columnIndex) {
                     if (component.el.down('.iframe-container > iframe')) {
                         var iframe = component.el.down('.iframe-container > iframe').el.dom,
-                            containerHTML = iframe.contentDocument.body.querySelector('.container > .row > .col-md-12').innerHTML,
-                            containerElem = jQuery(containerHTML);
+                            html = null;
+                        // content block should either have contents or a widget
+                            if (iframe.contentDocument.body.querySelector('.container > .row > .col-md-12')) {
+                                var containerHTML = iframe.contentDocument.body.querySelector('.container > .row > .col-md-12').innerHTML,
+                                containerElem = jQuery(containerHTML);
+                                html = containerElem[0].outerHTML;
+                            } else {
+                                widgetStatement = iframe.contentDocument.body.querySelector('.compass_ae-widget').parentElement.getAttribute('data-widget-statement');
+                                html = "<%= " + widgetStatement + "%>"
+                            }
 
                         var matchId = Math.round(Math.random() * 10000000);
+                        
 
                         me.matchWebsiteSectionContents[matchId] = component;
 
                         var data = {
                             position: rowIndex,
                             column: columnIndex,
-                            body_html: Ext.String.htmlDecode(containerElem[0].outerHTML),
+                            body_html: Ext.String.htmlDecode(html),
                             match_id: matchId,
                             website_section_content_id: component.websiteSectionContentId
                         };
@@ -600,7 +609,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                 });
             });
-
             Ext.Ajax.request({
                 url: '/knitkit/erp_app/desktop/website_builder/save_website.json',
                 method: 'POST',
@@ -770,6 +778,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 mode: 'rhtml',
                                 showMode: false,
                                 sourceCode: source,
+                                height: me.getHeight(),
                                 flex: 1,
                                 tbarItems: [{
                                     text: 'Save & Show Design View',
@@ -898,7 +907,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     var containerWindow = iframeNode.contentWindow,
                                         containerDocument = iframeNode.contentDocument || containerWindow.document;
 
-                                    containerWindow.loadMe('<div class="page">' + responseObj.source + '</div>');
+                                    containerWindow.loadMe('<div>' + responseObj.source + '</div>');
                                     dropComponent = jQuery(containerDocument).find('.compass_ae-widget');
 
                                     // store widget render statement barring <%= %> in its parent data arribute

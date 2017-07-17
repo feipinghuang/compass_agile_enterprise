@@ -27,9 +27,12 @@ module Knitkit
           
           # remove editor code
           editedContents = doc.css('.pen')
-          editedContents.remove_attr('contenteditable')
-          editedContents.remove_attr('data-toggle')
-          editedContents.remove_attr('data-placeholder')
+          if editedContents
+            editedContents.remove_attr('contenteditable')
+            editedContents.remove_attr('data-toggle')
+            editedContents.remove_attr('data-placeholder')
+          end
+          
           CGI.unescape_html(doc.to_s)
         end
 
