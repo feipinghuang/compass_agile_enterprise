@@ -174,8 +174,6 @@
         if (icons) {
             ctx._menu = parentDoc.createElement('div');
             ctx._menu.setAttribute('class', ctx.config.class + '-menu pen-menu');
-            ctx._menu.setAttribute('id', 'inline-edit-toolbar');
-           // ctx._menu.style.position = "fixed";
             ctx._menu.style.zIndex = "99999";
             ctx._menu.innerHTML = icons;
             ctx._inputBar = ctx._menu.querySelector('input');
