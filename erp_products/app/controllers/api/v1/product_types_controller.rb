@@ -29,13 +29,12 @@ module API
         limit = nil
         start = nil
 
-        unless params[:sort].blank?
-          sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
-          sort = sort_hash[:property] || 'description'
-          dir = sort_hash[:direction] || 'ASC'
-          limit = params[:limit] || 25
-          start = params[:start] || 0
-        end
+        sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
+        sort = sort_hash[:property] || 'description'
+        dir = sort_hash[:direction] || 'ASC'
+
+        limit = params[:limit] || 25
+        start = params[:start] || 0
 
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
         context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
@@ -52,6 +51,10 @@ module API
           dba_organizations = [current_user.party.dba_organization]
           dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
           product_types = product_types.scope_by_dba_organization(dba_organizations)
+        end
+
+        if params[:id]
+          product_types = product_types.where(id: params[:id])
         end
 
         if sort and dir
