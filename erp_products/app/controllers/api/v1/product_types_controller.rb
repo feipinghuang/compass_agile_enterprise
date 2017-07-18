@@ -29,10 +29,11 @@ module API
         limit = nil
         start = nil
 
-        sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
-        sort = sort_hash[:property] || 'description'
-        dir = sort_hash[:direction] || 'ASC'
-
+        unless params[:sort].blank?
+          sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
+          sort = sort_hash[:property] || 'description'
+          dir = sort_hash[:direction] || 'ASC'
+        end
         limit = params[:limit] || 25
         start = params[:start] || 0
 
