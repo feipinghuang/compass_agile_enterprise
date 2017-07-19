@@ -907,6 +907,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     var containerWindow = iframeNode.contentWindow,
                                         containerDocument = iframeNode.contentDocument || containerWindow.document;
 
+                                    containerWindow.eval("window.__pen__.destroy();");
                                     containerWindow.loadMe('<div>' + responseObj.source + '</div>');
                                     dropComponent = jQuery(containerDocument).find('.compass_ae-widget');
 
@@ -914,6 +915,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     // we leave out the <%= %> to prevent it from getting evalauated when it renders
                                     // in the builder view.
                                     dropComponent.parent().attr('data-widget-statement', content.match(/<%=(((.|[\s\S])*?))%>/)[1]);
+                                    dropComponent.parent().wrap('<div class="container"><div class="row"><div class="col-md-12"></div></div></div>')
 
                                     // save the page
                                     if (options.autoSave) {
@@ -931,16 +933,23 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 });
             } else {
                 if (iframeNode.id.startsWith('header-frame') || iframeNode.id.startsWith('footer-frame')) {
+                    // destroy contenteditable for headers and footers
                     iframeNode.contentWindow.eval("window.__pen__.destroy();");
                 } else {
-                    var iframeDoc = iframeNode.contentDocument;
-                    var css = iframeDoc.createElement("style");
-                    css.type = "text/css";
-                    css.innerHTML = "[contenteditable] {border: 1px solid;}";
-                    iframeDoc.body.appendChild(css);
-                    
-                    iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
-                    iframeNode.contentWindow.__pen__.setParentWindow(window);
+                    var iframeDoc = iframeNode.contentDocument,
+                        widgetNode = iframeDoc.querySelector('.compass_ae-widget');
+                    if (widgetNode) {
+                        // destroy contenteditable for widgets
+                        iframeNode.contentWindow.eval("window.__pen__.destroy();");
+                    } else {
+                        var css = iframeDoc.createElement("style");
+                        css.type = "text/css";
+                        css.innerHTML = "[contenteditable] {border: 1px solid;}";
+                        iframeDoc.body.appendChild(css);
+                        
+                        iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
+                        iframeNode.contentWindow.__pen__.setParentWindow(window);
+                    }
                 }
                 if (options.autoSave) {
                     // save the page

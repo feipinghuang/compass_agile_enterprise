@@ -212,8 +212,8 @@ module Knitkit
               website_section_content = WebsiteSectionContent.where(id: params[:website_section_content_id]).first
 
               # assign source
-              website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.insert_widget_statements(component_source)
-              website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.insert_widget_statements(component_source)
+              website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(component_source)
+              website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(component_source)
               website_section_content.save!
             end
 
