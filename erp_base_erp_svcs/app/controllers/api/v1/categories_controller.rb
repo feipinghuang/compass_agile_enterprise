@@ -2,6 +2,27 @@ module API
   module V1
     class CategoriesController < BaseController
 
+=begin
+ @api {get} /api/v1/categories
+ @apiVersion 1.0.0
+ @apiName GetCategories
+ @apiGroup Category
+ @apiDescription Get Categories
+
+ @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+ @apiParam (query) {String} [query_filter] JSON string of data to filter by
+ @apiParam (query) {Integer} [parent_id] Id of parent category to filter by
+ @apiParam (query) {Integer} [start] Start to for paging, defaults to 0
+ @apiParam (query) {Integer} [limit] Limit to for paging, defaults to 25
+
+ @apiSuccess (200) {Object} get_categories_response Response.
+ @apiSuccess (200) {Boolean} get_categories_response.success True if the request was successful
+ @apiSuccess (200) {Number} get_categories_response.total_count Total count of ProductType records
+ @apiSuccess (200) {Object[]} get_categories_response.categories Array of Category records
+ @apiSuccess (200) {Number} get_categories_response.categories.id Id of Category
+
+=end
+
       def index
         sort = 'description'
         dir = 'ASC'
@@ -92,11 +113,47 @@ module API
         end
       end
 
+=begin
+
+ @api {get} /api/v1/categories/:id
+ @apiVersion 1.0.0
+ @apiName GetCategory
+ @apiGroup Category
+ @apiDescription Get Category
+
+ @apiParam (query) {Integer} id Id of Category
+
+ @apiSuccess (200) {Object} get_category_response Response.
+ @apiSuccess (200) {Boolean} get_category_response.success True if the request was successful
+ @apiSuccess (200) {Object} get_category_response.category Category record
+ @apiSuccess (200) {Number} get_category_response.category.id Id of Category
+
+=end
+
       def show
         category = Category.find(params[:id])
 
         render json: {category: category.to_data_hash}
       end
+
+=begin
+
+ @api {post} /api/v1/categories/
+ @apiVersion 1.0.0
+ @apiName CreateCategory
+ @apiGroup Category
+ @apiDescription Create Category
+
+ @apiParam (body) {Integer} [parent_id] Id of Parent Category
+ @apiParam (body) {String} [internal_identifier] Internal Identifier for the category, if one is not passed one will be generated 
+ @apiParam (body) {String} description Description Category
+
+ @apiSuccess (200) {Object} create_category_response Response.
+ @apiSuccess (200) {Boolean} create_category_response.success True if the request was successful
+ @apiSuccess (200) {Object} create_category_response.category Category record
+ @apiSuccess (200) {Number} create_category_response.category.id Id of Category
+
+=end
 
       def create
         parent_id = params[:parent_id]
@@ -141,6 +198,25 @@ module API
         end
       end
 
+=begin
+
+ @api {put} /api/v1/categories/:id
+ @apiVersion 1.0.0
+ @apiName UpdateCategory
+ @apiGroup Category
+ @apiDescription Update Category
+
+ @apiParam (query) {Integer} id Id of Category
+ @apiParam (body) {String} [internal_identifier] Internal Identifier to set for the Category.
+ @apiParam (body) {String} [description] Description to set for the Category
+
+ @apiSuccess (200) {Object} update_category_response Response.
+ @apiSuccess (200) {Boolean} update_category_response.success True if the request was successful
+ @apiSuccess (200) {Object} update_category_response.category Category record
+ @apiSuccess (200) {Number} update_category_response.category.id Id of Category
+
+=end
+
       def update
         category = Category.find(params[:id])
 
@@ -168,6 +244,21 @@ module API
           render json: {success: false, message: 'Application Error'}
         end
       end
+
+=begin
+
+ @api {delete} /api/v1/categories/:id
+ @apiVersion 1.0.0
+ @apiName DestroyCategory
+ @apiGroup Category
+ @apiDescription Destroy Category
+
+ @apiParam (query) {Integer} id Id of Category
+
+ @apiSuccess (200) {Object} destroy_category_response Response.
+ @apiSuccess (200) {Boolean} destroy_category_response.success True if the request was successful
+
+=end
 
       def destroy
         category = Category.find(params[:id])

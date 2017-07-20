@@ -13,7 +13,7 @@ module API
 
  @apiSuccess {Boolean} success True if the request was successful
  @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Array} unit_of_measurements List of UnitOfMeasurement records
+ @apiSuccess {Object[]} unit_of_measurements List of UnitOfMeasurement records
  @apiSuccess {Number} unit_of_measurements.id Id of UnitOfMeasurement
 
 =end
