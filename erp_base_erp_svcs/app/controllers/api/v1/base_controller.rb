@@ -16,8 +16,8 @@ module API
       end
 
       def set_paging
-        @offset = params[:offset] || params[:start] || 0
-        @limit = params[:limit] || 25
+        @offset, @start = params[:offset] || params[:start] || nil
+        @limit = params[:limit] || nil
       end
 
       def set_query_filters

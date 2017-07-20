@@ -17,4 +17,8 @@ Array.class_eval do
     new_ary
   end
 
+  def page(pg, offset = 10)
+    self[((pg-1)*offset)..((pg*offset)-1)]
+  end
+
 end
