@@ -1,1 +1,0 @@
-define({  "name": "CompassAE API",  "version": "1.0.0",  "description": "CompassAE API Documentation",  "title": "CompassAE API Documentation",  "url": "https://api.mycompassagile.com",  "sampleUrl": false,  "apidoc": "0.2.0",  "generator": {    "name": "apidoc",    "time": "2016-10-01T02:32:40.460Z",    "url": "http://apidocjs.com",    "version": "0.13.1"  }});

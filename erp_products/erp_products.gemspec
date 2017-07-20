@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.email       = ["russonrails@gmail.com"]
   s.homepage    = "http://development.compassagile.com"
 
-  s.files = Dir["{app,config,db,lib,tasks}/**/*"] + ["GPL-3-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{public,app,config,db,lib,tasks}/**/*"] + ["GPL-3-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["spec/**/*"]
 
   #compass dependencies
