@@ -178,36 +178,72 @@ class WebsiteSection < ActiveRecord::Base
 
   def build_section_hash
     section_hash = {
-        :name => self.title,
-        :has_layout => !self.layout.blank?,
-        :type => self.class.to_s,
-        :in_menu => self.in_menu,
-        :articles => [],
-        :roles => self.roles.collect(&:internal_identifier),
-        :path => self.path,
-        :permalink => self.permalink,
-        :internal_identifier => self.internal_identifier,
-        :render_base_layout => self.render_base_layout,
-        :position => self.position,
-        :sections => self.children.each.map { |child| child.build_section_hash }
+      :name => self.title,
+      :has_layout => !self.layout.blank?,
+      :type => self.class.to_s,
+      :in_menu => self.in_menu,
+      :articles => [],
+      :roles => self.roles.collect(&:internal_identifier),
+      :path => self.path,
+      :permalink => self.permalink,
+      :internal_identifier => self.internal_identifier,
+      :render_base_layout => self.render_base_layout,
+      :position => self.position,
+      :sections => self.children.each.map { |child| child.build_section_hash }
     }
 
     self.contents.each do |content|
       content_area = content.content_area_by_website_section(self)
       position = content.position_by_website_section(self)
       section_hash[:articles] << {
-          :name => content.title,
-          :tag_list => content.tag_list.join(', '),
-          :content_area => content_area,
-          :position => position,
-          :display_title => content.display_title,
-          :internal_identifier => content.internal_identifier
+        :name => content.title,
+        :tag_list => content.tag_list.join(', '),
+        :content_area => content_area,
+        :position => position,
+        :display_title => content.display_title,
+        :internal_identifier => content.internal_identifier
       }
     end
 
     section_hash
   end
 
+  def to_html
+    view = ActionView::Base.new
+    buffer = ::ActionView::OutputBuffer.new
+
+    website_section_contents = self.website_section_contents.order("position, col")
+
+    website_section_contents.group_by(&:position).values.each do |row|
+
+      content = view.content_tag :div, class: 'container' do
+
+        view.content_tag :div, class: 'row' do
+
+          inner_buffer = ::ActionView::OutputBuffer.new
+
+          row.each do |website_section_content|
+
+            innner_content = view.content_tag :div, class: "col-md-#{(12/row.count)}" do
+
+              view.raw website_section_content.website_html.nil? ? '' : (website_section_content.website_html)
+
+            end # col
+
+            inner_buffer << innner_content
+          end
+
+          view.raw inner_buffer
+
+        end # row
+
+      end # container
+
+      buffer << content
+    end # each row
+
+    buffer
+  end
 
   protected
 
@@ -246,5 +282,3 @@ class WebsiteSection < ActiveRecord::Base
   end
 
 end
-
-

@@ -2,9 +2,9 @@ module Knitkit
   class WebsiteSectionsController < BaseController
 
     def index
-      @contents = Article.find_published_by_section(@active_publication, @website_section)
+      @contents = Component.find_published_by_section(@active_publication, @website_section)
       layout = @website_section.get_published_layout(@active_publication)
-
+      
       if params[:is_mobile]
         layout.nil? ? (render :layout => false) : (render :inline => layout, :layout => false)
       elsif layout.nil?
@@ -14,6 +14,6 @@ module Knitkit
       end
 
     end
-    
+
   end
 end

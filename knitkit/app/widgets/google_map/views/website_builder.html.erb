@@ -1,0 +1,44 @@
+<div id='<%= @uuid %>' style='width: 100%;height:<%=@map_height%>px;border:solid 1px black;'></div>
+<script type='text/javascript'>
+ //we do not want to load google libraries more than once.
+ window.codeAddress = function (dropPins, map) {
+     var geocoder = new google.maps.Geocoder();
+     jQuery.each(dropPins, function (index, dropPin) {
+         geocoder.geocode({ 'address': dropPin['address']}, function (results, status) {
+             if (status == google.maps.GeocoderStatus.OK) {
+                 map.setCenter(results[0].geometry.location);
+                 new google.maps.Marker({
+                     map: map,
+                     animation: google.maps.Animation.DROP,
+                     position: results[0].geometry.location,
+                     title: dropPin['title']
+                 });
+             } else {
+                 alert("Geocode was not successful for the following reason: " + status);
+             }
+         });
+     });
+ }
+ 
+ window.loadMap_<%=@uuid%> = function () {
+     var myOptions = {
+         zoom: <%=@zoom%>,
+         mapTypeId: google.maps.MapTypeId.<%=@map_type%>
+     };
+
+     var map_<%=@uuid%> = new google.maps.Map(document.getElementById('<%=@uuid%>'), myOptions);
+     var dropPins = <%=raw @drop_pins.to_json%>;
+     window.codeAddress(dropPins, map_<%=@uuid%>)
+ };
+ 
+ if (!window.mapJsLoaded) {
+     new OnDemandLoadByAjax().load('https://maps.google.com/maps/api/js?sensor=false&key=AIzaSyBwxWKbuDm04EY_8hMB6M7kIebDwvimKpQ', function(){
+         window.mapJsLoaded = true;
+         window.loadMap_<%=@uuid%>();
+     });
+ }
+ else {
+     setTimeout(window.loadMap_<%=@uuid%>, 1000);
+ }
+ 
+</script>

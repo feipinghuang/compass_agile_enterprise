@@ -9,6 +9,8 @@ module Widgets
         render
       end
 
+      alias :website_builder :index
+      
       def new
         @website = Website.find_by_host(request.host_with_port)
         @configuration = @website.configurations.first

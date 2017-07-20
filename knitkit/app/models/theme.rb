@@ -9,12 +9,20 @@ class Theme < ActiveRecord::Base
   @base_layouts_views_path = "#{Knitkit::Engine.root.to_s}/app/views"
   @knitkit_website_stylesheets_path = "#{Knitkit::Engine.root.to_s}/app/assets/stylesheets/knitkit"
   @knitkit_website_javascripts_path = "#{Knitkit::Engine.root.to_s}/app/assets/javascripts/knitkit"
-  @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/public/images/knitkit"
+  @knitkit_website_images_path = "#{Knitkit::Engine.root.to_s}/app/assets/images/knitkit"
+  @knitkit_component_images_path = "#{Knitkit::Engine.root.to_s}/public/images/components"
   @knitkit_website_fonts_path = "#{Knitkit::Engine.root.to_s}/app/assets/fonts/knitkit"
 
+  is_json :meta_data
   protected_with_capabilities
   has_file_assets
 
+  def to_data_hash
+    {
+      id: self.id,
+      url: self.url,
+    }
+  end
 
   validates :name, :presence => {:message => 'Name cannot be blank'}
   validates_uniqueness_of :theme_id, :scope => :website_id, :case_sensitive => false
@@ -70,8 +78,8 @@ class Theme < ActiveRecord::Base
 
   class << self
     attr_accessor :base_layouts_views_path, :knitkit_website_stylesheets_path,
-                  :knitkit_website_images_path, :knitkit_website_javascripts_path,
-                  :knitkit_website_fonts_path
+      :knitkit_website_images_path, :knitkit_website_javascripts_path,
+      :knitkit_website_fonts_path, :knitkit_component_images_path
 
     def import_download_item(tempfile, website)
       name_and_id = tempfile.gsub(/(^.*(\\|\/))|(\.zip$)/, '')
@@ -302,47 +310,162 @@ class Theme < ActiveRecord::Base
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_stylesheets_path, :preload => true), :stylesheets, :path_to_replace => Theme.knitkit_website_stylesheets_path)
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_javascripts_path, :preload => true), :javascripts, :path_to_replace => Theme.knitkit_website_javascripts_path)
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_images_path, :preload => true), :images, :path_to_replace => Theme.knitkit_website_images_path)
+    create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_component_images_path, :preload => true), :component_images, :path_to_replace => Theme.knitkit_component_images_path)
     create_theme_files_for_directory_node(file_support.build_tree(Theme.knitkit_website_fonts_path, :preload => true), :fonts, :path_to_replace => Theme.knitkit_website_fonts_path)
+  end
+
+  def get_layout_component(comp_type)
+    meta_data[comp_type.to_s]
+  end
+
+  def update_base_layout!(header_source=nil, footer_source=nil)
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+    theme_path = File.join(path, "templates", "shared", "knitkit")
+
+    if header_source
+      # strip off design specific HTML
+      header_design_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(header_source)
+      website_header = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(header_design_html)
+      file_support.update_file(File.join(theme_path, "_header.html.erb"), website_header)
+      meta_data['header'] ||= {}
+      meta_data['header']['builder_html'] = header_design_html
+    else
+      reset_design_layout!('header')
+    end
+
+    if footer_source
+      # strip off design specific HTML
+      footer_design_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(footer_source)
+      website_footer = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(footer_design_html)
+      file_support.update_file(File.join(theme_path, "_footer.html.erb"), website_footer)
+      meta_data['footer'] ||= {}
+      meta_data['footer']['builder_html'] = footer_design_html
+    else
+      reset_design_layout!('footer')
+    end
+
+    self.save!
+  end
+
+  def init_design_layout!
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+    
+    ['header', 'footer'].each do |template|
+      template_path = File.join(path, "templates", "shared", "knitkit", "_#{template}.html.erb")
+      template_contents = file_support.get_contents(template_path).first
+      meta_data[template] ||= {}
+      # copy the contents of the _header and _footer partials
+      # to builder_html and initial_builder_html.
+      meta_data[template]['builder_html'] = template_contents
+      # we need to store the blueprint incase somebody deletes them
+      # we can reset the theme's state to what it was during creation
+      meta_data[template]['initial_builder_html'] = template_contents
+    end
+
+    self.save!
+  end
+
+  def reset_design_layout!(template)
+    file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
+    template_path = File.join(path, "templates", "shared", "knitkit", "_#{template}.html.erb")
+    meta_data[template] ||= {}
+    # reset the builder_html to restore the template to its original value
+    meta_data[template]['builder_html'] = meta_data[template]['initial_builder_html']
+    self.save!
+    file_support.update_file(template_path, meta_data[template]['builder_html'])
+  end
+
+  def block_templates(type, blocks=[], node=nil)
+    file_support = ErpTechSvcs::FileSupport::Base.new(
+      storage: Rails.application.config.erp_tech_svcs.file_storage
+    )
+   
+    unless node
+      path = File.join(file_support.root, self.url, 'templates', 'components', type.to_s)
+      node = file_support.build_tree(path, :preload => true)
+    end
+
+    node[:children].each do |child_node|
+      if child_node[:leaf]
+        name = File.basename(File.basename(child_node[:text], ".*"), ".*")
+
+        blocks.push({
+                      type: type,
+                      name: name,
+                      path: child_node[:id],
+                      thumbnail_url: File.join(ErpTechSvcs::Config.installation_url, 'sites', website.iid, 'themes', theme_id, 'images', 'components', type.to_s, "#{name}.png")
+        })
+      else
+        self.block_templates(type, blocks, child_node)
+      end
+
+    end
+
+    blocks
   end
 
   private
 
   def create_theme_files_for_directory_node(node, type, options={})
+    ignored_dirs = ['website_builder']
+
     if node
       node[:children].each do |child_node|
-        child_node[:leaf] ? save_theme_file(child_node[:id], type, options) : create_theme_files_for_directory_node(child_node, type, options)
+        unless ignored_dirs.any? { |w| child_node[:id] =~ /#{w}/ }
+          child_node[:leaf] ? save_theme_file(child_node[:id], type, options) : create_theme_files_for_directory_node(child_node, type, options)
+        end
       end
     end
   end
 
   def save_theme_file(path, type, options)
     ignored_css = [
-        'bootstrap.min.css',
-        'inline_editing.css',
+      'captcha.css',
+      'bootstrap.min.css',
+      'bootstrap-tagsinput.css',
+      'inline_editing.css',
+      'font-awesome.css',
+      'flat-ui-pro.css',
+      'flat-ui-pro.map',
     ]
 
     ignored_js = [
-        'additional-methods.min',
-        'bootstrap.min.js',
-        'confirm-bootstrap.js',
-        'inline_editing.js',
-        'jquery.maskedinput.min.js',
-        'jquery.validate.min.js'
+      'additional-methods.min',
+      'bootstrap-tagsinput.js',
+      'bootstrap.min.js',
+      'captcha.js',
+      'confirm-bootstrap.js',
+      'inline_editing.js',
+      'jquery.maskedinput.min.js',
+      'jquery.validate.min.js',
+      'js.cookie.js',
+      'jsrender.min.js'
     ]
 
     ignored_files = (ignored_css | ignored_js).flatten
 
     unless ignored_files.any? { |w| path =~ /#{w}/ }
       contents = IO.read(path)
-      contents.gsub!("<%= stylesheet_link_tag 'knitkit/custom' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','custom.css' %>") unless path.scan('base.html.erb').empty?
+
+      # Update header and footer
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/header' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','header.css' %>") unless path.scan('_header.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/footer' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','footer.css' %>") unless path.scan('_footer.html.erb').empty?
+
+      # Update base.html.erb
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/content' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','content.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/video' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','video.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/submenu' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','submenu.css' %>") unless path.scan('base.html.erb').empty?
+      contents.gsub!("<%= stylesheet_link_tag 'knitkit/style' %>", "<%= theme_stylesheet_link_tag '#{self.theme_id}','style.css' %>") unless path.scan('base.html.erb').empty?
       contents.gsub!("<%= javascript_include_tag 'knitkit/theme' %>", "<%= theme_javascript_include_tag '#{self.theme_id}','theme.js' %>") unless path.scan('base.html.erb').empty?
 
       path = case type
-               when :widgets
-                 path.gsub(options[:path_to_replace], "#{self.url}/widgets/#{options[:widget_name]}")
-               else
-                 path.gsub(options[:path_to_replace], "#{self.url}/#{type.to_s}")
-             end
+      when :widgets
+        path.gsub(options[:path_to_replace], "#{self.url}/widgets/#{options[:widget_name]}")
+      when :component_images
+        path.gsub(options[:path_to_replace], "#{self.url}/images/components")
+      else
+        path.gsub(options[:path_to_replace], "#{self.url}/#{type.to_s}")
+      end
 
       self.add_file(contents, path)
     end

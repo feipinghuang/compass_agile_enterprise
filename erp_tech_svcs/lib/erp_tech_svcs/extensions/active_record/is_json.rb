@@ -62,6 +62,7 @@ module ErpTechSvcs
           def with_json_attribute(attr_name, attr, keyword)
             where(self.matches_is_json(attr_name, keyword, attr))
           end
+          alias :with_json_attr :with_json_attribute
         end
 
         module InstanceMethods

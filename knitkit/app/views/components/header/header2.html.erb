@@ -1,0 +1,39 @@
+<div class="page">
+    <div class="item header padding-bottom-0" data-container="header2">
+        <div class="wrapper">
+            <div class="container">
+                <nav role="navigation" class="navbar plain margin-top-20">
+                    <div class="navbar-header">
+                        <button data-target="#navbar-collapse-02" data-toggle="collapse" class="navbar-toggle" type="button">
+                            <span class="sr-only">Toggle navigation</span>
+                        </button>
+                        <a href="#" class="navbar-brand" data-selector="nav a" style="outline: none; cursor: inherit;">
+                            <img alt="" src="/assets/knitkit/website_builder/icons/brush.svg" style="height: 45px; outline: none; cursor: inherit;" data-selector="img"> HTML Builder
+                        </a>
+                    </div>
+                    <div id="navbar-collapse-02" class="collapse navbar-collapse">
+                        <div class="nav navbar-nav navbar-right">
+                            <div class="nav navbar-nav navbar-right" style="padding-left: 12px;" data-widget-statement="render_widget :login,
+                                                                                        :action => :login_header,
+                                                                                        :params => {:login_url => '/login', :signup_url => '/sign-up'} ">
+                            <%= render_widget :login,
+                              :action => :login_header,
+                              :params => {:login_url => '/login', :signup_url => '/sign-up'} %>     
+                          </div>  
+  
+                          <div class="nav navbar-nav navbar-right" style="width:300px;margin-right:10px;" data-widget-statement="render_widget :search,
+                                                                                          :action => :index,
+                                                                                          :params => {:redirect_results => true, :results_permalink => '/search-results'}">   
+                            <%= render_widget :search,
+                              :action => :index,
+                              :params => {:redirect_results => true, :results_permalink => '/search-results'} %>
+                          </div>
+
+                            <%= content_for?(:menu) ? yield(:menu) : render_menu(@contents) %>
+                        </ul>
+                    </div><!-- /.navbar-collapse -->
+                </nav>
+            </div><!-- /.container -->
+        </div><!-- /.wrpaper -->
+    </div><!-- /.wrapper --><!-- /.item -->
+</div>

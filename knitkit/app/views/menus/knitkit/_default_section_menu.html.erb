@@ -1,26 +1,24 @@
-<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-  <%
-     selected_section_parent = @website_section.nil? ? nil : @website_section.parent
-  %>
-  <% unless @website_sections.nil? %>
-      <ul class="nav navbar-nav">
-        <% @website_sections.each do |section|
-          if section.display_in_menu?
-            if section.allow_access?(current_user, :view)
-              if menu_active?(section, selected_section_parent) %>
-                        <li class="active">
-                    <%
-                       selected_section_parent = section
-                       else
-                    %>
-                        <li>
-                    <% end %>
-                    <a href="<%= section.path %>"><%= section.title %></a>
-                    </li>
-                <% end %>
-            <% end %>
-        <% end %>
-      </ul>
-  <% end %>
-</div>
+<%
+   selected_section_parent = @website_section.nil? ? nil : @website_section.parent
+%>
+<% unless @website_sections.nil? %>
+    <ul class="nav navbar-nav">
+      <% @website_sections.each do |section|
+        if section.display_in_menu?
+          if section.allow_access?(current_user, :view)
+            if menu_active?(section, selected_section_parent) %>
+                      <li class="active">
+                  <%
+                     selected_section_parent = section
+                     else
+                  %>
+                      <li>
+                  <% end %>
+                  <a href="<%= section.path %>"><%= section.title %></a>
+                  </li>
+              <% end %>
+          <% end %>
+      <% end %>
+    </ul>
+<% end %>
 

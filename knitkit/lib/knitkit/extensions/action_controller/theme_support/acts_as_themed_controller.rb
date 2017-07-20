@@ -15,8 +15,8 @@ module Knitkit
 
           module ActMacro
             def acts_as_themed_controller(options = {})
+              generate_is_website_builder_method(options[:website_builder])
               before_filter :add_theme_view_paths
-
               return if acts_as_themed_controller?
               include InstanceMethods
             end
@@ -24,12 +24,24 @@ module Knitkit
             def acts_as_themed_controller?
               included_modules.include?(InstanceMethods)
             end
+
+            def generate_is_website_builder_method(is_website_builder)
+              unless method_defined?(:is_website_builder?)
+                define_method(:is_website_builder?) { is_website_builder }
+              end
+            end
+
           end
 
           module InstanceMethods
             def current_themes
               # the lambda broke in rails 3.2, changing this to an instance variable
-              @current_themes ||= self.website.themes.collect{|t| t if t.active == 1}.compact rescue []
+              # if website_builder options is true, add all themes irrespective of their active status
+              if is_website_builder?
+                @current_themes ||= self.website.themes.compact rescue []
+              else
+                @current_themes ||= self.website.themes.collect{|t| t if t.active == 1}.compact rescue []
+              end
               # @current_themes ||= case accessor = self.class.read_inheritable_attribute(:current_themes)
               # when Symbol then accessor == :current_themes ? raise("screwed") : send(accessor)
               # when Proc   then accessor.call(self)

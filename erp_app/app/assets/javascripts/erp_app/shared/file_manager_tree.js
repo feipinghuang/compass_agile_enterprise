@@ -124,6 +124,7 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                 url: config['url'] || '/erp_app/desktop/file_manager/base/expand_directory',
                 timeout: 60000
             },
+            rootVisible: config.rootVisible || true,
             root: rootConfig,
             fields: config['fields'] || [{
                 name: 'text'
@@ -672,7 +673,7 @@ Ext.define("Compass.ErpApp.Shared.FileManagerTree", {
                                     return false;
                                 }
                                 if (self.fireEvent('downloadfile', this, record)) {
-                                    window.open((self.initialConfig['controllerPath'] || '/erp_app/desktop/file_manager/base') + "/download_file/?path=" + record.data.id, 'mywindow', 'width=400,height=200');
+                                    window.open((self.initialConfig['controllerPath'] || '/erp_app/desktop/file_manager/base') + "/download_file/?path=" + record.data.id, '_blank');
                                 }
                             }
                         }

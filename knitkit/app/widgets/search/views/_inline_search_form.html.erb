@@ -1,23 +1,21 @@
-<div class="col-md-2 pull-right">
-  <!-- this should not be necessary. aren't glyphicons included in  -->
+<%= form_tag '/search-results', :class => "inline-search-header" do %>
+    <div class="input-group">
 
-    <%= form_tag '/search-results', :class => "inline-search-header" do %>
-        <div class="input-group">
-
-            <%= text_field_tag :search_query, @query, class: 'form-control', size: 25, required: true, placeholder: 'Search site...' %>
+        <%= text_field_tag :search_query, @query, class: 'form-control', size: 25, required: true, placeholder: 'Search site...' %>
 
 
-            <%= hidden_field_tag :section_unique_name, @section_unique_name %>
-            <%= hidden_field_tag :content_type, @content_type %>
-            <%= hidden_field_tag :per_page, @per_page %>
+        <%= hidden_field_tag :section_unique_name, @section_unique_name %>
+        <%= hidden_field_tag :content_type, @content_type %>
+        <%= hidden_field_tag :per_page, @per_page %>
 
-            <span class="input-group-btn">
-                <button type="submit" class="btn btn-default">
-                  <span class="glyphicon glyphicon-search"></span>
-                </button>
-            </span>
-        </div>
-    <% end %>
-</div>
+        <span class="input-group-btn">
+            <button type="submit" class="btn btn-default">
+              <span class="glyphicon glyphicon-search"></span>
+            </button>
+        </span>
+    </div>
+<% end %>
+
+
 
 
