@@ -136,9 +136,9 @@ module Knitkit
           begin
             website = Website.find(params[:website_id])
 
-            if params[:website_section_content_id]
+            if params[:website_section_content_id].present?
               website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
-
+              
               html_content = website_section_content.website_html
 
             else
@@ -158,10 +158,10 @@ module Knitkit
                 'templates',
                 'shared',
                 'knitkit',
-                "_#{params[:component_name]}.html.erb"
+                "_#{params[:component_type]}.html.erb"
               )
 
-              html_content = file_support.get_contents(path).first
+              html_content = file_support.get_contents(path).first 
 
             end
 
@@ -184,8 +184,8 @@ module Knitkit
         def save_component_source
           begin
             component_source = params[:source]
-
-            if !params[:template_type].blank?
+            component_type = params[:component_type]
+            if component_type.present? and ['header', 'footer'].include?(component_type)
               theme = website.themes.first
 
               file_support = ErpTechSvcs::FileSupport::Base.new(
@@ -202,11 +202,11 @@ module Knitkit
                 'templates',
                 'shared',
                 'knitkit',
-                "_#{params[:template_type]}.html.erb"
+                "_#{params[:component_type]}.html.erb"
               )
-
+              
               file_support.update_file(path, component_source)
-              theme.meta_data[params[:template_type]]['builder_html'] = component_source
+              theme.meta_data[component_type]['builder_html'] = component_source
               theme.save!
             else
               website_section_content = WebsiteSectionContent.where(id: params[:website_section_content_id]).first
