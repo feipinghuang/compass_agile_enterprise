@@ -23,7 +23,8 @@ module API
 
 =end
 
-      def index
+
+    def index
         sort = nil
         dir = nil
         limit = nil
@@ -79,7 +80,6 @@ module API
         end
 
       end
-
 =begin
 
  @api {get} /api/v1/product_types/:id
@@ -97,12 +97,25 @@ module API
 
 =end
 
+
       def show
         product_type = ProductType.find(params[:id])
 
-        render :json => {success: true,
-                         product_type: product_type.to_data_hash}
-      end
+        respond_to do |format|
+          # if a tree format was requested then respond with the children of this ProductType
+          format.tree do
+            render :json => {success: true, product_types: ProductType.where(parent_id: product_type).order("sequence ASC").collect { |child| child.to_data_hash }}
+          end
+
+          # if a json format was requested then respond with the ProductType in json format
+          format.json do
+            render :json => {success: true, product_type: product_type.to_data_hash}
+          end
+        end
+
+      render :json => {success: true,
+                       product_type: product_type.to_data_hash}
+    end
 
 =begin
 
@@ -118,13 +131,14 @@ module API
  @apiParam (body) {String} [comment] Comment to set
  @apiParam (body) {String} [party_role] RoleType Internal Identifier to set for the passed party
  @apiParam (body) {Number} [party_id] Id of Party to associate to this ProductType, used to associate a Vendor to a ProductType for example
-
  @apiSuccess (200) {Object} create_product_type_response Response.
+
  @apiSuccess (200) {Boolean} create_product_type_response.success True if the request was successful
  @apiSuccess (200) {Object} create_product_type_response.product_type ProductType record
  @apiSuccess (200) {Number} create_product_type_response.product_type.id Id of ProductType
 
 =end
+
 
       def create
         begin
@@ -132,7 +146,7 @@ module API
             product_type = ProductType.new
             product_type.description = params[:description]
             product_type.sku = params[:sku]
-            product_type.unit_of_measurement_id = UnitOfMeasurement.iid(params[:unit_of_measurement])
+            product_type.unit_of_measurement_id = params[:unit_of_measurement]
             product_type.comment = params[:comment]
 
             product_type.created_by_party = current_user.party
@@ -152,11 +166,11 @@ module API
               product_type_party_role.role_type = RoleType.iid(party_role)
               product_type_party_role.save
             end
-
-
-            render :json => {success: true,
-                             product_type: product_type.to_data_hash}
           end
+
+          render :json => {success: true,
+                           product_type: product_type.to_data_hash}
+
         rescue ActiveRecord::RecordInvalid => invalid
 
           render :json => {success: false, message: invalid.record.errors.full_messages.join(', ')}
@@ -171,7 +185,6 @@ module API
           render :json => {success: false, message: 'Could not create product type'}
         end
       end
-
 =begin
 
  @api {put} /api/v1/product_types/:id
@@ -193,26 +206,16 @@ module API
 
 =end
 
-      def update
+
+    def update
         begin
           ActiveRecord::Base.transaction do
             product_type = ProductType.find(params[:id])
 
-            if params[:description]
-              product_type.description = params[:description]
-            end
-
-            if params[:sku]
-              product_type.sku = params[:sku]
-            end
-
-            if params[:unit_of_measurement]
-              product_type.unit_of_measurement_id = params[:unit_of_measurement]
-            end
-
-            if params[:comment]
-              product_type.comment = params[:comment]
-            end
+            product_type.description = params[:description]
+            product_type.sku = params[:sku]
+            product_type.unit_of_measurement_id = params[:unit_of_measurement]
+            product_type.comment = params[:comment]
 
             product_type.updated_by_party = current_user.party
 
@@ -235,7 +238,6 @@ module API
           render :json => {success: false, message: 'Could not update product type'}
         end
       end
-
 =begin
 
  @api {delete} /api/v1/product_types/:id
@@ -244,14 +246,14 @@ module API
  @apiGroup ProductType
  @apiDescription Delete Product Type
 
- @apiParam (param) {Integer} id Id of record to delete 
+ @apiParam (param) {Integer} id Id of record to delete
 
  @apiSuccess (200) {Object} delete_product_type_response Response.
  @apiSuccess (200) {Boolean} delete_product_type_response.success True if the request was successful
 
 =end
 
-      def destroy
+    def destroy
         ProductType.find(params[:id]).destroy
 
         render :json => {:success => true}
