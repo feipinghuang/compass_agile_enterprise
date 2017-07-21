@@ -27,12 +27,10 @@
               :action => :index,
               :params => {:redirect_results => true, :results_permalink => '/search-results'} %>
             </div>
-
+            
             <%= content_for?(:menu) ? yield(:menu) : render_menu(@contents) %>
-                        </ul>
           </div><!-- /.navbar-collapse -->
       </nav>
-        </div><!-- /.container -->
     </div><!-- /.wrpaper -->
   </div><!-- /.wrapper --><!-- /.item -->
 </div>
