@@ -9,8 +9,8 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function(self, i
             iconCls: 'icon-document_lock',
             listeners: {
                 'click': function() {
-                    var westRegion = Ext.getCmp('knitkitWestRegion');
-                    westRegion.changeSecurity(record, '/knitkit/erp_app/desktop/section/update_security', sectionId);
+                    var siteStructurePanel = Ext.getCmp('knitkitWestRegion').down('knitkit_sitestructuretabpanel');
+                    siteStructurePanel.changeSecurity(record, '/knitkit/erp_app/desktop/section/update_security', sectionId);
                 }
             }
         });
