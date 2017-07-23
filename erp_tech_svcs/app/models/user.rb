@@ -204,6 +204,7 @@ class User < ActiveRecord::Base
 
     file_asset = self.party.add_file(data, File.join(file_support.root, 'file_assets', 'user', self.id.to_s, 'profile_image', file_name))
     file_asset.add_scope('is_profile_image', true)
+    file_asset.add_scope('field_name', 'profile_image')
   end
 
   def email_cannot_match_username_of_other_user
