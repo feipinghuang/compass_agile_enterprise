@@ -350,6 +350,8 @@ class ProductType < ActiveRecord::Base
           is_base: false
       )
 
+      variant_product_type.description = "#{self.description} Variant" + variant_product_type.id.to_s
+
       variant_product_type.move_to_child_of(parent_variant_product_type)
 
       variant_features_set.each do |variant_feature|
@@ -436,6 +438,54 @@ class ProductType < ActiveRecord::Base
     children.length > 0
   end
 
+  # helpers to grab inventory counts
+  def number_in_stock
+    number_in_stock = 0.0
+    if is_base
+      children.each do |child_product_type|
+        child_product_type.inventory_entries.each do |inventory_entry|
+          number_in_stock += inventory_entry.number_in_stock
+        end
+      end
+    else
+      inventory_entries.each do |inventory_entry|
+        number_in_stock += inventory_entry.number_in_stock
+      end
+    end
+    number_in_stock
+  end
+
+  def number_available
+    number_available = 0.0
+    if is_base
+      children.each do |child_product_type|
+        child_product_type.inventory_entries.each do |inventory_entry|
+          number_available += inventory_entry.number_available
+        end
+      end
+    else
+      inventory_entries.each do |inventory_entry|
+        number_available += inventory_entry.number_available
+      end
+    end
+    number_available
+  end
+
+  def number_sold
+    number_sold = 0.0
+    if is_base
+      children.each do |child_product_type|
+        child_product_type.inventory_entries.each do |inventory_entry|
+          number_sold += inventory_entry.number_sold
+        end
+      end
+    else
+      inventory_entries.each do |inventory_entry|
+        number_sold += inventory_entry.number_sold
+      end
+    end
+    number_sold
+  end
 
 end
 
