@@ -29,7 +29,6 @@ module Knitkit
 
             # render a piece of content by internal identifier regardless if it belongs to a section or not
             def render_content(iid, website_section = nil)
-              binding.pry
               content = Content.find_by_internal_identifier(iid)
               content_version = Content.get_published_version(@active_publication, content) unless @active_publication.nil?
               content_version = content if @active_publication.nil? or content_version.nil?

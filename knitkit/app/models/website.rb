@@ -352,8 +352,17 @@ class Website < ActiveRecord::Base
   end
 
   def save_section_layout_to_file(sections_path, website_section)
+    section_path = Pathname.new(File.join(sections_path, website_section.internal_identifier))
+    FileUtils.mkdir_p(section_path)
     unless website_section.layout.blank?
-      File.open(File.join(sections_path, "#{website_section.permalink}.rhtml"), 'wb+') { |f| f.puts(website_section.layout) }
+      File.open(File.join(section_path, "layout.rhtml"), 'wb+') { |f| f.puts(website_section.layout) }
+    end
+    
+    website_section.website_section_contents.each do |section_content|
+      section_contents_path = Pathname.new(File.join(section_path, 'section_contents', section_content.id.to_s))
+      FileUtils.mkdir_p(section_contents_path)
+      File.open(File.join(section_contents_path, "website_html.rhtml"), 'wb+') { |f| f.puts(section_content.website_html) }
+      File.open(File.join(section_contents_path, "builder_html.rhtml"), 'wb+') { |f| f.puts(section_content.builder_html) }
     end
 
     # we need to handle child sections because internal identifier uniqueness is scoped by parent_id and website_id
@@ -367,6 +376,7 @@ class Website < ActiveRecord::Base
       end
     end
   end
+
 
   def export_template
     tmp_dir = Website.make_tmp_dir

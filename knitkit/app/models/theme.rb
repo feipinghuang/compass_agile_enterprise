@@ -230,7 +230,7 @@ class Theme < ActiveRecord::Base
   end
 
   def about
-    %w(name author version homepage summary).inject({}) do |result, key|
+    %w(name author version homepage summary meta_data).inject({}) do |result, key|
       result[key] = send(key)
       result
     end

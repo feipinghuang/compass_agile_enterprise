@@ -189,7 +189,8 @@ class WebsiteSection < ActiveRecord::Base
       :internal_identifier => self.internal_identifier,
       :render_base_layout => self.render_base_layout,
       :position => self.position,
-      :sections => self.children.each.map { |child| child.build_section_hash }
+      :sections => self.children.each.map { |child| child.build_section_hash },
+      :section_contents => self.website_section_contents.map { |section_content| section_content.build_section_content_hash}
     }
 
     self.contents.each do |content|
