@@ -4,22 +4,20 @@ module API
 
 =begin
 
- @api {get} /api/v1/parties
+ @api {get} /api/v1/parties Index
  @apiVersion 1.0.0
  @apiName GetParties
  @apiGroup Party
- @apiDescription Get Parties
 
  @apiParam {String} [role_types] Comma delimitted string of RoleTypes to filter by
  @apiParam {Integer} [id] Id of a particular party to filter by
  @apiParam {Boolean} [include_child_roles] True to include child RoleTypes when filtering by RoleTypes
  @apiParam {Boolean} [include_descendants] True to include parties that are related to a parent DBA Organization in the result set
 
- @apiSuccess (200) {Object} get_parties_response Response.
- @apiSuccess (200) {Boolean} get_parties_response.success True if the request was successful
- @apiSuccess (200) {Number} get_parties_response.total_count Total count of Party records based on any filters applied
- @apiSuccess (200) {Object[]} get_parties_response.parties List of Party records
- @apiSuccess (200) {Number} get_parties_response.parties.id Id of Party
+ @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess {Number} total_count Total count of Party records based on any filters applied
+ @apiSuccess {Array} parties List of Party records
+ @apiSuccess {Number} parties.id Id of Party
 
 =end
 
@@ -87,16 +85,14 @@ module API
 
 =begin
 
- @api {get} /api/v1/parties/:id
+ @api {get} /api/v1/parties/:id Show
  @apiVersion 1.0.0
  @apiName GetParty
  @apiGroup Party
- @apiDescription Get Party
 
- @apiSuccess (200) {Object} get_party_response Response.
- @apiSuccess (200) {Boolean} get_party_response.success True if the request was successful
- @apiSuccess (200) {Object} get_party_response.party Party
- @apiSuccess (200) {Number} get_party_response.party.id Id
+ @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess {Object} party Party record
+ @apiSuccess {Number} party.id Id of Party
 
 =end
 
@@ -118,11 +114,10 @@ module API
 
 =begin
 
-  @api {post} /api/v1/parties
+  @api {post} /api/v1/parties Create
   @apiVersion 1.0.0
   @apiName CreateParty
   @apiGroup Party
-  @apiDescription Create Party
 
   @apiParam {String} [role_types] Comma seperated list of RoleType Internal Identifiers to apply to this Party
   @apiParam {String} business_party Type of Party to create Organization | Individual
@@ -130,10 +125,9 @@ module API
   @apiParam {String} first_name First name of Party
   @apiParam {String} last_name Last name of Party
 
-  @apiSuccess (200) {Object} create_party_response Response.
-  @apiSuccess (200) {Boolean} create_party_response.success True if the request was successful
-  @apiSuccess (200) {Object} create_party_response.party Party
-  @apiSuccess (200) {Number} create_party_response.party.id Id
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} party Party record
+  @apiSuccess {Number} party.id Id of Party
 
 =end
 
@@ -188,21 +182,19 @@ module API
 
 =begin
 
-  @api {put} /api/v1/parties/:id
+  @api {put} /api/v1/parties/:id Update
   @apiVersion 1.0.0
   @apiName CreateParty
   @apiGroup Party
-  @apiDescription Update Party
 
   @apiParam {String} [role_types] Comma seperated list of RoleType Internal Identifiers to apply to this Party
   @apiParam {String} description Description of Party
   @apiParam {String} first_name First name of Party
   @apiParam {String} last_name Last name of Party
 
-  @apiSuccess (200) {Object} update_party_response Response.
-  @apiSuccess (200) {Boolean} update_party_response.success True if the request was successful
-  @apiSuccess (200) {Object} update_party_response.party Party
-  @apiSuccess (200) {Number} update_party_response.party.id Id
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} party Party record
+  @apiSuccess {Number} party.id Id of Party
 
 =end
 
@@ -254,16 +246,12 @@ module API
 
 =begin
 
-  @api {delete} /api/v1/parties/:id
+  @api {delete} /api/v1/parties/:id Delete
   @apiVersion 1.0.0
   @apiName DeleteParty
   @apiGroup Party
-  @apiDescription Delete Party
 
   @apiSuccess {Boolean} success True if the request was successful
-
-  @apiSuccess (200) {Object} delete_party_response Response.
-  @apiSuccess (200) {Boolean} delete_party_response.success True if the request was successful
 
 =end
 
@@ -279,12 +267,10 @@ module API
   @apiVersion 1.0.0
   @apiName UpdatePartyRoles
   @apiGroup Party
-  @apiDescription Update roles for a party
 
   @apiParam {String} [role_type_iids] Comma seperated list of RoleType Internal Identifiers to apply to this Party
-  
-  @apiSuccess (200) {Object} update_party_roles_response Response.
-  @apiSuccess (200) {Boolean} update_party_roles_response.success True if the request was successful
+
+  @apiSuccess {Boolean} success True if the request was successful
 
 =end
 

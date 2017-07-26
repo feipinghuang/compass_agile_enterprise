@@ -7,13 +7,13 @@ module API
  @api {get} /api/v1/phone_numbers Index
  @apiVersion 1.0.0
  @apiName GetPhoneNumbers
- @apiGroup PhoneNumber
+ @apiGroup Phone Number
 
  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
 
  @apiSuccess {Boolean} success True if the request was successful
  @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object[]} phone_numbers List of PhoneNumber records
+ @apiSuccess {Array} phone_numbers List of PhoneNumber records
  @apiSuccess {Number} phone_numbers.id Id of PhoneNumber
 
 =end
@@ -62,11 +62,11 @@ module API
  @api {get} /api/v1/phone_numbers/:id Index
  @apiVersion 1.0.0
  @apiName GetPhoneNumbers
- @apiGroup PhoneNumber
+ @apiGroup Phone Number
 
  @apiSuccess {Boolean} success True if the request was successful
  @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object} phone_number Phone Number record
+ @apiSuccess {Array} phone_numbers List of PhoneNumber records
  @apiSuccess {Number} phone_numbers.id Id of PhoneNumber
 
 =end
@@ -138,7 +138,7 @@ module API
   @api {put} /api/v1/phone_numbers/:id Update
   @apiVersion 1.0.0
   @apiName UpdatePhoneNumber
-  @apiGroup PhoneNumber
+  @apiGroup Phone Number
 
   @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
   @apiParam {String} [phone_number] Email Address
@@ -202,7 +202,7 @@ module API
   @api {delete} /api/v1/phone_numbers/:id Delete
   @apiVersion 1.0.0
   @apiName DeletePhoneNumber
-  @apiGroup PhoneNumber
+  @apiGroup Phone Number
 
   @apiSuccess {Boolean} success True if the request was successful
 

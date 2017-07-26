@@ -4,20 +4,13 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_options
+  @api {get} /api/v1/product_options Index
   @apiVersion 1.0.0
   @apiName GetProductOptions
   @apiGroup ProductOption
-  @apiDescription Get Product Option
 
-  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
-  @apiParam (query) {Number} [product_option_type_id] Id of ProductOptionType to filter by
-
-  @apiSuccess (200) {Object} get_product_options_response Response.
-  @apiSuccess (200) {Boolean} get_product_options_response.success If the request was sucessful
-  @apiSuccess (200) {Number} get_product_options_response.total_count Total count of records 
-  @apiSuccess (200) {Object[]} get_product_options_response.product_options ProductOption records
-  @apiSuccess (200) {Integer} get_product_options_response.product_options.id Id of ProductOption record  
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} product_options ProductOption records
 
 =end
 
@@ -59,18 +52,13 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_options/:id
+  @api {get} /api/v1/product_options/:id Show
   @apiVersion 1.0.0
   @apiName GetProductOption
   @apiGroup ProductOption
-  @apiDescription Show Product Option  
 
-  @apiParam (query) {Integer} id Id of ProductOption
-
-  @apiSuccess (200) {Object} show_product_option_response Response.
-  @apiSuccess (200) {Boolean} show_product_option_response.success If the request was sucessful  
-  @apiSuccess (200) {Object} show_product_option_response.product_option ProductOption record
-  @apiSuccess (200) {Integer} show_product_option_response.product_option.id Id ProductOption record  
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} product_option ProductOption record
 
 =end
 
@@ -83,20 +71,17 @@ module API
 
 =begin
 
-  @api {post} /api/v1/product_options
+  @api {post} /api/v1/product_options Create
   @apiVersion 1.0.0
   @apiName CreateProductOption
   @apiGroup ProductOption
-  @apiDescription Create Product Option
 
-  @apiParam (body) {Number} product_option_type Id of ProductOptionType
-  @apiParam (body) {String} description Description
-  @apiParam (body) {String} internal_identifier Internal Identifier
+  @apiParam {Integer} product_option_type Id of ProductOptionType
+  @apiParam {String} description Description
+  @apiParam {String} internal_identifier Internal Identifier
 
-  @apiSuccess (200) {Object} create_product_option_response Response.
-  @apiSuccess (200) {Boolean} create_product_option_response.success If the request was sucessful    
-  @apiSuccess (200) {Object} create_product_option_response.product_option ProductOption record
-  @apiSuccess (200) {Integer} create_product_option_response.product_option.id Id ProductOption record    
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} product_option ProductOption record
 
 =end
 
@@ -126,21 +111,16 @@ module API
 
 =begin
 
-  @api {put} /api/v1/product_options/:id
+  @api {put} /api/v1/product_options/:id Update
   @apiVersion 1.0.0
   @apiName UpdateProductOption
   @apiGroup ProductOption
-  @apiDescription Update Product Option  
   
-  @apiParam (query) {Integer} id Id of ProductOption
+  @apiParam {String} [description] Description
+  @apiParam {String} [internal_identifier] Internal Identifier
 
-  @apiParam (body) {String} [description] Description
-  @apiParam (body) {String} [internal_identifier] Internal Identifier
-
-  @apiSuccess (200) {Object} update_product_option_response Response.
-  @apiSuccess (200) {Boolean} update_product_option_response.success If the request was sucessful      
-  @apiSuccess (200) {Object} update_product_option_response.product_option ProductOption record
-  @apiSuccess (200) {Integer} update_product_option_response.product_option.id Id ProductOption record      
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} product_option ProductOption record
 
 =end
 
@@ -170,16 +150,12 @@ module API
 
 =begin
 
-  @api {delete} /api/v1/product_options/:id
+  @api {delete} /api/v1/product_options/:id Delete
   @apiVersion 1.0.0
   @apiName DeleteProductOption
   @apiGroup ProductOption
-  @apiDescription Delete Product Option  
 
-  @apiParam (param) {Integer} id Id of record to delete 
-
-  @apiSuccess (200) {Object} delete_product_option_response Response.
-  @apiSuccess (200) {Boolean} delete_product_option_response.success If the request was sucessful        
+  @apiSuccess {Boolean} success True if the request was successful
 
 =end
 
