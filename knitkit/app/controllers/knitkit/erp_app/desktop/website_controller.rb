@@ -4,12 +4,12 @@ module Knitkit
       class WebsiteController < Knitkit::ErpApp::Desktop::AppController
         IGNORED_PARAMS = %w{action controller id}
 
-        before_filter :set_website, :only => [:build_content_tree, :export, :exporttemplate, :website_publications, :set_viewing_version,
+        before_filter :set_website, :only => [:build_content_tree, :export_template, :website_publications, :set_viewing_version,
                                               :build_host_hash, :activate_publication, :publish, :update, :delete]
 
         def index
           websites = Website.joins(:website_party_roles)
-          .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
+                       .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
           .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
 
           render json: {
@@ -43,10 +43,10 @@ module Knitkit
                 # get child sections
                 nodes = website_section.positioned_children.map { |child| build_section_hash(child) }
 
-                # get child articles
-                website_section.website_section_contents.order('position').each do |website_section_content|
-                  nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
-                end
+                # # get child articles
+                # website_section.website_section_contents.order('position').each do |website_section_content|
+                #   nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
+                # end
 
               else
                 raise 'Unknown Node Type'
@@ -210,17 +210,8 @@ module Knitkit
             render :json => {:success => false, :message => ex.message}
           end
         end
-
-        def export
-          zip_path = @website.export
-          begin
-            send_file(zip_path.to_s, :stream => false)
-          rescue StandardError => ex
-            raise "Error sending #{zip_path} file"
-          end
-        end
-
-        def exporttemplate
+        
+        def export_template
           zip_path = @website.export_template
           if zip_path
             begin
@@ -231,22 +222,6 @@ module Knitkit
           else
             render :inline => {:success => false, :message => 'test'}.to_json
           end
-        end
-
-        # TODO add role restriction to this
-        def import
-          website, message = Website.import(params[:website_data], current_user)
-
-          if website
-            render :inline => {:success => true, :website => website.to_hash(:only => [:id, :name])}.to_json
-          else
-            render :inline => {:success => false, :message => message}.to_json
-          end
-          WebsitePartyRole.create(website: website,
-                                  party: current_user.party.dba_organization,
-                                  role_type: RoleType.iid('dba_org'))
-        ensure
-          FileUtils.rm_r File.dirname(zip_path) rescue nil
         end
 
         def import_template

@@ -98,7 +98,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.exportWebsiteMenuItem = function(dis
             var knitkitWin = compassDesktop.getModule('knitkit-win'),
                 websiteId = knitkitWin.currentWebsite.id;
 
-            window.open('/knitkit/erp_app/desktop/site/export?website_id=' + websiteId, '_blank');
+            window.open('/knitkit/erp_app/desktop/site/export_template?website_id=' + websiteId, '_blank');
         }
     };
 };
@@ -328,7 +328,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu = function() {
                                 frame: false,
                                 fileUpload: true,
                                 bodyStyle: 'padding:5px 5px 0',
-                                url: '/knitkit/erp_app/desktop/site/import',
+                                url: '/knitkit/erp_app/desktop/site/import_template',
                                 defaults: {
                                     width: 320
                                 },

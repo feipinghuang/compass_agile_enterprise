@@ -102,8 +102,8 @@ module Knitkit
           content = website_section_content.content
 
           {
-              recordType: 'Article',
-              recordId: website_section_content.content.id,
+              :recordType => 'Article',
+              :recordId => website_section_content.content.id,
               :objectType => "Article",
               :siteId => website.id,
               :content_area => website_section_content.content_area,

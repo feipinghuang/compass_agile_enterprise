@@ -31,7 +31,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
             'websiteselected'
         );
     },
-
+    
     clearWebsite: function() {
         var self = this,
             desktop = self.app.getDesktop(),
@@ -54,7 +54,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         menuBar.down('#websiteInquiresMenuItem').disable();
         menuBar.down('#publishWebsiteMenuItem').disable();
         menuBar.down('#editWebsiteMenuItem').disable();
-        menuBar.down('#exportTemplateMenuItem').disable();
     },
 
     selectWebsite: function(website) {
@@ -76,20 +75,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         Compass.ErpApp.Shared.FileManagerTree.extraPostData = {
             website_id: website.id
         };
-
-        Ext.Ajax.request({
-            url: '/knitkit/erp_app/desktop/site/has_active_theme',
-            params: {
-                website_id: website.id
-            },
-            success: function(response) {
-                var text = response.responseText;
-                var obj = Ext.decode(text);
-                if (obj.message == 'true') {
-                    menuBar.down('#exportTemplateMenuItem').enable();
-                }
-            }
-        });
 
         menuBar.down('#themeMenuItem').enable();
         menuBar.down('#navigationMenuItem').enable();
@@ -126,7 +111,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
                             Compass.ErpApp.Desktop.Applications.Knitkit.ThemeMenu(),
                             Compass.ErpApp.Desktop.Applications.Knitkit.NavigationMenu(),
                             Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.TemplateMenu()
                         ]
                     }
                 });

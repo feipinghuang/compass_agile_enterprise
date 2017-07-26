@@ -48,6 +48,7 @@ class Theme < ActiveRecord::Base
           self.version = about['version'] if about['version']
           self.homepage = about['homepage'] if about['homepage']
           self.summary = about['summary'] if about['summary']
+          self.meta_data = about['meta_data'] if about['meta_data']
         else
           name = entry.name.sub(/__MACOSX\//, '')
           name = Theme.strip_path(name, theme_root)

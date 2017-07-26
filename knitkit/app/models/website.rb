@@ -285,16 +285,7 @@ class Website < ActiveRecord::Base
 
     sections_path = Pathname.new(File.join(tmp_dir, 'sections'))
     FileUtils.mkdir_p(sections_path) unless sections_path.exist?
-
-    articles_path = Pathname.new(File.join(tmp_dir, 'articles'))
-    FileUtils.mkdir_p(articles_path) unless articles_path.exist?
-
-    documented_contents_path = Pathname.new(File.join(tmp_dir, 'documented contents'))
-    FileUtils.mkdir_p(documented_contents_path) unless documented_contents_path.exist?
-
-    excerpts_path = Pathname.new(File.join(tmp_dir, 'excerpts'))
-    FileUtils.mkdir_p(excerpts_path) unless excerpts_path.exist?
-
+    
     image_assets_path = Pathname.new(File.join(tmp_dir, 'images'))
     FileUtils.mkdir_p(image_assets_path) unless image_assets_path.exist?
 
@@ -302,22 +293,9 @@ class Website < ActiveRecord::Base
     FileUtils.mkdir_p(file_assets_path) unless file_assets_path.exist?
 
     sections.where('parent_id is null').each do |website_section|
-      save_section_layout_to_file(sections_path, website_section)
+      save_section_data_to_file(sections_path, website_section)
     end
-
-    contents = sections.collect(&:contents).flatten.uniq
-    contents.each do |content|
-      File.open(File.join(articles_path, "#{content.internal_identifier}.html"), 'wb+') { |f| f.puts(content.body_html) }
-      unless content.excerpt_html.blank?
-        File.open(File.join(excerpts_path, "#{content.internal_identifier}.html"), 'wb+') { |f| f.puts(content.excerpt_html) }
-      end
-    end
-
-    online_document_sections.each do |online_documented_section|
-      extension = online_documented_section.use_markdown == true ? 'md' : 'html'
-      File.open(File.join(documented_contents_path, "#{online_documented_section.internal_identifier}.#{extension}"), 'wb+') { |f| f.puts(online_documented_section.documented_item_published_content_html(active_publication)) }
-    end
-
+    
     self.files.where("directory like '%/sites/#{self.iid}/images%'").all.each do |image_asset|
       contents = file_support.get_contents(File.join(file_support.root, image_asset.directory, image_asset.name))
       FileUtils.mkdir_p(File.join(image_assets_path, image_asset.directory))
@@ -351,13 +329,14 @@ class Website < ActiveRecord::Base
 
   end
 
-  def save_section_layout_to_file(sections_path, website_section)
+  def save_section_data_to_file(sections_path, website_section)
     section_path = Pathname.new(File.join(sections_path, website_section.internal_identifier))
     FileUtils.mkdir_p(section_path)
     unless website_section.layout.blank?
       File.open(File.join(section_path, "layout.rhtml"), 'wb+') { |f| f.puts(website_section.layout) }
     end
-    
+
+    # save section contents
     website_section.website_section_contents.each do |section_content|
       section_contents_path = Pathname.new(File.join(section_path, 'section_contents', section_content.id.to_s))
       FileUtils.mkdir_p(section_contents_path)
@@ -372,7 +351,7 @@ class Website < ActiveRecord::Base
       FileUtils.mkdir_p(sections_path) unless sections_path.exist?
 
       website_section.children.each do |website_section_child|
-        save_section_layout_to_file(sections_path, website_section_child)
+        save_section_data_to_file(sections_path, website_section_child)
       end
     end
   end
@@ -455,9 +434,9 @@ class Website < ActiveRecord::Base
         end
       end
 
-      entries = []
       setup_hash = nil
-
+      entries = []
+      
       tmp_dir = Website.make_tmp_dir
       Zip::ZipFile.open(file_path) do |zip|
         zip.each do |entry|
@@ -471,15 +450,23 @@ class Website < ActiveRecord::Base
             entry.get_input_stream { |io| data = io.read }
             data = StringIO.new(data) if data.present?
             setup_hash = YAML.load(data)
+          elsif entry.name =~ /sections\/(\S+)\/layout.rhtml/
+            data = File.open(f_path, "rb") { |io| io.read }
+            entry_hash = {:type => 'sections', :name => $1, :path => entry.name, data: data}
+            entries << entry_hash
+          elsif entry.name =~ /sections\/\S+\/section_contents\/(\d+)\/(website_html|builder_html).rhtml/
+            data = File.open(f_path, "rb") { |io| io.read }
+            entry_hash = {:type => 'section_contents', :website_or_builder => $2, :id => $1, :path => entry.name, data: data}
+            entries << entry_hash
           else
-            type = entry.name.split('/')[0]
+            type = entry.name.split('/').first
             name = entry.name.split('/').last
             next if name.nil?
-
-            if File.exist?(f_path) and !File.directory?(f_path)
-              entry_hash = {:type => type, :name => name, :path => entry.name}
-              entries << entry_hash unless name == 'sections' || name == 'articles' || name == 'excerpts' || name == 'documented contents'
-              entry_hash[:data] = File.open(f_path, "rb") { |io| io.read }
+            f_pathname = Pathname.new(f_path)
+            if f_pathname.file? and !f_pathname.directory?
+              data = File.open(f_path, "rb") { |io| io.read }
+              entry_hash = {:type => type, :name => name, :path => entry.name, :data => data}
+              entries << entry_hash
             end
           end
 
@@ -565,7 +552,6 @@ class Website < ActiveRecord::Base
             website.configurations.first.update_configuration_item(ConfigurationItemType.find_by_internal_identifier('primary_host'), setup_hash[:hosts].first)
             website.save
           end
-
           #handle sections
           setup_hash[:sections].each do |section_hash|
             build_section(section_hash, entries, website, current_user)
@@ -714,7 +700,7 @@ class Website < ActiveRecord::Base
                           :render_base_layout => hash[:render_base_layout])
       section.internal_identifier = hash[:internal_identifier]
       content = entries.find do |entry|
-        entry[:type] == 'sections' and entry[:name] == "#{hash[:permalink]}.rhtml" and entry[:path].split('.')[0] == "sections#{hash[:path]}"
+        entry[:type] == 'sections' and entry[:name] == "#{hash[:permalink].rhtml}" and entry[:path].split('.')[0] == "sections#{hash[:path]}"
       end
 
       section.layout = content[:data] unless content.nil?
@@ -724,59 +710,26 @@ class Website < ActiveRecord::Base
       section.permalink = hash[:permalink]
       section.path = hash[:path]
       section.save
-
-      hash[:articles].each do |article_hash|
-        article = Article.find_by_internal_identifier(article_hash[:internal_identifier])
-        if article.nil?
-          article = Article.new(:title => article_hash[:name], :display_title => article_hash[:display_title])
-          article.created_by = current_user
-          article.tag_list = article_hash[:tag_list].split(',').collect { |t| t.strip() } unless article_hash[:tag_list].blank?
-          article.body_html = entries.find { |entry| entry[:type] == 'articles' and entry[:name] == "#{article_hash[:internal_identifier]}.html" }[:data]
-          content = entries.find { |entry| entry[:type] == 'excerpts' and entry[:name] == "#{article_hash[:internal_identifier]}.html" }
-          unless content.nil?
-            article.excerpt_html = content[:data]
-          end
-
-          # set the currents users dba_org as the dba_org for this content
-          article.add_party_with_role(current_user.party.dba_organization,
-                                      RoleType.iid('dba_org'))
-        end
-        section.contents << article
-        article.update_content_area_and_position_by_section(section, article_hash[:content_area], article_hash[:position])
-      end
+      
       website.website_sections << section
       website.save
 
+      if hash[:section_contents]
+        build_section_content(section, hash[:section_contents], entries)
+      end
+
       if hash[:sections]
         hash[:sections].each do |section_hash|
+          build_section_content(section, section_hash[:section_contents], entries)
           child_section = build_section(section_hash, entries, website, current_user)
           child_section.move_to_child_of(section)
-        end
-      end
-      if section.is_a? OnlineDocumentSection
-        section.use_markdown = hash[:use_markdown]
-        section.save
-        extension_type = hash[:use_markdown] ? 'md' : 'html'
-        entry_data = entries.find { |entry| entry[:type] == 'documented contents' and entry[:name] == "#{section.internal_identifier}.#{extension_type}" }[:data]
-        documented_content = DocumentedContent.create(:title => section.title, :body_html => entry_data)
-        DocumentedItem.create(:documented_content_id => documented_content.id, :online_document_section_id => section.id)
-      end
-      if hash[:online_document_sections]
-        hash[:online_document_sections].each do |section_hash|
-          child_section = build_section(section_hash, entries, website, current_user)
-          child_section.use_markdown = section_hash[:use_markdown]
-          child_section.save
-          child_section.move_to_child_of(section)
-          # CREATE THE DOCUMENTED CONTENT HERE
-          extension_type = section_hash[:use_markdown] ? 'md' : 'html'
-          entry_data = entries.find { |entry| entry[:type] == 'documented contents' and entry[:name] == "#{child_section.internal_identifier}.#{extension_type}" }[:data]
-          documented_content = DocumentedContent.create(:title => child_section.title, :body_html => entry_data)
-          DocumentedItem.create(:documented_content_id => documented_content.id, :online_document_section_id => child_section.id)
         end
       end
 
+      
+      
       #handle security
-      if hash[:roles] #if this is a OnlineDocumentSection will not have roles
+      if hash[:roles]
         unless hash[:roles].empty?
           capability = section.add_capability(:view)
           hash[:roles].each do |role_iid|
@@ -790,6 +743,33 @@ class Website < ActiveRecord::Base
       end
 
       section
+    end
+
+    def build_section_content(section, section_contents, entries)
+      section_contents.each do |section_content_hash|
+        section_content_entries = entries.select do |entry|
+          entry[:type] == 'section_contents' and section_content_hash[:id].to_s == entry[:id]
+        end
+        section_content_entries.each do |section_content_entry|
+          website_section_content = WebsiteSectionContent.where(
+            website_section_id: section.id,
+            position: section_content_hash[:position],
+            col: section_content_hash[:column],
+          ).first
+          if website_section_content
+            website_section_content.send("#{section_content_entry[:website_or_builder]}=", section_content_entry[:data])
+            website_section_content.save
+          else
+            website_section_content = WebsiteSectionContent.new(
+              website_section_id: section.id,
+              position: section_content_hash[:position],
+              col: section_content_hash[:column],
+            )
+            website_section_content.send("#{section_content_entry[:website_or_builder]}=", section_content_entry[:data])
+            website_section_content.save
+          end
+        end
+      end
     end
 
   end
