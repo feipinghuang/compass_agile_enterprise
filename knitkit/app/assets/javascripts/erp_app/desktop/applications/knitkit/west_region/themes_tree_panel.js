@@ -115,51 +115,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
         }).show();
     },
 
-    updateThemeActiveStatus: function(node, active) {
-        var self = this;
-
-        self.initialConfig['centerRegion'].setWindowStatus('Updating Status...');
-
-        Ext.Ajax.request({
-            url: '/knitkit/erp_app/desktop/theme/change_status',
-            method: 'POST',
-            params: {
-                theme_id: node.data.id,
-                website_id: node.data.siteId,
-                active: active
-            },
-            success: function(response) {
-                var obj = Ext.decode(response.responseText);
-                if (obj.success) {
-                    self.initialConfig['centerRegion'].clearWindowStatus();
-
-                    if (active) {
-                        // first update icon for all other theme nodes as they are now deactive
-                        var rootNode = node.getOwnerTree().getRootNode();
-                        rootNode.eachChild(function(childNode) {
-                            childNode.set('iconCls', 'icon-delete');
-                            childNode.set('isActive', false);
-                        });
-
-                        // then update this node to be active
-                        node.set('iconCls', 'icon-add');
-                        node.set('isActive', true);
-                    } else {
-                        node.set('iconCls', 'icon-delete');
-                        node.set('isActive', false);
-                    }
-                } else {
-                    Ext.Msg.alert('Error', 'Error updating status');
-                    self.initialConfig['centerRegion'].clearWindowStatus();
-                }
-            },
-            failure: function(response) {
-                self.initialConfig['centerRegion'].clearWindowStatus();
-                Ext.Msg.alert('Error', 'Error updating status');
-            }
-        });
-    },
-
     showUpdateThemeForm: function(node) {
         Ext.create("Ext.window.Window", {
             layout: 'fit',
@@ -239,6 +194,41 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
         }).show();
     },
 
+    showThemeBuilderPanel: function(node) {
+        var me = this,
+            centerPanel = Ext.ComponentQuery.query("knitkit_centerregion").first(),
+            centerTabPanel = centerPanel.down('tabpanel');
+
+        var themeBuilderPanel = centerTabPanel.add({
+            xtype: 'websitebuilderpanel',
+            itemId: 'themeBuilder' + node.get('id'),
+            closable: true,
+            isForTheme: true,
+            themeId: node.get('id'),
+            themeLayoutConfig: {
+                themeId: node.get('id'),
+                header: {
+                    iid: node.get('headerComponentIid'),
+                    height: node.get('headerComponentHeight'),
+                },
+                footer: {
+                    iid: node.get('footerComponentIid'),
+                    height: node.get('footerComponentHeight')
+                }
+            },
+            title: 'Theme Builder',
+            save: function(comp) {
+                centerPanel.setWindowStatus("Saving...");
+
+                comp.saveComponents(function() {
+                    centerPanel.clearWindowStatus();
+                });
+            }
+        });
+
+        centerTabPanel.setActiveTab(themeBuilderPanel);
+    },
+
     deleteTheme: function(theme) {
         var self = this,
             themeId = theme.get('id');
@@ -279,10 +269,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
 
         config = Ext.apply({
             autoLoadRoot: true,
-            rootVisible: true,
             multiSelect: true,
             title: 'Themes',
-            rootText: 'Themes',
+            rootVisible: false,
             handleRootContextMenu: true,
             controllerPath: '/knitkit/erp_app/desktop/theme',
             autoDestroy: true,
@@ -294,11 +283,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 'isTheme',
                 'themeId',
                 'name',
-                'isActive',
                 'siteId',
                 'text',
                 'id',
                 'url',
+                'headerComponentIid',
+                'headerComponentHeight',
+                'footerComponentIid',
+                'footerComponentHeight',
                 'leaf',
                 'handleContextMenu',
                 'contextMenuDisabled'
@@ -322,7 +314,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                 'contentLoaded': function(fileManager, node, content) {
                     var themeId = null;
                     var themeNode = node;
-                    while (themeId == null && !Compass.ErpApp.Utility.isBlank(themeNode.parentNode)) {
+                    while (themeId === null && !Compass.ErpApp.Utility.isBlank(themeNode.parentNode)) {
                         if (themeNode.data.isTheme) {
                             themeId = themeNode.data.id;
                         } else {
@@ -341,27 +333,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                         items.push(Compass.ErpApp.Desktop.Applications.Knitkit.newThemeMenuItem);
                         items.push(Compass.ErpApp.Desktop.Applications.Knitkit.uploadThemeMenuItem);
                     } else if (node.data['isTheme']) {
-                        if (node.data['isActive']) {
-                            items.push({
-                                text: 'Deactivate',
-                                iconCls: 'icon-delete',
-                                listeners: {
-                                    'click': function() {
-                                        self.updateThemeActiveStatus(node, false);
-                                    }
-                                }
-                            });
-                        } else {
-                            items.push({
-                                text: 'Activate',
-                                iconCls: 'icon-add',
-                                listeners: {
-                                    'click': function() {
-                                        self.updateThemeActiveStatus(node, true);
-                                    }
-                                }
-                            });
-                        }
                         items.push({
                             text: 'Delete Theme',
                             iconCls: 'icon-delete',
@@ -386,6 +357,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                                 }
                             }
                         });
+                        items.push({
+                            text: 'Build Theme',
+                            iconCls: 'icon-edit',
+                            listeners: {
+                                'click': function() {
+                                    self.showThemeBuilderPanel(node);
+                                }
+                            }
+                        });
+
                         items.push({
                             text: 'Export',
                             iconCls: 'icon-document_out',

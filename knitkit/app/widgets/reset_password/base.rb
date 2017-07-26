@@ -21,6 +21,10 @@ module Widgets
         end
       end
 
+      def website_builder
+        render :website_builder
+      end
+
       def update_password
         @login_url = params[:login_url].blank? ? '/login' : params[:login_url]
         @token = params[:token].present? ? params[:token].strip : nil

@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="generator" content="Knitkit - Compass AE Open source content management platform"/>
+    <meta name="generator" content="Knitkit - Compass AE Open source content management platform"/>
 
   <title><%= @website.title %></title>
 
@@ -13,74 +13,71 @@
   <%= javascript_include_tag 'erp_app/jquery_support' %>
   <%= javascript_include_tag 'erp_app/widgets' %>
 
-  <!-- Knitkit Helpers -->
+  <!-- CompassAE CSS -->
   <%= javascript_include_tag 'knitkit-web' %>
   <%= stylesheet_link_tag 'knitkit-web' %>
+  <%= stylesheet_link_tag 'knitkit/flat-ui-pro' %>
+  <%= stylesheet_link_tag 'knitkit/font-awesome' %>
   <!-- end -->
 
-  <!-- Bootstrap theme helpers -->
-  <%= javascript_include_tag 'knitkit/theme' %>
-  <%= stylesheet_link_tag 'knitkit/custom' %>
+  <!-- Customizable CSS -->
+  <%= stylesheet_link_tag 'knitkit/content' %>
+  <%= stylesheet_link_tag 'knitkit/video' %>
+  <%= stylesheet_link_tag 'knitkit/submenu' %>
+  <%= stylesheet_link_tag 'knitkit/style' %>
   <!-- end -->
-
+  
   <!-- code mirror -->
   <%= include_code_mirror_library %>
+  <!-- end -->
 
+  <!-- Authentication Hellpers -->
   <%= setup_js_authentication %>
+  <!-- end -->
+
+  <% if @website_builder %>
+  <!-- Website Builder styles -->
+  <!-- end -->
+  <% end %>
 
   <%= yield :head %>
 </head>
 <body>
-
-  <div id="wrap">
-
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="navbar-header pull-left">
-        <a class="navbar-brand" href="/home"><img src="/assets/knitkit/logo.png" alt="Logo"/></a>
+ 
+  <% if @website_builder %>
+    <%= yield %>
+    <%= javascript_include_tag 'knitkit/website_builder/pen.js' %>
+    <script>
+      window.__pen__ = new Pen(document.body);
+    </script>
+  <% else %>
+    <div id="wrap">
+      <div class="header">
+        <%= render :partial => 'shared/knitkit/header' %>
+      </div>
+      
+      <div class="content-area">
+        <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>
+        <%= yield %>
       </div>
 
-      <div class="navbar-header pull-right">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-      </div>
-
-      <%= render_widget :search,
-      :action => :index,
-      :params => {:redirect_results => true, :results_permalink => '/search-results'} %>
-
-
-      <%= render_widget :login,
-      :action => :login_header,
-      :params => {:login_url => '/login', :signup_url => '/sign-up'} %>
-
-      <div class="container-fluid">
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <%= content_for?(:menu) ? yield(:menu) : render_menu(@contents) %>
-          </ul>
-        </div>
-      </div>
-
-    </nav>
-
-    <div class="content-area">
-      <%= content_for?(:sub_menu) ? yield(:sub_menu) : render_sub_menu(@contents) %>  
-
-      <%= yield %>
     </div>
 
-  </div>
+    <div class="footer">
+      <%= content_for?(:footer) ? yield(:footer) : (render :partial => 'shared/knitkit/footer') %>
+      <%= yield :foot %>
+    </div>
+  <% end %> 
 
-  <div class="footer">
-    <%= content_for?(:footer) ? yield(:footer) : (render :partial => 'shared/knitkit/footer') %>
-    <%= yield :foot %>
-  </div>
   <%= set_authenticity_token %>
+  
+  <% unless @website_builder %>  
   <%= set_session_timeout %>
-  <%= setup_inline_editing %>
+  <% end %>  
+
+  <!-- Customizable Javascript -->
+  <%= javascript_include_tag 'knitkit/theme' %>
+  <!-- end -->
 
 </body>
 </html>

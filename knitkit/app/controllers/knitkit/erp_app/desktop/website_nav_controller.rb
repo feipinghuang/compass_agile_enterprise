@@ -18,7 +18,7 @@ module Knitkit
               tree << menu_hash
             end
           end
-
+          
           render :json => tree
         end
 

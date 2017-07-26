@@ -2,10 +2,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.EastRegion", {
     extend: "Ext.tab.Panel",
     alias: 'widget.knitkit_eastregion',
 
-    constructor: function (config) {
-        this.imageAssetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel', { module: config.module });
-        this.widgetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel', { module: config.module });
-        this.fileAssetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel', { module: config.module });
+    constructor: function(config) {
+        this.imageAssetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel', {
+            module: config.module
+        });
+        this.fileAssetsPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.FileAssetsPanel', {
+            module: config.module
+        });
+        this.componentPropertiesPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormPanel', {
+            module: config.module
+        });
+
         this.items = [];
 
         if (currentUser.hasCapability('view', 'GlobalImageAsset') || currentUser.hasCapability('view', 'SiteImageAsset')) {
@@ -16,7 +23,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.EastRegion", {
             this.items.push(this.fileAssetsPanel);
         }
 
-        this.items.push(this.widgetsPanel);
+        // this.items.push(this.widgetsPanel);
+        this.items.push(this.componentPropertiesPanel);
 
         config = Ext.apply({
             deferredRender: false,
@@ -29,5 +37,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.EastRegion", {
         }, config);
 
         this.callParent([config]);
+    },
+
+    selectWebsite: function(website) {
+        this.fileAssetsPanel.selectWebsite(website);
+        this.imageAssetsPanel.selectWebsite(website);
+    },
+
+    clearWebsite: function() {
+        this.fileAssetsPanel.clearWebsite();
+        this.imageAssetsPanel.clearWebsite();
     }
 });

@@ -1,6 +1,10 @@
 $(function () {
     $(window).scroll(function() {
-        if ($(".navbar").offset().top>30) {
+        var $navbar = $(".navbar");
+        if ($navbar.length == 0) {
+            return false;
+        }
+        if ($navbar.offset().top>30) {
             $(".navbar-fixed-top").addClass("sticky");
         }
         else {

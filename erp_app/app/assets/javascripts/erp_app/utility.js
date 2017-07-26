@@ -295,7 +295,8 @@ Compass.ErpApp.Utility.ajaxRequest = function(options) {
                     if (responseObj.message) {
                         Ext.Msg.error('Error', responseObj.message);
                     } else {
-                        Ext.Msg.error('Error', options.errorMessage);
+                        if (options.errorMessage)
+                            Ext.Msg.error('Error', options.errorMessage);
                     }
 
                     if (options.failureCallback)
@@ -303,7 +304,8 @@ Compass.ErpApp.Utility.ajaxRequest = function(options) {
                 }
             },
             failure: function() {
-                Ext.Msg.error('Error', options.errorMessage);
+                if (options.errorMessage)
+                    Ext.Msg.error('Error', options.errorMessage);
 
                 if (options.failureCallback)
                     options.failureCallback();
@@ -577,6 +579,22 @@ function OnDemandLoadByAjax() {
 
     this.onFailure = function() {};
 }
+
+// Generic Timer Task
+Compass.ErpApp.Utility.TimerTask = function(fn, time) {
+    var timer = false;
+    this.start = function() {
+        if (!this.isRunning())
+            timer = setInterval(fn, time);
+    };
+    this.stop = function() {
+        clearInterval(timer);
+        timer = false;
+    };
+    this.isRunning = function() {
+        return timer !== false;
+    };
+};
 
 //Javascript Extensions
 

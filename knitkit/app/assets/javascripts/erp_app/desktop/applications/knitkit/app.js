@@ -19,6 +19,8 @@
 //= require ./published_grid_panel
 //= require ./splash_screen
 //= require ./versions_grid_panel
+//= require ./website_builder_panel
 //= require_tree ./east_region
 //= require_tree ./top_menu
 //= require_tree ./west_region
+//= require jquery

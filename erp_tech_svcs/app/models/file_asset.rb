@@ -225,6 +225,36 @@ class FileAsset < ActiveRecord::Base
                                      and #{table_alias}.party_id in (#{Party.select('id').where(id: party).to_sql})")
       end
     end
+
+    def create_unique_name(directory, name)
+      extname = File.extname(name).gsub(/^\.+/, '')
+      basename = name.gsub(/\.#{extname}$/, "")
+      new_name = name
+
+      # check if name is already taken
+      unless self.where('directory = ? and name = ?', directory, name).first.nil?
+        # if it is keeping add incrementing by 1 until we have a good name
+        counter = 0
+        while true
+          counter += 1
+
+          # break after 25, we don't want in infinite loop
+          break if counter == 25
+
+          if basename.scan('-')
+            new_name = "#{basename.split('-')[0]}-#{basename.split('-')[1].to_i + counter}.#{extname}"
+          else
+            new_name = "#{basename}-#{counter}.#{extname}"
+          end
+
+          if FileAsset.where('directory = ? and name = ?', directory, new_name).first.nil?
+            break
+          end
+        end
+      end
+
+      new_name
+    end
   end
 
   def initialize(attributes = {}, options={})
@@ -280,24 +310,7 @@ class FileAsset < ActiveRecord::Base
   end
 
   def check_name_uniqueness
-    # check if name is already taken
-    unless FileAsset.where('directory = ? and name = ?', self.directory, self.name).first.nil?
-      # if it is keeping add incrementing by 1 until we have a good name
-      counter = 0
-      while true
-        counter += 1
-
-        # break after 25, we don't want in infinite loop
-        break if counter == 25
-
-        new_name = "#{basename}-#{counter}.#{extname}"
-
-        if FileAsset.where('directory = ? and name = ?', self.directory, new_name).first.nil?
-          self.name = new_name
-          break
-        end
-      end
-    end
+    self.name = FileAsset.create_unique_name(self.directory, self.name)
   end
 
   def base64encoded

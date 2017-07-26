@@ -12,8 +12,8 @@ namespace :knitkit do
 
         puts 'Starting Import...'
         file = ActionDispatch::Http::UploadedFile.new(
-            tempfile: File.open(args[:export_path]),
-            filename: File.basename(args[:export_path])
+          tempfile: File.open(args[:export_path]),
+          filename: File.basename(args[:export_path])
         )
         Website.import(file, user)
         puts 'Import Complete'
@@ -41,7 +41,6 @@ namespace :knitkit do
         puts "Could not find website"
       end
     end
-
   end
 
   namespace :theme do
@@ -54,8 +53,8 @@ namespace :knitkit do
 
         puts 'Starting Import...'
         file = ActionDispatch::Http::UploadedFile.new(
-            tempfile: File.open(args[:export_path]),
-            filename: File.basename(args[:export_path])
+          tempfile: File.open(args[:export_path]),
+          filename: File.basename(args[:export_path])
         )
         Theme.import(file, website)
         puts 'Import Complete'

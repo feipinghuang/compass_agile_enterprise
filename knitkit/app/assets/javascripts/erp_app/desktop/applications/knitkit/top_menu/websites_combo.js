@@ -20,7 +20,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WebsitesComboBox", {
                 'subtitle',
                 'id',
                 'url',
-                {name: 'configurationId', mapping: 'configuration_id'}
+                {name: 'configurationId', mapping: 'configuration_id'},
+                'theme'
             ]
         });
 
@@ -34,7 +35,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WebsitesComboBox", {
                     self.select(records.first());
 
                     var knitkitWin = compassDesktop.getModule('knitkit-win');
-
+                    
                     knitkitWin.selectWebsite(records.first());
                 }
             }

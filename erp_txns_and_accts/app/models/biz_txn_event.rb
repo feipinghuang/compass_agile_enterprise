@@ -1,15 +1,15 @@
 #### Table Definition ###########################
 #  create_table :biz_txn_events do |t|
-#  	t.column  :description,  			    :string
-#  	t.column	:biz_txn_acct_root_id, 	:integer
-#  	t.column	:biz_txn_type_id,       :integer
-#  	t.column 	:entered_date,          :datetime
-#  	t.column 	:post_date,             :datetime
-#  	t.column  :biz_txn_record_id,    	:integer
-#  	t.column  :biz_txn_record_type,  	:string
-#  	t.column 	:external_identifier, 	:string
-#  	t.column 	:external_id_source, 	  :string
-#  	t.timestamps
+#   t.column  :description,           :string
+#   t.column  :biz_txn_acct_root_id,  :integer
+#   t.column  :biz_txn_type_id,       :integer
+#   t.column  :entered_date,          :datetime
+#   t.column  :post_date,             :datetime
+#   t.column  :biz_txn_record_id,     :integer
+#   t.column  :biz_txn_record_type,   :string
+#   t.column  :external_identifier,   :string
+#   t.column  :external_id_source,    :string
+#   t.timestamps
 #  end
 #
 #  add_index :biz_txn_events, :biz_txn_acct_root_id
@@ -45,11 +45,11 @@ class BizTxnEvent < ActiveRecord::Base
   #syntactic sugar
   alias :txn_type :biz_txn_type
   alias :txn_type= :biz_txn_type=
-  alias :txn :biz_txn_record
+    alias :txn :biz_txn_record
   alias :txn= :biz_txn_record=
-  alias :account :biz_txn_acct_root
+    alias :account :biz_txn_acct_root
   alias :account= :biz_txn_acct_root=
-  alias :descriptions :biz_txn_event_descs
+    alias :descriptions :biz_txn_event_descs
   alias :from_txn_relns :from_biz_txn_event_relationships
   alias :to_txn_relns :to_biz_txn_event_relationships
   alias :from_txns :from_biz_txn_events
@@ -128,7 +128,7 @@ class BizTxnEvent < ActiveRecord::Base
     # @return [ActiveRecord::Relation]
     def scope_by_party(party, options={})
       statement = joins("inner join biz_txn_party_roles on biz_txn_party_roles.biz_txn_event_id = biz_txn_events.id")
-                      .where("biz_txn_party_roles.party_id" => party).uniq
+      .where("biz_txn_party_roles.party_id" => party).uniq
 
       if options[:role_types]
         role_types = options[:role_types]
@@ -138,7 +138,7 @@ class BizTxnEvent < ActiveRecord::Base
 
         statement = statement.joins("inner join biz_txn_party_role_types
                                      on biz_txn_party_role_types.id = biz_txn_party_roles.biz_txn_party_role_type_id")
-                        .where(biz_txn_party_role_types: {internal_identifier: role_types})
+        .where(biz_txn_party_role_types: {internal_identifier: role_types})
       end
 
       statement
@@ -210,6 +210,31 @@ class BizTxnEvent < ActiveRecord::Base
 
     if biz_txn_party_role
       biz_txn_party_role.party
+    end
+  end
+
+
+  def parties(role_types=nil)
+    statement = self.biz_txn_party_roles
+
+    if role_types
+      if role_types.is_a? Array
+        role_types = role_types.collect do |role_type|
+          role_type.is_a? String ? BizTxnPartyRoleType.iid(role_type) : role_type
+        end
+      elsif role_type.is_a?(String)
+        role_types =  BizTxnPartyRoleType.iid(role_type)
+      end
+
+      statement = statement.where(biz_txn_party_roles: {biz_txn_event_id: self.id, biz_txn_party_role_type_id: role_types})
+    end
+
+    statement.group_by{|biz_txn_party_role| biz_txn_party_role.party_id}.collect do |party_id, biz_txn_party_roles|
+      data = Party.find(party_id).to_data_hash
+
+      data[:role_types] = biz_txn_party_roles.collect{|item| item.biz_txn_party_role_type.internal_identifier}
+
+      data
     end
   end
 
