@@ -1,29 +1,15 @@
 Compass.ErpApp.Widgets.GoogleMap = {
-    buildTemplate: function(websiteBuilder) {
-        if(websiteBuilder) {
-            return new Ext.Template("<%= render_builder_widget :google_map,\n",
-                                    ':params => {\n',
-                                    '   :zoom => {zoom},',
-                                    "   :map_type => '{mapType}',",
-                                    '   :drop_pins => [\n{dropPins}\n',
-                                    "]}%>");
-        } else {
-            return new Ext.Template("<%= render_widget :google_map,\n",
-                                    ':params => {\n',
-                                    '   :zoom => {zoom},',
-                                    "   :map_type => '{mapType}',",
-                                    '   :drop_pins => [\n{dropPins}\n',
-                                    "]}%>");
-            
-        }
-            
-    },
-    dropPinTemplate: new Ext.XTemplate('<tpl for=".">', '{:title => \'{title}\', :address => \'{address}\'}{[xindex === xcount ? "" : ","]}', '</tpl>'),
+    template: new Ext.Template("<%= render_widget :google_map,\n",
+        ':params => {\n',
+        '   :zoom => {zoom},',
+        "   :map_type => '{mapType}',",
+        '   :drop_pins => [\n{dropPins}\n',
+        "]}%>"),
 
-    addWidget: function (options) {
-        var websiteBuilder = options.websiteBuilder,
-            success = options.success;
-        
+    dropPinTemplate: new Ext.XTemplate('<tpl for=".">', '{:title => "{title}", :address => "{address}"}{[xindex === xcount ? "" : ","]}', '</tpl>'),
+
+    addGoogleMap: function () {
+
         // Define our data model
         var GoogleMapAddressModel = Ext.define('GoogleMapAddress', {
             extend: 'Ext.data.Model',
@@ -175,12 +161,10 @@ Compass.ErpApp.Widgets.GoogleMap = {
                             });
 
                             data['dropPins'] = Compass.ErpApp.Widgets.GoogleMap.dropPinTemplate.apply(dropPins);
-                            var content = Compass.ErpApp.Widgets.GoogleMap.buildTemplate(websiteBuilder).apply(data);
-                            addGoogleMapWidgetWindow.close();
 
-                            if(success) {
-                                success(content);
-                            }
+                            var content = Compass.ErpApp.Widgets.GoogleMap.template.apply(data);
+                            Ext.getCmp('knitkitCenterRegion').addContentToActiveCodeMirror(content);
+                            addGoogleMapWidgetWindow.close();
                         }
                     }
                 },
@@ -199,6 +183,6 @@ Compass.ErpApp.Widgets.GoogleMap = {
 Compass.ErpApp.Widgets.AvailableWidgets.push({
     name: 'Google Map',
     iconUrl: '/assets/icons/map/map_48x48.png',
-    addWidget: Compass.ErpApp.Widgets.GoogleMap.addWidget,
+    onClick: Compass.ErpApp.Widgets.GoogleMap.addGoogleMap,
     about: 'This widget creates a google map with drop points you setup.'
 });

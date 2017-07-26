@@ -195,7 +195,6 @@ class Website < ActiveRecord::Base
   end
 
   def setup_default_pages
-=begin   
     # create default sections for each widget using widget layout
     widget_classes = [
         ::Widgets::ContactUs::Base,
@@ -226,12 +225,9 @@ class Website < ActiveRecord::Base
 
       self.website_sections << website_section
     end
-
     self.save
-    profile_page.secure unless profile_page.nil?
-=end   
     self.website_sections.update_paths!
-    
+    profile_page.secure unless profile_page.nil?
   end
 
   def export_setup

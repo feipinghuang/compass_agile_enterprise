@@ -13,7 +13,6 @@ Rails.application.routes.draw do
   match '/unauthorized' => 'knitkit/unauthorized#index', :as => 'knitkit/unauthorized'
   match '/view_current_publication' => 'knitkit/base#view_current_publication'
   match '/online_document_sections(/:action)' => 'knitkit/online_document_sections'
-  match '/website_preview' => 'knitkit/base#website_preview'
 
   namespace :api do
     namespace :v1 do
@@ -52,32 +51,6 @@ Knitkit::Engine.routes.draw do
         end
         member do
           get :content
-        end
-      end
-
-      resources :website_builder, defaults: { :format => 'json' } do
-        collection do
-          get :components
-          get :get_component
-          get :render_component
-          post :save_website
-          get :get_component_source
-          post :save_component_source
-          get :section_components
-          post :widget_source
-        end
-        member do
-          get :active_website_theme
-        end
-      end
-      
-      resources :theme_builder, only: [] do
-        member do
-          put :update_layout
-        end
-
-        collection do
-          get :render_theme_component
         end
       end
 

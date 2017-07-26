@@ -46,10 +46,8 @@ module ErpTechSvcs
         create_name = File.basename(new_path);
         create_path = new_path.split('/').reverse.drop(1).reverse.join('/')
 
-        if(File.dirname(old_path) != create_path)
-          create_file(create_path, create_name, contents)
-          delete_file(old_path)
-        end
+        create_file(create_path, create_name, contents)
+        delete_file(old_path)
       end
 
       def update_file(path, content)

@@ -12,9 +12,7 @@ module Widgets
 
         render
       end
-
-      alias :website_builder :index
-      
+  
       #should not be modified
       #modify at your own risk
       def locate

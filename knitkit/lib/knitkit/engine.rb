@@ -31,12 +31,11 @@ module Knitkit
       end if File.exists?(root.join("app", "assets", "stylesheets", "widgets"))
 
       Rails.application.config.assets.paths << root.join("app", "assets", "images")
-      Rails.application.config.assets.precompile += %w{ knitkit-web.css knitkit-web.js knitkit/theme.js knitkit/website_builder/builder.js knitkit/website_builder/flat-ui-pro.min.js knitkit/website_builder/pen.js}
-      Rails.application.config.assets.precompile += %w{ knitkit/content.css knitkit/flat-ui-pro.css knitkit/font-awesome.css knitkit/footer.css knitkit/header.css knitkit/style.css knitkit/submenu.css knitkit/video.css }
+      Rails.application.config.assets.precompile += %w{ knitkit-web.css knitkit/custom.css knitkit-web.js knitkit/theme.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/knitkit/app.js }
       Rails.application.config.assets.precompile += %w{ erp_app/desktop/applications/knitkit/app.css }
-      Rails.application.config.assets.precompile += %w{ erp_app/shared/knitkit_shared.css }
 
+      Rails.application.config.assets.precompile += %w{ erp_app/shared/knitkit_shared.css }
       ErpApp::Config.shared_css_assets += %w{ erp_app/shared/knitkit_shared.css }
     end
 
