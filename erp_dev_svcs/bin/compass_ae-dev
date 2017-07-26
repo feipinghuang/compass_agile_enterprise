@@ -26,34 +26,29 @@ when 'push_gems'
 when 'uninstall_gems'
   require 'erp_dev_svcs/commands/uninstall_gems'
   ErpDevSvcs::Commands::UninstallGems.execute
-when 'generate_api_docs'
-  require 'erp_dev_svcs/commands/generate_api_docs'
-  ErpDevSvcs::Commands::GenerateApiDocs.execute  
 else
   puts <<-EOT
 Usage: compass_ae-dev COMMAND [ARGS]
 
 This app contains utility programs for Compass developers:
 
-build_gems        Defaults to building all gems in the lib
-                  directory.  You can also pass specific
-                  gems.
-  
-generate_api_docs Generate API docs                 
-  
-new_gem_owner     This command will add a new owner to the
-                  compass gems on rubygems.org
-  
-git               This will execute the supplied git command
-                  on each compass application (ie. fetch, pull,status, etc)
-  
-test              Execute the RSpec test suite in each mountable engine
-  
-setup_dev_env     Creates dev Gemfiles, runs bundler update in each engine
-                  so tests will work
-push_gems         Push gems to ruby gems or geminabox
-  
-uninstall_gems    Uninstall installed gems
+build_gems      Defaults to building all gems in the lib
+                directory.  You can also pass specific
+                gems.
+
+new_gem_owner   This command will add a new owner to the
+                compass gems on rubygems.org
+
+git             This will execute the supplied git command
+                on each compass application (ie. fetch, pull,status, etc)
+
+test            Execute the RSpec test suite in each mountable engine
+
+setup_dev_env   Creates dev Gemfiles, runs bundler update in each engine
+                so tests will work
+push_gems       Push gems to ruby gems or geminabox
+
+uninstall_gems  Uninstall installed gems
 EOT
   exit(1)
 end

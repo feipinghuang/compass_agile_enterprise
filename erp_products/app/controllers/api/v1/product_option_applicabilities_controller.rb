@@ -4,20 +4,13 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_option_applicabilities
+  @api {get} /api/v1/product_option_applicabilities Index
   @apiVersion 1.0.0
   @apiName GetProductOptionApplicabilities
   @apiGroup ProductOptionApplicability
-  @apiDescription Get Product Option Applicability
 
-  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
-  @apiParam (query) {Integer} [product_type_id] ProductType Id to filter by
-
-  @apiSuccess (200) {Object} get_product_option_applicabilities_response Response.
-  @apiSuccess (200) {Boolean} get_product_option_applicabilities_response.success If the request was sucessful
-  @apiSuccess (200) {Integer} get_product_option_applicabilities_response.total_count Total count of records   
-  @apiSuccess (200) {Object[]} get_product_option_applicabilities_response.product_option_applicabilities ProductOptionApplicability records
-  @apiSuccess (200) {Integer} get_product_option_applicabilities_response.product_option_applicabilities.id Id of ProductOptionApplicability
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} product_option_applicabilities ProductOptionApplicability records
 
 =end
 
@@ -61,16 +54,13 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_option_applicabilities/update_positions
+  @api {get} /api/v1/product_option_applicabilities/update_positions UpdatePositions
   @apiVersion 1.0.0
   @apiName UpdateProductOptionApplicabilityPositions
   @apiGroup ProductOptionApplicability
-  @apiDescription Update Product Option Applicability Positions
 
-  @apiParam (query) {String} [positions] JSON string of position array data [1,2,3]
-
-  @apiSuccess (200) {Object} product_option_applicabilities_update_positions_response Response.
-  @apiSuccess (200) {Boolean} product_option_applicabilities_update_positions_response.success If the request was sucessful  
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} positions Order that Product Option Applicablities should be in
 
 =end
 
@@ -106,18 +96,13 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_option_applicabilities/:id
+  @api {get} /api/v1/product_option_applicabilities/:id Show
   @apiVersion 1.0.0
   @apiName GetProductOptionApplicability
   @apiGroup ProductOptionApplicability
-  @apiDescription Show Product Option Applicability   
 
-  @apiParam (query) {Integer} id Id of ProductOptionApplicability
-
-  @apiSuccess (200) {Object} show_product_option_applicabilities_response Response.
-  @apiSuccess (200) {Boolean} show_product_option_applicabilities_response.success If the request was sucessful   
-  @apiSuccess (200) {Object} show_product_option_applicabilities_response.product_option_applicability ProductOptionApplicability record
-  @apiSuccess (200) {Number} show_product_option_applicabilities_response.product_option_applicability.id Id of ProductOptionApplicability  
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} product_option_applicability ProductOptionApplicability record
 
 =end
 
@@ -130,21 +115,19 @@ module API
 
 =begin
 
-  @api {post} /api/v1/product_option_applicabilities
+  @api {post} /api/v1/product_option_applicabilities Create
   @apiVersion 1.0.0
   @apiName CreateProductOptionApplicability
   @apiGroup ProductOptionApplicability
-  @apiDescription Create Product Option Applicability 
 
-  @apiParam (body) {Integer} product_type_id Id of ProductType
-  @apiParam (body) {String} description Description
-  @apiParam (body) {String} product_option_type_id Id of ProductOptionType
-  @apiParam (body) {Boolean} [multi_select] If it should be Multi Select
-  @apiParam (body) {Boolean} [required] If it should be required
+  @apiParam {Integer} product_type_id Id of ProductType
+  @apiParam {String} description Description
+  @apiParam {String} product_option_type_id Id of ProductOptionType
+  @apiParam {Boolean} [multi_select] If it should be Multi Select
+  @apiParam {Boolean} [required] If it should be required
 
-  @apiSuccess (200) {Object} create_product_option_applicabilities_response Response.
-  @apiSuccess (200) {Object} create_product_option_applicabilities_response.product_option_applicability ProductOptionApplicability record
-  @apiSuccess (200) {Number} create_product_option_applicabilities_response.product_option_applicability.id Id of ProductOptionApplicability  
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} product_option_applicability ProductOptionApplicability record
 
 =end
 
@@ -204,19 +187,14 @@ module API
   @apiVersion 1.0.0
   @apiName UpdateProductOptionApplicability
   @apiGroup ProductOptionApplicability
-  @apiDescription Update Product Option Applicability  
   
-  @apiParam (query) {Integer} id Id of ProductOptionApplicability
+  @apiParam {String} [description] Description
+  @apiParam {String} [product_option_type_id] Id of ProductOptionType
+  @apiParam {Boolean} [multi_select] If it should be Multi Select
+  @apiParam {Boolean} [required] If it should be required
 
-  @apiParam (body) {String} [description] Description
-  @apiParam (body) {String} [product_option_type_id] Id of ProductOptionType
-  @apiParam (body) {Boolean} [multi_select] If it should be Multi Select
-  @apiParam (body) {Boolean} [required] If it should be required
-
-  @apiSuccess (200) {Object} update_product_option_applicabilities_response Response.
-  @apiSuccess (200) {Boolean} update_product_option_applicabilities_response.success If the request was sucessful     
-  @apiSuccess (200) {Object} update_product_option_applicabilities_response.product_option_applicability ProductOptionApplicability record
-  @apiSuccess (200) {Number} update_product_option_applicabilities_response.product_option_applicability.id Id of ProductOptionApplicability 
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Object} product_option_applicability ProductOptionApplicability record
 
 =end
 
@@ -270,16 +248,12 @@ module API
 
 =begin
 
-  @api {delete} /api/v1/product_option_applicabilities/:id
+  @api {delete} /api/v1/product_option_applicabilities/:id Delete
   @apiVersion 1.0.0
   @apiName DeleteProductOptionApplicability
   @apiGroup ProductOptionApplicability
-  @apiDescription Delete Product Option Applicability
 
-  @apiParam (param) {Integer} id Id of record to delete 
-
-  @apiSuccess (200) {Object} delete_product_option_applicabilities_response Response.
-  @apiSuccess (200) {Boolean} delete_product_option_applicabilities_response.success If the request was sucessful  
+  @apiSuccess {Boolean} success True if the request was successful
 
 =end
 

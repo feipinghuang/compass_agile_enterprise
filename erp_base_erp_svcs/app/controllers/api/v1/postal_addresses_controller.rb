@@ -14,7 +14,7 @@ module API
 
  @apiSuccess {Boolean} success True if the request was successful
  @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object[]} postal_addresses List of PostalAddress records
+ @apiSuccess {Array} postal_addresses List of PostalAddress records
  @apiSuccess {Number} postal_addresses.id Id of PostalAddress
 
 =end
@@ -67,7 +67,7 @@ module API
 
  @apiSuccess {Boolean} success True if the request was successful
  @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object} postal_address PostalAddress record
+ @apiSuccess {Array} postal_addresses List of PostalAddress records
  @apiSuccess {Number} postal_addresses.id Id of PostalAddress
 
 =end

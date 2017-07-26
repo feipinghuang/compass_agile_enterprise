@@ -38,10 +38,6 @@ class UnitOfMeasurement < ActiveRecord::Base
       joins(:party_unit_of_measurements)
       .where({party_unit_of_measurements: {party_id: dba_organization}})
     end
-
-    def iid(internal_identifier)
-      self.where(internal_identifier: internal_identifier).first
-    end
   end
 
   def set_dba_organization(dba_organization)

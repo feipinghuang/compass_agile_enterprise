@@ -4,20 +4,13 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_option_types
+  @api {get} /api/v1/product_option_types Index
   @apiVersion 1.0.0
   @apiName GetProductOptionTypes
   @apiGroup ProductOptionType
-  @apiDescription Get Product Option Type
 
-  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
-  @apiParam (query) {Number} [id] Id to filter by
-
-  @apiSuccess (200) {Object} get_product_option_types_response Response.
-  @apiSuccess (200) {Boolean} get_product_option_types_response.success If the request was sucessful
-  @apiSuccess (200) {Number} get_product_option_types_response.total_count Total count of records 
-  @apiSuccess (200) {Object[]} get_product_option_types_response.product_option_types ProductOptionType records
-  @apiSuccess (200) {Integer} get_product_option_types_response.product_option_types.id Id of ProductOptionType record
+  @apiSuccess {Boolean} success True if the request was successful
+  @apiSuccess {Array} product_options ProductOptionType records
 
 =end
 

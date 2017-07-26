@@ -63,8 +63,10 @@ module API
         set_address_and_logo
 
         pdf = WickedPdf.new.pdf_from_string(render_to_string(:layout => false, :action => "invoice_pdf.html.erb"),
-                                            :margin => pdf_margin,
-                                            :footer => pdf_footer)
+                                            :margin => {:top => 0, :bottom => 15, :left => 10, :right => 10},
+                                            :footer => {
+                                              :right => 'Page [page] of [topage]'
+        })
 
         @invoice_file_name = @invoice.invoice_number
 
@@ -86,8 +88,10 @@ module API
         set_address_and_logo
 
         pdf = WickedPdf.new.pdf_from_string(render_to_string(:layout => false, :action => "invoice_pdf.html.erb"),
-                                            :margin => pdf_margin,
-                                            :footer => pdf_footer)
+                                            :margin => {:top => 0, :bottom => 15, :left => 10, :right => 10},
+                                            :footer => {
+                                              :right => 'Page [page] of [topage]'
+        })
 
         attachments = {"#{@invoice.invoice_number}.pdf" => pdf}
         unless params[:file_attachment_ids].blank?
@@ -109,22 +113,6 @@ module API
 
         render :json => {success: true}
       end
-
-
-       def pdf_footer
-         return {
-             :right => 'Page [page] of [topage]'
-         }
-       end
-
-       def pdf_margin
-          return {
-            :top => 0,
-            :bottom => 15,
-            :left => 10,
-            :right => 10
-          }
-       end
 
       #
       # Payment actions
