@@ -201,7 +201,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ImageAssetsPanel", {
                 'fileuploaded': function(fileTreePanel, node) {
                     self.websiteImageAssetsDataView.getStore().load({
                         params: {
-                            directory: node.parentNode.isRoot() ? 'root_node' : node.parentNode.data.id,
+                            directory: node.isRoot() ? 'root_node' : node.parentNode.data.id,
                             website_id: self.websiteId
                         }
                     });
