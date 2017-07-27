@@ -2,7 +2,7 @@ module Knitkit
   module ErpApp
     module Desktop
       class WebsiteSectionController < Knitkit::ErpApp::Desktop::AppController
-        before_filter :set_website_section, :only => [:detach_article, :update, :update_security, :add_layout, :get_layout, :save_layout, :enable_source_edit]
+        before_filter :set_website_section, :only => [:detach_article, :update, :update_security, :add_layout, :get_layout, :save_layout]
 
         def new
           begin
@@ -11,7 +11,7 @@ module Knitkit
             current_user.with_capability('create', 'WebsiteSection') do
               begin
                 ActiveRecord::Base.transaction do
-                  
+
                   @website = Website.find(params[:website_id])
                   @website_primary_host = @website.nil? ? nil : @website.config_value('primary_host')
 
@@ -221,22 +221,6 @@ module Knitkit
               else
                 render :json => {:success => false, :message => result}
               end
-            end
-          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
-            render :json => {:success => false, :message => ex.message}
-          end
-        end
-
-        def enable_source_edit
-          begin
-            current_user.with_capability('edit', 'WebsiteSectionLayout') do
-      
-               @website_section.layout = HtmlBeautifier.beautify(@website_section.to_html)
-               @website_section.source_enabled = true
-               @website_section.save!
-
-               render :text => @website_section.layout
-
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
             render :json => {:success => false, :message => ex.message}

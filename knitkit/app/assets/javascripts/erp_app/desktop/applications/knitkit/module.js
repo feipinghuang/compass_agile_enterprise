@@ -9,16 +9,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
      */
     currentWebsite: null,
 
-    init: function() {
+    init: function () {
+
         this.launcher = {
             text: 'Website Builder',
             iconCls: 'icon-knitkit',
             handler: this.createWindow,
             scope: this
-        };
+        }
     },
 
-    initComponent: function() {
+    initComponent: function () {
         var me = this;
 
         me.addEvents(
@@ -32,7 +33,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         );
     },
 
-    clearWebsite: function() {
+    clearWebsite: function(){
         var self = this,
             desktop = self.app.getDesktop(),
             win = desktop.getWindow('knitkit'),
@@ -40,8 +41,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
 
         this.currentWebsite = null;
 
-        Ext.getCmp('knitkitEastRegion').clearWebsite();
-        Ext.getCmp('knitkitWestRegion').clearWebsite();
+        var eastRegion = Ext.ComponentQuery.query('#knitkitEastRegion').first();
+        eastRegion.fileAssetsPanel.clearWebsite();
+        eastRegion.imageAssetsPanel.clearWebsite();
+
+        var westRegion = Ext.ComponentQuery.query('#knitkitWestRegion').first();
+        westRegion.clearWebsite();
 
         menuBar.down('#themeMenuItem').disable();
         menuBar.down('#navigationMenuItem').disable();
@@ -55,11 +60,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         menuBar.down('#publishWebsiteMenuItem').disable();
         menuBar.down('#editWebsiteMenuItem').disable();
         menuBar.down('#exportTemplateMenuItem').disable();
+
     },
 
-    selectWebsite: function(website) {
+    selectWebsite: function (website) {
         // get only the data for the website
         website = website.data;
+
 
         var self = this,
             desktop = self.app.getDesktop(),
@@ -70,8 +77,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
 
         this.currentWebsite = website;
 
-        Ext.getCmp('knitkitEastRegion').selectWebsite(website);
-        Ext.getCmp('knitkitWestRegion').selectWebsite(website);
+        var eastRegion = Ext.getCmp('knitkitEastRegion');
+        eastRegion.fileAssetsPanel.selectWebsite(website);
+        eastRegion.imageAssetsPanel.selectWebsite(website);
+
+        var westRegion = Ext.getCmp('knitkitWestRegion');
+        westRegion.selectWebsite(website);
 
         Compass.ErpApp.Shared.FileManagerTree.extraPostData = {
             website_id: website.id
@@ -82,7 +93,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
             params: {
                 website_id: website.id
             },
-            success: function(response) {
+            success: function(response){
                 var text = response.responseText;
                 var obj = Ext.decode(text);
                 if (obj.message == 'true') {
@@ -102,9 +113,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         menuBar.down('#websiteInquiresMenuItem').enable();
         menuBar.down('#publishWebsiteMenuItem').enable();
         menuBar.down('#editWebsiteMenuItem').enable();
+
     },
 
-    createWindow: function() {
+    createWindow: function () {
         var desktop = this.app.getDesktop();
         var win = desktop.getWindow('knitkit');
 
@@ -115,75 +127,85 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
             var tbarItems = [];
 
             if (currentUser.hasCapability('create', 'Website')) {
-                tbarItems.push({
-                    text: 'Main Menu',
-                    menu: {
-                        xtype: 'menu',
-                        items: [
-                            Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.ArticlesMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.SectionsMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.ThemeMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.NavigationMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.TemplateMenu()
-                        ]
+                tbarItems.push(
+                    {
+                        text: 'Main Menu',
+                        menu: {
+                            xtype: 'menu',
+                            items: [
+                                Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu(),
+                                Compass.ErpApp.Desktop.Applications.Knitkit.ArticlesMenu(),
+                                Compass.ErpApp.Desktop.Applications.Knitkit.SectionsMenu(),
+                                Compass.ErpApp.Desktop.Applications.Knitkit.ThemeMenu(),
+                                Compass.ErpApp.Desktop.Applications.Knitkit.NavigationMenu(),
+                                Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu(),
+                                Compass.ErpApp.Desktop.Applications.Knitkit.TemplateMenu()
+                            ]
+                        }
                     }
-                });
+                );
             }
 
-            tbarItems.push({
-                iconCls: 'btn-save-light',
-                text: 'Save',
-                handler: function(btn) {
-                    centerRegion.saveCurrent();
-                }
-            }, {
-                iconCls: 'btn-save-all-light',
-                text: 'Save All',
-                handler: function(btn) {
-                    centerRegion.saveAll();
-                }
-            });
+            tbarItems.push(
+                {
+                    iconCls: 'btn-save-light',
+                    text: 'Save',
+                    handler: function (btn) {
+                        centerRegion.saveCurrent();
+                    }
+                },
+                {
+                    iconCls: 'btn-save-all-light',
+                    text: 'Save All',
+                    handler: function (btn) {
+                        centerRegion.saveAll();
+                    }
+                });
 
-            tbarItems.push('->', {
-                iconCls: 'btn-left-panel',
-                handler: function(btn) {
-                    var panel = btn.up('window').down('knitkit_westregion');
-                    if (panel.collapsed) {
-                        panel.expand();
-                    } else {
-                        panel.collapse(Ext.Component.DIRECTION_LEFT);
+            tbarItems.push('->',
+                {
+                    iconCls: 'btn-left-panel',
+                    handler: function (btn) {
+                        var panel = btn.up('window').down('knitkit_westregion');
+                        if (panel.collapsed) {
+                            panel.expand();
+                        }
+                        else {
+                            panel.collapse(Ext.Component.DIRECTION_LEFT);
+                        }
                     }
-                }
-            }, {
-                iconCls: 'btn-right-panel',
-                handler: function(btn) {
-                    var panel = btn.up('window').down('knitkit_eastregion');
-                    if (panel.collapsed) {
-                        panel.expand();
-                    } else {
-                        panel.collapse(Ext.Component.DIRECTION_RIGHT);
+                },
+                {
+                    iconCls: 'btn-right-panel',
+                    handler: function (btn) {
+                        var panel = btn.up('window').down('knitkit_eastregion');
+                        if (panel.collapsed) {
+                            panel.expand();
+                        }
+                        else {
+                            panel.collapse(Ext.Component.DIRECTION_RIGHT);
+                        }
                     }
-                }
-            }, {
-                iconCls: 'btn-left-right-panel',
-                handler: function(btn) {
-                    var east = btn.up('window').down('knitkit_eastregion');
-                    var west = btn.up('window').down('knitkit_westregion');
-                    if (west.collapsed || east.collapsed) {
-                        west.expand();
-                        east.expand();
-                    } else if (!west.collapsed && !east.collapsed) {
-                        var task = new Ext.util.DelayedTask(function() {
-                            west.collapse(Ext.Component.DIRECTION_LEFT);
-                        });
-                        east.collapse(Ext.Component.DIRECTION_RIGHT);
-                        task.delay(400);
+                },
+                {
+                    iconCls: 'btn-left-right-panel',
+                    handler: function (btn) {
+                        var east = btn.up('window').down('knitkit_eastregion');
+                        var west = btn.up('window').down('knitkit_westregion');
+                        if (west.collapsed || east.collapsed) {
+                            west.expand();
+                            east.expand();
+                        }
+                        else if (!west.collapsed && !east.collapsed) {
+                            var task = new Ext.util.DelayedTask(function () {
+                                west.collapse(Ext.Component.DIRECTION_LEFT);
+                            });
+                            east.collapse(Ext.Component.DIRECTION_RIGHT);
+                            task.delay(400);
 
+                        }
                     }
-                }
-            });
+                });
 
             win = desktop.createWindow({
                 id: 'knitkit',
@@ -203,11 +225,13 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
                     items: tbarItems
                 }],
                 items: [
-                    this.centerRegion, {
+                    this.centerRegion,
+                    {
                         xtype: 'knitkit_eastregion',
                         header: false,
                         module: this
-                    }, {
+                    },
+                    {
                         xtype: 'knitkit_westregion',
                         header: false,
                         centerRegion: this.centerRegion,

@@ -12,10 +12,7 @@ module ErpTechSvcs
         create_path = new_path.split('/').reverse.drop(1).reverse.join('/')
 
         create_file(create_path, create_name, contents)
-    
-        if(File.dirname(old_path) != create_path)
-          delete_file(old_path)
-        end
+        delete_file(old_path)
       end
 
       def update_file(path, content)
@@ -195,11 +192,11 @@ module ErpTechSvcs
         end
 
         tree_data = {
-          :text => directory.split('/').last,
-          :iconCls => File.directory?(directory) ? 'icon-content' : 'icon-document',
-          :id => directory,
-          :leaf => !File.directory?(directory),
-          :children => []
+            :text => directory.split('/').last,
+            :iconCls => File.directory?(directory) ? 'icon-content' : 'icon-document',
+            :id => directory,
+            :leaf => !File.directory?(directory),
+            :children => []
         }
 
         tree_data[:id].gsub!(root, '') unless options[:keep_full_path]

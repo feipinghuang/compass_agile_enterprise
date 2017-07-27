@@ -9,8 +9,6 @@ module Widgets
         render
       end
 
-      alias :website_builder :index
-
       def new
         if captcha_valid?
 

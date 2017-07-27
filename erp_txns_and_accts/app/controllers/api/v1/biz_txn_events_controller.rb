@@ -70,18 +70,6 @@ module API
         end
       end
 
-      def parties
-         biz_txn_event = BizTxnEvent.find(params[:id])
-
-         if params[:role_types]
-          parties = biz_txn_event.parties(params[:role_types].split(','))
-         else
-          parties = biz_txn_event.parties
-         end
-
-         render json: {success: true, parties: parties}
-      end
-
     end # BizTxnEvents
   end # V1
 end # API

@@ -130,12 +130,7 @@ module ErpApp
           begin
             contents, message = @file_support.get_contents(params["replace_file_data"].path)
 
-            if params["replace_file_data"].original_filename != params["node"].split('/').last
-              unique_name = FileAsset.create_unique_name(File.dirname(params["node"]), params["replace_file_data"].original_filename)
-              new_path = File.join(params["node"].split('/').reverse.drop(1).reverse.join('/'), unique_name)
-            else
-              new_path = File.join(params["node"].split('/').reverse.drop(1).reverse.join('/'), params["replace_file_data"].original_filename)
-            end
+            new_path = File.join(params["node"].split('/').reverse.drop(1).reverse.join('/'), params["replace_file_data"].original_filename)
 
             @file_support.replace_file(params["node"],
                                        new_path,
