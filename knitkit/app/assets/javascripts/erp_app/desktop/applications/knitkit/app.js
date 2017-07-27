@@ -19,7 +19,11 @@
 //= require ./published_grid_panel
 //= require ./splash_screen
 //= require ./versions_grid_panel
+//= require ./website_builder_config
 //= require ./website_builder_panel
+//= require ./medium-editor
+//= require ./rangy-core
+//= require ./rangy-classapplier
 //= require_tree ./east_region
 //= require_tree ./top_menu
 //= require_tree ./west_region

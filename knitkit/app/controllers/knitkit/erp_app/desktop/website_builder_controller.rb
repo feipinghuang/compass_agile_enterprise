@@ -73,6 +73,7 @@ module Knitkit
 
                   # get the current list of website_section_contents as any ones that are not passed will be deleted
                   current_website_section_contents = website_section.website_section_contents
+
                   contents_data.each do |data|
                     data = Hash.symbolize_keys(data)
 
@@ -136,9 +137,9 @@ module Knitkit
           begin
             website = Website.find(params[:website_id])
 
-            if params[:website_section_content_id].present?
+            if params[:website_section_content_id]
               website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
-              
+
               html_content = website_section_content.website_html
 
             else
@@ -158,10 +159,10 @@ module Knitkit
                 'templates',
                 'shared',
                 'knitkit',
-                "_#{params[:component_type]}.html.erb"
+                "_#{params[:component_name]}.html.erb"
               )
 
-              html_content = file_support.get_contents(path).first 
+              html_content = file_support.get_contents(path).first
 
             end
 
@@ -184,8 +185,8 @@ module Knitkit
         def save_component_source
           begin
             component_source = params[:source]
-            component_type = params[:component_type]
-            if component_type.present? and ['header', 'footer'].include?(component_type)
+
+            if !params[:template_type].blank?
               theme = website.themes.first
 
               file_support = ErpTechSvcs::FileSupport::Base.new(
@@ -202,18 +203,18 @@ module Knitkit
                 'templates',
                 'shared',
                 'knitkit',
-                "_#{params[:component_type]}.html.erb"
+                "_#{params[:template_type]}.html.erb"
               )
-              
+
               file_support.update_file(path, component_source)
-              theme.meta_data[component_type]['builder_html'] = component_source
+              theme.meta_data[params[:template_type]]['builder_html'] = component_source
               theme.save!
             else
               website_section_content = WebsiteSectionContent.where(id: params[:website_section_content_id]).first
 
               # assign source
-              website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(component_source)
-              website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(component_source)
+              website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.insert_widget_statements(component_source)
+              website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.insert_widget_statements(component_source)
               website_section_content.save!
             end
 

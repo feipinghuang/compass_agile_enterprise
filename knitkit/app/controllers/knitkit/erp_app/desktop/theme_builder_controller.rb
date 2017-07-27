@@ -29,11 +29,11 @@ module Knitkit
         end
 
         def render_theme_component
-          component_type = params[:component_type]
+          template_type = params[:template_type]
           @website_builder = true
           theme = @website.themes.first
           @website_sections = @website.website_sections.positioned
-          builder_html = theme.meta_data[component_type]['builder_html']
+          builder_html = theme.meta_data[template_type]['builder_html']
 
           render inline: builder_html, layout: 'knitkit/base'
         end

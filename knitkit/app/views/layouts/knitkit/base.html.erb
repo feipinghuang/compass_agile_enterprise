@@ -37,6 +37,9 @@
 
   <% if @website_builder %>
   <!-- Website Builder styles -->
+  <%= stylesheet_link_tag 'knitkit/website_builder/medium-editor.min' %>
+  <%= stylesheet_link_tag 'knitkit/website_builder/medium-bootstrap' %>
+  <%= stylesheet_link_tag 'knitkit/website_builder/medium_editor_theme/default.min' %>
   <!-- end -->
   <% end %>
 
@@ -46,10 +49,6 @@
  
   <% if @website_builder %>
     <%= yield %>
-    <%= javascript_include_tag 'knitkit/website_builder/pen.js' %>
-    <script>
-      window.__pen__ = new Pen(document.body);
-    </script>
   <% else %>
     <div id="wrap">
       <div class="header">
