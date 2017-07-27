@@ -700,7 +700,7 @@ class Website < ActiveRecord::Base
                           :render_base_layout => hash[:render_base_layout])
       section.internal_identifier = hash[:internal_identifier]
       content = entries.find do |entry|
-        entry[:type] == 'sections' and entry[:name] == "#{hash[:permalink].rhtml}" and entry[:path].split('.')[0] == "sections#{hash[:path]}"
+        entry[:type] == 'sections' and entry[:name] == "#{section.internal_identifier}" and entry[:path].split('/').last == "layout.rhtml"
       end
 
       section.layout = content[:data] unless content.nil?
@@ -713,14 +713,12 @@ class Website < ActiveRecord::Base
       
       website.website_sections << section
       website.save
-
       if hash[:section_contents]
-        build_section_content(section, hash[:section_contents], entries)
+        build_section_contents(section, hash[:section_contents], entries)
       end
 
       if hash[:sections]
         hash[:sections].each do |section_hash|
-          build_section_content(section, section_hash[:section_contents], entries)
           child_section = build_section(section_hash, entries, website, current_user)
           child_section.move_to_child_of(section)
         end
@@ -745,7 +743,7 @@ class Website < ActiveRecord::Base
       section
     end
 
-    def build_section_content(section, section_contents, entries)
+    def build_section_contents(section, section_contents, entries)
       section_contents.each do |section_content_hash|
         section_content_entries = entries.select do |entry|
           entry[:type] == 'section_contents' and section_content_hash[:id].to_s == entry[:id]
