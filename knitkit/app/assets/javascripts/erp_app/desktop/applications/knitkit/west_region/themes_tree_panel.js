@@ -333,30 +333,30 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                         items.push(Compass.ErpApp.Desktop.Applications.Knitkit.newThemeMenuItem);
                         items.push(Compass.ErpApp.Desktop.Applications.Knitkit.uploadThemeMenuItem);
                     } else if (node.data['isTheme']) {
-                        items.push({
-                            text: 'Delete Theme',
-                            iconCls: 'icon-delete',
-                            listeners: {
-                                'click': function() {
-                                    Ext.MessageBox.confirm('Confirm', 'Are you sure you want to delete this theme?', function(btn) {
-                                        if (btn == 'no') {
-                                            return false;
-                                        } else if (btn == 'yes') {
-                                            self.deleteTheme(node);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                        items.push({
-                            text: 'Rename Theme',
-                            iconCls: 'icon-edit',
-                            listeners: {
-                                'click': function() {
-                                    self.showUpdateThemeForm(node);
-                                }
-                            }
-                        });
+                        // items.push({
+                        //     text: 'Delete Theme',
+                        //     iconCls: 'icon-delete',
+                        //     listeners: {
+                        //         'click': function() {
+                        //             Ext.MessageBox.confirm('Confirm', 'Are you sure you want to delete this theme?', function(btn) {
+                        //                 if (btn == 'no') {
+                        //                     return false;
+                        //                 } else if (btn == 'yes') {
+                        //                     self.deleteTheme(node);
+                        //                 }
+                        //             });
+                        //         }
+                        //     }
+                        // });
+                        // items.push({
+                        //     text: 'Rename Theme',
+                        //     iconCls: 'icon-edit',
+                        //     listeners: {
+                        //         'click': function() {
+                        //             self.showUpdateThemeForm(node);
+                        //         }
+                        //     }
+                        // });
                         items.push({
                             text: 'Build Theme',
                             iconCls: 'icon-edit',
@@ -367,15 +367,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.ThemesTreePanel", {
                             }
                         });
 
-                        items.push({
-                            text: 'Export',
-                            iconCls: 'icon-document_out',
-                            listeners: {
-                                'click': function() {
-                                    self.exportTheme(node.data.id);
-                                }
-                            }
-                        });
+                        // items.push({
+                        //     text: 'Export',
+                        //     iconCls: 'icon-document_out',
+                        //     listeners: {
+                        //         'click': function() {
+                        //             self.exportTheme(node.data.id);
+                        //         }
+                        //     }
+                        // });
                     } else if (node.get('text') == 'Widgets') {
                         items.push({
                             text: 'Theme Widget',
