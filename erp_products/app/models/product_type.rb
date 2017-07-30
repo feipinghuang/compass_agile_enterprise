@@ -63,7 +63,29 @@ class ProductType < ActiveRecord::Base
 
   has_many :product_option_applicabilities, dependent: :destroy, as: :optioned_record
 
-  validates :internal_identifier, :uniqueness => true, :allow_nil => true
+  #
+  # Added scoping of internal identifier uniqueness validation by tenant. This model
+  # will eventually use is_tentantable
+  #
+  before_validation :set_tenant
+
+  def set_tenant
+    self.tenant_id = self.try(:dba_organization).try(:id)
+  end
+
+  validate :internal_identifier_uniqueness
+
+  def internal_identifier_uniqueness
+    if tenant_id.blank? && self.dba_organization.nil?
+      if ProductType.where(internal_identifier: internal_identifier).first
+        errors.add(:internal_identifier, "must be unique")
+      end
+    else
+      if ProductType.where(internal_identifier: internal_identifier, tenant_id: tenant_id).first
+        errors.add(:internal_identifier, "must be unique")
+      end
+    end 
+  end
 
   class << self
     # Filter records
