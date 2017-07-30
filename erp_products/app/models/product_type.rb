@@ -77,14 +77,19 @@ class ProductType < ActiveRecord::Base
 
   def internal_identifier_uniqueness
     if tenant_id.blank? && self.dba_organization.nil?
-      if ProductType.where(internal_identifier: internal_identifier).first
+      if ProductType.where(ProductType.arel_table[:internal_identifier].eq(internal_identifier)
+                           .and(ProductType.arel_table[:id].not_eq(self.id))).first
+
         errors.add(:internal_identifier, "must be unique")
       end
     else
-      if ProductType.where(internal_identifier: internal_identifier, tenant_id: tenant_id).first
+      if ProductType.where(ProductType.arel_table[:internal_identifier].eq(internal_identifier)
+                           .and(ProductType.arel_table[:tenant_id].eq(tenant_id))
+                           .and(ProductType.arel_table[:id].not_eq(self.id))).first
+
         errors.add(:internal_identifier, "must be unique")
       end
-    end 
+    end
   end
 
   class << self
