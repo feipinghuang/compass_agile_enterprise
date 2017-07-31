@@ -279,10 +279,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         }
 
         me.on('activate', function() {
+            if(!me.isThemeMode())
+                me.resetContentEditorToolbar();
             Ext.getCmp('knitkitWestRegion').addComponentsTabPanel(me.isThemeMode());
         });
 
         me.on('deactivate', function() {
+            if(!me.isThemeMode())
+                me.resetContentEditorToolbar();
             Ext.getCmp('knitkitWestRegion').removeComponentsTabPanel();
         });
 
@@ -746,6 +750,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         if (sourceElem) {
             sourceElem.on('click', function() {
                 if (dropPanel.cls == 'websitebuilder-component-panel') {
+                    me.resetContentEditorToolbar();
                     me.fetchComponentSource(
                         dropPanel.id,
                         function(dropPanel, responseObj) {
@@ -865,6 +870,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var removeElem = Ext.get(uniqueId + "-remove");
         if (removeElem) {
             removeElem.on("click", function() {
+                me.resetContentEditorToolbar();
                 parentContainer = dropPanel.up('websitebuilderdropzonecontainer');
                 if (dropPanel.cls == "websitebuilder-component-panel") {
                     parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
@@ -1246,6 +1252,22 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 // TODO: Could not load message count, should we display an error?
             }
         });
+    },
+
+    resetContentEditorToolbar: function() {
+        var me = this;
+        var contentBlocks = me.query('websitebuilderdropzonecontainer');
+        Ext.each(contentBlocks, function(block) {
+            var iframeEl = block.el.down('.iframe-container > iframe');
+            if (iframeEl) {
+                iframeEl.dom.contentWindow.getSelection().removeAllRanges();
+            }
+        });
+        var menu = jQuery('.pen-menu');
+        if(menu.length != 0) {
+            window.getSelection().removeAllRanges();
+            menu.hide();
+        }
     }
 
 });
