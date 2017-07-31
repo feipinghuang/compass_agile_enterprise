@@ -577,7 +577,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 }
             });
         } else {
-
+            if (me.down('codemirror')) {
+                Ext.Msg.alert('Error', 'You must save exit source view of all content blocks');
+                return;
+            }
+            
             var containerPanels = me.query("websitebuilderdropzonecontainer");
             components = [];
 
