@@ -117,16 +117,27 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
                 // clear any current accordions
                 me.removeAll(true);
 
-                var accordianComponentPanel = me.add({
-                    xtype: 'knitkitaccordiancomponentpanel',
-                    title: 'Content Blocks'
+                if (me.isTheme) {
+                    componentsObj = {header: [], footer: []};
+                } else {
+                    componentsObj = {content: []};
+                }
+                
+                Ext.each(components, function(component) {
+                    componentsObj[component.type].push(component);
                 });
 
-                accordianComponentPanel.add({
-                    xtype: 'knitkitdraggablepanel',
-                    items: me.getThumbnailPanelArray(components)
+                Ext.Object.each(componentsObj, function(componentType){
+                    var accordianComponentPanel = me.add({
+                        xtype: 'knitkitaccordiancomponentpanel',
+                        title: componentType == 'content' ? 'Content Blocks' : componentType.capitalize().pluralize()
+                    });
+                    
+                    accordianComponentPanel.add({
+                        xtype: 'knitkitdraggablepanel',
+                        items: me.getThumbnailPanelArray(componentsObj[componentType])
+                    });
                 });
-
                 dfd.resolve();
             },
             failure: function() {
