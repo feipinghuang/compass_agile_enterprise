@@ -985,21 +985,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     fetchComponentSource: function(dropPanelId, success, failure) {
         var me = this;
         var dropPanel = Ext.getCmp(dropPanelId);
-
-        // if its a type content, then read its HTML from the DOM
-        // else read HTML from the saved component's source
-        if (dropPanel.componentType == 'content') {
-            if(success) {
-                var html =  dropPanel.el.down('.iframe-container > iframe').dom.contentDocument.body.querySelector('.container > .row > .col-md-12').innerHTML;
-                success(dropPanel, {component: {html: html}});
-            }
-        }  else {
-            var websiteSectionContentId = dropPanel.websiteSectionContentId;
-            var params = {
-                website_id: me.getWebsiteId()
-            };
-            // if there is a website section content id then this is a content block
-            // else this is a layout component type header or footer
+        var websiteSectionContentId = dropPanel.websiteSectionContentId;
+        
+        var params = {
+            website_id: me.getWebsiteId()
+        };
+        // if there is a website section content id then this is a content block
+        // else this is a layout component type header or footer
             if (websiteSectionContentId) {
                 Ext.apply(params, {
                     website_section_content_id: websiteSectionContentId
@@ -1022,7 +1014,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     Ext.Msg.alert('Error', 'Error fetching source');
                 }
             });
-        }
         
     },
 
