@@ -34,9 +34,9 @@ module ErpBaseErpSvcs
 
         # Finds the correspoding time in UTC combining the date and time passed separately
         def in_utc_time(date, time)
-          parsed_date = (Time.parse(date)) - client_utc_offset.hours
+          parsed_date = (Time.parse(date)) - @offset_in_hours.hours
           parsed_time = Time.parse(time)
-          datetime_in_utc = parsed_date.change(hour: parsed_time.hour, min: parsed_time.min) + client_utc_offset.hours
+          datetime_in_utc = parsed_date.change(hour: parsed_time.hour, min: parsed_time.min) + @offset_in_hours.hours
           Time.zone.local_to_utc (datetime_in_utc)
         end
 
