@@ -143,7 +143,7 @@ class Party < ActiveRecord::Base
     Party.joins(party_roles: :role_type)
     .joins("inner join party_relationships on (party_id_to = parties.id) and party_id_from = #{id}")
     .where(RoleType.arel_table[:internal_identifier].in('dba_org'))
-    .where(Party.arel_table[:id].not_eq(id))
+    .where(Party.arel_table[:id].not_eq(id)).first
   end
   alias :tenant :dba_organization
 
