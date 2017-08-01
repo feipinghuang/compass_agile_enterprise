@@ -78,7 +78,7 @@ module ErpBaseErpSvcs
             erp_type = iid(internal_identifier)
 
             unless erp_type
-              create!(internal_identifier: internal_identifier, description: description)
+              erp_type = create!(internal_identifier: internal_identifier, description: description)
             end
 
             erp_type

@@ -6,12 +6,12 @@ class AddDefaultGlAccounts
     expense = BizTxnAcctRoot.create(description: 'Expense',
                                     internal_identifier: 'expense',
                                     external_identifier: 'expense',
-                                    biz_txn_acct_type: gl_account_type)
+                                    biz_txn_acct_type_id: gl_account_type.id)
 
     revenue = BizTxnAcctRoot.create(description: 'Revenue',
                                     internal_identifier: 'revenue',
                                     external_identifier: 'revenue',
-                                    biz_txn_acct_type: gl_account_type)
+                                    biz_txn_acct_type_id: gl_account_type.id)
 
     # add BizTxnAcctPtyRoles for DBA Organization
     if User.find_by_username('admin')

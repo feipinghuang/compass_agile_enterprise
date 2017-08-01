@@ -1,4 +1,5 @@
 #ruby core extensions
+require 'erp_base_erp_svcs/extensions/core/kernal'
 require 'erp_base_erp_svcs/extensions/core/array'
 require 'erp_base_erp_svcs/extensions/core/hash'
 require 'erp_base_erp_svcs/extensions/core/numbers'

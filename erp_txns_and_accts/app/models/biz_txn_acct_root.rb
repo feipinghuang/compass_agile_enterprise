@@ -93,7 +93,7 @@ class BizTxnAcctRoot < ActiveRecord::Base
     #
     # @return [ActiveRecord::Relation]
     def scope_by_dba_organization(dba_organization)
-      scope_by_party(dba_organization, {role_types: 'dba_org'})
+      scope_by_party(dba_organization, {role_types: ['dba_org', 'subscription_owner', 'account_owner', 'owner']})
     end
 
     alias scope_by_dba scope_by_dba_organization
@@ -133,24 +133,18 @@ class BizTxnAcctRoot < ActiveRecord::Base
   end
 
   def dba_organization
-    _dba_org = find_party_by_role('dba_org')
-
-    unless _dba_org
-      _dba_org = find_party_by_role('subscription_owner').try(:dba_organization)
-    end
-
-    unless _dba_org
-      _dba_org = find_party_by_role('account_owner').try(:dba_organization)
-    end
-
-    unless _dba_org
-      _dba_org = find_party_by_role('owner').try(:dba_organization)
-    end
-
-    _dba_org
+    biz_txn_acct_party_roles.joins(:biz_txn_acct_pty_rtype)
+    .where(biz_txn_acct_pty_rtypes: {internal_identifier: ['dba_org', 'subscription_owner', 'account_owner', 'owner']}).first
   end
   alias :dba_org :dba_organization
   alias :tenant :dba_organization
+
+  def set_dba_organization(dba_org, biz_txn_acct_pty_rtype='dba_org')
+    biz_txn_acct_party_roles.joins(:biz_txn_acct_pty_rtype).where(biz_txn_acct_pty_rtypes: {internal_identifier: ['subscription_owner', 'account_owner', 'owner']}).destroy_all
+
+    add_party_with_role(dba_org, biz_txn_acct_pty_rtype)
+  end
+  alias :set_tenant! :set_dba_organization
 
   def to_label
     "#{description}"

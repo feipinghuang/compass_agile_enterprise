@@ -68,15 +68,13 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         me.items = [{
             xtype: 'fieldset',
             height: me.fieldSetHeights,
-            width: 450,
+            autoScroll: true,
+            flex: 1,
             bodyPadding: '5px',
             style: {
                 marginLeft: '10px',
                 marginRight: '10px',
                 padding: '5px'
-            },
-            defaults: {
-                width: 400
             },
             itemId: 'loginInfoFieldSet',
             items: [{
@@ -149,14 +147,11 @@ Ext.define("CompassAE.ErpApp.Shared.Party.LoginInfoPanel", {
         }, {
             xtype: 'fieldset',
             height: me.fieldSetHeights,
-            width: 450,
+            flex: 1,
             style: {
                 marginLeft: '10px',
                 marginRight: '10px',
                 padding: '5px'
-            },
-            defaults: {
-                width: 400
             },
             itemId: 'activityFieldSet',
             items: [{

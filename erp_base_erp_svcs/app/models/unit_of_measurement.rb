@@ -38,12 +38,16 @@ class UnitOfMeasurement < ActiveRecord::Base
       joins(:party_unit_of_measurements)
       .where({party_unit_of_measurements: {party_id: dba_organization}})
     end
+
+    def iid(internal_identifier)
+      self.where(internal_identifier: internal_identifier).first
+    end
   end
 
   def set_dba_organization(dba_organization)
     self.party_unit_of_measurements.create(party: dba_organization)
   end
-  alias :set_tenant :set_dba_organization
+  alias :set_tenant! :set_dba_organization
 
   def to_data_hash
     to_hash(only: [:id,

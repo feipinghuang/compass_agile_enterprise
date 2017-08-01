@@ -9,7 +9,9 @@ module API
  @apiGroup EmailAddress
  @apiDescription Get Email Addresses
 
- @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+ @apiParam (query) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+ @apiParam (query) {Integer} [start] Start to for paging, defaults to 0
+ @apiParam (query) {Integer} [limit] Limit to for paging, defaults to 25
 
  @apiSuccess (200) {Object} get_email_addresses_response Response.
  @apiSuccess (200) {Boolean} get_email_addresses_response.success True if the request was successful.
@@ -65,7 +67,7 @@ module API
  @apiGroup EmailAddress
  @apiDescription Get Email Address
 
- @apiParam {Number} id Id of Email Address to get.
+ @apiParam (query) {Number} id Id of Email Address to get.
  
  @apiSuccess (200) {Object} get_email_address_response Response.
  @apiSuccess (200) {Boolean} get_email_address_response.success True if the request was successful.
@@ -73,13 +75,6 @@ module API
  @apiSuccess (200) {Number} get_email_address_response.email_address.id Id.
  @apiSuccess (200) {String} get_email_address_response.email_address.description Description.
  @apiSuccess (200) {String} get_email_address_response.email_address.email_address Email Address.
-
- @apiSuccessExample Success-Response:
-   HTTP/1.1 200 OK
-   {
-     "success": true,
-     "email_address": {"id": 1, "description": "Russell's Email", email_address":"rholmes@truenorthtechnology.com"}
-   }
 =end
 
       def show
@@ -97,9 +92,9 @@ module API
   @apiGroup EmailAddress
   @apiDescription Create Email Address
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
-  @apiParam {String} email_address Email Address.
-  @apiParam {String} description Description of Email Address.
+  @apiParam (body) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+  @apiParam (body) {String} email_address Email Address.
+  @apiParam (body) {String} description Description of Email Address.
   
   @apiSuccess (200) {Object} create_email_address_response Response.
   @apiSuccess (200) {Boolean} create_email_address_response.success True if the request was successful.
@@ -157,10 +152,10 @@ module API
   @apiGroup EmailAddress
   @apiDescription Update Email Address
   
-  @apiParam {Number} id Id of Email Address to update.
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
-  @apiParam {String} [email_address] Email Address.
-  @apiParam {String} [description] Description of Email Address.
+  @apiParam (body) {Number} id Id of Email Address to update.
+  @apiParam (body) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
+  @apiParam (body) {String} [email_address] Email Address.
+  @apiParam (body) {String} [description] Description of Email Address.
 
   @apiSuccess (200) {Object} update_email_address_response Response.
   @apiSuccess (200) {Boolean} update_email_address_response.success True if the request was successful.
@@ -227,7 +222,7 @@ module API
   @apiGroup EmailAddress
   @apiDescription Delete Email Address  
 
-  @apiParam {Number} id Id of Email Address to get.
+  @apiParam (query) {Number} id Id of Email Address to get.
   
   @apiSuccess (200) {Object} delete_email_address_response Response.
   @apiSuccess (200) {Boolean} delete_email_address_response.success True if the request was successful.
