@@ -543,7 +543,20 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var websitesCombo = Ext.ComponentQuery.query("websitescombo").first();
         return websitesCombo.getValue();
     },
-
+    
+    getContentBlockSubmitableHTML: function(dropPanel) {
+        var iframe = dropPanel.el.down('.iframe-container > iframe').el.dom,
+            html = null;
+        // content block should either have contents or a widget
+        if (iframe.contentDocument.body.querySelector('.container > .row > .col-md-12')) {
+            html =  iframe.contentDocument.body.querySelector('.container > .row > .col-md-12').innerHTML;
+        } else {
+            widgetStatement = iframe.contentDocument.body.querySelector('.compass_ae-widget').parentElement.getAttribute('data-widget-statement');
+            html = "<%= " + widgetStatement + "%>"
+        }
+        return html;
+    },
+    
     saveComponents: function(successCallback, failureCallback) {
         var me = this;
 
@@ -588,19 +601,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             Ext.each(containerPanels, function(container, rowIndex) {
                 Ext.each(container.query('websitebuilderdropzone'), function(component, columnIndex) {
                     if (component.el.down('.iframe-container > iframe')) {
-                        var iframe = component.el.down('.iframe-container > iframe').el.dom,
-                            html = null;
-                        // content block should either have contents or a widget
-                            if (iframe.contentDocument.body.querySelector('.container > .row > .col-md-12')) {
-                                html =  iframe.contentDocument.body.querySelector('.container > .row > .col-md-12').innerHTML;
-                            } else {
-                                widgetStatement = iframe.contentDocument.body.querySelector('.compass_ae-widget').parentElement.getAttribute('data-widget-statement');
-                                html = "<%= " + widgetStatement + "%>"
-                            }
-
+                        var html = me.getContentBlockSubmitableHTML(component)
                         var matchId = Math.round(Math.random() * 10000000);
                         
-
                         me.matchWebsiteSectionContents[matchId] = component;
 
                         var data = {
@@ -663,9 +666,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             componentName = options.componentName,
             componentType = options.componentType,
             websiteSectionContentId = options.websiteSectionContentId,
+            source = options.source;
             url = null;
 
-        if (componentName) {
+        if (source) {
+            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?source=' + source + '&id=' + websiteId;
+        } else if (componentName) {
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html?component_type=' + componentType + '&component_name=' + componentName + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId;
 
         } else if (websiteSectionContentId) {
@@ -834,12 +840,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             websiteSectionContentId: dropPanel.websiteSectionContentId,
                                             html: ''
                                         });
-                                        
+                                        var editorSource = btn.up('codemirror').codeMirrorInstance.getValue()
                                         btn.up('codemirror').destroy();
                                         me.loadContentBlock(
                                             component, {
                                                 websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                componentType: componentType
+                                                componentType: componentType,
+                                                source: editorSource
                                             }
                                         );
                                     }
@@ -1002,28 +1009,29 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         };
         // if there is a website section content id then this is a content block
         // else this is a layout component type header or footer
-            if (websiteSectionContentId) {
-                Ext.apply(params, {
-                    website_section_content_id: websiteSectionContentId
-                })
-            } else {
-                Ext.apply(params, {
-                    component_type: dropPanel.componentType
-                })            
-            }
-            Compass.ErpApp.Utility.ajaxRequest({
-                url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
-                method: 'GET',
-                params: params,
-                success: function(response) {
-                    if (success) {
-                        success(dropPanel, response);
-                    }
-                },
-                failure: function() {
-                    Ext.Msg.alert('Error', 'Error fetching source');
-                }
+        if (websiteSectionContentId) {
+            Ext.apply(params, {
+                website_section_content_id: websiteSectionContentId,
+                body_html: me.getContentBlockSubmitableHTML(dropPanel)
             });
+        } else {
+            Ext.apply(params, {
+                component_type: dropPanel.componentType
+            });            
+        }
+        Compass.ErpApp.Utility.ajaxRequest({
+            url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
+            method: 'POST',
+            params: params,
+            success: function(response) {
+                if (success) {
+                    success(dropPanel, response);
+                }
+            },
+            failure: function() {
+                Ext.Msg.alert('Error', 'Error fetching source');
+            }
+        });
         
     },
 

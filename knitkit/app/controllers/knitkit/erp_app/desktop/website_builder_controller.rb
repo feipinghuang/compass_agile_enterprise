@@ -39,7 +39,11 @@ module Knitkit
           @website_sections = @website.website_sections
           @website_builder = true
 
-          if params[:website_section_content_id]
+          if params[:source]
+            source = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(params[:source])
+            html = ::Knitkit::WebsiteBuilder::ErbEvaluator.evaluate(source)
+            render inline: wrap_in_row(html), layout: 'knitkit/base'
+          elsif params[:website_section_content_id]
             website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
 
             render inline: wrap_in_row(website_section_content.builder_html), layout: 'knitkit/base'
@@ -138,8 +142,14 @@ module Knitkit
 
             if params[:website_section_content_id].present?
               website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
-              
-              html_content = website_section_content.website_html
+
+              body_html = params[:body_html]
+              html_content = if body_html.present?
+                               builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(body_html)
+                               ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(builder_html)
+                             else
+                               website_section_content.website_html
+                             end 
 
             else
               theme = website.themes.first
