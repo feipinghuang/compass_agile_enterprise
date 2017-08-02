@@ -666,24 +666,41 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             componentName = options.componentName,
             componentType = options.componentType,
             websiteSectionContentId = options.websiteSectionContentId,
-            source = options.source;
-            url = null;
-
+            source = options.source,
+            url = '/knitkit/erp_app/desktop/website_builder/render_component.html',
+            params = {};
+        
         if (source) {
-            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?source=' + source + '&id=' + websiteId;
+            Ext.apply(params, {
+                source: source,
+                id: websiteId
+            });
         } else if (componentName) {
-            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?component_type=' + componentType + '&component_name=' + componentName + '&id=' + websiteId + '&website_section_id=' + me.websiteSectionId;
+            Ext.apply(params, {
+                component_type: componentType,
+                component_name: componentName,
+                id: websiteId,
+                website_section_id: me.websiteSectionId
+            });
 
         } else if (websiteSectionContentId) {
-            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?website_section_content_id=' + websiteSectionContentId + '&id=' + websiteId;
+            Ext.apply(params, {
+                website_section_content_id: websiteSectionContentId,
+                id: websiteId
+            });
 
         } else if (componentType == 'header' || componentType == 'footer') {
-            url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component?website_id=' + websiteId + '&component_type=' + componentType;
+            url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component';
+            Ext.apply(params, {
+                website_id: websiteId,
+                component_type: componentType
+            });
 
         } else {
-            url = '/knitkit/erp_app/desktop/website_builder/render_component.html?id=' + websiteId;
+            Ext.apply(params, {
+                id: websiteId
+            });
         }
-
         // append a random param to prevent the browser from caching its contents when this is requested from an iframe
         url = url + '&cache_buster_token=' + new Date().getTime();
 
@@ -702,13 +719,18 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             '</tpl>',
             '</div>',
             '<div class="iframe-container">',
-            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" src="{url}"></iframe>',
+            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" name="{iframeId}" src="{url}"></iframe>',
             '</div>',
             '<tpl else>',
             '<div class="iframe-container">',
-            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" src="{url}"></iframe>',
+            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" name="{iframeId}" src="{url}"></iframe>',
             '</div>',
             '</tpl>',
+            '<form action="{url}" method="POST" target="{iframeId}">',
+            '<tpl foreach="params">',
+            '<input type="hidden" name="{$}" value="{.}">',
+            '</tpl>',
+            '</form>',
             '</div>'
         ).apply({
             panelId: dropPanel.id,
@@ -717,7 +739,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             url: url,
             canViewSource: canViewSource,
             canMove: canMove,
-            canRemove: canRemove
+            canRemove: canRemove,
+            params: params
         });
     },
 

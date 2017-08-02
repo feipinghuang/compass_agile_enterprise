@@ -59,7 +59,7 @@ Knitkit::Engine.routes.draw do
         collection do
           get :components
           get :get_component
-          get :render_component
+          post :render_component
           post :save_website
           post :get_component_source
           post :save_component_source
@@ -77,7 +77,7 @@ Knitkit::Engine.routes.draw do
         end
 
         collection do
-          get :render_theme_component
+          post :render_theme_component
         end
       end
 
