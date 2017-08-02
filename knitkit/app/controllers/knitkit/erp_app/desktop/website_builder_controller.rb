@@ -41,8 +41,7 @@ module Knitkit
 
           if params[:source]
             source = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(params[:source])
-            html = ::Knitkit::WebsiteBuilder::ErbEvaluator.evaluate(source)
-            render inline: wrap_in_row(html), layout: 'knitkit/base'
+            render inline: wrap_in_row(source), layout: 'knitkit/base'
           elsif params[:website_section_content_id]
             website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
 

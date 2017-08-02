@@ -782,7 +782,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         
         var sourceElem = Ext.get(uniqueId + '-source');
         if (sourceElem) {
-            sourceElem.on('click', function() {
+            sourceElem.removeAllListeners();
+            sourceElem.on('click', function(e) {
+                e.stopEvent();
+                console.log(dropPanel.cls);
                 if (dropPanel.cls == 'websitebuilder-component-panel') {
                     me.resetContentEditorToolbar();
                     me.fetchComponentSource(
@@ -839,11 +842,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                                 });
 
                                                 btn.up('codemirror').destroy();
-
+                                                
                                                 me.loadContentBlock(
                                                     component, {
                                                         websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                        componentType: componentType
                                                     }
                                                 );
                                                 centerRegion.clearWindowStatus();
@@ -869,7 +871,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                         me.loadContentBlock(
                                             component, {
                                                 websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                componentType: componentType,
                                                 source: editorSource
                                             }
                                         );
@@ -904,7 +905,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         var removeElem = Ext.get(uniqueId + "-remove");
         if (removeElem) {
-            removeElem.on("click", function() {
+            removeElem.removeAllListeners();
+            removeElem.on("click", function(e) {
+                e.stopEvent();
                 me.resetContentEditorToolbar();
                 parentContainer = dropPanel.up('websitebuilderdropzonecontainer');
                 if (dropPanel.cls == "websitebuilder-component-panel") {
@@ -924,7 +927,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         iframe.on('load', function() {
             if (options.autoSave)
                 loadMask.hide();
-
+            
             var iframeNode = iframe.el.dom;
             
             if (options.widgetName) {
