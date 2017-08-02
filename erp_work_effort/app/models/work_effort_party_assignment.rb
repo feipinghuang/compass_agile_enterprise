@@ -67,7 +67,7 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
       end
 
       # filter by status
-      unless filters[:status].blank?
+      if  filters[:work_effort_id].blank? && filters[:status].present?
         statement = statement.with_current_status(filters[:status].split(','))
       end
 
