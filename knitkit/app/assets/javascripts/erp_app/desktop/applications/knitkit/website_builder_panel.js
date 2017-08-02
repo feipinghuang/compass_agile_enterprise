@@ -668,7 +668,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             websiteSectionContentId = options.websiteSectionContentId,
             source = options.source,
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html',
-            params = {};
+            params = {authenticity_token: Compass.ErpApp.AuthentictyToken};
         
         if (source) {
             Ext.apply(params, {
@@ -690,7 +690,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
 
         } else if (componentType == 'header' || componentType == 'footer') {
-            url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component';
+            url = '/knitkit/erp_app/desktop/theme_builder/render_theme_component.html';
             Ext.apply(params, {
                 website_id: websiteId,
                 component_type: componentType
@@ -776,9 +776,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         }
 
         dropPanel.update(me.buildContentBlockTemplate(dropPanel, options));
-
         var iframe = Ext.get(dropPanel.el.down('div.iframe-container > iframe'));
+        document.querySelector('form[target="' + iframe.dom.id + '"]').submit();
 
+        
         var sourceElem = Ext.get(uniqueId + '-source');
         if (sourceElem) {
             sourceElem.on('click', function() {
