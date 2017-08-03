@@ -744,7 +744,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     loadContentBlock: function(dropPanel, options) {
         var me = this;
-        var containerPanel = Ext.ComponentQuery.query('websitebuilderpanel').first();
         var uniqueId = null;
 
         if (options.componentType) {
@@ -777,163 +776,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var iframe = Ext.get(dropPanel.el.down('div.iframe-container > iframe'));
         document.querySelector('form[target="' + iframe.dom.id + '"]').submit();
 
-        
-        var sourceElem = Ext.get(uniqueId + '-source');
-        if (sourceElem) {
-            sourceElem.removeAllListeners();
-            sourceElem.on('click', function(e) {
-                e.stopEvent();
-                console.log(dropPanel.cls);
-                if (dropPanel.cls == 'websitebuilder-component-panel') {
-                    me.resetContentEditorToolbar();
-                    me.fetchComponentSource(
-                        dropPanel.id,
-                        function(dropPanel, responseObj) {
-                            var source = responseObj.component.html;
-                            var parentContainer = dropPanel.up('container');
-                            var componentType = dropPanel.componentType;
-                            var websiteSectionContentId = dropPanel.websiteSectionContentId;
-                            var dropPanelIndex = dropPanel.up('container').items.indexOf(dropPanel);
-                            var componentType = dropPanel.componentType;
-                            var opts = {
-                                canViewSource: true,
-                                canRemove: true
-                            };
-
-                            if (componentType) {
-                                Ext.apply(opts, {
-                                    canMove: false,
-                                    componentType: componentType
-                                });
-                            } else {
-                                Ext.apply(opts, {
-                                    canMove: true
-                                });
-                            }
-
-                            parentContainer.insert(dropPanelIndex, {
-                                xtype: 'codemirror',
-                                mode: 'rhtml',
-                                showMode: false,
-                                sourceCode: source,
-                                height: me.getHeight(),
-                                flex: 1,
-                                tbarItems: [{
-                                    text: 'Save & Show Design View',
-                                    iconCls: 'icon-save',
-                                    handler: function(btn) {
-                                        var centerRegion = Ext.getCmp('knitkitCenterRegion');
-                                        centerRegion.setWindowStatus('Saving...');
-                                        var componentSource = btn.up('codemirror').codeMirrorInstance.getValue();
-
-                                        me.saveComponentSource(componentSource, {
-                                                componentType: componentType,
-                                                websiteSectionContentId: dropPanel.websiteSectionContentId
-                                            },
-                                            function() {
-                                                var component = parentContainer.insert(dropPanelIndex, {
-                                                    xtype: 'websitebuilderdropzone',
-                                                    flex: 1,
-                                                    componentType: componentType,
-                                                    websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                    html: ''
-                                                });
-
-                                                btn.up('codemirror').destroy();
-                                                var loadMsk = new Ext.LoadMask(component, {
-                                                    msg: "Please wait..."
-                                                });
-                                                loadMsk.show();
-                                                me.loadContentBlock(
-                                                    component, {
-                                                        websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                        afterload: function() {
-                                                            loadMsk.hide();
-                                                        }
-                                                    }
-                                                );
-                                                centerRegion.clearWindowStatus();
-                                            },
-                                            function() {
-                                                Ext.Msg.alert('Error', 'Error saving source');
-                                            }
-                                        );
-                                    }
-                                }, {
-                                    text: 'Close',
-                                    iconCls: 'icon-delete',
-                                    handler: function(btn) {
-                                        var component = parentContainer.insert(dropPanelIndex, {
-                                            xtype: 'websitebuilderdropzone',
-                                            flex: 1,
-                                            componentType: componentType,
-                                            websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                            html: ''
-                                        });
-                                        var editorSource = btn.up('codemirror').codeMirrorInstance.getValue()
-                                        var loadMsk = new Ext.LoadMask(component, {
-                                            msg: "Please wait..."
-                                        });
-                                        loadMsk.show();
-                                        btn.up('codemirror').destroy();
-                                        me.loadContentBlock(
-                                            component, {
-                                                websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                source: editorSource,
-                                                afterload: function() {
-                                                    loadMsk.hide();
-                                                }
-                                            }
-                                        );
-                                    }
-                                }],
-                                listeners: {
-                                    save: function(codemirror, content) {
-                                        var centerRegion = Ext.getCmp('knitkitCenterRegion');
-                                        centerRegion.setWindowStatus('Saving...');
-                                        me.saveComponentSource(
-                                            content, {
-                                                componentType: componentType,
-                                                websiteSectionContentId: dropPanel.websiteSectionContentId
-                                            },
-                                            function() {
-                                                centerRegion.clearWindowStatus();
-                                            },
-                                            function() {
-                                                centerRegion.clearWindowStatus();
-                                            }
-                                        );
-                                    }
-                                }
-                            });
-
-                            dropPanel.destroy();
-                        }
-                    );
-                }
-            });
-        }
-
-        var removeElem = Ext.get(uniqueId + "-remove");
-        if (removeElem) {
-            removeElem.removeAllListeners();
-            removeElem.on("click", function(e) {
-                e.stopEvent();
-                me.resetContentEditorToolbar();
-                parentContainer = dropPanel.up('websitebuilderdropzonecontainer');
-                if (dropPanel.cls == "websitebuilder-component-panel") {
-                    parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
-                        xtype: 'websitebuilderdropzone',
-                        empty: true,
-                        componentType: dropPanel.componentType,
-                        flex: 1
-                    });
-
-                    dropPanel.destroy();
-                    clearInterval(containerPanel.refershIntervals[uniqueId]);
-                }
-            });
-        }
+        me.attachContentBlockListeners(dropPanel, uniqueId);
 
         iframe.on('load', function() {
             if (options.autoSave)
@@ -1019,18 +862,18 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
 
             // start resize interval for iframe
-            containerPanel.refershIntervals[iframeNode.id] = setInterval(function() {
+            me.refershIntervals[iframeNode.id] = setInterval(function() {
                 if (!iframeNode || !iframeNode.contentDocument || !iframeNode.contentDocument.body) {
-                    clearInterval(containerPanel.refershIntervals[iframeNode.id]);
+                    clearInterval(me.refershIntervals[iframeNode.id]);
                 } else {
-                    if (!containerPanel.rowHeights[iframeNode.id]) {
-                        containerPanel.rowHeights[iframeNode.id] = iframeNode.contentDocument.body.offsetHeight;
+                    if (!me.rowHeights[iframeNode.id]) {
+                        me.rowHeights[iframeNode.id] = iframeNode.contentDocument.body.offsetHeight;
                         dropPanel.setHeight(iframeNode.contentDocument.body.offsetHeight);
-                        containerPanel.updateLayout();
-                    } else if (containerPanel.rowHeights[iframeNode.id] !== iframeNode.contentDocument.body.offsetHeight) {
-                        containerPanel.rowHeights[iframeNode.id] = iframeNode.contentDocument.body.offsetHeight;
+                        me.updateLayout();
+                    } else if (me.rowHeights[iframeNode.id] !== iframeNode.contentDocument.body.offsetHeight) {
+                        me.rowHeights[iframeNode.id] = iframeNode.contentDocument.body.offsetHeight;
                         dropPanel.setHeight(iframeNode.contentDocument.body.offsetHeight);
-                        containerPanel.updateLayout();
+                        me.updateLayout();
                     }
                 }
             }, 300);
@@ -1040,6 +883,166 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         });
     },
 
+    attachContentBlockListeners: function(dropPanel, uniqueId) {
+        var me = this;
+        var sourceElem = Ext.get(uniqueId + '-source');
+        if (sourceElem) {
+            sourceElem.removeAllListeners();
+            sourceElem.on('click', function(e) {
+                e.stopEvent();
+                console.log(dropPanel.cls);
+                if (dropPanel.cls == 'websitebuilder-component-panel') {
+                    me.resetContentEditorToolbar();
+                    me.fetchComponentSource(
+                        dropPanel.id,
+                        function(dropPanel, responseObj) {
+                            var source = responseObj.component.html;
+                            var parentContainer = dropPanel.up('container');
+                            var componentType = dropPanel.componentType;
+                            var websiteSectionContentId = dropPanel.websiteSectionContentId;
+                            var dropPanelIndex = dropPanel.up('container').items.indexOf(dropPanel);
+                            var componentType = dropPanel.componentType;
+                            var opts = {
+                                canViewSource: true,
+                                canRemove: true
+                            };
+
+                            if (componentType) {
+                                Ext.apply(opts, {
+                                    canMove: false,
+                                    componentType: componentType
+                                });
+                            } else {
+                                Ext.apply(opts, {
+                                    canMove: true
+                                });
+                            }
+
+                            parentContainer.insert(dropPanelIndex, {
+                                xtype: 'codemirror',
+                                mode: 'rhtml',
+                                showMode: false,
+                                sourceCode: source,
+                                height: me.getHeight(),
+                                flex: 1,
+                                tbarItems: [{
+                                    text: 'Save & Show Design View',
+                                    iconCls: 'icon-save',
+                                    handler: function(btn) {
+                                        var centerRegion = Ext.getCmp('knitkitCenterRegion');
+                                        centerRegion.setWindowStatus('Saving...');
+                                        var componentSource = btn.up('codemirror').codeMirrorInstance.getValue();
+
+                                        me.saveComponentSource(componentSource, {
+                                            componentType: componentType,
+                                            websiteSectionContentId: dropPanel.websiteSectionContentId
+                                        },
+                                                               function() {
+                                                                   var component = parentContainer.insert(dropPanelIndex, {
+                                                                       xtype: 'websitebuilderdropzone',
+                                                                       flex: 1,
+                                                                       componentType: componentType,
+                                                                       websiteSectionContentId: dropPanel.websiteSectionContentId,
+                                                                       html: ''
+                                                                   });
+
+                                                                   btn.up('codemirror').destroy();
+                                                                   var loadMsk = new Ext.LoadMask(component, {
+                                                                       msg: "Please wait..."
+                                                                   });
+                                                                   loadMsk.show();
+                                                                   me.loadContentBlock(
+                                                                       component, {
+                                                                           websiteSectionContentId: dropPanel.websiteSectionContentId,
+                                                                           afterload: function() {
+                                                                               loadMsk.hide();
+                                                                           }
+                                                                       }
+                                                                   );
+                                                                   centerRegion.clearWindowStatus();
+                                                               },
+                                                               function() {
+                                                                   Ext.Msg.alert('Error', 'Error saving source');
+                                                               }
+                                                              );
+                                    }
+                                }, {
+                                    text: 'Close',
+                                    iconCls: 'icon-delete',
+                                    handler: function(btn) {
+                                        var component = parentContainer.insert(dropPanelIndex, {
+                                            xtype: 'websitebuilderdropzone',
+                                            flex: 1,
+                                            componentType: componentType,
+                                            websiteSectionContentId: dropPanel.websiteSectionContentId,
+                                            html: ''
+                                        });
+                                        var editorSource = btn.up('codemirror').codeMirrorInstance.getValue()
+                                        var loadMsk = new Ext.LoadMask(component, {
+                                            msg: "Please wait..."
+                                        });
+                                        loadMsk.show();
+                                        btn.up('codemirror').destroy();
+                                        me.loadContentBlock(
+                                            component, {
+                                                websiteSectionContentId: dropPanel.websiteSectionContentId,
+                                                source: editorSource,
+                                                afterload: function() {
+                                                    loadMsk.hide();
+                                                }
+                                            }
+                                        );
+                                    }
+                                }],
+                                listeners: {
+                                    save: function(codemirror, content) {
+                                        var centerRegion = Ext.getCmp('knitkitCenterRegion');
+                                        centerRegion.setWindowStatus('Saving...');
+                                        me.saveComponentSource(
+                                            content, {
+                                                componentType: componentType,
+                                                websiteSectionContentId: dropPanel.websiteSectionContentId
+                                            },
+                                            function() {
+                                                centerRegion.clearWindowStatus();
+                                            },
+                                            function() {
+                                                centerRegion.clearWindowStatus();
+                                            }
+                                        );
+                                    }
+                                }
+                            });
+
+                            dropPanel.destroy();
+                        }
+                    );
+                }
+            });
+        }
+
+        var removeElem = Ext.get(uniqueId + "-remove");
+        if (removeElem) {
+            removeElem.removeAllListeners();
+            removeElem.on("click", function(e) {
+                e.stopEvent();
+                me.resetContentEditorToolbar();
+                parentContainer = dropPanel.up('websitebuilderdropzonecontainer');
+                if (dropPanel.cls == "websitebuilder-component-panel") {
+                    parentContainer.insert(parentContainer.items.indexOf(dropPanel), {
+                        xtype: 'websitebuilderdropzone',
+                        empty: true,
+                        componentType: dropPanel.componentType,
+                        flex: 1
+                    });
+
+                    dropPanel.destroy();
+                    clearInterval(me.refershIntervals[uniqueId]);
+                }
+            });
+        }
+    },
+    
     fetchComponentSource: function(dropPanelId, success, failure) {
         var me = this;
         var dropPanel = Ext.getCmp(dropPanelId);
