@@ -312,13 +312,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                 afterDragDrop: function(target, e, id) {
                     me.enableComponents();
-
                     me.removeAutoRemovableDropZones();
                 },
 
                 afterInvalidDrop: function(target, e, id) {
                     me.enableComponents();
-
                     me.removeAutoRemovableDropZones();
                 },
 
@@ -490,7 +488,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         Ext.each(components, function(component, index) {
             var componentIndex = me.items.indexOf(component);
-
+            
             if ((me.items.getAt(componentIndex - 1) && !me.items.getAt(componentIndex - 1).empty()) || (me.items.getAt(componentIndex + 1) && !me.items.getAt(componentIndex + 1).empty())) {
                 me.insert(componentIndex, {
                     xtype: 'websitebuilderdropzonecontainer',
@@ -761,7 +759,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         }
 
         options['uniqueId'] = uniqueId;
-
+        
         dropPanel.removeCls('website-builder-dropzone');
 
         Ext.apply(dropPanel, {
@@ -842,10 +840,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                                 });
 
                                                 btn.up('codemirror').destroy();
-                                                
+                                                var loadMsk = new Ext.LoadMask(component, {
+                                                    msg: "Please wait..."
+                                                });
+                                                loadMsk.show();
                                                 me.loadContentBlock(
                                                     component, {
                                                         websiteSectionContentId: dropPanel.websiteSectionContentId,
+                                                        afterload: function() {
+                                                            loadMsk.hide();
+                                                        }
                                                     }
                                                 );
                                                 centerRegion.clearWindowStatus();
@@ -867,11 +871,18 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                             html: ''
                                         });
                                         var editorSource = btn.up('codemirror').codeMirrorInstance.getValue()
+                                        var loadMsk = new Ext.LoadMask(component, {
+                                            msg: "Please wait..."
+                                        });
+                                        loadMsk.show();
                                         btn.up('codemirror').destroy();
                                         me.loadContentBlock(
                                             component, {
                                                 websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                source: editorSource
+                                                source: editorSource,
+                                                afterload: function() {
+                                                    loadMsk.hide();
+                                                }
                                             }
                                         );
                                     }
@@ -927,6 +938,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         iframe.on('load', function() {
             if (options.autoSave)
                 loadMask.hide();
+
+            if (options.afterload && typeof options.afterload === "function")
+                options.afterload();
             
             var iframeNode = iframe.el.dom;
             
