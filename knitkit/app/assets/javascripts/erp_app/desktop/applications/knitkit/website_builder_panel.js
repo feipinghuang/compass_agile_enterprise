@@ -667,10 +667,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             source = options.source,
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html',
             params = {authenticity_token: Compass.ErpApp.AuthentictyToken};
-        
         if (source) {
             Ext.apply(params, {
-                source: source,
+                source: encodeURIComponent(source),
                 id: websiteId
             });
         } else if (componentName) {

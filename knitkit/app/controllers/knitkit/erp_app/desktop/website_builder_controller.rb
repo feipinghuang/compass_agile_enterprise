@@ -38,10 +38,11 @@ module Knitkit
         def render_component
           @website_sections = @website.website_sections
           @website_builder = true
-
-          if params[:source]
-            source = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(params[:source])
-            render inline: wrap_in_row(source), layout: 'knitkit/base'
+          source = URI.unescape(params[:source]) rescue nil
+          
+          if source.present? and source != "undefined" and source != "null" 
+            source_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(source)
+            render inline: wrap_in_row(source_html), layout: 'knitkit/base'
           elsif params[:website_section_content_id]
             website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
 
