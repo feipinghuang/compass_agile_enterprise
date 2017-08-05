@@ -36,3 +36,9 @@ module ErpBaseErpSvcs
     end # ActiveRecord
   end # Extensions
 end # ErpBaseErpSvcs
+
+ActiveRecord::Base.instance_eval do
+  def is_tenantable?
+    self.eigenclass.included_modules.include?(::ErpBaseErpSvcs::Extensions::ActiveRecord::IsTenantable::SingletonMethods)
+  end
+end
