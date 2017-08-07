@@ -130,7 +130,7 @@ class ProductType < ActiveRecord::Base
         statement = statement.joins(join_stmt).where(product_types_tbl[:description].matches('%' + filters[:keyword] + '%'))
       end
 
-      if filters[:available_on_web]
+      if filters[:is_available_on_web]
         statement = statement.where(available_on_web: true)
       end
 
