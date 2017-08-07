@@ -17,137 +17,436 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function(self, i
     }
 
     // Create Section
-    if (currentUser.hasCapability('create', 'WebsiteSection') && !record.get('isBlog')) {
-        items.push({
-            text: 'Add Page',
-            iconCls: 'icon-add',
-            listeners: {
-                'click': function() {
-                    Ext.widget("window", {
-                        modal: true,
-                        title: 'New Page',
-                        buttonAlign: 'center',
-                        defaultFocus: 'title',
-                        items: {
-                            xtype: 'form',
-                            frame: false,
-                            bodyStyle: 'padding:5px 5px 0',
-                            url: '/knitkit/erp_app/desktop/section/new',
-                            items: [{
+    if (currentUser.hasCapability('create', 'WebsiteSection')) {
+        if (record.get('isBlog')) {
+            // Add Article
+            items.push({
+                text: 'Add Article',
+                iconCls: 'icon-document',
+                listeners: {
+                    'click': function () {
+
+                        var addFormItems = [
+                            {
                                 xtype: 'textfield',
                                 fieldLabel: 'Title',
                                 allowBlank: false,
                                 name: 'title',
                                 itemId: 'title'
-                            }, {
+                            },
+                            {
+                                xtype: 'radiogroup',
+                                fieldLabel: 'Display title?',
+                                name: 'display_title',
+                                columns: 2,
+                                items: [
+                                    {
+                                        boxLabel: 'Yes',
+                                        name: 'display_title',
+                                        inputValue: 'yes',
+                                        checked: true
+                                    },
+
+                                    {
+                                        boxLabel: 'No',
+                                        name: 'display_title',
+                                        inputValue: 'no'
+                                    }
+                                ]
+                            },
+                            {
+                                xtype: 'textfield',
+                                fieldLabel: 'Content Area',
+                                allowBlank: true,
+                                name: 'content_area'
+                            },
+                            {
+                                xtype: 'textfield',
+                                fieldLabel: 'Tags',
+                                allowBlank: true,
+                                name: 'tags'
+                            },
+                            {
                                 xtype: 'textfield',
                                 fieldLabel: 'Internal ID',
                                 allowBlank: true,
                                 name: 'internal_identifier'
-                            }, {
-                                xtype: 'combo',
-                                forceSelection: true,
-                                store: [
-                                    ['Page', 'Page'],
-                                    ['Blog', 'Blog']
-                                ],
-                                value: 'Page',
-                                fieldLabel: 'Type',
-                                name: 'type',
-                                allowBlank: false,
-                                triggerAction: 'all'
-                            }, {
-                                xtype: 'radiogroup',
-                                fieldLabel: 'Display in menu?',
-                                name: 'in_menu',
-                                columns: 2,
-                                items: [{
-                                        boxLabel: 'Yes',
-                                        name: 'in_menu',
-                                        inputValue: 'yes',
-                                        checked: true
-                                    },
+                            }
+                        ];
 
-                                    {
-                                        boxLabel: 'No',
-                                        name: 'in_menu',
-                                        inputValue: 'no'
+                        Ext.widget('window', {
+                            modal: true,
+                            title: 'Create New Article',
+                            buttonAlign: 'center',
+                            defaultFocus: 'title',
+                            items: {
+                                xtype: 'form',
+                                frame: false,
+                                bodyStyle: 'padding:5px 5px 0',
+                                url: '/knitkit/erp_app/desktop/articles/new/' + sectionId,
+                                items: addFormItems
+                            },
+                            buttons: [
+                                {
+                                    text: 'Submit',
+                                    listeners: {
+                                        'click': function (button) {
+                                            var window = button.findParentByType('window');
+                                            var formPanel = window.query('form')[0];
+
+                                            var loadMask = new Ext.LoadMask(window, {msg: 'Please wait...'});
+
+                                            formPanel.getForm().submit({
+                                                reset: true,
+                                                success: function (form, action) {
+                                                    loadMask.hide();
+                                                    var obj = Ext.decode(action.response.responseText);
+                                                    if (obj.success) {
+                                                        obj.node.createdAt = obj.node.created_at;
+                                                        obj.node.updatedAt = obj.node.updated_at;
+                                                        record.appendChild(Ext.create('SiteContentsModel', obj.node));
+                                                    }
+                                                    else {
+                                                        Ext.Msg.alert("Error", obj.msg);
+                                                    }
+                                                    window.close();
+                                                },
+                                                failure: function (form, action) {
+                                                    loadMask.hide();
+                                                    Ext.Msg.alert("Error", "Error creating article");
+                                                }
+                                            });
+                                        }
                                     }
-                                ]
-                            }, {
-                                xtype: 'radiogroup',
-                                fieldLabel: 'Render with Base Layout?',
-                                name: 'render_with_base_layout',
-                                columns: 2,
-                                items: [{
-                                        boxLabel: 'Yes',
-                                        name: 'render_with_base_layout',
-                                        inputValue: 'yes',
-                                        checked: true
-                                    },
-
-                                    {
-                                        boxLabel: 'No',
-                                        name: 'render_with_base_layout',
-                                        inputValue: 'no'
+                                },
+                                {
+                                    text: 'Close',
+                                    handler: function (btn) {
+                                        btn.up('window').close();
                                     }
-                                ]
-                            }, {
-                                xtype: 'hidden',
-                                name: 'website_section_id',
-                                value: sectionId
-                            }, {
-                                xtype: 'hidden',
-                                name: 'website_id',
-                                value: record.data.siteId
-                            }]
-                        },
-                        buttons: [{
-                            text: 'Submit',
-                            listeners: {
-                                'click': function(button) {
-                                    var window = button.findParentByType('window');
-                                    var formPanel = window.query('.form')[0];
+                                }
+                            ]
+                        }).show();
+                    }
+                }
+            });
 
-                                    var loadMask = new Ext.LoadMask(window, {
-                                        msg: 'Please wait...'
-                                    });
+            // Attach Article
+            items.push({
+                text: 'Attach Article',
+                iconCls: 'icon-copy',
+                listeners: {
+                    'click': function () {
+                        var window = Ext.widget('window', {
+                            modal: true,
+                            title: 'Attach Existing Article',
+                            plain: true,
+                            buttonAlign: 'center',
+                            items: {
+                                xtype: 'form',
+                                frame: false,
+                                bodyStyle: 'padding:5px 5px 0',
+                                url: '/knitkit/erp_app/desktop/articles/add_existing/' + sectionId,
+                                items: [
+                                    {
+                                        itemId: 'available_articles_filter_combobox',
+                                        xtype: 'combo',
+                                        hiddenName: 'website_id',
+                                        name: 'website_id',
+                                        loadingText: 'Retrieving Websites...',
+                                        store: Ext.create('Ext.data.Store', {
+                                            autoLoad: true,
+                                            proxy: {
+                                                type: 'ajax',
+                                                reader: {
+                                                    type: 'json',
+                                                    root: 'websites'
+                                                },
+                                                extraParams: {
+                                                    section_id: sectionId
+                                                },
+                                                url: '/knitkit/erp_app/desktop/section/available_articles_filter'
+                                            },
+                                            fields: [
+                                                {
+                                                    name: 'id'
+                                                },
+                                                {
+                                                    name: 'internal_identifier'
 
-                                    formPanel.getForm().submit({
-                                        reset: true,
-                                        success: function(form, action) {
-                                            loadMask.hide();
-                                            var obj = Ext.decode(action.response.responseText);
-                                            if (obj.success) {
-                                                record.appendChild(obj.node);
-                                                window.close();
-                                            } else {
-                                                Ext.Msg.alert("Error", obj.message);
+                                                },
+                                                {
+                                                    name: 'name'
+
+                                                }
+                                            ],
+                                            listeners: {
+                                                'load': function (store) {
+                                                    available_articles_filter_combobox = window.down('#available_articles_filter_combobox');
+                                                    available_articles_filter_combobox.select(0);
+                                                    available_articles_filter_combobox.fireEvent('select');
+                                                }
                                             }
-                                        },
-                                        failure: function(form, action) {
-                                            loadMask.hide();
-                                            var obj = Ext.decode(action.response.responseText);
-                                            if (obj.message) {
-                                                Ext.Msg.alert("Error", obj.message);
-                                            } else {
-                                                Ext.Msg.alert("Error", "Error creating page.");
+                                        }),
+                                        forceSelection: true,
+                                        fieldLabel: 'Filter By',
+                                        queryMode: 'local',
+                                        autoSelect: true,
+                                        typeAhead: true,
+                                        displayField: 'name',
+                                        valueField: 'id',
+                                        triggerAction: 'all',
+                                        allowBlank: false,
+                                        listeners: {
+                                            'select': function (combo, records) {
+                                                available_articles_combobox = window.down('#available_articles_combobox');
+                                                available_articles_combobox.getStore().load({
+                                                    params: {
+                                                        section_id: sectionId,
+                                                        website_id: window.down('#available_articles_filter_combobox').getValue()
+                                                    }
+                                                });
                                             }
                                         }
-                                    });
+                                    },
+                                    {
+                                        xtype: 'combo',
+                                        itemId: 'available_articles_combobox',
+                                        hiddenName: 'article_id',
+                                        name: 'article_id',
+                                        loadingText: 'Retrieving Articles...',
+                                        store: Ext.create('Ext.data.Store', {
+                                            autoLoad: false,
+                                            remoteFilter: true,
+                                            proxy: {
+                                                type: 'ajax',
+                                                reader: {
+                                                    type: 'json',
+                                                    root: 'articles'
+                                                },
+                                                extraParams: {
+                                                    section_id: sectionId
+                                                },
+                                                url: '/knitkit/erp_app/desktop/section/available_articles'
+                                            },
+                                            fields: [
+                                                {
+                                                    name: 'id'
+                                                },
+                                                {
+                                                    name: 'internal_identifier'
+
+                                                },
+                                                {
+                                                    name: 'combobox_display_value'
+                                                }
+                                            ],
+                                            listeners: {
+                                                'beforeload': function (store) {
+                                                    Ext.apply(store.getProxy().extraParams, {
+                                                        website_id: window.down('#available_articles_filter_combobox').getValue()
+                                                    });
+                                                },
+                                                'load': function (store, records) {
+                                                    if (records.length > 0) {
+                                                        available_articles_combobox = window.down('#available_articles_combobox');
+                                                        available_articles_combobox.setValue(records.first().get('id'));
+                                                    }
+                                                }
+                                            }
+                                        }),
+                                        queryMode: 'local',
+                                        forceSelection: true,
+                                        fieldLabel: 'Article',
+                                        autoSelect: true,
+                                        typeAhead: true,
+                                        displayField: 'combobox_display_value',
+                                        valueField: 'id',
+                                        triggerAction: 'all',
+                                        allowBlank: false,
+                                        loadMask: false
+                                    }
+                                ]
+                            },
+                            buttons: [
+                                {
+                                    text: 'Submit',
+                                    listeners: {
+                                        'click': function (button) {
+                                            var window = button.findParentByType('window');
+                                            var formPanel = window.query('form')[0];
+
+                                            var loadMask = new Ext.LoadMask(window, {msg: 'Please wait...'});
+
+                                            formPanel.getForm().submit({
+                                                reset: true,
+                                                success: function (form, action) {
+                                                    loadMask.hide();
+                                                    var obj = Ext.decode(action.response.responseText);
+                                                    if (obj.success) {
+                                                        obj.article.createdAt = obj.article.created_at;
+                                                        obj.article.updatedAt = obj.article.updated_at;
+
+                                                        record.appendChild(Ext.create('SiteContentsModel', obj.article));
+
+                                                        window.close();
+                                                    } else {
+                                                        Ext.Msg.alert("Error", "Error Attaching article");
+                                                    }
+                                                },
+                                                failure: function (form, action) {
+                                                    loadMask.hide();
+                                                    Ext.Msg.alert("Error", "Error Attaching article");
+                                                }
+                                            });
+                                        }
+                                    }
+                                },
+                                {
+                                    text: 'Close',
+                                    handler: function (btn) {
+                                        btn.up('window').close();
+                                    }
                                 }
-                            }
-                        }, {
-                            text: 'Close',
-                            handler: function(btn) {
-                                btn.up('window').close();
-                            }
-                        }]
-                    }).show();
+                            ]
+                        });
+                        window.show();
+                    }
                 }
-            }
-        });
-    }
+            });
+        } else {
+            items.push({
+                text: 'Add Page',
+                iconCls: 'icon-add',
+                listeners: {
+                    'click': function() {
+                        Ext.widget("window", {
+                            modal: true,
+                            title: 'New Page',
+                            buttonAlign: 'center',
+                            defaultFocus: 'title',
+                            items: {
+                                xtype: 'form',
+                                frame: false,
+                                bodyStyle: 'padding:5px 5px 0',
+                                url: '/knitkit/erp_app/desktop/section/new',
+                                items: [{
+                                    xtype: 'textfield',
+                                    fieldLabel: 'Title',
+                                    allowBlank: false,
+                                    name: 'title',
+                                    itemId: 'title'
+                                }, {
+                                    xtype: 'textfield',
+                                    fieldLabel: 'Internal ID',
+                                    allowBlank: true,
+                                    name: 'internal_identifier'
+                                }, {
+                                    xtype: 'combo',
+                                    forceSelection: true,
+                                    store: [
+                                        ['Page', 'Page'],
+                                        ['Blog', 'Blog']
+                                    ],
+                                    value: 'Page',
+                                    fieldLabel: 'Type',
+                                    name: 'type',
+                                    allowBlank: false,
+                                    triggerAction: 'all'
+                                }, {
+                                    xtype: 'radiogroup',
+                                    fieldLabel: 'Display in menu?',
+                                    name: 'in_menu',
+                                    columns: 2,
+                                    items: [{
+                                        boxLabel: 'Yes',
+                                        name: 'in_menu',
+                                        inputValue: 'yes',
+                                        checked: true
+                                    },
+
+                                            {
+                                                boxLabel: 'No',
+                                                name: 'in_menu',
+                                                inputValue: 'no'
+                                            }
+                                           ]
+                                }, {
+                                    xtype: 'radiogroup',
+                                    fieldLabel: 'Render with Base Layout?',
+                                    name: 'render_with_base_layout',
+                                    columns: 2,
+                                    items: [{
+                                        boxLabel: 'Yes',
+                                        name: 'render_with_base_layout',
+                                        inputValue: 'yes',
+                                        checked: true
+                                    },
+
+                                            {
+                                                boxLabel: 'No',
+                                                name: 'render_with_base_layout',
+                                                inputValue: 'no'
+                                            }
+                                           ]
+                                }, {
+                                    xtype: 'hidden',
+                                    name: 'website_section_id',
+                                    value: sectionId
+                                }, {
+                                    xtype: 'hidden',
+                                    name: 'website_id',
+                                    value: record.data.siteId
+                                }]
+                            },
+                            buttons: [{
+                                text: 'Submit',
+                                listeners: {
+                                    'click': function(button) {
+                                        var window = button.findParentByType('window');
+                                        var formPanel = window.query('.form')[0];
+
+                                        var loadMask = new Ext.LoadMask(window, {
+                                            msg: 'Please wait...'
+                                        });
+
+                                        formPanel.getForm().submit({
+                                            reset: true,
+                                            success: function(form, action) {
+                                                loadMask.hide();
+                                                var obj = Ext.decode(action.response.responseText);
+                                                if (obj.success) {
+                                                    record.appendChild(obj.node);
+                                                    window.close();
+                                                } else {
+                                                    Ext.Msg.alert("Error", obj.message);
+                                                }
+                                            },
+                                            failure: function(form, action) {
+                                                loadMask.hide();
+                                                var obj = Ext.decode(action.response.responseText);
+                                                if (obj.message) {
+                                                    Ext.Msg.alert("Error", obj.message);
+                                                } else {
+                                                    Ext.Msg.alert("Error", "Error creating page.");
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }, {
+                                text: 'Close',
+                                handler: function(btn) {
+                                    btn.up('window').close();
+                                }
+                            }]
+                        }).show();
+                    }
+                }
+            });
+        }
+        }
+        
 
     // Edit Section
     if (currentUser.hasCapability('edit', 'WebsiteSection')) {
