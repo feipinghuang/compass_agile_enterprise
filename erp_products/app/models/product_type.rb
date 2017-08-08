@@ -70,7 +70,9 @@ class ProductType < ActiveRecord::Base
   before_validation :set_tenant
 
   def set_tenant
-    self.tenant_id = self.try(:dba_organization).try(:id)
+    unless self.tenant_id
+      self.tenant_id = self.try(:dba_organization).try(:id)
+    end
   end
 
   validate :internal_identifier_uniqueness
@@ -130,7 +132,7 @@ class ProductType < ActiveRecord::Base
         statement = statement.joins(join_stmt).where(product_types_tbl[:description].matches('%' + filters[:keyword] + '%'))
       end
 
-      if filters[:available_on_web]
+      if filters[:is_available_on_web]
         statement = statement.where(available_on_web: true)
       end
 
@@ -171,19 +173,6 @@ class ProductType < ActiveRecord::Base
 
       statement
     end
-  end
-
-  # add party with passed role to this ProductType
-  #
-  # @param party [Party] party to add
-  # @param role_type [RoleType] role type to use in the association
-  # @return [ProductTypePtyRole] newly created relationship
-  def add_party_with_role(party, role_type)
-    ProductTypePtyRole.create(
-      product_type: self,
-      party: party,
-      role_type: role_type
-    )
   end
 
   def taxable?
@@ -287,6 +276,12 @@ class ProductType < ActiveRecord::Base
   def add_party_with_role(party, role_type)
     if role_type.is_a?(String)
       role_type = RoleType.iid(role_type)
+    end
+
+     # if this is a dba_org role then set the tenant_id
+    if role_type.internal_identifier == 'dba_org'
+      self.tenant_id = party.id
+      self.save
     end
 
     ProductTypePtyRole.create(party: party, role_type: role_type, product_type: self)
