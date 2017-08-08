@@ -309,6 +309,7 @@ class ProductType < ActiveRecord::Base
     end
 
     # get the unique permutations of each value id set
+    # 'product' is ruby array product, not product as in product_type
     permutations = value_sets.inject(&:product).map(&:flatten)
 
     # get the product features for each unique combination of values
@@ -337,7 +338,6 @@ class ProductType < ActiveRecord::Base
 
 
       variant_product_type = ProductType.create(
-          description: "#{self.description} Variant Product",
           internal_identifier: "#{self.internal_identifier}_variant_#{sku}",
           revenue_gl_account_id: self.revenue_gl_account_id,
           expense_gl_account_id: self.expense_gl_account_id,
@@ -350,7 +350,8 @@ class ProductType < ActiveRecord::Base
           is_base: false
       )
 
-      variant_product_type.description = "#{self.description} Variant" + variant_product_type.id.to_s
+      variant_product_type.description = "#{self.description} Variant-" + variant_product_type.id.to_s
+      variant_product_type.save
 
       variant_product_type.move_to_child_of(parent_variant_product_type)
 
@@ -485,6 +486,14 @@ class ProductType < ActiveRecord::Base
       end
     end
     number_sold
+  end
+
+  def when_sold_out
+    if is_base
+      '---'
+    else
+      inventory_entries.first.custom_fields['when_sold_out']
+    end
   end
 
 end
