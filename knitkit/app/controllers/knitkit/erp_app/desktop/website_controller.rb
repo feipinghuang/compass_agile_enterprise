@@ -43,10 +43,10 @@ module Knitkit
                 # get child sections
                 nodes = website_section.positioned_children.map { |child| build_section_hash(child) }
 
-                # # get child articles
-                # website_section.website_section_contents.order('position').each do |website_section_content|
-                #   nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
-                # end
+                # get child articles
+                website_section.website_section_contents.order('position').each do |website_section_content|
+                  nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
+                end
 
               else
                 raise 'Unknown Node Type'

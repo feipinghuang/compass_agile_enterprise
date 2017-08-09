@@ -278,23 +278,22 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
             var self = this;
 
             e.stopEvent();
-
-            if (record.data['isSection']) {
+                
+            if (record.get('type') == 'Page') {
                 if (record.get('source_enabled')) {
                     self.editSectionLayout(record.data.text, record.data.recordId, record.data['siteId']);
                 } else {
                     self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId, self.theme);
                 }
-
-            } else if (record.data['objectType'] === "Article") {
+            } else if (record.get('type') == 'Blog') {
+                url = '/blogs/' + record.get('recordId');
+                self.initialConfig['centerRegion'].openIframeInTab(record.get('text'), url)
+            }  else if (record.get('objectType') == 'Article') {
                 url = '/knitkit/erp_app/desktop/articles/show/' + record.get('recordId');
-
+                
                 Ext.Ajax.request({
                     url: url,
                     method: 'GET',
-                    extraParams: {
-                        id: record.get('recordId')
-                    },
                     timeout: 90000,
                     success: function(response) {
                         var article = Ext.decode(response.responseText);
@@ -304,42 +303,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                         Ext.Msg.alert('Error', 'Could not load content');
                     }
                 });
-            } else if (record.data['isDocument']) {
-                url = '/knitkit/erp_app/desktop/online_document_sections/' + record.get('recordId') + '/content/';
-                var contentInfo = record.data['contentInfo'];
-
-                Ext.Ajax.request({
-                    url: url,
-                    method: 'GET',
-                    timeout: 90000,
-                    success: function(response) {
-                        var result = Ext.decode(response.responseText);
-                        if (result.success) {
-                            if (record.data['useMarkdown']) {
-                                self.initialConfig['centerRegion'].editDocumentationMarkdown(
-                                    contentInfo.title,
-                                    record.data['siteId'],
-                                    contentInfo.id,
-                                    result.content, []
-                                );
-                            } else {
-                                self.initialConfig['centerRegion'].editContent(
-                                    contentInfo.title,
-                                    contentInfo.id,
-                                    result.content,
-                                    record.data['siteId'],
-                                    'article'
-                                );
-                            }
-                        } else {
-                            Ext.Msg.alert('Error', 'Could not load content');
-                        }
-                    },
-                    failure: function() {
-                        Ext.Msg.alert('Error', 'Could not load content');
-                    }
-                });
             }
+
         },
         itemcontextmenu: function(view, record, htmlItem, index, e) {
             e.stopEvent();
@@ -355,10 +320,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                     Compass.ErpApp.Desktop.Applications.Knitkit.websitePublishMenuItem(false),
                     Compass.ErpApp.Desktop.Applications.Knitkit.websiteInquiresMenuItem(false)
                 ];
-            }
-
-            if (record.data['isDocument']) {
-                items = Compass.ErpApp.Desktop.Applications.Knitkit.addDocumentOptions(self, items, record);
             }
 
             if (record.data['objectType'] === "Article") {
