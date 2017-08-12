@@ -154,8 +154,8 @@ class BillingAccount < ActiveRecord::Base
   def send_sms_notification
     primary_party = self.find_parties_by_role('primary').first
     from_party = Party.find_by_description('Compass AE')
-    from_number = from_party.default_phone_number
-    to_number = primary_party.billing_phone_number
+    from_number = from_party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.iid('default'))
+    to_number = primary_party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.iid('billing'))
 
     # prevent multiple sms notifications being sent within the time window
     previous_cmm_evt = CommunicationEvent.find_by_sql("SELECT * FROM communication_events
@@ -170,7 +170,7 @@ class BillingAccount < ActiveRecord::Base
 
     Rails.logger.info 'not sending sms notification, one has already been sent within time window' if !previous_cmm_evt.nil?
 
-    unless primary_party.billing_phone_number.nil? or !previous_cmm_evt.nil?
+    unless primary_party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.iid('billing')).nil? or !previous_cmm_evt.nil?
       message = SMS_NOTIFICATION_MESSAGE.gsub('payment_due',self.payment_due.to_s)
 
 
@@ -204,7 +204,7 @@ class BillingAccount < ActiveRecord::Base
 
   def send_email_notification
     primary_party = self.find_parties_by_role('primary').first
-    unless primary_party.billing_email_address.nil?
+    unless primary_party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.iid('billing')).nil?
       #send email
     end
   end

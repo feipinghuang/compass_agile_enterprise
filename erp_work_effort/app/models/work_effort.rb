@@ -66,7 +66,7 @@ class WorkEffort < ActiveRecord::Base
   before_move :update_parent_status_before_move!
   after_move :update_parent_status!
   after_destroy :update_parent_status!
-  before_destroy :check_work_order_item_fulfillments
+  after_destroy :check_work_order_item_fulfillments
 
   belongs_to :work_effort_item, :polymorphic => true
 
