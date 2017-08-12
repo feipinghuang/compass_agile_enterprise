@@ -62,7 +62,7 @@ class WorkEffort < ActiveRecord::Base
 
   tracks_created_by_updated_by
 
-  after_save :roll_up
+  after_save :roll_up, :cascade_project, :check_and_remove_assignments, :check_and_set_project
   before_move :update_parent_status_before_move!
   after_move :update_parent_status!
   after_destroy :update_parent_status!
@@ -612,6 +612,27 @@ class WorkEffort < ActiveRecord::Base
   end
 
   protected
+
+  def cascade_project
+    self.descendants.each do |child|
+      child.update_column('project_id', self.project_id)
+    end
+  end
+
+  def check_and_set_project
+    # set project to parent if this is a leaf and has a parent
+    if self.leaf? && self.parent
+      self.update_column('project_id', self.parent.project_id)
+    end
+  end
+
+  def check_and_remove_assignments
+    # if this was a leaf but is now a parent node then remove any assigned resources as they should be
+    # assigned to the child task
+    unless self.leaf?
+      self.work_effort_party_assignments.destroy_all
+    end
+  end
 
   # determine difference in minutes between two times
   #
