@@ -234,7 +234,7 @@ describe 'test postal address' do
   end
   
   it 'should update correctly' do
-    address = @party.home_postal_address
+    address = @party.find_contact_mechanism_with_purpose(PostalAddress, ContactPurpose.iid('home'))
     address.address_line_1 = '1 Orange Ave'
     address.save
     
@@ -244,7 +244,7 @@ describe 'test postal address' do
   end
 
   it 'should destroy correctly' do
-    address = @party.home_postal_address
+    address = @party.find_contact_mechanism_with_purpose(PostalAddress, ContactPurpose.iid('home'))
     address.destroy
     
     PartySearchFact.search do

@@ -37,8 +37,8 @@ describe Party do
     party = FactoryGirl.create(:party)
     contact_purpose = FactoryGirl.create(:contact_purpose, :description => 'billing', :internal_identifier => 'billing')
     party.update_or_add_contact_with_purpose(PhoneNumber, contact_purpose, :phone_number => '123-123-1234')
-    party.billing_phone_number.should_not eq nil
-    party.billing_phone_number.phone_number.should eq '123-123-1234'
+    party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.iid('billing')).should_not eq nil
+    party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.iid('billing')).phone_number.should eq '123-123-1234'
   end
 
   it "has method to get all contacts by contact mechanism" do
