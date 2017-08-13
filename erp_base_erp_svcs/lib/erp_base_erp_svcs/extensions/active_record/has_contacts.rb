@@ -12,8 +12,6 @@ module ErpBaseErpSvcs
             extend HasContacts::SingletonMethods
             include HasContacts::InstanceMethods
 
-            after_initialize :build_contact_methods
-
             has_many :contacts, :as => :contact_record, :dependent => :destroy
 
           end
@@ -382,27 +380,6 @@ module ErpBaseErpSvcs
 
             contact.contact_mechanism
           end
-
-          #
-          # Builds methods based on contacts and contact purposes associated to this record
-          # For example if there is a PhoneNumber with a contact purpose of Home associated it would
-          # create a method like home_phone_number
-          #
-          def build_contact_methods
-            self.contacts.each do |contact|
-              contact.contact_purposes.each do |contact_purpose|
-                klass = contact.contact_mechanism.class.name
-
-                self.class.send 'define_method', "#{contact_purpose.internal_identifier}_#{contact.contact_mechanism.class.name.underscore}" do
-                  _klass_const = klass.camelize.constantize
-                  _contact_purpose = contact_purpose
-                  find_contact_mechanism_with_purpose(_klass_const, _contact_purpose)
-                end
-
-              end
-
-            end
-          end # build_contact_methods
 
         end
 

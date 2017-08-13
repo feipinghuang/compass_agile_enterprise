@@ -36,7 +36,7 @@ module API
       def index
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
 
-        work_efforts = WorkEffort.where("work_efforts.parent_id is null")
+        work_efforts = WorkEffort
 
         if query_filter[:project_id].blank?
           # scope by user if that option is passed and no parties are passed to filter by
@@ -51,8 +51,41 @@ module API
           end
         end
 
+        # if there is no status filter default to all statues except complete
+        if query_filter[:status].blank? && params[:business_module_id].present?
+          unless completed_statuses.empty?
+            work_efforts = work_efforts.without_current_status(completed_statuses)
+          end
+        end
+
         # apply filters
         work_efforts = WorkEffort.apply_filters(query_filter, work_efforts)
+
+        if params[:node].blank?
+          if query_filter.present?
+            root_ids = work_efforts.all.collect{|item| item.root.id}.uniq
+            if root_ids.count > 0
+              # if there are filters and no parent we need to return roots that have the requested filters OR their children have the filters
+              work_efforts = WorkEffort.where("(id in (#{work_efforts.roots.select('work_efforts.id').to_sql})) or (id in (#{root_ids.join(',')}))")
+            end
+          end
+        else
+          descendant_ids = WorkEffort.find(params[:node]).descendants.collect(&:id)
+
+          parent_ids = work_efforts.where(WorkEffort.arel_table[:id].in(descendant_ids)).all.collect do |node|
+            node.self_and_ancestors.collect do |ancestor|
+              ancestor.id
+            end
+          end
+
+          parent_ids = parent_ids.flatten.uniq
+
+          node_sql = work_efforts.select('work_efforts.id').where(WorkEffort.arel_table[:parent_id].eq(params[:node])).to_sql
+          parent_sql = WorkEffort.select('work_efforts.id').where(WorkEffort.arel_table[:parent_id].eq(params[:node])
+                                                                  .and(WorkEffort.arel_table[:id].in(parent_ids))).to_sql
+
+          work_efforts = WorkEffort.where("(id in (#{node_sql})) or (id in (#{parent_sql}))")
+        end
 
         work_efforts = work_efforts.order("sequence ASC").uniq
 
@@ -484,6 +517,23 @@ module API
         end
 
         work_effort
+      end
+
+      private
+
+      def completed_statuses
+        business_module = BusinessModule.find(params[:business_module_id])
+        if business_module.is_sub_module?
+          completed_status = business_module.parent.meta_data['completed_status']
+        else
+          completed_status = business_module.meta_data['completed_status']
+        end
+
+        if completed_status
+          completed_status.split(',')
+        else
+          []
+        end
       end
 
     end # WorkEffortsController

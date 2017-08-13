@@ -10,25 +10,31 @@ CollectiveIdea::Acts::NestedSet::Model.class_eval do
       # Rescue from +ActiveRecord::RecordNotFound+ error as there may be a case
       # that an +object+ has already been destroyed by its parent, but objects that are
       # in memory are not aware about this.
-      begin
-        reload_nested_set
-      rescue ActiveRecord::RecordNotFound
-        self.skip_before_destroy = true
-        return true
-      end
+      #begin
+      #  reload_nested_set
+      #rescue ActiveRecord::RecordNotFound
+      #  self.skip_before_destroy = true
+      #  return true
+      #end
 
       # select the rows in the model that extend past the deletion point and apply a lock
       nested_set_scope.where(["#{quoted_left_column_full_name} >= ?", left]).
         select(id).lock(true)
 
       if acts_as_nested_set_options[:dependent] == :destroy
-        descendants.each do |model|
-          model.skip_before_destroy = true
-          model.destroy
+        descendants.each do |node|
+          if node
+            node.skip_before_destroy = true
+            node.destroy
+          end
         end
       else
-        nested_set_scope.where(["#{quoted_left_column_name} > ? AND #{quoted_right_column_name} < ?", left, right]).
-          destroy_all
+        nested_set_scope.where(["#{quoted_left_column_name} > ? AND #{quoted_right_column_name} < ?", left, right]).each do |node|
+          if node
+            node.skip_before_destroy = true
+            node.destroy
+          end
+        end
       end
 
       # update lefts and rights for remaining nodes
