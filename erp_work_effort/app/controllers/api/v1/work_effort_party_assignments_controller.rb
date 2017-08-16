@@ -49,6 +49,8 @@ module API
           work_effort_party_assignments = work_effort_party_assignments.offset(params[:start])
         end
 
+        work_effort_party_assignments = work_effort_party_assignments.order('work_effort_party_assignments.party_id')
+
         render :json => {
                    success: true,
                    total_count: total_count,
