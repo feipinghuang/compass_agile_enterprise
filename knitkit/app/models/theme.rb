@@ -243,6 +243,7 @@ class Theme < ActiveRecord::Base
 
     Zip::ZipFile.open(file_path) do |zip|
       zip.each do |entry|
+        next if entry.directory?
         if entry.name == 'about.yml'
           data = ''
           entry.get_input_stream { |io| data = io.read }
