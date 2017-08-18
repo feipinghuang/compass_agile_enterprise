@@ -8,19 +8,13 @@ module ErpBaseErpSvcs
         end
 
         module ClassMethods
-
           def tracks_created_by_updated_by
             belongs_to :created_by_party, class_name: Party
 
             belongs_to :updated_by_party, class_name: Party
 
-            extend SingletonMethods
             include InstanceMethods
           end
-
-        end
-
-        module SingletonMethods
         end
 
         module InstanceMethods
