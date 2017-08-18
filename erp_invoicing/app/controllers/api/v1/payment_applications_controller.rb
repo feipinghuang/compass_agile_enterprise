@@ -16,18 +16,14 @@ module API
       def refund
         payment_application = PaymentApplication.find(params[:id])
 
-        if payment_application.financial_txn.root_txn.txn_type.internal_identifier == 'credit_card'
-          stripe_external_system = ExternalSystem.active.with_party_role(current_user.party.dba_organization, RoleType.iid('owner'))
-          .where('internal_identifier = ?', 'stripe').first
+        stripe_external_system = ExternalSystem.active.with_party_role(current_user.party.dba_organization, RoleType.iid('owner'))
+        .where('internal_identifier = ?', 'stripe').first
 
-          result = payment_application.financial_txn.refund(CompassAeBusinessSuite::ActiveMerchantWrappers::StripeWrapper,
-                                                            {
-                                                              private_key: stripe_external_system.private_key,
-                                                              public_key: stripe_external_system.public_key
-          })
-        else
-        	
-        end
+        result = payment_application.financial_txn.refund(CompassAeBusinessSuite::ActiveMerchantWrappers::StripeWrapper,
+                                                          {
+                                                            private_key: stripe_external_system.private_key,
+                                                            public_key: stripe_external_system.public_key
+        })
 
         render :json => {success: result[:success], message: result[:message]}
       end
