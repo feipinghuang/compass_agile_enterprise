@@ -805,7 +805,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     var containerWindow = iframeNode.contentWindow,
                                         containerDocument = iframeNode.contentDocument || containerWindow.document;
 
-                                    containerWindow.eval("window.__pen__.destroy();");
+                                    containerWindow.eval("if (window.__pen__) window.__pen__.destroy();");
                                     containerWindow.loadMe('<div>' + responseObj.source + '</div>');
                                     dropComponent = jQuery(containerDocument).find('.compass_ae-widget');
 
@@ -832,13 +832,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             } else {
                 if (iframeNode.id.startsWith('header-frame') || iframeNode.id.startsWith('footer-frame')) {
                     // destroy contenteditable for headers and footers
-                    iframeNode.contentWindow.eval("window.__pen__.destroy();");
+                    iframeNode.contentWindow.eval("if (window.__pen__) window.__pen__.destroy();");
                 } else {
                     var iframeDoc = iframeNode.contentDocument,
                         widgetNode = iframeDoc.querySelector('.compass_ae-widget');
                     if (widgetNode) {
                         // destroy contenteditable for widgets
-                        iframeNode.contentWindow.eval("window.__pen__.destroy();");
+                        iframeNode.contentWindow.eval("if (window.__pen__) window.__pen__.destroy();");
                     } else {
                         var css = iframeDoc.createElement("style");
                         css.type = "text/css";
