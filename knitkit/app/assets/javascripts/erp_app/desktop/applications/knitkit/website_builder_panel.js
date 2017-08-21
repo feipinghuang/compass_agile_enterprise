@@ -845,8 +845,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         css.innerHTML = "[contenteditable] {border: 1px solid;}";
                         iframeDoc.body.appendChild(css);
                         
-                        iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
-                        iframeNode.contentWindow.__pen__.setParentWindow(window);
+                        if (iframeNode.contentWindow.__pen__) {
+                            iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
+                            iframeNode.contentWindow.__pen__.setParentWindow(window);
+                        }
                     }
                 }
                 if (options.autoSave) {
