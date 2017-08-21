@@ -482,6 +482,8 @@ class Invoice < ActiveRecord::Base
         .where('external_systems.internal_identifier' => 'stripe').first
 
         if payment_method == 'credit' && token
+          customer = Party.find(customer_id)
+
           if one_time_payment
             credit_card = CreditCard.new(credit_card_token: token)
             credit_card.credit_card_account_party_role =  CreditCardAccountPartyRole.new(party: customer)
@@ -495,7 +497,6 @@ class Invoice < ActiveRecord::Base
             }, credit_card)
           else
             credit_card = nil
-            customer = Party.find(customer_id)
 
             # we need to store the new card and then charge it
             result = CreditCard.validate_and_update({
