@@ -62,8 +62,9 @@ class WorkEffort < ActiveRecord::Base
 
   tracks_created_by_updated_by
 
-  after_save :roll_up, :cascade_project, :check_and_remove_assignments, :check_and_set_project
+  after_save :roll_up, :cascade_project, :check_and_remove_assignments
   before_move :update_parent_status_before_move!
+  after_move :check_and_set_project
   after_move :update_parent_status!
   after_destroy :update_parent_status!
   after_destroy :check_work_order_item_fulfillments
