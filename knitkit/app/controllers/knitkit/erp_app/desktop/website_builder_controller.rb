@@ -79,13 +79,14 @@ module Knitkit
                   current_website_section_contents = website_section.website_section_contents
                   contents_data.each do |data|
                     data = Hash.symbolize_keys(data)
-
+                    
                     if data[:website_section_content_id]
                       website_section_content = WebsiteSectionContent.find(data[:website_section_content_id])
-
-                      website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
-                      # strip off design specific HTML
-                      website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
+                      unless data[:body_html].blank?
+                        website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
+                        # strip off design specific HTML
+                        website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
+                      end
                       website_section_content.position = data[:position]
                       website_section_content.col = data[:column]
                       website_section_content.save!
@@ -142,7 +143,7 @@ module Knitkit
 
             if params[:website_section_content_id].present?
               website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
-
+              
               body_html = params[:body_html]
               html_content = if body_html.present?
                                builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(body_html)

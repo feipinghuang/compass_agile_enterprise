@@ -548,7 +548,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         // content block should either have contents or a widget
         if (iframe.contentDocument.body.querySelector('.container > .row > .col-md-12')) {
             html =  iframe.contentDocument.body.querySelector('.container > .row > .col-md-12').innerHTML;
-        } else {
+        } else if (iframe.contentDocument.body.querySelector('.compass_ae-widget')){
             widgetStatement = iframe.contentDocument.body.querySelector('.compass_ae-widget').parentElement.getAttribute('data-widget-statement');
             html = "<%= " + widgetStatement + "%>"
         }
