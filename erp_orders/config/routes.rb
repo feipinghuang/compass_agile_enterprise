@@ -14,6 +14,7 @@ Rails.application.routes.draw do
 
       resources :order_line_items, defaults: { :format => 'json' }
       resources :charge_lines, defaults: { :format => 'json' }
+      resources :charge_types, defaults: { :format => 'json' }
 
     end
   end
