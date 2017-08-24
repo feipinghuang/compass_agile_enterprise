@@ -56,7 +56,13 @@ class ProductType < ActiveRecord::Base
 
   has_one :product_instance
   has_many :product_type_pty_roles, dependent: :destroy
-  has_many :simple_product_offers, dependent: :destroy
+
+  has_many :product_offer_product_types, dependent: :destroy
+  has_many :product_offers, through: :product_offer_product_types
+
+  has_many :product_collections, dependent: :destroy
+  has_many :collections, through: :product_collections
+
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
   has_one :category_classification, as: :classification, dependent: :destroy
   has_one :category, through: :category_classification
@@ -283,6 +289,10 @@ class ProductType < ActiveRecord::Base
 
     dba_org_role_type = RoleType.iid('dba_org')
 
+    # find the dba_org party for the base product, want to keep it the same for the variants
+
+
+
     product_features = []
     product_feature_applicabilities.each do |product_feature_applicability|
       product_feature = product_feature_applicability.product_feature
@@ -346,6 +356,7 @@ class ProductType < ActiveRecord::Base
           height: self.height.present? ? self.height : nil,
           length: self.length.present? ? self.length : nil,
           weight: self.weight.present? ? self.weight : nil,
+          available_on_web: self.available_on_web.present? ? self.available_on_web : nil,
           unit_of_measurement_id: self.unit_of_measurement_id.present? ? variant_uom_id = self.width : nil,
           is_base: false
       )
@@ -368,6 +379,17 @@ class ProductType < ActiveRecord::Base
       parent_category = self.category
       CategoryClassification.create(category: parent_category,  classification: variant_product_type)
 
+      # if the base (parent) has a vendor specified via product type party roles
+      # create a vendor party role for the variant
+      product_type_pty_roles.each do |product_type_party_role|
+        if product_type_party_role.is_vendor_role?
+          ProductTypePtyRole.create(
+             party_id: product_type_party_role.party_id,
+             role_type_id: product_type_party_role.role_type_id,
+             product_type_id: variant_product_type.id
+          )
+        end
+      end
 
       # grab that cost from the custom field on self
       cost = ActiveSupport::JSON.decode(self.custom_fields['cost'])
@@ -412,12 +434,14 @@ class ProductType < ActiveRecord::Base
       )
 
       # create a ProductTypePtyRole for each variant
+      # for the dba orgqnization
       ProductTypePtyRole.create(
           # use the party id of the base product
-          party_id: self.product_type_pty_roles.first.party_id,
+          party_id: self.dba_organization.id,
           role_type_id: dba_org_role_type.id,
           product_type_id: variant_product_type.id
       )
+
     end
   end
 

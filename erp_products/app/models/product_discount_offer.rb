@@ -1,8 +1,8 @@
-class SimpleProductOffer < ActiveRecord::Base
+class ProductDiscountOffer < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
   is_json :custom_fields
+  # i.e., a product offer record
   acts_as_product_offer
 
-  belongs_to :product_type
 end

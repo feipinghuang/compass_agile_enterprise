@@ -291,8 +291,8 @@ class OrderTxn < ActiveRecord::Base
       line_item = add_product_type_line_item(object, opts[:selected_product_options], opts[:reln_type], opts[:to_role], opts[:from_role])
     when 'ProductInstance'
       line_item = add_product_instance_line_item(object, opts[:reln_type], opts[:to_role], opts[:from_role])
-    when 'SimpleProductOffer'
-      line_item = add_simple_product_offer_line_item(object)
+    when 'ProductDiscountOffer'
+      line_item = add_product_discount_offer_line_item(object)
     end
 
     # handle selected product options
@@ -325,10 +325,11 @@ class OrderTxn < ActiveRecord::Base
     line_item
   end
 
-  def add_simple_product_offer_line_item(simple_product_offer)
-    line_item = get_line_item_for_simple_product_offer(simple_product_offer)
+  def add_product_discount_offer_line_item(product_discount_offer)
+    line_item = get_line_item_for_product_discount_offer(product_discount_offer)
+    # TODO: REEFACTOR
 
-    product_type = simple_product_offer.product_type
+    product_type = product_discount_offer.product_type
 
     if line_item
       line_item.quantity += 1
@@ -336,8 +337,8 @@ class OrderTxn < ActiveRecord::Base
     else
       line_item = OrderLineItem.new
       line_item.product_type = product_type
-      line_item.product_offer = simple_product_offer.product_offer
-      line_item.sold_price = simple_product_offer.get_current_simple_plan.money_amount
+      line_item.product_offer = product_discount_offer.product_offer
+      line_item.sold_price = product_discount_offer.get_current_simple_plan.money_amount
       line_item.quantity = 1
       line_item.save
       line_items << line_item
@@ -435,8 +436,9 @@ class OrderTxn < ActiveRecord::Base
     line_items.detect { |oli| oli.equals?(product_type, options) }
   end
 
-  def get_line_item_for_simple_product_offer(simple_product_offer)
-    line_items.detect { |oli| oli.product_offer.product_offer_record == simple_product_offer }
+  def get_line_item_for_product_discount_offer(product_discount_offer)
+    # TODO: REEFACTOR
+    line_items.detect { |oli| oli.product_offer.product_offer_record == product_discount_offer }
   end
 
   # Get all parties by thier roles for this order as there might be multiple depending on the products purchased
