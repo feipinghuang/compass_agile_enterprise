@@ -1,5 +1,4 @@
 #ruby core extensions
-require 'erp_base_erp_svcs/extensions/core/kernal'
 require 'erp_base_erp_svcs/extensions/core/array'
 require 'erp_base_erp_svcs/extensions/core/hash'
 require 'erp_base_erp_svcs/extensions/core/numbers'
@@ -27,4 +26,3 @@ require 'erp_base_erp_svcs/extensions/active_record/tracks_created_by_updated_by
 require 'erp_base_erp_svcs/extensions/active_record/is_tenantable'
 
 require 'erp_base_erp_svcs/extensions/awesome_nested_set'
-

@@ -1,3 +1,18 @@
+module ErpBaseErpSvcs
+  module Refinements
+
+    refine Object do
+
+      def eigenclass
+        class << self; self; end
+      end
+
+    end # Kernel
+
+  end # Refinements
+end # ErpBaseErpSvcs
+
+
 Object.instance_eval do
   def all_subclasses
     klasses = self.subclasses
