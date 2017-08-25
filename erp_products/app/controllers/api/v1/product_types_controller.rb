@@ -118,6 +118,7 @@ module API
 
  @apiParam (body) {String} description Description
  @apiParam (body) {String} sku SKU to set
+ @apiParam (body) {String} internal_identifier Internal Identifier to set
  @apiParam (body) {String} unit_of_masurement Internal Identifier of UnitOfMeasurement
  @apiParam (body) {String} [comment] Comment to set
  @apiParam (body) {String} [party_role] RoleType Internal Identifier to set for the passed party
@@ -136,6 +137,7 @@ module API
             product_type = ProductType.new
             product_type.description = params[:description]
             product_type.sku = params[:sku]
+            product_type.internal_identifier = params[:internal_identifier]
             product_type.unit_of_measurement_id = UnitOfMeasurement.iid(params[:unit_of_measurement])
             product_type.comment = params[:comment]
 
@@ -187,6 +189,7 @@ module API
  @apiParam (query) {Integer} id Id of ProductType
  @apiParam (body) {String} [description] Description
  @apiParam (body) {String} [sku] SKU to set
+ @apiParam (body) {String} [internal_identifier] Internal Identifier to set
  @apiParam (body) {String} [unit_of_masurement] Internal Identifier of UnitOfMeasurement
  @apiParam (body) {String} [comment] Comment to set
 
@@ -208,6 +211,10 @@ module API
 
             if params[:sku]
               product_type.sku = params[:sku]
+            end
+
+            if params[:internal_identifier]
+              product_type.internal_identifier = params[:internal_identifier]
             end
 
             if params[:unit_of_measurement]
