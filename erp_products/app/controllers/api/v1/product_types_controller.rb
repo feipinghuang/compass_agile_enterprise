@@ -118,7 +118,7 @@ module API
 
  @apiParam (body) {String} description Description
  @apiParam (body) {String} sku SKU to set
- @apiParam (body) {String} unit_of_masurement Internal Identifier of UnitOfMeasurement
+ @apiParam (body) {String} unit_of_measurement Internal Identifier of UnitOfMeasurement
  @apiParam (body) {String} [comment] Comment to set
  @apiParam (body) {String} [party_role] RoleType Internal Identifier to set for the passed party
  @apiParam (body) {Number} [party_id] Id of Party to associate to this ProductType, used to associate a Vendor to a ProductType for example
@@ -187,7 +187,7 @@ module API
  @apiParam (query) {Integer} id Id of ProductType
  @apiParam (body) {String} [description] Description
  @apiParam (body) {String} [sku] SKU to set
- @apiParam (body) {String} [unit_of_masurement] Internal Identifier of UnitOfMeasurement
+ @apiParam (body) {String} [unit_of_measurement] Internal Identifier of UnitOfMeasurement
  @apiParam (body) {String} [comment] Comment to set
 
  @apiSuccess (200) {Object} update_product_type_response Response.
