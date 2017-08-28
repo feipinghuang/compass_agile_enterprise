@@ -846,8 +846,25 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         iframeDoc.body.appendChild(css);
                         
                         if (iframeNode.contentWindow.__pen__) {
-                            iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
-                            iframeNode.contentWindow.__pen__.setParentWindow(window);
+                            if (options.websiteSectionContentId) {
+                                Compass.ErpApp.Utility.ajaxRequest({
+                                    url: '/knitkit/erp_app/desktop/website_builder/component_dynamic_status',
+                                    method: 'GET',
+                                    params: {
+                                        website_section_content_id: options.websiteSectionContentId
+                                    },
+                                    success: function(responseObj) {
+                                        if (responseObj.is_content_dynamic) {
+                                            iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
+                                            iframeNode.contentWindow.__pen__.setParentWindow(window);
+                                            iframeNode.contentWindow.eval("if (window.__pen__) window.__pen__.destroy();");
+                                        } else {
+                                            iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
+                                            iframeNode.contentWindow.__pen__.setParentWindow(window);
+                                        }
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -1055,28 +1072,65 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         // if there is a website section content id then this is a content block
         // else this is a layout component type header or footer
         if (websiteSectionContentId) {
-            Ext.apply(params, {
-                website_section_content_id: websiteSectionContentId,
-                body_html: me.getContentBlockSubmitableHTML(dropPanel)
-            });
+            Compass.ErpApp.Utility.ajaxRequest({
+                url: '/knitkit/erp_app/desktop/website_builder/component_dynamic_status',
+                method: 'GET',
+                params: {
+                    website_section_content_id: websiteSectionContentId
+                },
+                success: function(responseObj) {
+                    if (responseObj.is_content_dynamic) {
+                        Ext.apply(params, {
+                            website_section_content_id: websiteSectionContentId,
+                        });
+                    } else {
+                        Ext.apply(params, {
+                            website_section_content_id: websiteSectionContentId,
+                            body_html: me.getContentBlockSubmitableHTML(dropPanel)
+                        });
+                    }
+                    Compass.ErpApp.Utility.ajaxRequest({
+                        url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
+                        method: 'POST',
+                        params: params,
+                        success: function(response) {
+                            if (success) {
+                                success(dropPanel, response);
+                            }
+                        },
+                        failure: function() {
+                            if (failure) {
+                                failure();
+                            } else {
+                                Ext.Msg.alert('Error', 'Error fetching source');
+                            }
+                        }
+                    });
+                }
+            })
         } else {
             Ext.apply(params, {
                 component_type: dropPanel.componentType
-            });            
-        }
-        Compass.ErpApp.Utility.ajaxRequest({
-            url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
-            method: 'POST',
-            params: params,
-            success: function(response) {
-                if (success) {
-                    success(dropPanel, response);
+            });
+
+            Compass.ErpApp.Utility.ajaxRequest({
+                url: '/knitkit/erp_app/desktop/website_builder/get_component_source',
+                method: 'POST',
+                params: params,
+                success: function(response) {
+                    if (success) {
+                        success(dropPanel, response);
+                    }
+                },
+                failure: function() {
+                    if (failure) {
+                        failure();
+                    } else {
+                        Ext.Msg.alert('Error', 'Error fetching source');
+                    }
                 }
-            },
-            failure: function() {
-                Ext.Msg.alert('Error', 'Error fetching source');
-            }
-        });
+            });
+        }
         
     },
 
