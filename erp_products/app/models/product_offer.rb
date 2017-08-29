@@ -3,8 +3,8 @@ class ProductOffer < ActiveRecord::Base
 
   tracks_created_by_updated_by
 
-  has_many :product_offer_product_types, dependent: :destroy
-  has_many :product_types, through: :product_offer_product_types
+  belongs_to :product_type
+  belongs_to :discounts
 
   belongs_to :product_offer_record, :polymorphic => true
 

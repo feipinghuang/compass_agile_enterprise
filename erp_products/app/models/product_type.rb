@@ -57,8 +57,8 @@ class ProductType < ActiveRecord::Base
   has_one :product_instance
   has_many :product_type_pty_roles, dependent: :destroy
 
-  has_many :product_offer_product_types, dependent: :destroy
-  has_many :product_offers, through: :product_offer_product_types
+  has_many :product_type_discounts, dependent: :destroy
+  has_many :discounts, through: :product_type_discounts
 
   has_many :product_collections, dependent: :destroy
   has_many :collections, through: :product_collections
