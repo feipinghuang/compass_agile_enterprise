@@ -8,25 +8,27 @@ module API
   @apiVersion 1.0.0
   @apiName CreateTimeEntry
   @apiGroup TimeEntry
+  @apiDescription Create Time Entry
 
-  @apiParam {Number} regular_hours_in_seconds Regular hours in seconds for this TimeEntry
-  @apiParam {Number} [overtime_hours_in_seconds] Overtime hours in seconds for this TimeEntry
-  @apiParam {DateTime} [from_datetime] From DateTime for this TimeEntry
-  @apiParam {DateTime} [thru_datetime] Thru DateTime for this TimeEntry
-  @apiParam {String} [comment] Comment for this Time Entry
-  @apiParam {Number} [work_effort_id] ID of WorkEffort for this TimeEntry
-  @apiParam {Number} [timesheet_id] ID of Timesheet to associate this TimeEntry to
+  @apiParam (body) {Integer} regular_hours_in_seconds Regular hours in seconds for this TimeEntry
+  @apiParam (body) {Integer} [overtime_hours_in_seconds] Overtime hours in seconds for this TimeEntry
+  @apiParam (body) {DateTime} [from_datetime] From DateTime for this TimeEntry
+  @apiParam (body) {DateTime} [thru_datetime] Thru DateTime for this TimeEntry
+  @apiParam (body) {String} [comment] Comment for this Time Entry
+  @apiParam (body) {Integer} [work_effort_id] ID of WorkEffort for this TimeEntry
+  @apiParam (body) {Integer} [timesheet_id] ID of Timesheet to associate this TimeEntry to
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} time_entry TimeEntry
-  @apiSuccess {Number} time_entry.id Id of TimeEntry
-  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
-  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
-  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+  @apiSuccess (200) {Object} create_time_entry_response
+  @apiSuccess (200) {Boolean} create_time_entry_response.success True if the request was successful
+  @apiSuccess (200) {Object} create_time_entry_response.time_entry TimeEntry
+  @apiSuccess (200) {Integer} create_time_entry_response.time_entry.id Id of TimeEntry
+  @apiSuccess (200) {String} create_time_entry_response.time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess (200) {String} create_time_entry_response.time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess (200) {String} create_time_entry_response.time_entry.comment Comment for this TimeEntry
+  @apiSuccess (200) {DateTime} create_time_entry_response.time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} create_time_entry_response.time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} create_time_entry_response.time_entry.created_at When the TimeEntry was created
+  @apiSuccess (200) {DateTime} create_time_entry_response.time_entry.updated_at When the TimeEntry was updated
 
 =end
 
@@ -98,23 +100,26 @@ module API
   @apiVersion 1.0.0
   @apiName UpdateTimeEntry
   @apiGroup TimeEntry
+  @apiDescription Update Time Entry
 
-  @apiParam {Number} [regular_hours_in_seconds] Regular hours in seconds for this TimeEntry
-  @apiParam {Number} [overtime_hours_in_seconds] Overtime hours in seconds for this TimeEntry
-  @apiParam {DateTime} [from_datetime] From DateTime for this TimeEntry
-  @apiParam {DateTime} [thru_datetime] Thru DateTime for this TimeEntry
-  @apiParam {String} [comment] Comment for this Time Entry
+  @apiParam (query) {Integer} id Id of TimeEntry
+  @apiParam (body) {Integer} [regular_hours_in_seconds] Regular hours in seconds for this TimeEntry
+  @apiParam (body) {Integer} [overtime_hours_in_seconds] Overtime hours in seconds for this TimeEntry
+  @apiParam (body) {DateTime} [from_datetime] From DateTime for this TimeEntry
+  @apiParam (body) {DateTime} [thru_datetime] Thru DateTime for this TimeEntry
+  @apiParam (body) {String} [comment] Comment for this Time Entry
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} time_entry TimeEntry
-  @apiSuccess {Number} time_entry.id Id of TimeEntry
-  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
-  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
-  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+  @apiSuccess (200) {Object} update_time_entry_response
+  @apiSuccess (200) {Boolean} update_time_entry_response.success True if the request was successful
+  @apiSuccess (200) {Object} update_time_entry_response.time_entry TimeEntry
+  @apiSuccess (200) {Integer} update_time_entry_response.time_entry.id Id of TimeEntry
+  @apiSuccess (200) {String} update_time_entry_response.time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess (200) {String} update_time_entry_response.time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess (200) {String} update_time_entry_response.time_entry.comment Comment for this TimeEntry
+  @apiSuccess (200) {DateTime} update_time_entry_response.time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} update_time_entry_response.time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} update_time_entry_response.time_entry.created_at When the TimeEntry was created
+  @apiSuccess (200) {DateTime} update_time_entry_response.time_entry.updated_at When the TimeEntry was updated
 
 =end
 
@@ -173,17 +178,21 @@ module API
   @apiVersion 1.0.0
   @apiName ShowTimeEntry
   @apiGroup TimeEntry
+  @apiDescription Show Time Entry
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} time_entry TimeEntry
-  @apiSuccess {Number} time_entry.id Id of TimeEntry
-  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
-  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
-  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+  @apiParam (query) {Integer} id Id of TimeEntry
+
+  @apiSuccess (200) {Object} show_time_entry_response
+  @apiSuccess (200) {Boolean} show_time_entry_response.success True if the request was successful
+  @apiSuccess (200) {Object} show_time_entry_response.time_entry TimeEntry
+  @apiSuccess (200) {Integer} show_time_entry_response.time_entry.id Id of TimeEntry
+  @apiSuccess (200) {String} show_time_entry_response.time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess (200) {String} show_time_entry_response.time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess (200) {String} show_time_entry_response.time_entry.comment Comment for this TimeEntry
+  @apiSuccess (200) {DateTime} show_time_entry_response.time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} show_time_entry_response.time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} show_time_entry_response.time_entry.created_at When the TimeEntry was created
+  @apiSuccess (200) {DateTime} show_time_entry_response.time_entry.updated_at When the TimeEntry was updated
 
 =end
 
@@ -199,25 +208,22 @@ module API
   @apiVersion 1.0.0
   @apiName StartTimeEntry
   @apiGroup TimeEntry
+  @apiDescription Start TimeEntry
 
-  @apiDescription Starts TimeEntry by setting the from_datetime to the current time.
-  if there is already an open time_entry set its thru_datetime to the current time and
-  create a new Time Entry.  It is assumed that a TimeEntry is always logged against a WorkEffort so
-  a WorkEffort ID should be passed.
-
-  @apiParam {Number} work_effort_id ID of WorkEffort to start the TimeEntry for
-  @apiParam {String} [comment] Comment for this Time Entry
-
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} time_entry TimeEntry
-  @apiSuccess {Number} time_entry.id Id of TimeEntry
-  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
-  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
-  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
+  @apiParam (body) {Integer} work_effort_id ID of WorkEffort to start the TimeEntry for
+  @apiParam (body) {String} [comment] Comment for this Time Entry
+  
+  @apiSuccess (200) {Object} start_time_entry_response
+  @apiSuccess (200) {Boolean} start_time_entry_response.success True if the request was successful
+  @apiSuccess (200) {Object} start_time_entry_response.time_entry TimeEntry
+  @apiSuccess (200) {Integer} start_time_entry_response.time_entry.id Id of TimeEntry
+  @apiSuccess (200) {String} start_time_entry_response.time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess (200) {String} start_time_entry_response.time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess (200) {String} start_time_entry_response.time_entry.comment Comment for this TimeEntry
+  @apiSuccess (200) {DateTime} start_time_entry_response.time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} start_time_entry_response.time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} start_time_entry_response.time_entry.created_at When the TimeEntry was created
+  @apiSuccess (200) {DateTime} start_time_entry_response.time_entry.updated_at When the TimeEntry was updated
 
 =end
 
@@ -277,26 +283,25 @@ module API
   @apiVersion 1.0.0
   @apiName StopTimeEntry
   @apiGroup TimeEntry
+  @apiDescription Stop TimeEntry
 
-  @apiDescription Stop TimeEntry by setting the thru_datetime and calculating the hours in seconds
-  it returns the TimeEntry record as well as formatted totals for the day and week
-
-  @apiParam {Number} work_effort_id ID of WorkEffort that this TimeEntry is associated to
-  @apiParam {DateTime} end_date When this TimeEntry Stopped
-  @apiParam {String} [comment] Comment for this Time Entry
-
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} time_entry TimeEntry
-  @apiSuccess {Number} time_entry.id Id of TimeEntry
-  @apiSuccess {String} time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
-  @apiSuccess {String} time_entry.comment Comment for this TimeEntry
-  @apiSuccess {DateTime} time_entry.from_datetime From DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.thru_datetime Thru DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entry.created_at When the TimeEntry was created
-  @apiSuccess {DateTime} time_entry.updated_at When the TimeEntry was updated
-  @apiSuccess {String} day_total_formatted Formatted day total as 00:00:00
-  @apiSuccess {String} week_total_formatted Formatted week total as 00:00:00
+  @apiParam (body) {Integer} work_effort_id ID of WorkEffort that this TimeEntry is associated to
+  @apiParam (body) {DateTime} end_date When this TimeEntry Stopped
+  @apiParam (body) {String} [comment] Comment for this Time Entry
+  
+  @apiSuccess (200) {Object} stop_time_entry_response
+  @apiSuccess {Boolean} stop_time_entry_response.success True if the request was successful
+  @apiSuccess {Object} stop_time_entry_response.time_entry TimeEntry
+  @apiSuccess {Integer} stop_time_entry_response/time_entry.id Id of TimeEntry
+  @apiSuccess {String} stop_time_entry_response.time_entry.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess {String} stop_time_entry_response.time_entry.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess {String} stop_time_entry_response.time_entry.comment Comment for this TimeEntry
+  @apiSuccess {DateTime} stop_time_entry_response.time_entry.from_datetime From DateTime for TimeEntry
+  @apiSuccess {DateTime} stop_time_entry_response.time_entry.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess {DateTime} stop_time_entry_response.time_entry.created_at When the TimeEntry was created
+  @apiSuccess {DateTime} stop_time_entry_response.time_entry.updated_at When the TimeEntry was updated
+  @apiSuccess {String} stop_time_entry_response.day_total_formatted Formatted day total as 00:00:00
+  @apiSuccess {String} stop_time_entry_response.week_total_formatted Formatted week total as 00:00:00
 
 =end
 
@@ -355,23 +360,22 @@ module API
   @apiVersion 1.0.0
   @apiName OpenTimeEntry
   @apiGroup TimeEntry
+  @apiDescription Open TimeEntry
 
-  @apiDescription If a work effort id is passed get the last open time_entry for that work_effort
-  for the current user if there are no open time entries then return only the totals
-
-  @apiParam {Number} client_utc_offset Offset of Client
-  @apiParam {Number} [work_effort_id] ID of WorkEffort
-
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} time_entries Array of open TimeEntries
-  @apiSuccess {Number} time_entries.id Id of TimeEntry
-  @apiSuccess {String} time_entries.regular_hours_in_seconds Regular hours in seconds of TimeEntry
-  @apiSuccess {String} time_entries.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
-  @apiSuccess {String} time_entries.comment Comment for this TimeEntry
-  @apiSuccess {DateTime} time_entries.from_datetime From DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entries.thru_datetime Thru DateTime for TimeEntry
-  @apiSuccess {DateTime} time_entries.created_at When the TimeEntry was created
-  @apiSuccess {DateTime} time_entries.updated_at When the TimeEntry was updated
+  @apiParam (body) {Integer} client_utc_offset Offset of Client
+  @apiParam (body) {Integer} [work_effort_id] ID of WorkEffort
+  
+  @apiSuccess (200) {Object} open_time_entry_response
+  @apiSuccess (200) {Boolean} open_time_entry_response.success True if the request was successful
+  @apiSuccess (200) {Object[]} open_time_entry_response.time_entries Array of open TimeEntries
+  @apiSuccess (200) {Integer} open_time_entry_response.time_entries.id Id of TimeEntry
+  @apiSuccess (200) {String} open_time_entry_response.time_entries.regular_hours_in_seconds Regular hours in seconds of TimeEntry
+  @apiSuccess (200) {String} open_time_entry_response.time_entries.overtime_hours_in_seconds Overtime hours in seconds of TimeEntry
+  @apiSuccess (200) {String} open_time_entry_response.time_entries.comment Comment for this TimeEntry
+  @apiSuccess (200) {DateTime} open_time_entry_response.time_entries.from_datetime From DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} open_time_entry_response.time_entries.thru_datetime Thru DateTime for TimeEntry
+  @apiSuccess (200) {DateTime} open_time_entry_response.time_entries.created_at When the TimeEntry was created
+  @apiSuccess (200) {DateTime} open_time_entry_response.time_entries.updated_at When the TimeEntry was updated
 
 =end
 
@@ -405,21 +409,19 @@ module API
   @apiVersion 1.0.0
   @apiName TotalsTimeEntry
   @apiGroup TimeEntry
+  @apiDescription Totals
 
-  @apiDescription Returns totals for time entries.  If a work effort id is passed it will get totals for the
-  passed work effort.  If no work effort id is passed it will get totals for the current user
-  passed on their timesheet
+  @apiParam (body) {Integer} client_utc_offset Offset of Client
+  @apiParam (body) {Integer} [work_effort_id] ID of WorkEffort
+  @apiParam (body) {Integer} [party_id] ID of Party
 
-  @apiParam {Number} client_utc_offset Offset of Client
-  @apiParam {Number} [work_effort_id] ID of WorkEffort
-  @apiParam {Number} [party_id] ID of Party
-
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Number} day_total_seconds Day total in seconds
-  @apiSuccess {Number} week_total_seconds Week total in seconds
-  @apiSuccess {String} day_total_formatted Day total formatted as 00:00:00
-  @apiSuccess {String} week_total_formatted Week total formatted as 00:00:00
-  @apiSuccess {String} total_formatted Total formatted as 00:00:00
+  @apiSuccess (200) {Object} totals_time_entry_response
+  @apiSuccess (200) {Boolean} totals_time_entry_response.success True if the request was successful
+  @apiSuccess (200) {Integer} totals_time_entry_response.day_total_seconds Day total in seconds
+  @apiSuccess (200) {Integer} totals_time_entry_response.week_total_seconds Week total in seconds
+  @apiSuccess (200) {String} totals_time_entry_response.day_total_formatted Day total formatted as 00:00:00
+  @apiSuccess (200) {String} totals_time_entry_response.week_total_formatted Week total formatted as 00:00:00
+  @apiSuccess (200) {String} totals_time_entry_response.total_formatted Total formatted as 00:00:00
 
 =end
 

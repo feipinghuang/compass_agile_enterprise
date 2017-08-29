@@ -7,7 +7,8 @@ module API
  @api {get} /api/v1/unit_of_measurements Index
  @apiVersion 1.0.0
  @apiName GetUnitOfMeasurements
- @apiGroup Unit Of Measurement
+ @apiGroup UnitOfMeasurement
+ @apiDescription Get UnitOfMeasurements
 
  @apiParam {String} [query] Query to search description by
 
