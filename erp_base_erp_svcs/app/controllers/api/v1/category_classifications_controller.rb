@@ -73,8 +73,7 @@ module API
 
  @apiParam (body) {String} record_type Record type to set
  @apiParam (body) {Integer} record_id Record Id to set
- @apiParam (body) {Integer} [category_id] Category record Id to set, if this is passed then category_iid should not be passed
- @apiParam (body) {String} [category_iid] Category record Internal Identifier to set, if this is passed then category_id should not be passed
+ @apiParam (body) {String} category Category Internal Identifier
 
  @apiSuccess (200) {Object} create_category_classification_response Response.
  @apiSuccess (200) {Boolean} create_category_classification_response.success True if the request was successful
@@ -91,13 +90,7 @@ module API
               category_classification = CategoryClassification.create(classification_type: params[:record_type],
                                                                       classification_id: params[:record_id])
 
-              if params[:category_id]
-                category_classification.category_id = params[:category_id]
-              end
-
-              if params[:category_iid]
-                category_classification.category = Category.where(internal_identifier: params[:category_iid])
-              end
+              category_classification.category = Category.where(internal_identifier: params[:category])
 
               category_classification.save!
 
@@ -132,8 +125,7 @@ module API
 
  @apiParam (body) {String} record_type Record type to set
  @apiParam (body) {Integer} record_id Record Id to set
- @apiParam (body) {Integer} [category_id] Category record Id to set, if this is passed then category_iid should not be passed
- @apiParam (body) {String} [category_iid] Category record Internal Identifier to set, if this is passed then category_id should not be passed
+  @apiParam (body) {String} category Category Internal Identifier
 
  @apiSuccess (200) {Object} update_category_classification_response Response.
  @apiSuccess (200) {Boolean} update_category_classification_response.success True if the request was successful
@@ -152,12 +144,8 @@ module API
               category_classification.record_id = params[:record_id]
             end
 
-            if params[:category_id]
-              category_classification.category_id = params[:category_id]
-            end
-
-            if params[:category_iid]
-              category_classification.category = Category.where(internal_identifier: params[:category_iid])
+            if params[:category]
+              category_classification.category = Category.where(internal_identifier: params[:category])
             end
 
             category_classification.save!

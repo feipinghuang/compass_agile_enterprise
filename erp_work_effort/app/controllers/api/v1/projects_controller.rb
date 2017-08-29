@@ -8,13 +8,15 @@ module API
   @apiVersion 1.0.0
   @apiName GetWorkProjects
   @apiGroup Project
+  @apiDescription Get Projects
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} projects List of Projects
-  @apiSuccess {Number} projects.id Id of Project
-  @apiSuccess {String} projects.description Description of Project
-  @apiSuccess {DateTime} projects.created_at When the Project was created
-  @apiSuccess {DateTime} projects.updated_at When the Project was updated
+  @apiSuccess (200) {Object} get_projects_response
+  @apiSuccess (200) {Boolean} get_projects_response.success True if the request was successful
+  @apiSuccess (200) {Object[]} get_projects_response.projects List of Projects
+  @apiSuccess (200) {Number} get_projects_response.projects.id Id of Project
+  @apiSuccess (200) {String} get_projects_response.projects.description Description of Project
+  @apiSuccess (200) {DateTime} get_projects_response.projects.created_at When the Project was created
+  @apiSuccess (200) {DateTime} get_projects_response.projects.updated_at When the Project was updated
 
 =end
 

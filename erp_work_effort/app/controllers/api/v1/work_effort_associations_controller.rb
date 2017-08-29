@@ -8,16 +8,19 @@ module API
  @apiVersion 1.0.0
  @apiName GetWorkEffortAssociations
  @apiGroup WorkEffortAssociation
+ @apiDescription Get Work Effort Associations
 
- @apiParam {Number} [project_id] Project ID to scope by
+ @apiParam (query) {Integer} [project_id] Project ID to scope by
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Array} work_effort_associations List of WorkEffortAssociations
- @apiSuccess {Number} work_effort_associations.work_effort_id_from Id of from WorkEffort
- @apiSuccess {Decimal} work_effort_associations.work_effort_id_to Id of to WorkEffort
- @apiSuccess {Object} work_effort_associations.work_effort_association_type WorkEffortAssociationType
- @apiSuccess {DateTime} work_effort_associations.created_at When the WorkEffortAssociation was created
- @apiSuccess {DateTime} work_effort_associations.updated_at When the WorkEffortAssociation was updated
+ @apiSuccess (200) {Object} get_work_effort_associations_response Response
+ @apiSuccess (200) {Boolean} get_work_effort_associations_response.success True if the request was successful
+ @apiSuccess (200) {Object[]} get_work_effort_associations_response.work_effort_associations List of WorkEffortAssociations
+ @apiSuccess (200) {Integer} get_work_effort_associations_response/work_effort_associations.work_effort_id_from Id of from WorkEffort
+ @apiSuccess (200) {Decimal} get_work_effort_associations_response.work_effort_associations.work_effort_id_to Id of to WorkEffort
+ @apiSuccess (200) {Integer} get_work_effort_associations_response.work_effort_associations.work_effort_association_type.id WorkEffortAssociationType Id
+ @apiSuccess (200) {Object} get_work_effort_associations_response.work_effort_associations.work_effort_association_type WorkEffortAssociationType
+ @apiSuccess (200) {DateTime} get_work_effort_associations_response.work_effort_associations.created_at When the WorkEffortAssociation was created
+ @apiSuccess (200) {DateTime} get_work_effort_associations_response.work_effort_associations.updated_at When the WorkEffortAssociation was updated
 
 =end
 
@@ -26,12 +29,12 @@ module API
 
         if params[:project_id]
           work_effort_associations = work_effort_associations.joins('inner join work_efforts on work_efforts.id = work_effort_associations.work_effort_id_to')
-                                         .where('work_efforts.project_id = ?', params[:project_id])
+          .where('work_efforts.project_id = ?', params[:project_id])
         else
           # scope by dba organization
           work_effort_associations = work_effort_associations.joins('inner join work_efforts on work_efforts.id = work_effort_associations.work_effort_id_to')
-                                         .joins("inner join entity_party_roles on entity_party_roles.entity_record_type = 'WorkEffort' and entity_party_roles.entity_record_id = work_efforts.id")
-                                         .where('entity_party_roles.party_id = ? and entity_party_roles.role_type_id = ?', current_user.party.dba_organization.id, RoleType.iid('dba_org').id)
+          .joins("inner join entity_party_roles on entity_party_roles.entity_record_type = 'WorkEffort' and entity_party_roles.entity_record_id = work_efforts.id")
+          .where('entity_party_roles.party_id = ? and entity_party_roles.role_type_id = ?', current_user.party.dba_organization.id, RoleType.iid('dba_org').id)
         end
 
         render :json => {success: true, work_effort_associations: work_effort_associations.all.map { |work_effort| work_effort.to_data_hash }}
@@ -43,14 +46,19 @@ module API
  @apiVersion 1.0.0
  @apiName ShowWorkEffortAssociation
  @apiGroup WorkEffortAssociation
+ @apiDescription Get Work Effort Association
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Object} work_effort_association WorkEffortAssociation
- @apiSuccess {Number} work_effort_association.work_effort_id_from Id of from WorkEffort
- @apiSuccess {Decimal} work_effort_association.work_effort_id_to Id of to WorkEffort
- @apiSuccess {Object} work_effort_association.work_effort_association_type WorkEffortAssociationType
- @apiSuccess {DateTime} work_effort_association.created_at When the WorkEffortAssociation was created
- @apiSuccess {DateTime} work_effort_association.updated_at When the WorkEffortAssociation was updated
+ @apiParam (query) {Integer} [id] WorkEffortAssocation Id
+
+ @apiSuccess (200) {Object} get_work_effort_association_response Response
+ @apiSuccess (200) {Boolean} get_work_effort_association_response.success True if the request was successful
+ @apiSuccess (200) {Object} get_work_effort_association_response.work_effort_association WorkEffortAssociation
+ @apiSuccess (200) {Integer} get_work_effort_association_response.work_effort_association.work_effort_id_from Id of from WorkEffort
+ @apiSuccess (200) {Decimal} get_work_effort_association_response.work_effort_association.work_effort_id_to Id of to WorkEffort
+ @apiSuccess (200) {Object} get_work_effort_association_response.work_effort_association.work_effort_association_type WorkEffortAssociationType
+ @apiSuccess (200) {Integer} get_work_effort_association_response.work_effort_association.work_effort_association_type.id WorkEffortAssociationType Id
+ @apiSuccess (200) {DateTime} get_work_effort_association_response.work_effort_association.created_at When the WorkEffortAssociation was created
+ @apiSuccess (200) {DateTime} get_work_effort_association_response.work_effort_association.updated_at When the WorkEffortAssociation was updated
 
 =end
 
@@ -65,25 +73,25 @@ module API
  @apiName CreateWorkEffortAssociation
  @apiGroup WorkEffortAssociation
 
- @apiParam {Number} work_effort_id_from ID of from WorkEffort
- @apiParam {Number} work_effort_id_to ID of to WorkEffort
- @apiParam {String} work_effort_association_type Internal Identifier of WorkEffortAssociationType
-
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Object} work_effort_association WorkEffortAssociation
- @apiSuccess {Number} work_effort_association.work_effort_id_from Id of from WorkEffort
- @apiSuccess {Decimal} work_effort_association.work_effort_id_to Id of to WorkEffort
- @apiSuccess {Object} work_effort_association.work_effort_association_type WorkEffortAssociationType
- @apiSuccess {DateTime} work_effort_association.created_at When the WorkEffortAssociation was created
- @apiSuccess {DateTime} work_effort_association.updated_at When the WorkEffortAssociation was updated
+ @apiParam (body) {Integer} work_effort_id_from ID of from WorkEffort
+ @apiParam (body) {Integer} work_effort_id_to ID of to WorkEffort
+ @apiParam (body) {String} work_effort_association_type Internal Identifier of WorkEffortAssociationType
+  
+ @apiSuccess (200) {Object} create_work_effort_association_response Response
+ @apiSuccess (200) {Boolean} create_work_effort_association_response.success True if the request was successful
+ @apiSuccess (200) {Object} create_work_effort_association_response.work_effort_association WorkEffortAssociation
+ @apiSuccess (200) {Integer} create_work_effort_association_response.work_effort_association.work_effort_id_from Id of from WorkEffort
+ @apiSuccess (200) {Decimal} create_work_effort_association_response.work_effort_association.work_effort_id_to Id of to WorkEffort
+ @apiSuccess (200) {Object} create_work_effort_association_response.work_effort_association.work_effort_association_type WorkEffortAssociationType
+ @apiSuccess (200) {Integer} create_work_effort_association_response.work_effort_association.work_effort_association_type.id WorkEffortAssociationType Id
+ @apiSuccess (200) {DateTime} create_work_effort_association_response.work_effort_association.created_at When the WorkEffortAssociation was created
+ @apiSuccess (200) {DateTime} create_work_effort_association_response.work_effort_association.updated_at When the WorkEffortAssociation was updated
 
 =end
 
       def create
         begin
           ActiveRecord::Base.connection.transaction do
-
-            work_effort_association_type = params['work_effort_association_type.external_identifier'] || params['work_effort_association_type']
 
             work_effort_association = WorkEffortAssociation.new
             work_effort_association.work_effort_id_from = params[:work_effort_id_from]
@@ -115,26 +123,29 @@ module API
  @apiVersion 1.0.0
  @apiName UpdateWorkEffortAssociation
  @apiGroup WorkEffortAssociation
+ @apiDescription Update Work Effort Association
 
- @apiParam {Number} work_effort_id_from ID of from WorkEffort
- @apiParam {Number} work_effort_id_to ID of to WorkEffort
- @apiParam {String} work_effort_association_type Internal Identifier of WorkEffortAssociationType
+ @apiParam (query) {Integer} id WorkEffortAssociation Id
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Object} work_effort_association WorkEffortAssociation
- @apiSuccess {Number} work_effort_association.work_effort_id_from Id of from WorkEffort
- @apiSuccess {Decimal} work_effort_association.work_effort_id_to Id of to WorkEffort
- @apiSuccess {Object} work_effort_association.work_effort_association_type WorkEffortAssociationType
- @apiSuccess {DateTime} work_effort_association.created_at When the WorkEffortAssociation was created
- @apiSuccess {DateTime} work_effort_association.updated_at When the WorkEffortAssociation was updated
+ @apiParam (body) {Integer} work_effort_id_from ID of from WorkEffort
+ @apiParam (body) {Integer} work_effort_id_to ID of to WorkEffort
+ @apiParam (body) {String} work_effort_association_type Internal Identifier of WorkEffortAssociationType
+ 
+ @apiSuccess (200) {Object} update_work_effort_association_response
+ @apiSuccess (200) {Boolean} update_work_effort_association_response.success True if the request was successful
+ @apiSuccess (200) {Object} update_work_effort_association_response.work_effort_association WorkEffortAssociation
+ @apiSuccess (200) {Integer} update_work_effort_association_response.work_effort_association.work_effort_id_from Id of from WorkEffort
+ @apiSuccess (200) {Decimal} update_work_effort_association_response.work_effort_association.work_effort_id_to Id of to WorkEffort
+ @apiSuccess (200) {Object} update_work_effort_association_response.work_effort_association.work_effort_association_type WorkEffortAssociationType
+ @apiSuccess (200) {Integer} update_work_effort_association_response.work_effort_association.work_effort_association_type.id WorkEffortAssociationType Id
+ @apiSuccess (200) {DateTime} update_work_effort_association_response.work_effort_association.created_at When the WorkEffortAssociation was created
+ @apiSuccess (200) {DateTime} update_work_effort_association_response.work_effort_association.updated_at When the WorkEffortAssociation was updated
 
 =end
 
       def update
         begin
           ActiveRecord::Base.connection.transaction do
-
-            work_effort_association_type = params['work_effort_association_type.external_identifier'] || params['work_effort_association_type']
 
             work_effort_association = WorkEffortAssociation.find(params[:id])
             work_effort_association.work_effort_id_from = params[:work_effort_id_from]
@@ -166,8 +177,12 @@ module API
  @apiVersion 1.0.0
  @apiName DeleteWorkEffortAssociation
  @apiGroup WorkEffortAssociation
+ @apiDescription Delete Work Effort Assoc
 
- @apiSuccess {Boolean} success True if the request was successful
+ @apiParam (query) {Integer} id WorkEffortAssociation Id
+
+ @apiSuccess (200) {Object} delete_work_effort_association_response
+ @apiSuccess (200) {Boolean} delete_work_effort_association_response.success True if the request was successful
 
 =end
 

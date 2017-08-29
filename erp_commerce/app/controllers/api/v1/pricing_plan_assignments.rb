@@ -8,7 +8,7 @@ module API
   @apiVersion 1.0.0
   @apiName GetPricingPlanAssignments
   @apiGroup PricingPlanAssignment
-  @apiDescription UpdGetate Pricing Plan Assignments
+  @apiDescription Get Pricing Plan Assignments
 
   @apiParam (query) {Integer} [pricing_plan_id] Id of PricingPlan to scope by
   @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
@@ -150,7 +150,7 @@ module API
  @apiVersion 1.0.0
  @apiName DestroyPricingPlanAssignment
  @apiGroup PricingPlanAssignment
- @apiDescription Destroy PricingPlanAssignment
+ @apiDescription Destroy Pricing Plan Assignment
 
  @apiParam (query) {Integer} id Id of PricingPlanAssignment
 

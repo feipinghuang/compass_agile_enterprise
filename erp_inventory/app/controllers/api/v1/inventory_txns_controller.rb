@@ -4,12 +4,16 @@ module API
 
 =begin
 
-  @api {get} /api/v1/inventory_txns/:id/apply PUT
+  @api {put} /api/v1/inventory_txns/:id/apply 
   @apiVersion 1.0.0
   @apiName ApplyInventoryTxn
   @apiGroup InventoryTxn
+  @apiDescription Apply an InventoryTxn
 
-  @apiSuccess {Boolean} success True if the request was successful
+  @apiParam (query) {Integer} id InventoryTxn Id
+  
+  @apiSuccess (200) {Object} apply_inventory_txn_response Response
+  @apiSuccess (200) {Boolean} apply_inventory_txn_response.success True if the request was successful
 
 =end
 
@@ -39,12 +43,16 @@ module API
 
 =begin
 
-  @api {get} /api/v1/inventory_txns/:id/unapply PUT
+  @api {put} /api/v1/inventory_txns/:id/unapply 
   @apiVersion 1.0.0
   @apiName UnapplyInventoryTxn
   @apiGroup InventoryTxn
+  @apiDescription Unapply an InventoryTxn
 
-  @apiSuccess {Boolean} success True if the request was successful
+  @apiParam (query) {Integer} id InventoryTxn Id
+  
+  @apiSuccess (200) {Object} unapply_inventory_txn_response Response
+  @apiSuccess (200) {Boolean} unapply_inventory_txn_response.success True if the request was successful
 
 =end
 
