@@ -3,13 +3,18 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
 
-      resources :inventory_entries, defaults: { :format => 'json' }
+      resources :inventory_entries, defaults: { :format => 'json' } do
+        resources :inventory_entry_locations, defaults: { :format => 'json' }
+      end
+
       resources :inventory_txns, defaults: { :format => 'json' } do
         member do
           put :apply
           put :unapply
         end
       end
+
+      resources :inventory_entry_locations, defaults: { :format => 'json' }
 
     end
   end
