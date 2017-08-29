@@ -8,13 +8,15 @@ module API
  @apiVersion 1.0.0
  @apiName GetBizTxnPartyRoles
  @apiGroup BizTxnPartyRole
+ @apiDescription Get BizTxnPartyRoles
 
- @apiParam {Integer} party_id Id of party to get BizTxnPartyRoles for
+ @apiParam (query) {Integer} party_id Id of party to get BizTxnPartyRoles for
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Array} biz_txn_party_roles List of BizTxnPartyRole records
- @apiSuccess {Number} biz_txn_party_roles.id Id of BizTxnPartyRole
+ @apiSuccess (200) {Object} biz_txn_party_roles_response
+ @apiSuccess (200) {Boolean} biz_txn_party_roles_response.success True if the request was successful
+ @apiSuccess (200) {Number} biz_txn_party_roles_response.total_count Total count of records based on any filters applied
+ @apiSuccess (200) {Object[]} biz_txn_party_roles_response.biz_txn_party_roles List of BizTxnPartyRole records
+ @apiSuccess (200) {Number} biz_txn_party_roles_response.biz_txn_party_roles.id Id of BizTxnPartyRole
 
 =end
 
@@ -57,14 +59,16 @@ module API
  @apiVersion 1.0.0
  @apiName CreateBizTxnPartyRoles
  @apiGroup BizTxnPartyRole
+ @apiDescription Create BizTxnPartyRoles
 
- @apiParam {Integer} biz_txn_event_id Id of BizTxnEvent
- @apiParam {Integer} [party_id] Id of party to create BizTxnPartyRoles for, if none is passed it will use current_user.party
- @apiParam {String} [biz_txn_party_role_types] Comma delimitted list of Internal Identifiers of BizTxnPartyRoleTypes
+ @apiParam (body) {Integer} biz_txn_event_id Id of BizTxnEvent
+ @apiParam (body) {Integer} [party_id] Id of party to create BizTxnPartyRoles for, if none is passed it will use current_user.party
+ @apiParam (body) {String} [biz_txn_party_role_types] Comma delimitted list of Internal Identifiers of BizTxnPartyRoleTypes
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Array} biz_txn_party_roles newly created BizTxnPartyRole records
- @apiSuccess {Number} biz_txn_party_role.id Id of BizTxnPartyRole
+ @apiSuccess (200) {Object} create_biz_txn_party_roles_response
+ @apiSuccess {Boolean} create_biz_txn_party_roles_response.success True if the request was successful
+ @apiSuccess {Object[]} create_biz_txn_party_roles_response.biz_txn_party_roles newly created BizTxnPartyRole records
+ @apiSuccess {Number} create_biz_txn_party_roles_response.biz_txn_party_role.id Id of BizTxnPartyRole
 
 =end
 
@@ -125,8 +129,12 @@ module API
  @apiVersion 1.0.0
  @apiName DestroyBizTxnPartyRoles
  @apiGroup BizTxnPartyRole
+ @apiDescription Delete BizTxnPartyRole
+  
+ @apiParam (query) {Integer} id Id of BizTxnPartyRole
 
- @apiSuccess {Boolean} success True if the request was successful
+ @apiSuccess (200) {Object} delete_biz_txn_party_roles_response 
+ @apiSuccess {Boolean} delete_biz_txn_party_roles_response.success True if the request was successful
 
 =end
 

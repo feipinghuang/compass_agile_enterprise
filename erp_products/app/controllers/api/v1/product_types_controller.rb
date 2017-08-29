@@ -11,6 +11,8 @@ module API
  @apiDescription Get Product Types
 
  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+ @apiParam (query) {Integer} [start] Start to for paging, defaults to 0
+ @apiParam (query) {Integer} [limit] Limit to for paging, defaults to 25
  @apiParam (query) {String} [query_filter] JSON string of data to filter by
  @apiParam (query) {String} [context] JSON string of data in regards to the context the api is being called, {"view": "mobile"}
  @apiParam (query) {String} [query] String to query the ProductTypes by
@@ -72,14 +74,14 @@ module API
 
         if context[:view]
           if context[:view] == 'mobile'
-            render :json => {success: true,
-                             total_count: total_count,
-                             product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
+            render json: {success: true,
+                          total_count: total_count,
+                          product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
           end
         else
-          render :json => {success: true,
-                           total_count: total_count,
-                           product_types: product_types.collect { |product_type| product_type.to_data_hash }}
+          render json: {success: true,
+                        total_count: total_count,
+                        product_types: product_types.collect { |product_type| product_type.to_data_hash }}
         end
 
       end
@@ -104,8 +106,8 @@ module API
       def show
         product_type = ProductType.find(params[:id])
 
-        render :json => {success: true,
-                         product_type: product_type.to_data_hash}
+        render json: {success: true,
+                      product_type: product_type.to_data_hash}
       end
 
 =begin
@@ -159,7 +161,6 @@ module API
               product_type_party_role.save
             end
 
-
             render :json => {success: true,
                              product_type: product_type.to_data_hash}
           end
@@ -174,7 +175,7 @@ module API
           # email error
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render :json => {success: false, message: 'Could not create product type'}
+          render json: {success: false, message: 'Could not create ProductType'}
         end
       end
 
@@ -243,7 +244,7 @@ module API
           # email error
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render :json => {success: false, message: 'Could not update product type'}
+          render json: {success: false, message: 'Could not update ProductType'}
         end
       end
 
@@ -265,7 +266,7 @@ module API
       def destroy
         ProductType.find(params[:id]).destroy
 
-        render :json => {:success => true}
+        render json: {:success => true}
       end
 
     end # ProductTypesController

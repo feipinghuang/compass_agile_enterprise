@@ -8,12 +8,12 @@ module API
  @apiVersion 1.0.0
  @apiName GetFacilities
  @apiGroup Facility
-@apiDescription Get Facilities
+ @apiDescription Get Facilities
 
- @apiSuccess {Boolean} success True if the request was successful.
- @apiSuccess {Number} total_count Total count of records based on any filters applied.
- @apiSuccess {Object[]} facilities List of Facility records.
- @apiSuccess {Number} facilities.id Id of Facility.
+ @apiSuccess (200) {Object} get_facilities_response Response
+ @apiSuccess (200) {Boolean} get_facilities_response.success True if the request was successful
+ @apiSuccess (200) {Object[]} get_facilities_response.facilities Facility records
+ @apiSuccess (200) {Number} get_facilities_response.facilities.id Id of Facility
 
 =end
 

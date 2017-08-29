@@ -16,7 +16,10 @@ Rails.application.routes.draw do
       resources :tracked_status_types, defaults: { :format => 'json' }
       resources :role_types, defaults: { :format => 'json' }
       resources :note_types, defaults: { :format => 'json' }
-      resources :categories, defaults: { :format => 'json' }
+      resources :categories, defaults: { :format => 'json' } do
+        resources :category_classifications, defaults: { :format => 'json' }
+      end
+      resources :category_classifications, defaults: { :format => 'json' }
       resources :contact_purposes, defaults: { :format => 'json' }
       resources :geo_zones, defaults: { :format => 'json' }
       resources :status_applications, defaults: { :format => 'json' }

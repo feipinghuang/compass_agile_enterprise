@@ -8,17 +8,23 @@ module API
  @apiVersion 1.0.0
  @apiName GetWorkEffortPartyAssignments
  @apiGroup WorkEffortPartyAssignment
+ @apiDescription Get WorkEffortPartyAssignments
 
- @apiParam {Number} [project_id] Project ID to scope by
- @apiParam {Number} [work_effort_id] WorkEffort ID to scope by
+ @apiParam (query) {Integer} [project_id] Project ID to scope by
+ @apiParam (query) {Integer} [work_effort_id] WorkEffort ID to scope by
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records
- @apiSuccess {Array} work_effort_party_assignments List of WorkEffortPartyAssignments
- @apiSuccess {Number} work_effort_party_assignments.id Id of WorkEffortPartyAssignment
- @apiSuccess {Decimal} work_effort_party_assignments.resource_allocation Allocation of resource
- @apiSuccess {Object} work_effort_party_assignments.work_effort WorkEffort allocated for
- @apiSuccess {Object} work_effort_party_assignments.party Party allocated
+ @apiSuccess (200) {Object} get_work_effort_party_assignments_response 
+ @apiSuccess (200) {Boolean} get_work_effort_party_assignments_response.success True if the request was successful
+ @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.total_count Total count of records
+ @apiSuccess (200) {Object[]} get_work_effort_party_assignments_response.work_effort_party_assignments List of WorkEffortPartyAssignments
+ @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.work_effort_party_assignments.id Id of WorkEffortPartyAssignment
+ @apiSuccess (200) {Decimal} get_work_effort_party_assignments_response.work_effort_party_assignments.resource_allocation Allocation of resource
+ 
+ @apiSuccess (200) {Object} get_work_effort_party_assignments_response.work_effort_party_assignments.work_effort WorkEffort allocated for
+ @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.work_effort_party_assignments.work_effort.id WorkEffort Id
+ 
+ @apiSuccess (200) {Object} get_work_effort_party_assignments_response.work_effort_party_assignments.party Party allocated
+ @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.work_effort_party_assignments.party.id Party Id
 
 =end
 
@@ -52,12 +58,12 @@ module API
         work_effort_party_assignments = work_effort_party_assignments.order('work_effort_party_assignments.party_id')
 
         render :json => {
-                   success: true,
-                   total_count: total_count,
-                   work_effort_party_assignments: work_effort_party_assignments.all.collect do |work_effort_party_assignment|
-                     work_effort_party_assignment.to_data_hash
-                   end
-               }
+          success: true,
+          total_count: total_count,
+          work_effort_party_assignments: work_effort_party_assignments.all.collect do |work_effort_party_assignment|
+            work_effort_party_assignment.to_data_hash
+          end
+        }
       end
 
 =begin
@@ -66,17 +72,23 @@ module API
  @apiVersion 1.0.0
  @apiName CreateWorkEffortPartyAssignments
  @apiGroup WorkEffortPartyAssignment
+ @apiDescription Create WorkEffortPartyAssignment
 
- @apiParam {Number} party_id ID of Party
- @apiParam {Number} work_effort_id ID of WorkEffort
- @apiParam {Decimal} resource_allocation Allocation percentage
+ @apiParam (body) {Integer} party_id ID of Party
+ @apiParam (body) {Integer} work_effort_id ID of WorkEffort
+ @apiParam (body) {Decimal} resource_allocation Allocation percentage
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Array} work_effort_party_assignment WorkEffortPartyAssignment
- @apiSuccess {Number} work_effort_party_assignment.id Id of WorkEffortPartyAssignment
- @apiSuccess {Decimal} work_effort_party_assignment.resource_allocation Allocation of resource
- @apiSuccess {Object} work_effort_party_assignment.work_effort WorkEffort allocated for
- @apiSuccess {Object} work_effort_party_assignment.party Party allocated
+ @apiSuccess (200) {Object} create_work_effort_party_assignments_response 
+ @apiSuccess (200) {Boolean} create_work_effort_party_assignments_response.success True if the request was successful
+ @apiSuccess (200) {Object} create_work_effort_party_assignments_response.work_effort_party_assignment WorkEffortPartyAssignment
+ @apiSuccess (200) {Integer} create_work_effort_party_assignments_response.work_effort_party_assignment.id Id of WorkEffortPartyAssignment
+ @apiSuccess (200) {Decimal} create_work_effort_party_assignments_response.work_effort_party_assignment.resource_allocation Allocation of resource
+ 
+ @apiSuccess (200) {Object} create_work_effort_party_assignments_response.work_effort_party_assignments.work_effort WorkEffort allocated for
+ @apiSuccess (200) {Integer} create_work_effort_party_assignments_response.work_effort_party_assignments.work_effort.id WorkEffort Id
+ 
+ @apiSuccess (200) {Object} create_work_effort_party_assignments_response.work_effort_party_assignments.party Party allocated
+ @apiSuccess (200) {Integer} create_work_effort_party_assignments_response.work_effort_party_assignments.party.id Party Id
 
 =end
 
@@ -131,17 +143,25 @@ module API
  @apiVersion 1.0.0
  @apiName UpdateWorkEffortPartyAssignments
  @apiGroup WorkEffortPartyAssignment
+ @apiDescription Update WorkEffortPartyAssignment
 
- @apiParam {Number} party_id ID of Party
- @apiParam {Number} work_effort_id ID of WorkEffort
- @apiParam {Decimal} resource_allocation Allocation percentage
+ @apiParam (query) {Integer} id WorkEffortPartyAssignment Id
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Array} work_effort_party_assignment WorkEffortPartyAssignment
- @apiSuccess {Number} work_effort_party_assignment.id Id of WorkEffortPartyAssignment
- @apiSuccess {Decimal} work_effort_party_assignment.resource_allocation Allocation of resource
- @apiSuccess {Object} work_effort_party_assignment.work_effort WorkEffort allocated for
- @apiSuccess {Object} work_effort_party_assignment.party Party allocated
+ @apiParam (body) {Integer} party_id ID of Party
+ @apiParam (body) {Integer} work_effort_id ID of WorkEffort
+ @apiParam (body) {Decimal} resource_allocation Allocation percentage
+
+ @apiSuccess (200) {Object} update_work_effort_party_assignments_response 
+ @apiSuccess (200) {Boolean} update_work_effort_party_assignments_response.success True if the request was successful
+ @apiSuccess (200) {Object} update_work_effort_party_assignments_response.work_effort_party_assignment WorkEffortPartyAssignment
+ @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignment.id Id of WorkEffortPartyAssignment
+ @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignment.resource_allocation Allocation of resource
+ 
+ @apiSuccess (200) {Object} update_work_effort_party_assignments_response.work_effort_party_assignments.work_effort WorkEffort allocated for
+ @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignments.work_effort.id WorkEffort Id
+ 
+ @apiSuccess (200) {Object} update_work_effort_party_assignments_response.work_effort_party_assignments.party Party allocated
+ @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignments.party.id Party Id
 
 =end
 
@@ -183,8 +203,12 @@ module API
  @apiVersion 1.0.0
  @apiName DeleteWorkEffortPartyAssignments
  @apiGroup WorkEffortPartyAssignment
+ @apiDescription Delete WorkEffortPartyAssignment
 
- @apiSuccess {Boolean} success True if the request was successful
+ @apiParam (query) {Integer} id WorkEffortPartyAssignment Id
+
+ @apiSuccess (200) {Object} delete_work_effort_party_assignments_response
+ @apiSuccess (200) {Boolean} delete_work_effort_party_assignments_response.success True if the request was successful
 
 =end
 

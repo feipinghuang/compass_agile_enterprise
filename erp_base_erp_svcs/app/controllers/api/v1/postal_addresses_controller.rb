@@ -7,7 +7,8 @@ module API
  @api {get} /api/v1/postal_addresses Index
  @apiVersion 1.0.0
  @apiName GetPostalAddresses
- @apiGroup Postal Address
+ @apiGroup PostalAddress
+ @apiDescription Get Postal Addresses
 
  @apiParam {String} [contact_purposes] Comma delimited string of ContactPurpose internal identifiers to filter by
  @apiParam {String} [query] Query to search description by
@@ -63,7 +64,8 @@ module API
  @api {get} /api/v1/postal_addresses/:id Index
  @apiVersion 1.0.0
  @apiName GetPostalAddresses
- @apiGroup Postal Address
+ @apiGroup PostalAddress
+ @apiDescription Get Postal Address
 
  @apiSuccess {Boolean} success True if the request was successful
  @apiSuccess {Number} total_count Total count of records based on any filters applied
@@ -81,8 +83,9 @@ module API
   @api {post} /api/v1/postal_addresses Create
   @apiVersion 1.0.0
   @apiName CreatePostalAddress
-  @apiGroup Postal Address
-  
+  @apiGroup PostalAddress
+  @apiDescription Create Postal Address
+
   @apiParam {String} description Description of Postal Address
   @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
   @apiParam {String} address_line_1 Address Line 1
@@ -149,7 +152,8 @@ module API
   @api {put} /api/v1/postal_addresses/:id Update
   @apiVersion 1.0.0
   @apiName UpdatePostalAddress
-  @apiGroup Postal Address
+  @apiGroup PostalAddress
+  @apiDescription Update PostalAddress
 
   @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
   @apiParam {String} [address_line_1] Address line 1
@@ -238,9 +242,10 @@ module API
   @api {delete} /api/v1/postal_addresses/:id Delete
   @apiVersion 1.0.0
   @apiName DeletePostalAddress
-  @apiGroup Postal Address
-
-  @apiSuccess {Boolean} success True if the request was successful
+  @apiGroup PostalAddress
+  @apiDescription Delete PostalAddress
+  
+  @apiSuccess (200) {Boolean} success True if the request was successful
 
 =end
 

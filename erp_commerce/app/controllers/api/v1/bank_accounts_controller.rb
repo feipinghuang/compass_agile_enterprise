@@ -9,10 +9,12 @@ module API
   @apiName GetBankAccounts
   @apiGroup BankAccount
 
-  @apiParam {Integer} party_id Id of party to get BankAccounts for
+  @apiParam (query) {Integer} party_id Id of party to get BankAccounts for
   
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} bank_accounts BankAccount records
+  @apiSuccess (200) {Object} get_bank_accounts_response Response
+  @apiSuccess (200) {Boolean} get_bank_accounts_response.success True if the request was successful
+  @apiSuccess (200) {Object[]} get_bank_accounts_response.bank_accounts BankAccount records
+  @apiSuccess (200) {Number} get_bank_accounts_response.bank_accounts.id Id of BankAccount
 
 =end
 
@@ -30,20 +32,21 @@ module API
 
   @api {get} /api/v1/bank_accounts Create
   @apiVersion 1.0.0
-  @apiName CreateBankAccounts
+  @apiName CreateBankAccount
   @apiGroup BankAccount
 
-  @apiParam {Integer} party_id Id of party to relate to this BankAccount
-  @apiParam {String} description Description for BankAccount
-  @apiParam {String} [bank_token] Token for BankAccount
-  @apiParam {String} [account_number] Account number for BankAccount
-  @apiParam {String} [routing_number] Routing number for BankAccount
-  @apiParam {String} [account_holder_name] Account holder name for BankAccount
-  @apiParam {String} [account_holder_type] Account holder type for BankAccount (individual | business)
-  @apiParam {String} [bank_account_type] Account type for BankAccount (checking | savings)
+  @apiParam (body) {Integer} party_id Id of party to relate to this BankAccount
+  @apiParam (body) {String} description Description for BankAccount
+  @apiParam (body) {String} [bank_token] Token for BankAccount
+  @apiParam (body) {String} [account_number] Account number for BankAccount
+  @apiParam (body) {String} [routing_number] Routing number for BankAccount
+  @apiParam (body) {String} [account_holder_name] Account holder name for BankAccount
+  @apiParam (body) {String} [account_holder_type] Account holder type for BankAccount (individual | business)
+  @apiParam (body) {String} [bank_account_type] Account type for BankAccount (checking | savings)
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} bank_account newly created BankAccount record
+  @apiSuccess (200) {Object} create_bank_accounts_response Response
+  @apiSuccess (200) {Boolean} create_bank_accounts_response.success True if the request was successful
+  @apiSuccess (200) {Object} create_bank_accounts_response.bank_account newly created BankAccount record
 
 =end
 
