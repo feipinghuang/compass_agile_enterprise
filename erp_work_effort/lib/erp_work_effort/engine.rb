@@ -2,6 +2,10 @@ module ErpWorkEffort
   class Engine < Rails::Engine
     isolate_namespace ErpWorkEffort
 
+    initializer "erp_base_erp_svcs.merge_public" do |app|
+      app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
+    end
+
     ActiveSupport.on_load(:active_record) do
       include ErpWorkEffort::Extensions::ActiveRecord::IsSchedulable
       include ErpWorkEffort::Extensions::ActiveRecord::ActsAsWorkEffort
