@@ -132,7 +132,7 @@ module API
 
             inventory_entry.save!
 
-            inventory_entry.set_tenant!(current_user.party.dba_organization.id)
+            inventory_entry.set_tenant!(current_user.party.dba_organization)
 
             render :json => {success: true,
                              inventory_entry: inventory_entry.to_data_hash}

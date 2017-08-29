@@ -4,7 +4,7 @@ module API
 
 =begin
 
-  @api {get} /api/v1/pricing_plans Index
+  @api {get} /api/v1/pricing_plans
   @apiVersion 1.0.0
   @apiName GetPricingPlans
   @apiGroup PricingPlan
@@ -40,14 +40,14 @@ module API
 
         total_count = pricing_plans.count
 
-        pricing_plans = pricing_plans.order("#{sort} #{dir}").limit(limit).offset(offset)
+        pricing_plans = pricing_plans.order("#{sort} #{dir}").limit(limit).offset(start)
 
         render :json => {success: true, total_count: total_count, pricing_plans: pricing_plans.collect(&:to_data_hash)}
       end
 
 =begin
 
-  @api {get} /api/v1/pricing_plans Create
+  @api {post} /api/v1/pricing_plans
   @apiVersion 1.0.0
   @apiName CreatePricingPlan
   @apiGroup PricingPlan
@@ -62,11 +62,12 @@ module API
   @apiParam (body) {Date} thru_date Thru Date
   @apiParam (body) {Boolean} is_simple_amount If this is a simple amount PricingPlan
   @apiParam (body) {String} currency_iid Currency Internal Identifier (ex: USD)
-  @apiParam (body) {Float} money_amount Amount if this is a simple amount
+  @apiParam (body) {Decimal} money_amount Amount if this is a simple amount
 
   @apiSuccess (200) {Object} create_pricing_plan_response Response
   @apiSuccess (200) {Boolean} create_pricing_plan_response.success True if the request was successful
   @apiSuccess (200) {Object} create_pricing_plan_response.pricing_plan newly created PricingPlan record
+  @apiSuccess (200) {Integer} create_pricing_plan_response.pricing_plan.id Id of PricingPlan
 
 =end
 
@@ -79,15 +80,21 @@ module API
                                            external_identifier: params[:external_identifier],
                                            external_id_source: params[:external_id_source],
                                            comments: params[:comments],
-                                           from_date: params[:from_date].to_date,
-                                           thru_date: params[:thru_date].to_date,
                                            is_simple_amount: params[:is_simple_amount],
                                            currency: Currency.find_by_internal_identifier(params[:currency_iid]),
                                            money_amount: params[:money_amount])
 
             pricing_plan.save!
 
-            pricing_plan.set_tenant(current_user.party.dba_organization.id)
+            if params[:from_date].present?
+              pricing_plan.from_date = params[:from_date].to_date
+            end
+
+            if params[:thru_date].present?
+              pricing_plan.thru_date = params[:thru_date].to_date
+            end
+
+            pricing_plan.set_tenant!(current_user.party.dba_organization)
 
             render json: {success: true, pricing_plan: pricing_plan.to_data_hash}
 
@@ -102,7 +109,7 @@ module API
 
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render json: {success: false, message: 'Could not create credit card'}
+          render json: {success: false, message: 'Could not create PricingPlan'}
         end
       end
 
@@ -193,7 +200,7 @@ module API
           # email error
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render json: {success: false, message: 'Application Error'}
+          render json: {success: false, message: 'Could not update PricingPlan'}
         end
       end
 
