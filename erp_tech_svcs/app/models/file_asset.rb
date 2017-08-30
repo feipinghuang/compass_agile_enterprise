@@ -254,10 +254,6 @@ class FileAsset < ActiveRecord::Base
 
     # update data_file_name as it sets it to string.io
     self.update_attribute(:data_file_name, _data_file_name)
-    # update data_content_type as it sets it to text/plain
-    self.update_attribute(:data_content_type, _content_type)
-    # update data_content_type as it gets set to test/plain in s3
-    self.data.instance_write(:content_type, _content_type)
 
     self.save!
   end
@@ -399,7 +395,12 @@ class FileAsset < ActiveRecord::Base
     unless @type.nil?
       klass = @type.constantize
       content_type = klass == Image ? "image/#{File.extname(@name).gsub(/^\.+/, '')}" : klass.content_type
-      self.data.instance_write(:content_type, content_type)
+
+      # update data_content_type as it sets it to text/plain
+      self.update_attribute(:data_content_type, content_type)
+
+      # make sure to sync with S3
+      self.data.reprocess!
     end
   end
 
