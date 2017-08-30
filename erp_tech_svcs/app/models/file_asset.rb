@@ -254,8 +254,12 @@ class FileAsset < ActiveRecord::Base
 
     # update data_file_name as it sets it to string.io
     self.update_attribute(:data_file_name, _data_file_name)
+    # update data_content_type as it sets it to text/plain
+    self.update_attribute(:data_content_type, _content_type)
 
     self.save!
+
+    self.data.reprocess!
   end
 
   def rename!(new_name)
@@ -398,9 +402,6 @@ class FileAsset < ActiveRecord::Base
 
       # update data_content_type as it sets it to text/plain
       self.update_attribute(:data_content_type, content_type)
-
-      # make sure to sync with S3
-      self.data.reprocess!
     end
   end
 
