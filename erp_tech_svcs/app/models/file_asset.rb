@@ -256,6 +256,8 @@ class FileAsset < ActiveRecord::Base
     self.update_attribute(:data_file_name, _data_file_name)
     # update data_content_type as it sets it to text/plain
     self.update_attribute(:data_content_type, _content_type)
+    # update data_content_type as it gets set to test/plain in s3
+    self.data.instance_write(:content_type, _content_type)
 
     self.save!
   end
