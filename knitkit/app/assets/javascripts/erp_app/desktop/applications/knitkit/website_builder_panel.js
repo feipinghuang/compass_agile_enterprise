@@ -1004,15 +1004,31 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                         });
                                         loadMsk.show();
                                         btn.up('codemirror').destroy();
-                                        me.loadContentBlock(
-                                            component, {
-                                                websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                source: editorSource,
-                                                afterload: function() {
-                                                    loadMsk.hide();
+                                        Compass.ErpApp.Utility.ajaxRequest({
+                                            url: '/knitkit/erp_app/desktop/website_builder/component_dynamic_status',
+                                            method: 'GET',
+                                            params: {
+                                                website_section_content_id: dropPanel.websiteSectionContentId
+                                            },
+                                            success: function(respObj) {
+                                                var prms = {};
+                                                // if its a dynamic content we want to send website section content id so that it
+                                                // loads the stored content else for a static content the source current source
+                                                // should be sent so that it behaves like CKEDITOR design and source view
+                                                if (respObj.is_content_dynamic) {
+                                                    Ext.apply(prms, { websiteSectionContentId: dropPanel.websiteSectionContentId });
+                                                } else {
+                                                    Ext.apply(prms, { source: editorSource });
                                                 }
+                                                
+                                                Ext.apply(prms, {
+                                                    afterload: function() {
+                                                        loadMsk.hide();
+                                                    }
+                                                })
+                                                me.loadContentBlock(component, prms);
                                             }
-                                        );
+                                        })
                                     }
                                 }],
                                 listeners: {
