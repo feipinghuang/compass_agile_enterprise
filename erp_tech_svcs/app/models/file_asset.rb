@@ -247,12 +247,15 @@ class FileAsset < ActiveRecord::Base
   end
 
   def update_contents!(contents)
+    _content_type = self.data_content_type
+    _data_file_name = self.name
+
     self.data = contents
 
     # update data_file_name as it sets it to string.io
-    self.update_attribute(:data_file_name, self.name)
+    self.update_attribute(:data_file_name, _data_file_name)
     # update data_content_type as it sets it to text/plain
-    self.update_attribute(:data_content_type, self.data_content_type)
+    self.update_attribute(:data_content_type, _content_type)
 
     self.save!
   end
