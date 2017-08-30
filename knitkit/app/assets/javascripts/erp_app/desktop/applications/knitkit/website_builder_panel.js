@@ -864,6 +864,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                         }
                                     }
                                 });
+                            } else {
+                                iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
+                                iframeNode.contentWindow.__pen__.setParentWindow(window);
                             }
                         }
                     }

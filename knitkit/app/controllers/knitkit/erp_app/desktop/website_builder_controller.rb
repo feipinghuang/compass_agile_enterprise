@@ -81,18 +81,18 @@ module Knitkit
                   current_website_section_contents = website_section.website_section_contents
                   contents_data.each do |data|
                     data = Hash.symbolize_keys(data)
-                    
                     if data[:website_section_content_id]
                       website_section_content = WebsiteSectionContent.find(data[:website_section_content_id])
                       # if the content block has dynamic content we don't want to process them
                       unless website_section_content.is_content_dynamic || data[:body_html].blank?
-                        # the content is dynamic if the source has a pair of script or erb (<%>) tags 
-                        website_section_content.is_content_dynamic = data[:body_html].match(/<script>(?:.*)<\/script>/).is_a?(MatchData) ||
-                                                                     data[:body_html].match(/<%(?:.*)%>/).is_a?(MatchData)
 
                         website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
                         # strip off design specific HTML
                         website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
+                        # the content is dynamic if the source has a pair of script or erb (<%>) tags 
+                        website_section_content.is_content_dynamic = website_section_content.website_html.match(/<script>(?:.*)<\/script>/m).is_a?(MatchData) ||
+                                                                     website_section_content.website_html.match(/<%(?:.*)%>/m).is_a?(MatchData)
+
                       end
                       website_section_content.position = data[:position]
                       website_section_content.col = data[:column]
@@ -105,12 +105,13 @@ module Knitkit
 
                     else
                       website_section_content = WebsiteSectionContent.new(website_section: website_section)
-                      # the content is dynamic if the source has a pair of script or erb (<%>) tags 
-                      website_section_content.is_content_dynamic = data[:body_html].match(/<script>(?:.*)<\/script>/).is_a?(MatchData) ||
-                                                                   data[:body_html].match(/<%(?:.*)%>/).is_a?(MatchData)
                       website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
                       # strip off design specific HTML
                       website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
+                      # the content is dynamic if the source has a pair of script or erb (<%>) tags 
+                      website_section_content.is_content_dynamic = website_section_content.website_html.match(/<script>(?:.*)<\/script>/m).is_a?(MatchData) ||
+                                                                   website_section_content.website_html.match(/<%(?:.*)%>/m).is_a?(MatchData)
+
                       website_section_content.position = data[:position]
                       website_section_content.col = data[:column]
                       website_section_content.save!
@@ -238,8 +239,8 @@ module Knitkit
               website_section_content = WebsiteSectionContent.where(id: params[:website_section_content_id]).first
 
               # the content is dynamic if the source has a pair of script or erb (<%>) tags 
-              website_section_content.is_content_dynamic = component_source.match(/<script>(?:.*)<\/script>/).is_a?(MatchData) ||
-                                                           component_source.match(/<%(?:.*)%>/).is_a?(MatchData)
+              website_section_content.is_content_dynamic = component_source.match(/<script>(?:.*)<\/script>/m).is_a?(MatchData) ||
+                                                           component_source.match(/<%(?:.*)%>/m).is_a?(MatchData)
               # assign source
               website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(component_source)
               website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(component_source)
