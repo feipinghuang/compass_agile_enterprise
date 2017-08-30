@@ -3,7 +3,6 @@ module API
     class DiscountsController < BaseController
 
 =begin
-
  @api {get} /api/v1/discounts
  @apiVersion 1.0.0
  @apiName GetDiscounts
@@ -19,8 +18,6 @@ module API
  @apiSuccess (200) {Boolean} get_discounts_response.success True if the request was successful
  @apiSuccess (200) {Number} get_discounts_response.total_count Total count of Discount records
  @apiSuccess (200) {Object[]} get_discounts_response.discounts List of Discount records
- @apiSuccess (200) {Number} get_discounts_response.discounts.id Id of Discount
-
 =end
 
 
@@ -81,19 +78,15 @@ module API
 
       end
 =begin
-
  @api {get} /api/v1/discounts/:id
  @apiVersion 1.0.0
  @apiName GetDiscount
- @apiGroup discount
+ @apiGroup Discount
  @apiDescription Get Discount
-
  @apiParam (query) {Integer} id Id of discount
-
  @apiSuccess (200) {Object} get_discount_response Response.
  @apiSuccess (200) {Boolean} get_discount_response.success True if the request was successful
  @apiSuccess (200) {Object} get_discounts_response.discount discount record
- @apiSuccess (200) {Number} get_discounts_response.discount.id Id of discount
 
 =end
 
@@ -114,28 +107,22 @@ module API
       end
 
 =begin
-
  @api {post} /api/v1/discounts/
  @apiVersion 1.0.0
- @apiName Creatediscount
- @apiGroup discount
- @apiDescription Create Product Type
-
+ @apiName CreateDiscount
+ @apiGroup Discount
+ @apiDescription Create Discount
  @apiParam (body) {String} description Description
  @apiParam (body) {String} discount_type Discount Type
  @apiParam (body) {Number} amount Amount
  @apiParam (body) {Boolean} date_constrained Date Constrained
- @apiParam {DateTime} [valid_from] Valid From / Time window for discount validity. Value should be in UTC format; YYYY-MM-DDTHH:MM:SS+00:00
- @apiParam {DateTime} [valid_thru] Valid Thru / Time window for discount validity. Value should be in UTC format; YYYY-MM-DDTHH:MM:SS+00:00
+ @apiParam (body) {DateTime} Valid From / Time window for discount validity. Value should be UTC; YYYY-MM-DDTHH:MM:SS+00:00
+ @apiParam (body) {DateTime} Valid Thru / Time window for discount validity. Value should be UTC; YYYY-MM-DDTHH:MM:SS+00:00
  @apiParam (body) {Boolean} round Round / Whether final price should artifically rounded
  @apiParam (body) {Number} round_amount Round Amount
-
  @apiSuccess (200) {Object} create_discount_response Response.
-
  @apiSuccess (200) {Boolean} create_discount_response.success True if the request was successful
  @apiSuccess (200) {Object} create_discount_response.discount discount record
- @apiSuccess (200) {Number} create_discount_response.discount.id Id of discount
-
 =end
 
 
@@ -181,27 +168,23 @@ module API
 
       end
 =begin
-
  @api {put} /api/v1/discounts/:id
  @apiVersion 1.0.0
  @apiName UpdateDiscount
  @apiGroup Discount
  @apiDescription Update Discount
-
+ @apiParam (query) {Integer} id Id of Discount
  @apiParam (body) {String} description Description
  @apiParam (body) {String} discount_type Discount Type
  @apiParam (body) {Number} amount Amount
  @apiParam (body) {Boolean} date_constrained Date Constrained
- @apiParam {DateTime} [valid_from] Valid From / Time window for discount validity. Value should be in UTC format; YYYY-MM-DDTHH:MM:SS+00:00
- @apiParam {DateTime} [valid_thru] Valid Thru / Time window for discount validity. Value should be in UTC format; YYYY-MM-DDTHH:MM:SS+00:00
+ @apiParam (body) {DateTime} Valid From / Time window for discount validity. Value should be UTC; YYYY-MM-DDTHH:MM:SS+00:00
+ @apiParam (body) {DateTime} Valid Thru / Time window for discount validity. Value should be UTC; YYYY-MM-DDTHH:MM:SS+00:00
  @apiParam (body) {Boolean} round Round / Whether final price should artifically rounded
  @apiParam (body) {Number} round_amount Round Amount
-
  @apiSuccess (200) {Object} update_discount_response Response.
  @apiSuccess (200) {Boolean} update_discount_response.success True if the request was successful
  @apiSuccess (200) {Object} update_discount_response.discount discount record
- @apiSuccess (200) {Number} update_discount_response.discount.id Id of discount
-
 =end
 
 
@@ -241,19 +224,16 @@ module API
           render :json => {success: false, message: 'Could not update product type'}
         end
       end
-=begin
 
+=begin
  @api {delete} /api/v1/discounts/:id
  @apiVersion 1.0.0
- @apiName DeleteDiscount
- @apiGroup discount
- @apiDescription Delete Discount
-
+ @apiName DestroyDiscount
+ @apiGroup Discount
+ @apiDescription Destroy Discount
  @apiParam (param) {Integer} id Id of record to delete
-
- @apiSuccess (200) {Object} delete_discount_response Response.
- @apiSuccess (200) {Boolean} delete_discount_response.success True if the request was successful
-
+ @apiSuccess (200) {Object} destroy_discount_response Response.
+ @apiSuccess (200) {Boolean} destroy_discount_response.success True if the request was successful
 =end
 
       def destroy
