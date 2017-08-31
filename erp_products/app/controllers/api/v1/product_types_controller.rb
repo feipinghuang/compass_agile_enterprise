@@ -11,6 +11,8 @@ module API
  @apiDescription Get Product Types
 
  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+ @apiParam (query) {Integer} [start] Start to for paging, defaults to 0
+ @apiParam (query) {Integer} [limit] Limit to for paging, defaults to 25
  @apiParam (query) {String} [query_filter] JSON string of data to filter by
  @apiParam (query) {String} [context] JSON string of data in regards to the context the api is being called, {"view": "mobile"}
  @apiParam (query) {String} [query] String to query the ProductTypes by
@@ -72,14 +74,14 @@ module API
 
         if context[:view]
           if context[:view] == 'mobile'
-            render :json => {success: true,
-                             total_count: total_count,
-                             product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
+            render json: {success: true,
+                          total_count: total_count,
+                          product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
           end
         else
-          render :json => {success: true,
-                           total_count: total_count,
-                           product_types: product_types.collect { |product_type| product_type.to_data_hash }}
+          render json: {success: true,
+                        total_count: total_count,
+                        product_types: product_types.collect { |product_type| product_type.to_data_hash }}
         end
 
       end
@@ -104,8 +106,8 @@ module API
       def show
         product_type = ProductType.find(params[:id])
 
-        render :json => {success: true,
-                         product_type: product_type.to_data_hash}
+        render json: {success: true,
+                      product_type: product_type.to_data_hash}
       end
 
 =begin
@@ -118,7 +120,8 @@ module API
 
  @apiParam (body) {String} description Description
  @apiParam (body) {String} sku SKU to set
- @apiParam (body) {String} unit_of_masurement Internal Identifier of UnitOfMeasurement
+ @apiParam (body) {String} internal_identifier Internal Identifier to set
+ @apiParam (body) {String} unit_of_measurement Internal Identifier of UnitOfMeasurement
  @apiParam (body) {String} [comment] Comment to set
  @apiParam (body) {String} [party_role] RoleType Internal Identifier to set for the passed party
  @apiParam (body) {Number} [party_id] Id of Party to associate to this ProductType, used to associate a Vendor to a ProductType for example
@@ -136,6 +139,7 @@ module API
             product_type = ProductType.new
             product_type.description = params[:description]
             product_type.sku = params[:sku]
+            product_type.internal_identifier = params[:internal_identifier]
             product_type.unit_of_measurement_id = UnitOfMeasurement.iid(params[:unit_of_measurement])
             product_type.comment = params[:comment]
 
@@ -157,7 +161,6 @@ module API
               product_type_party_role.save
             end
 
-
             render :json => {success: true,
                              product_type: product_type.to_data_hash}
           end
@@ -172,7 +175,7 @@ module API
           # email error
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render :json => {success: false, message: 'Could not create product type'}
+          render json: {success: false, message: 'Could not create ProductType'}
         end
       end
 
@@ -187,7 +190,8 @@ module API
  @apiParam (query) {Integer} id Id of ProductType
  @apiParam (body) {String} [description] Description
  @apiParam (body) {String} [sku] SKU to set
- @apiParam (body) {String} [unit_of_masurement] Internal Identifier of UnitOfMeasurement
+ @apiParam (body) {String} [internal_identifier] Internal Identifier to set
+ @apiParam (body) {String} [unit_of_measurement] Internal Identifier of UnitOfMeasurement
  @apiParam (body) {String} [comment] Comment to set
 
  @apiSuccess (200) {Object} update_product_type_response Response.
@@ -208,6 +212,10 @@ module API
 
             if params[:sku]
               product_type.sku = params[:sku]
+            end
+
+            if params[:internal_identifier]
+              product_type.internal_identifier = params[:internal_identifier]
             end
 
             if params[:unit_of_measurement]
@@ -236,7 +244,7 @@ module API
           # email error
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
-          render :json => {success: false, message: 'Could not update product type'}
+          render json: {success: false, message: 'Could not update ProductType'}
         end
       end
 
@@ -258,7 +266,7 @@ module API
       def destroy
         ProductType.find(params[:id]).destroy
 
-        render :json => {:success => true}
+        render json: {:success => true}
       end
 
     end # ProductTypesController

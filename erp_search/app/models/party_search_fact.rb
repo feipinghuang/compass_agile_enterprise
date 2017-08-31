@@ -51,6 +51,8 @@ if ErpSearch::Engine::USE_PARTY_SEARCH_FACTS
     end
 
     def update_search_fact(party)
+      home_address = party.find_contact_mechanism_with_purpose(PostalAddress, ContactPurpose.iid('home'))
+
       self.update_attributes(
           :party_id => party.id,
           :eid => party.enterprise_identifier,
@@ -65,12 +67,12 @@ if ErpSearch::Engine::USE_PARTY_SEARCH_FACTS
           :individual_ssn => (party.business_party.ssn_last_four rescue ''),
           :party_phone_number => (party.personal_phone_number.phone_number rescue ''),
           :party_email_address => (party.personal_email_address.email_address rescue ''),
-          :party_address_1 => (party.home_postal_address.address_line_1 rescue ''),
-          :party_address_2 => (party.home_postal_address.address_line_2 rescue ''),
-          :party_primary_address_city => (party.home_postal_address.city rescue ''),
-          :party_primary_address_state => (party.home_postal_address.state rescue ''),
-          :party_primary_address_zip => (party.home_postal_address.zip rescue ''),
-          :party_primary_address_country => (party.home_postal_address.country rescue ''),
+          :party_address_1 => (home_address.address_line_1 rescue ''),
+          :party_address_2 => (home_address.address_line_2 rescue ''),
+          :party_primary_address_city => (home_addresscity rescue ''),
+          :party_primary_address_state => (home_address.state rescue ''),
+          :party_primary_address_zip => (home_address.zip rescue ''),
+          :party_primary_address_country => (home_address.country rescue ''),
           :user_enabled => (party.user.enabled rescue false),
           :user_type => (party.user.attributes['type'] rescue '')
           )

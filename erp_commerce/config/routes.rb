@@ -7,6 +7,12 @@ Rails.application.routes.draw do
         resources :bank_accounts, defaults: {:format => 'json'}
       end
 
+      resources :pricing_plans, defaults: {:format => 'json'} do
+        resources :pricing_plan_assignments, defaults: {:format => 'json'}
+      end
+
+      resources :pricing_plan_assignments, defaults: {:format => 'json'}
+
     end
   end
 end

@@ -208,7 +208,10 @@ module RailsDbAdmin
           begin
             path = File.join(@file_support.root, params[:node])
             content = params[:content]
-            @file_support.update_file(path, content)
+
+            file_asset = get_report_file(path)
+            file_asset.update_contents!(content)
+
             nodes = params[:node].split('/')
             if nodes.last == 'base.html.erb'
               report = Report.iid(nodes[nodes.index("compass_ae_reports") + 1])

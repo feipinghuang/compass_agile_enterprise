@@ -9,8 +9,12 @@ module API
   @apiName GetCreditCards
   @apiGroup CreditCard
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} credit_cards CreditCard records
+  @apiParam (query) {Integer} party_id Id of party to get CreditCards for
+  
+  @apiSuccess (200) {Object} get_credit_cards_response Response
+  @apiSuccess (200) {Boolean} get_credit_cards_response.success True if the request was successful
+  @apiSuccess (200) {Object[]} get_credit_cards_response.credit_cards CreditCard records
+  @apiSuccess (200) {Number} get_credit_cards_response.credit_cards.id Id of CreditCard
 
 =end
 
@@ -23,23 +27,23 @@ module API
 
         render :json => {success: true, credit_cards: credit_cards.collect(&:to_data_hash)}
       end
-
 =begin
 
   @api {get} /api/v1/credit_cards Create
   @apiVersion 1.0.0
-  @apiName CreateCreditCards
+  @apiName CreateCreditCard
   @apiGroup CreditCard
 
-  @apiParam {String} description Description for Credit Card
-  @apiParam {String} name_on_card Name on Credit Card
-  @apiParam {Integer} exp_month Expiration Month for Credit Card
-  @apiParam {Integer} exp_year Expiration Year for Credit Card
-  @apiParam {String} credit_card_number Number of credit card, if using a token this would be the last 4
-  @apiParam {String} token Token for Credit Card
+  @apiParam (body) {String} description Description for Credit Card
+  @apiParam (body) {String} name_on_card Name on Credit Card
+  @apiParam (body) {Integer} exp_month Expiration Month for Credit Card
+  @apiParam (body) {Integer} exp_year Expiration Year for Credit Card
+  @apiParam (body) {String} credit_card_number Number of credit card, if using a token this would be the last 4
+  @apiParam (body) {String} token Token for Credit Card
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} credit_card CreditCard record
+  @apiSuccess (200) {Object} create_credit_cards_response Response
+  @apiSuccess (200) {Boolean} create_credit_cards_response.success True if the request was successful
+  @apiSuccess (200) {Object} create_credit_cards_response.credit_card newly created CreditCard record
 
 =end
 
@@ -53,7 +57,7 @@ module API
                                                                       RoleType.iid('owner')).where(internal_identifier: 'stripe').first
 
               raise "Stripe External System is not setup" if stripe_external_system.nil?
-      
+
               # we need to store the new card and then charge it
               result = CreditCard.validate_and_update({
                                                         party: party,

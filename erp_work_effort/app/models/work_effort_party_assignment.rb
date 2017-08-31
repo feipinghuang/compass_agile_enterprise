@@ -67,7 +67,7 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
       end
 
       # filter by status
-      if  filters[:work_effort_id].blank? && filters[:status].present?
+      unless filters[:status].blank?
         statement = statement.with_current_status(filters[:status].split(','))
       end
 
@@ -113,8 +113,20 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
     # or an array of WorkEffort ids
     #
     # @return [ActiveRecord::Relation]
-    def scope_by_work_effort(work_effort)
-      where(work_effort_id: work_effort)
+    def scope_by_work_effort(work_effort_ids)
+      select("assignments.requested_work_effort_id requested_work_effort_id, work_effort_party_assignments.*")
+      .joins("JOIN ( SELECT DISTINCT ON (result_work_efforts.req_work_effort_id, work_effort_party_assignments.party_id)
+                                                result_work_efforts.req_work_effort_id, work_effort_party_assignments.party_id,
+                                                result_work_efforts.req_work_effort_id requested_work_effort_id,
+                                                work_effort_party_assignments.id assignment_id
+                              FROM work_effort_party_assignments
+                              JOIN ( SELECT work_efforts.id as id, req_work_efforts.id as req_work_effort_id from work_efforts
+                                          INNER JOIN ( SELECT work_efforts.id, work_efforts.lft, work_efforts.rgt from work_efforts
+                                                                     WHERE work_efforts.id IN(#{work_effort_ids.join(',')})) as req_work_efforts
+                                          ON  work_efforts.lft >= req_work_efforts.lft
+                                          AND work_efforts.lft < req_work_efforts.rgt) as result_work_efforts
+                              ON work_effort_party_assignments.work_effort_id = result_work_efforts.id) as assignments
+                  ON work_effort_party_assignments.id = assignments.assignment_id")
     end
 
     # scope by party
@@ -154,7 +166,9 @@ class WorkEffortPartyAssignment < ActiveRecord::Base
 
     data[:status] = self.try(:current_status_application).try(:to_data_hash)
     data[:party] = self.try(:party).try(:to_data_hash)
-    data[:work_effort] = self.try(:work_effort).try(:to_data_hash)
+    work_effort_data = self.respond_to?(:requested_work_effort_id) ? WorkEffort.find(self.requested_work_effort_id) : self.try(:work_effort)
+    data[:work_effort] = work_effort_data.try(:to_data_hash)
+    data[:unique_id] = "#{self.id}#{work_effort_data.id}#{Time.now.to_i}"
 
     data
   end

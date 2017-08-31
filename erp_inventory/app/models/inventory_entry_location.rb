@@ -25,6 +25,8 @@ class InventoryEntryLocation < ActiveRecord::Base
   def to_data_hash
     data = to_hash(only: [
                      :id,
+                     :valid_from,
+                     :valid_thru,
                      :created_at,
                      :updated_at
                    ],
@@ -32,6 +34,10 @@ class InventoryEntryLocation < ActiveRecord::Base
 
     if facility
       data[:facility] = facility.to_data_hash
+    end
+
+    if inventory_entry
+      data[:inventory_entry] = inventory_entry.to_data_hash
     end
 
     data

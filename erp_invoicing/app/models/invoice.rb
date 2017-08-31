@@ -129,14 +129,14 @@ class Invoice < ActiveRecord::Base
 
           invoice_item.invoice = invoice
 
-          charged_item = line_item.inventory_entry || line_item.product_instance || line_item.product_offer || line_item.product_type 
+          charged_item = line_item.inventory_entry || line_item.product_instance || line_item.product_offer || line_item.product_type
 
           if charged_item.is_a? InventoryEntry
             invoice_item.item_description = charged_item.product_type.description
           else
             invoice_item.item_description = charged_item.description
           end
-          
+
           invoice_item.quantity = line_item.quantity
           invoice_item.unit_price = line_item.sold_price
           invoice_item.amount = line_item.total_amount
@@ -482,11 +482,11 @@ class Invoice < ActiveRecord::Base
         .where('external_systems.internal_identifier' => 'stripe').first
 
         if payment_method == 'credit' && token
+          customer = Party.find(customer_id)
+
           if one_time_payment
             credit_card = CreditCard.new(credit_card_token: token)
-            credit_card.card_number = card_information[:card_number]
-            credit_card.expiration_month = card_information[:exp_month]
-            credit_card.expiration_year = card_information[:exp_year]
+            credit_card.credit_card_account_party_role =  CreditCardAccountPartyRole.new(party: customer)
 
             result = CreditCardAccount.new.purchase(financial_txn,
                                                     nil,
@@ -497,7 +497,6 @@ class Invoice < ActiveRecord::Base
             }, credit_card)
           else
             credit_card = nil
-            customer = Party.find(customer_id)
 
             # we need to store the new card and then charge it
             result = CreditCard.validate_and_update({

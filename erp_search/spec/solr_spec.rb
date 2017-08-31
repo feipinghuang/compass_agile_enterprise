@@ -134,7 +134,7 @@ describe 'test phone number' do
   end
   
   it 'should update correctly' do
-    phone = @party.personal_phone_number
+    phone = @party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.iid('personal'))
     phone.phone_number = '333-333-3333'
     phone.save
     
@@ -144,7 +144,7 @@ describe 'test phone number' do
   end
 
   it 'should destroy correctly' do
-    phone = @party.personal_phone_number
+    phone = @party.find_contact_mechanism_with_purpose(PhoneNumber, ContactPurpose.iid('personal'))
     phone.destroy
     
     PartySearchFact.search do
@@ -179,7 +179,7 @@ describe 'test email address' do
   end
   
   it 'should update correctly' do
-    email = @party.personal_email_address
+    email = @party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.iid('personal'))
     email.email_address = 'updated@email.com'
     email.save
     
@@ -189,7 +189,7 @@ describe 'test email address' do
   end
 
   it 'should destroy correctly' do
-    email = @party.personal_email_address
+    email = @party.find_contact_mechanism_with_purpose(EmailAddress, ContactPurpose.iid('personal'))
     email.destroy
     
     PartySearchFact.search do
@@ -234,7 +234,7 @@ describe 'test postal address' do
   end
   
   it 'should update correctly' do
-    address = @party.home_postal_address
+    address = @party.find_contact_mechanism_with_purpose(PostalAddress, ContactPurpose.iid('home'))
     address.address_line_1 = '1 Orange Ave'
     address.save
     
@@ -244,7 +244,7 @@ describe 'test postal address' do
   end
 
   it 'should destroy correctly' do
-    address = @party.home_postal_address
+    address = @party.find_contact_mechanism_with_purpose(PostalAddress, ContactPurpose.iid('home'))
     address.destroy
     
     PartySearchFact.search do

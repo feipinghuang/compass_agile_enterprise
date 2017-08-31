@@ -277,12 +277,19 @@ class FileAsset < ActiveRecord::Base
   end
 
   def update_contents!(contents)
+    _content_type = self.data_content_type
+    _data_file_name = self.name
+
     self.data = contents
 
     # update data_file_name as it sets it to string.io
-    self.update_attribute(:data_file_name, self.name)
+    self.update_attribute(:data_file_name, _data_file_name)
+    # update data_content_type as it sets it to text/plain
+    self.update_attribute(:data_content_type, _content_type)
 
     self.save!
+
+    self.data.reprocess!
   end
 
   def rename!(new_name)
@@ -405,7 +412,9 @@ class FileAsset < ActiveRecord::Base
     unless @type.nil?
       klass = @type.constantize
       content_type = klass == Image ? "image/#{File.extname(@name).gsub(/^\.+/, '')}" : klass.content_type
-      self.data.instance_write(:content_type, content_type)
+
+      # update data_content_type as it sets it to text/plain
+      self.update_attribute(:data_content_type, content_type)
     end
   end
 
