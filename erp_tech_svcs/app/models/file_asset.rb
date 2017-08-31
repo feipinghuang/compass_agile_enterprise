@@ -413,8 +413,7 @@ class FileAsset < ActiveRecord::Base
       klass = @type.constantize
       content_type = klass == Image ? "image/#{File.extname(@name).gsub(/^\.+/, '')}" : klass.content_type
 
-      # update data_content_type as it sets it to text/plain
-      self.update_attribute(:data_content_type, content_type)
+      self.data.instance_write(:content_type, content_type)
     end
   end
 
