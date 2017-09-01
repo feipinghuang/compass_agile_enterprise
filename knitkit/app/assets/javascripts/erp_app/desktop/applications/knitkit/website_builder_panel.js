@@ -812,7 +812,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     // store widget render statement barring <%= %> in its parent data arribute
                                     // we leave out the <%= %> to prevent it from getting evalauated when it renders
                                     // in the builder view.
-                                    dropComponent.parent().attr('data-widget-statement', content.match(/<%=(((.|[\s\S])*?))%>/)[1]);
+                                    dropComponent.parent().attr('data-widget-statement', content.match(/<%=(((.|[\s\S])*?))%>/)[1].replace('"', "'"));
                                     dropComponent.parent().wrap('<div class="container"><div class="row"><div class="col-md-12"></div></div></div>')
 
                                     // save the page
