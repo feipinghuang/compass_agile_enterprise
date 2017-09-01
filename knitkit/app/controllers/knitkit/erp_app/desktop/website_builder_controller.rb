@@ -157,7 +157,8 @@ module Knitkit
               body_html = params[:body_html]
               html_content = if body_html.present?
                                builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(body_html)
-                               ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(builder_html)
+                               source = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(builder_html)
+                               ::HtmlBeautifier.beautify(source) rescue source 
                              else
                                website_section_content.website_html
                              end 
