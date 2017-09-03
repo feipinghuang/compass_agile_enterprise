@@ -20,8 +20,6 @@ Spork.prefork do
   require File.expand_path(DUMMY_APP_ROOT + "/config/environment.rb",  __FILE__)
 
   ActiveRecord::Base.configurations = YAML::load(IO.read(DUMMY_APP_ROOT + "/config/database.yml"))
-  `rake db:drop RAILS_ENV=spec`
-  `rake db:create RAILS_ENV=spec`
   ActiveRecord::Base.establish_connection(ENV["DB"] || "spec")
   ActiveRecord::Migration.verbose = false
 
@@ -30,34 +28,38 @@ Spork.prefork do
   Dir[File.join(ENGINE_RAILS_ROOT, "spec/support/**/*.rb")].each {|f| require f }
 
   require 'rspec/rails'
-  require 'erp_dev_svcs'
 
   RSpec.configure do |config|
     config.use_transactional_fixtures = true
     config.include FactoryGirl::Syntax::Methods
-    config.include Sorcery::TestHelpers::Rails
-    config.include ErpDevSvcs
-    config.include ErpDevSvcs::ControllerSupport, :type => :controller
   end
-end
 
-Spork.each_run do
   #We have to execute the migrations from dummy app directory
   Dir.chdir DUMMY_APP_ROOT
   `rake db:drop RAILS_ENV=spec`
-  `rake db:create RAILS_ENV=spec`
+
+  puts 'Cleaning out migrations'
+  `rm -R db/migrate/*`
+  `rm -R db/data_migrations/*`
+
   Dir.chdir ENGINE_RAILS_ROOT
 
   #We have to execute the migratiapp:compass_ae:install:data_migrationsons from dummy app directory
   Dir.chdir DUMMY_APP_ROOT
-  
+
+  puts 'Running migrations'
   `rake compass_ae:install:migrations RAILS_ENV=spec`
   `rake compass_ae:install:data_migrations RAILS_ENV=spec`
   `rake db:migrate RAILS_ENV=spec`
   `rake db:migrate_data RAILS_ENV=spec`
-  Dir.chdir ENGINE_RAILS_ROOT
 
-  ErpDevSvcs::FactorySupport.load_engine_factories
+  Dir.chdir ENGINE_RAILS_ROOT
+end
+
+Spork.each_run do
+  Rails::Application::Railties.engines.map{|p| p.config.root.to_s}.each do |engine_dir|
+    Dir.glob(File.join(engine_dir,'spec','factories','*')) {|file| require file} if File.directory? File.join(engine_dir,'spec','factories')
+  end
 
   require 'simplecov'
   SimpleCov.start 'rails' do

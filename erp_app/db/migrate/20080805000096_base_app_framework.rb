@@ -231,32 +231,21 @@ class BaseAppFramework < ActiveRecord::Migration
       add_index :configuration_items_configuration_options, :configuration_option_id, :name => 'conf_item_conf_opt_id_opt_idx'
     end
 
-    unless table_exists?(:job_trackers)
-      create_table :job_trackers do |t|
-        t.string :job_name
-        t.string :job_klass
-        t.string :run_time
-        t.datetime :last_run_at
-        t.datetime :next_run_at
-      end
-    end
-
   end
 
   def self.down
     [
-        :preferences, :preference_types,
-        :preference_options, :preference_options_preference_types,
-        :valid_preference_types, :user_preferences,
-        :app_containers, :app_containers_applications,
-        :applications_widgets, :widgets, :tree_menu_node_defs,
-        :applications, :applications_desktops,
-        :configurations, :configuration_items,
-        :configuration_item_types, :configuration_options,
-        :configuration_item_types_configuration_options,
-        :configuration_items_configuration_options, :configured_items,
-        :configuration_item_types_configurations,
-        :job_trackers
+      :preferences, :preference_types,
+      :preference_options, :preference_options_preference_types,
+      :valid_preference_types, :user_preferences,
+      :app_containers, :app_containers_applications,
+      :applications_widgets, :widgets, :tree_menu_node_defs,
+      :applications, :applications_desktops,
+      :configurations, :configuration_items,
+      :configuration_item_types, :configuration_options,
+      :configuration_item_types_configuration_options,
+      :configuration_items_configuration_options, :configured_items,
+      :configuration_item_types_configurations
     ].each do |tbl|
       if table_exists?(tbl)
         drop_table(tbl)
