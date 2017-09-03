@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'wisper', '1.6.0'
   s.add_dependency "acts_as_list", "~> 0.9.5"
 
+  s.add_development_dependency "test-unit", "~> 3.2.5"
   s.add_development_dependency "cucumber-rails", "~> 1.3"
   s.add_development_dependency "database_cleaner", '~> 0'
   s.add_development_dependency "factory_girl_rails", "~> 4.1"

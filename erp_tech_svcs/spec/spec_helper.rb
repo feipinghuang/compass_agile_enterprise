@@ -15,13 +15,15 @@ Spork.prefork do
   require 'active_record'
   require 'action_controller'
 
-  # Configure Rails Envinronment
+  # Configure Rails Environnment
   ENV["RAILS_ENV"] = "spec"
   require File.expand_path(DUMMY_APP_ROOT + "/config/environment.rb",  __FILE__)
 
   ActiveRecord::Base.configurations = YAML::load(IO.read(DUMMY_APP_ROOT + "/config/database.yml"))
   ActiveRecord::Base.establish_connection(ENV["DB"] || "spec")
   ActiveRecord::Migration.verbose = false
+
+  Rails.backtrace_cleaner.remove_silencers!
 
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
@@ -30,7 +32,10 @@ Spork.prefork do
   require 'rspec/rails'
 
   RSpec.configure do |config|
+    config.mock_with :rspec
     config.use_transactional_fixtures = true
+    config.infer_base_class_for_anonymous_controllers = false
+    config.order = "random"
     config.include FactoryGirl::Syntax::Methods
   end
 
@@ -57,9 +62,7 @@ Spork.prefork do
 end
 
 Spork.each_run do
-  Rails::Application::Railties.engines.map{|p| p.config.root.to_s}.each do |engine_dir|
-    Dir.glob(File.join(engine_dir,'spec','factories','*')) {|file| require file} if File.directory? File.join(engine_dir,'spec','factories')
-  end
+  ErpDevSvcs::FactorySupport.load_engine_factories
 
   require 'simplecov'
   SimpleCov.start 'rails' do

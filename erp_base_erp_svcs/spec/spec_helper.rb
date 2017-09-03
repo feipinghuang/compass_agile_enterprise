@@ -23,6 +23,8 @@ Spork.prefork do
   ActiveRecord::Base.establish_connection(ENV["DB"] || "spec")
   ActiveRecord::Migration.verbose = false
 
+  Rails.backtrace_cleaner.remove_silencers!
+
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
   Dir[File.join(ENGINE_RAILS_ROOT, "spec/support/**/*.rb")].each {|f| require f }
@@ -30,7 +32,10 @@ Spork.prefork do
   require 'rspec/rails'
 
   RSpec.configure do |config|
+    config.mock_with :rspec
     config.use_transactional_fixtures = true
+    config.infer_base_class_for_anonymous_controllers = false
+    config.order = "random"
     config.include FactoryGirl::Syntax::Methods
   end
 
@@ -65,8 +70,9 @@ Spork.each_run do
   SimpleCov.start 'rails' do
     add_filter "spec/"
   end
-  #Need to explictly load the files in lib/ until we figure out how to
-  #get rails to autoload them for spec like it used to...
+
+  # Need to explictly load the files in lib/ until we figure out how to
+  # get rails to autoload them for spec like it used to...
   Dir[File.join(ENGINE_RAILS_ROOT, "lib/**/*.rb")].each {|f| load f}
   Dir[File.join(ENGINE_RAILS_ROOT, "app/models/extensions/**/*.rb")].each {|f| load f}
 end
