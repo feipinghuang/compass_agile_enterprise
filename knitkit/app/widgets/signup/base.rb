@@ -52,13 +52,15 @@ module Widgets
               party = @user.party
 
               # add party roles to party if present
-              unless params[:party_roles].blank?
+              if params[:party_roles].blank?
+                party.add_role_type('customer')
+              else
                 params[:party_roles].split(',').each do |role_type|
                   party.add_role_type(role_type)
                 end
-
-                party.save
               end
+
+              party.save
 
               # associate the new party to the dba_organization of the current website
               @dba_party = @website.website_party_roles.where('role_type_id' => RoleType.iid('dba_org')).first.party
