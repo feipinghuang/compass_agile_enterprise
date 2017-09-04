@@ -338,7 +338,7 @@ class WorkEffort < ActiveRecord::Base
   #
   # @return [Boolean] true if completed
   def completed?
-    finished_at.nil? ? false : true
+    end_at.nil? ? false : true
   end
 
   # return true if this effort has been completed, false otherwise
@@ -367,7 +367,7 @@ class WorkEffort < ActiveRecord::Base
   # start work effort with initial_status (string)
   #
   # @param initial_status [String] status to start at
-  def start(initial_status='')
+  def start!(initial_status='')
     effort = self
     unless self.descendants.flatten!.nil?
       children = self.descendants.flatten
@@ -381,6 +381,33 @@ class WorkEffort < ActiveRecord::Base
     else
       raise 'Effort Already Started'
     end
+  end
+
+  # completes work effort by setting finished at to Time.now and completes Time Entries
+  #
+  def complete!
+    self.end_at = Time.now
+    self.save
+
+    self.work_effort_party_assignments.each do |assignment|
+      assignment.current_status = @@task_resource_status_complete_iid
+    end
+
+    # close all open time entries
+    time_entries.open_entries.each do |time_entry|
+      time_entry.thru_datetime = Time.now
+
+      time_entry.calculate_regular_hours_in_seconds!
+
+      time_entry.update_task_assignment_status(@@task_resource_status_complete_iid)
+    end
+
+    # apply any inventory_txns related to this task
+    self.inventory_txns.each do |inventory_txn|
+      inventory_txn.apply!
+    end
+
+    update_parent_status!
   end
 
   # set current status of entity.
@@ -645,34 +672,6 @@ class WorkEffort < ActiveRecord::Base
   end
 
   private
-
-  # completes work effort by setting finished at to Time.now and calculates
-  # actual_completion_time in minutes
-  #
-  def complete!
-    self.end_at = Time.now
-    self.save
-
-    self.work_effort_party_assignments.each do |assignment|
-      assignment.current_status = @@task_resource_status_complete_iid
-    end
-
-    # close all open time entries
-    time_entries.open_entries.each do |time_entry|
-      time_entry.thru_datetime = Time.now
-
-      time_entry.calculate_regular_hours_in_seconds!
-
-      time_entry.update_task_assignment_status(@@task_resource_status_complete_iid)
-    end
-
-    # apply any inventory_txns related to this task
-    self.inventory_txns.each do |inventory_txn|
-      inventory_txn.apply!
-    end
-
-    update_parent_status!
-  end
 
   # Update the parent statues based on it's child nodes
   #

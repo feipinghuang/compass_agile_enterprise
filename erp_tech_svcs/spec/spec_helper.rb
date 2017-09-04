@@ -30,6 +30,7 @@ Spork.prefork do
   Dir[File.join(ENGINE_RAILS_ROOT, "spec/support/**/*.rb")].each {|f| require f }
 
   require 'rspec/rails'
+  require 'erp_dev_svcs'
 
   RSpec.configure do |config|
     config.mock_with :rspec
