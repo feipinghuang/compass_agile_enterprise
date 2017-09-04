@@ -10,11 +10,11 @@ describe Invoice do
       :mothers_maiden_name => 'William'
     )
     @invoice = Invoice.create(:invoice_number => 'I123456789A',
-      :invoice_date => '2012-01-15',
-      :due_date => '2012-05-15',
-      :calculate_balance_strategy_type => CalculateBalanceStrategyType.find_by_internal_identifier('invoice_items_and_payments'),
-      :description => 'Invoice 2011-12-01 - 2011-12-31')
-    @invoice_item = InvoiceItem.create(:amount => 29.99, :quantity => 25, :item_description => '7619851 BICEP II MAGNUM 2X2.5GA')
+                              :invoice_date => '2012-01-15',
+                              :due_date => '2012-05-15',
+                              :calculate_balance_strategy_type => CalculateBalanceStrategyType.find_by_internal_identifier('invoice_items_and_payments'),
+                              :description => 'Invoice 2011-12-01 - 2011-12-31')
+    @invoice_item = InvoiceItem.create(:unit_price => 29.99, :quantity => 25, :item_description => '7619851 BICEP II MAGNUM 2X2.5GA')
     @invoice.items << @invoice_item
     @invoice.save
   end
@@ -39,11 +39,11 @@ describe Invoice do
   end
 
   it "should calculate payment_due from its items" do
-    @invoice.payment_due.should eq 749.75
+    @invoice.payment_due.to_f.should eq 749.75
   end
 
   it "should calculate balance from its items and payments" do
-    @invoice.calculate_balance.should eq 749.75
+    @invoice.calculate_balance.to_f.should eq 749.75
   end
 
   it "should allow to check for payments by status" do
