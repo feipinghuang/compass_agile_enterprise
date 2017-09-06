@@ -11,7 +11,7 @@ describe WorkEffort do
 
   # The choice to test AuditLog is arbitrary
   it "a model can acts_as_work_effort" do
-    AuditLog.class_eval do 
+    AuditLog.class_eval do
       acts_as_work_effort
     end
 
@@ -44,17 +44,16 @@ describe WorkEffort do
     we.should be_persisted
 
     # test starting work effort
-    we.start('test')
-    we.started_at.should_not be nil
-    we.finished_at.should be nil
+    we.start!('test')
+    we.start_at.should_not be nil
+    we.end_at.should be nil
     we.status.should eq 'test'
     we.started?.should be true
     we.finished?.should be false
 
     # test completing work effort
-    we.complete
-    we.finished_at.should_not be nil
-    we.actual_completion_time.should_not be nil
+    we.complete!
+    we.end_at.should_not be nil
     we.finished?.should be true
   end
 end

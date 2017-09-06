@@ -24,6 +24,8 @@ Spork.prefork do
   ActiveRecord::Base.establish_connection(ENV["DB"] || "spec")
   ActiveRecord::Migration.verbose = false
 
+  Rails.backtrace_cleaner.remove_silencers!
+
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.
   Dir[File.join(ENGINE_RAILS_ROOT, "spec/support/**/*.rb")].each {|f| require f }
@@ -32,31 +34,34 @@ Spork.prefork do
   require 'erp_dev_svcs'
 
   RSpec.configure do |config|
+    config.mock_with :rspec
     config.use_transactional_fixtures = true
     config.include FactoryGirl::Syntax::Methods
-    config.include ErpDevSvcs
-    config.include ErpDevSvcs::ControllerSupport, :type => :controller
   end
-end
 
-Spork.each_run do
   #We have to execute the migrations from dummy app directory
   Dir.chdir DUMMY_APP_ROOT
   `rake db:drop RAILS_ENV=spec`
+
+  puts 'Cleaning out migrations'
+  `rm -R db/migrate/*`
+  `rm -R db/data_migrations/*`
+
   Dir.chdir ENGINE_RAILS_ROOT
 
   #We have to execute the migratiapp:compass_ae:install:data_migrationsons from dummy app directory
   Dir.chdir DUMMY_APP_ROOT
-  
-  
+
+  puts 'Running migrations'
   `rake compass_ae:install:migrations RAILS_ENV=spec`
   `rake compass_ae:install:data_migrations RAILS_ENV=spec`
   `rake db:migrate RAILS_ENV=spec`
   `rake db:migrate_data RAILS_ENV=spec`
+
   Dir.chdir ENGINE_RAILS_ROOT
+end
 
-  ErpDevSvcs::FactorySupport.load_engine_factories
-
+Spork.each_run do
   require 'simplecov'
   SimpleCov.start 'rails' do
     add_filter "spec/"

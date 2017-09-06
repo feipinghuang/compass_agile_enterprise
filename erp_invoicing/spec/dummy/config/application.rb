@@ -3,15 +3,6 @@ require File.expand_path('../boot', __FILE__)
 require 'rails/all'
 
 Bundler.require
-require "erp_base_erp_svcs"
-require "erp_app"
-require "erp_txns_and_accts"
-require "erp_agreements"
-require "erp_commerce"
-require "erp_products"
-require "erp_orders"
-require "erp_work_effort"
-require "erp_invoicing"
 
 module Dummy
   class Application < Rails::Application
@@ -50,7 +41,6 @@ module Dummy
     # This will create an empty whitelist of attributes available for mass-assignment for all models
     # in your app. As such, your models will need to explicitly whitelist or blacklist accessible
     # parameters by using an attr_accessible or attr_protected declaration.
-    config.active_record.whitelist_attributes = true    
+    config.active_record.whitelist_attributes = true
   end
 end
-

@@ -28,9 +28,13 @@ describe FileAsset do
     end
 
     it "should have method to get all valid extensions for all subclasses" do
-      FileAsset.all_valid_extensions.should eq [".jpg", ".JPG", ".jpeg", ".JPEG", ".gif", ".GIF", ".png", ".PNG", ".ico", ".ICO", 
-                                                ".bmp", ".BMP", ".tif", ".tiff", ".TIF", ".TIFF", ".txt", ".TXT", ".text", ".swf", ".SWF", 
-                                                ".js", ".JS", ".css", ".CSS", ".erb", ".haml", ".liquid", ".builder", ".html", ".HTML", ".xml", ".XML", ".pdf", ".PDF"]
+      FileAsset.all_valid_extensions.should eq [".jpg", ".JPG", ".jpeg", ".JPEG", ".gif", ".GIF", ".png", ".PNG",
+                                                ".ico", ".ICO", ".bmp", ".BMP", ".tif", ".tiff", ".TIF",
+                                                ".TIFF", ".txt", ".TXT", ".text", ".swf", ".SWF", ".mp3",
+                                                ".wav", ".js", ".JS", ".css", ".CSS", ".erb", ".haml", ".liquid",
+                                                ".builder", ".html", ".HTML", ".xml", ".XML", ".doc", ".dot", ".docx",
+                                                ".xls", ".xlt", ".xla", ".xlsx", ".ppt", ".pot", ".pps", ".ppa",
+                                                ".pptx", ".pdf", ".PDF"]
     end
 
     it "should be able to lookup subclass based on extension" do
@@ -59,7 +63,7 @@ describe FileAsset do
     end
 
     it "should allow you to move a file" do
-      new_path = File.join('move_test_tmp')
+      new_path = File.join(Rails.root, 'move_test_tmp')
 
       File.exists?(@base_path).should eq true
       result, message = @file_asset.move(new_path)
@@ -83,5 +87,5 @@ describe FileAsset do
     end
 
   end
-  
+
 end

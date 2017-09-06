@@ -248,8 +248,8 @@ module RailsDbAdmin
               end
 
               send_data csv_data,
-                  filename: 'query_results.csv',
-                  type: 'application/csv'
+                filename: 'query_results.csv',
+                type: 'application/csv'
             else
               send_data 'Error executing sql',
                 filename: 'query_results.error',

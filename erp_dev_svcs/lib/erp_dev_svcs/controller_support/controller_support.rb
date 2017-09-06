@@ -17,22 +17,22 @@ module ErpDevSvcs
 
 
       @pref_opt2 = FactoryGirl.create(:preference_option,
-                     :description         => "Blue",
-                     :internal_identifier => "blue_extjs_theme",
-                     :value               => "ext-all.css")
+                                      :description         => "Blue",
+                                      :internal_identifier => "blue_extjs_theme",
+                                      :value               => "ext-all.css")
 
       @pref_type2 = FactoryGirl.create(:preference_type,
-                                   :description         => "Theme",
-                                   :internal_identifier => "extjs_theme")
+                                       :description         => "Theme",
+                                       :internal_identifier => "extjs_theme")
 
       #@request.env["devise.mapping"] = Devise.mappings[User.find(1)]
       salt = 'asdasdastr4325234324sdfds'
       @user = FactoryGirl.create(:user, :party => @party,
-        :salt => salt,
-        :crypted_password => Sorcery::CryptoProviders::BCrypt.encrypt("password", salt),
-        :activation_state => 'active')
+                                 :salt => salt,
+                                 :crypted_password => Sorcery::CryptoProviders::BCrypt.encrypt("password", salt),
+                                 :activation_state => 'active')
       login_user(@user)
-      
+
       @user
     end
 
@@ -40,5 +40,6 @@ module ErpDevSvcs
       @user = User.find_by_username('admin')
       login_user(@user)
     end
+
   end
 end

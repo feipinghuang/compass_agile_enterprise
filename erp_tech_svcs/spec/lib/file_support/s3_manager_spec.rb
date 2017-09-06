@@ -48,9 +48,12 @@ describe ErpTechSvcs::FileSupport::S3Manager do
     result, message, is_directory = @file_support.delete_file('test_folder')
     result.should eq false
     message.should eq ErpTechSvcs::FileSupport::Manager::FOLDER_IS_NOT_EMPTY
+    is_directory.should eq true
+
     result, message, is_directory = @file_support.delete_file(File.join('test_folder','test_create_file.txt'))
     result.should eq true
     is_directory.should eq false
+
     result, message, is_directory = @file_support.delete_file('test_folder')
     result.should eq true
   end

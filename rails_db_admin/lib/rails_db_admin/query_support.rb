@@ -26,7 +26,7 @@ module RailsDbAdmin
             values << HashWithIndifferentAccess.new(row)
           end
         end
-      elsif @connection.class == ActiveRecord::ConnectionAdapters::Mysql2Adapter
+      elsif Object.class_exists?('ActiveRecord::ConnectionAdapters::Mysql2Adapter') && @connection.class == ActiveRecord::ConnectionAdapters::Mysql2Adapter
         columns = result.fields
 
         if result && result.count > 0
@@ -37,9 +37,11 @@ module RailsDbAdmin
           end
         end
       else
-        columns = result[0].keys
-        result.each do |row|
-          values << HashWithIndifferentAccess.new(row)
+        if result && result.count > 0
+          columns = result[0].keys
+          result.each do |row|
+            values << HashWithIndifferentAccess.new(row)
+          end
         end
       end
 

@@ -3,26 +3,26 @@ require 'spec_helper'
 describe Group do
 
   before(:all) do
+    @role = SecurityRole.create(:description => "Test Role", :internal_identifier => 'test role')
     @group = Group.create(:description => "Test Group")
     @user = FactoryGirl.create(:user)
+    @capability = FileAsset.add_capability('upload')
   end
 
   it "should allow you to add and remove roles" do
-    role = SecurityRole.create(:description => "Test Role", :internal_identifier => 'test role')
-    @group.has_role?(role).should eq false
-    @group.add_role(role)
-    @group.has_role?(role).should eq true
-    @group.remove_role(role)
-    @group.has_role?(role).should eq false
+    @group.has_role?(@role).should eq false
+    @group.add_role(@role)
+    @group.has_role?(@role).should eq true
+    @group.remove_role(@role)
+    @group.has_role?(@role).should eq false
   end
 
   it "should allow you to add and remove capabilities" do
-    c = FileAsset.add_capability('upload')
-    @group.capabilities.include?(c).should eq false
-    @group.add_capability(c)
-    @group.capabilities.include?(c).should eq true
-    @group.remove_capability(c)
-    @group.capabilities.include?(c).should eq false
+    @group.capabilities.include?(@capability).should eq false
+    @group.add_capability(@capability)
+    @group.capabilities.include?(@capability).should eq true
+    @group.remove_capability(@capability)
+    @group.capabilities.include?(@capability).should eq false
   end
 
   it "should allow you to add and remove users" do
@@ -34,8 +34,10 @@ describe Group do
   end
 
   after(:all) do
-    User.destroy_all
-    SecurityRole.destroy_all
+    @group.destroy
+    @user.destroy
+    @role.destroy
+    @capability.destroy
   end
 
 end

@@ -28,26 +28,28 @@ end
 
 ErpApp::Engine.routes.draw do
 
-  ##########################
-  #ErpApp general routes
-  ##########################
+  #
+  # ErpApp general routes
+  #
+
   match '/application/:action' => "application"
   match '/login(/:application)' => "login#index"
   match '/reset_password' => "login#reset_password"
   match '/update_password' => "login#update_password"
   match '/public/:action' => "public"
 
-  #############################
-  #Shared Application Routes
-  #############################
+  #
+  # Shared Application Routes
+  #
+
   get '/shared/notes(/:action)' => "shared/notes"
   post '/shared/notes' => "shared/notes#create"
   delete '/shared/notes/:id' => "shared/notes#destroy"
   match '/shared/audit_log/:action' => 'shared/audit_log'
 
-  #############################
-  #Organizer Application Routes
-  #############################
+  #
+  # Organizer Application Routes
+  #
 
   namespace :organizer do
 
@@ -78,17 +80,16 @@ ErpApp::Engine.routes.draw do
       end
 
       resources :users
-
-      match '/relationship(/:action(/:id))' => "relationship"
     end
 
   end
 
   match '/admin' => "login#index", :defaults => {:application => "desktop"}
 
-  ############################
-  #Desktop Application Routes
-  ############################
+  #
+  # Desktop Application Routes
+  #
+
   namespace :desktop do
     match '/' => "base#index"
 

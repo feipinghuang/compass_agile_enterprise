@@ -6,6 +6,8 @@ describe Application do
   end
 
   it "can be saved successfully" do
-    Application.create(:javascript_class_name => 'test', :internal_identifier => 'test').should be_persisted
+    Application.create(:internal_identifier => 'test').should be_persisted
+
+    Application.find_by_internal_identifier('test').destroy
   end
 end
