@@ -25,7 +25,9 @@ Gem::Specification.new do |s|
   s.add_dependency('has_many_polymorphic','~> 2.0')
   s.add_dependency('uuid','2.3.5')
   s.add_dependency 'wisper', '1.6.0'
+  s.add_dependency "acts_as_list", "~> 0.9.5"
 
+  s.add_development_dependency "test-unit", "~> 3.2.5"
   s.add_development_dependency "cucumber-rails", "~> 1.3"
   s.add_development_dependency "database_cleaner", '~> 0'
   s.add_development_dependency "factory_girl_rails", "~> 4.1"
@@ -34,6 +36,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency "spork", "~> 0.9"
   s.add_development_dependency "sqlite3", "~> 1.3"
   s.add_development_dependency "watchr", "~> 0.7"
-  s.add_dependency "acts_as_list", "~> 0.9.5"
-
 end

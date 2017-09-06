@@ -3,9 +3,6 @@ require File.expand_path('../boot', __FILE__)
 require 'rails/all'
 
 Bundler.require
-require 'erp_base_erp_svcs'
-require 'erp_tech_svcs'
-require "erp_communication_events"
 
 module Dummy
   class Application < Rails::Application
@@ -40,7 +37,6 @@ module Dummy
     # Enable the asset pipeline
     config.assets.enabled = true
 
-    config.active_record.whitelist_attributes = true    
+    config.active_record.whitelist_attributes = true
   end
 end
-

@@ -111,22 +111,24 @@ class Group < ActiveRecord::Base
   # group lives on TO side of relationship
   def add_party(a_party)
     # check and see if party is already a member of this group
-    rel = get_relationship(a_party).first
-    unless rel.nil?
-      # if so, return relationship
-      return rel
-    else
+    reln = get_relationship(a_party).first
+    if reln.nil?
       # if not then build party_relationship
-      rt = RelationshipType.find_by_internal_identifier('group_membership')
-      pr = PartyRelationship.new
-      pr.description = rt.description
-      pr.relationship_type = rt
-      pr.from_role = RoleType.find_by_internal_identifier('group_member')
-      pr.to_role = RoleType.find_by_internal_identifier('group')
-      pr.from_party = a_party
-      pr.to_party = self.party
-      pr.save
-      return pr
+      reln_type = RelationshipType.find_by_internal_identifier('group_membership')
+
+      party_reln = PartyRelationship.new
+      party_reln.description = reln_type.description
+      party_reln.relationship_type = reln_type
+      party_reln.from_role = RoleType.find_by_internal_identifier('group_member')
+      party_reln.to_role = RoleType.find_by_internal_identifier('group')
+      party_reln.from_party = a_party
+      party_reln.to_party = self.party
+      party_reln.save
+
+      party_reln
+    else
+      # if so, return relationship
+      reln
     end
   end
 
@@ -179,7 +181,8 @@ class Group < ActiveRecord::Base
 
   def group_member_join
     role_type = RoleType.find_by_internal_identifier('group_member')
-    "party_relationships ON party_id_from = #{self.party.id} AND party_id_to = parties.id AND role_type_id_from=#{role_type.id}"
+    "party_relationships ON party_id_to = #{self.party.id} AND party_id_from = parties.id
+     AND role_type_id_from = #{role_type.id}"
   end
 
 end

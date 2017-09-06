@@ -56,18 +56,18 @@ module RailsDbAdmin
 
           if @table_support.table_contains_column(table, :id)
             result[:columns] =
-                RailsDbAdmin::Extjs::JsonColumnBuilder.build_grid_columns(columns)
+              RailsDbAdmin::Extjs::JsonColumnBuilder.build_grid_columns(columns)
             result[:model] = table
             result[:fields] =
-                RailsDbAdmin::Extjs::JsonColumnBuilder.build_store_fields(columns)
+              RailsDbAdmin::Extjs::JsonColumnBuilder.build_store_fields(columns)
             result[:validations] = []
             result[:id_property] = "id"
           else
             result[:columns] =
-                RailsDbAdmin::Extjs::JsonColumnBuilder.build_grid_columns(columns, true)
+              RailsDbAdmin::Extjs::JsonColumnBuilder.build_grid_columns(columns, true)
             result[:model] = table
             result[:fields] =
-                RailsDbAdmin::Extjs::JsonColumnBuilder.build_store_fields(columns, true)
+              RailsDbAdmin::Extjs::JsonColumnBuilder.build_store_fields(columns, true)
             result[:validations] = []
             result[:id_property] = "fake_id"
           end
@@ -77,14 +77,14 @@ module RailsDbAdmin
 
         def table_data
           render :json => if request.get?
-                            get_table_data
-                          elsif request.post?
-                            create_table_row
-                          elsif request.put?
-                            update_table_data
-                          elsif request.delete?
-                            delete_table_row
-                          end
+          get_table_data
+          elsif request.post?
+            create_table_row
+          elsif request.put?
+            update_table_data
+          elsif request.delete?
+            delete_table_row
+          end
         end
 
         private
@@ -110,7 +110,11 @@ module RailsDbAdmin
           table = params[:table]
           params[:data].delete('id')
           record = nil
-          params[:data]["created_at"] = params[:data]["updated_at"] = Time.now
+
+          if params[:data]["created_at"].blank? &&  params[:data]["updated_at"].blank?
+            params[:data]["created_at"] = params[:data]["updated_at"] = Time.now
+          end
+
           if @table_support.primary_key?(table)
             id = @table_support.primary_key(table)
             id[1] = @table_support.insert_row(table, params[:data])

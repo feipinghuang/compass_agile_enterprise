@@ -277,7 +277,9 @@ class Party < ActiveRecord::Base
   # Callbacks
   def destroy_business_party
     if self.business_party
-      self.business_party.destroy
+      self.business_party.class.without_callback(:destroy, :after, :destroy_party) do
+        self.business_party.destroy
+      end
     end
   end
 
