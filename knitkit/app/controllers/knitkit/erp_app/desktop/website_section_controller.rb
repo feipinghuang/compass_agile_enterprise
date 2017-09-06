@@ -230,8 +230,8 @@ module Knitkit
         def available_articles_filter
           menu = []
           websites = Website.joins(:website_party_roles)
-                                  .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
-                                  .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org')).all
+          .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
+          .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org')).all
           all_articles = [{:name => 'All Articles', :id => 0}]
           orphaned_articles = [{:name => 'Orphaned Articles Only', :id => -1}]
 

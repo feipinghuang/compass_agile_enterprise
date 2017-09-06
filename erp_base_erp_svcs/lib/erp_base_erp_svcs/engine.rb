@@ -16,6 +16,13 @@ module ErpBaseErpSvcs
       app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
     end
 
+    config.generators do |g|
+      g.test_framework :rspec, :fixture => false
+      g.fixture_replacement :factory_girl, :dir => 'spec/factories'
+      g.assets false
+      g.helper false
+    end
+
     ActiveSupport.on_load(:active_record) do
       include ErpBaseErpSvcs::Extensions::ActiveRecord::IsDescribable
       include ErpBaseErpSvcs::Extensions::ActiveRecord::HasNotes

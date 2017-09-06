@@ -4,13 +4,14 @@ module Knitkit
       class WebsiteController < Knitkit::ErpApp::Desktop::AppController
         IGNORED_PARAMS = %w{action controller id}
 
-        before_filter :set_website, :only => [:build_content_tree, :export, :exporttemplate, :website_publications, :set_viewing_version,
+        before_filter :set_website, :only => [:build_content_tree, :export, :exporttemplate, :website_publications,
+                                              :set_viewing_version,
                                               :build_host_hash, :activate_publication, :publish, :update, :delete]
 
         def index
           websites = Website.joins(:website_party_roles)
-                         .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
-                         .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
+          .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
+          .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
 
           render :json => {:sites => websites.all.collect { |item| item.to_hash(:only => [:id, :name, :title, :subtitle],
                                                                                 :configuration_id => item.configurations.first.id,
@@ -27,19 +28,19 @@ module Knitkit
               end
             else
               case params[:record_type]
-                when 'WebsiteSection'
-                  website_section = WebsiteSection.find(params[:record_id])
+              when 'WebsiteSection'
+                website_section = WebsiteSection.find(params[:record_id])
 
-                  # get child sections
-                  nodes = website_section.positioned_children.map { |child| build_section_hash(child) }
+                # get child sections
+                nodes = website_section.positioned_children.map { |child| build_section_hash(child) }
 
-                  # get child articles
-                  website_section.website_section_contents.order('position').each do |website_section_content|
-                    nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
-                  end
+                # get child articles
+                website_section.website_section_contents.order('position').each do |website_section_content|
+                  nodes << build_article_hash(website_section_content, @website, website_section.is_blog?)
+                end
 
-                else
-                  raise 'Unknown Node Type'
+              else
+                raise 'Unknown Node Type'
               end
             end
           end
@@ -75,8 +76,8 @@ module Knitkit
           render :inline => "{\"success\":true, \"results\":#{published_websites.count},
                             \"totalCount\":#{@website.published_websites.count},
                             \"data\":#{published_websites.to_json(
-                     :only => [:comment, :id, :version, :created_at, :active],
-                     :methods => [:viewing, :published_by_username])} }"
+                :only => [:comment, :id, :version, :created_at, :active],
+          :methods => [:viewing, :published_by_username])} }"
         end
 
         def activate_publication

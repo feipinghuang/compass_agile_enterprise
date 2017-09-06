@@ -12,7 +12,7 @@ describe BillingAccount do
         :mothers_maiden_name => 'William'
       )
 
-      @billing_account = BillingAccount.new 
+      @billing_account = BillingAccount.new
       @billing_account.account_number = '123456789B'
       @billing_account.payment_due = 72.20
       @billing_account.balance = 72.20
@@ -24,9 +24,9 @@ describe BillingAccount do
     end
 
     it "should get balance from billing account" do
-      @billing_account.balance.should eq 72.20
+      @billing_account.balance.to_f.should eq 72.20
     end
-    
+
     it "should get due_date from financial_txn_acct" do
       @billing_account.due_date.should eq '2012-02-15'.to_date
     end
@@ -36,11 +36,11 @@ describe BillingAccount do
     end
 
     it "should get payment_due from financial_txn_acct.payment_due" do
-      @billing_account.payment_due.should eq 72.20
+      @billing_account.payment_due.to_f.should eq 72.20
     end
 
     it "should allow to get the outstanding_balance" do
-      @billing_account.outstanding_balance.should eq 72.20
+      @billing_account.outstanding_balance.to_f.should eq 72.20
     end
 
     it "should allow to check for an outstanding balance" do
@@ -54,12 +54,12 @@ describe BillingAccount do
 
     it "should allow you set payment_due with currency" do
       @billing_account.payment_due = 50.25, Currency.usd
-      @billing_account.payment_due.should eq 50.25
+      @billing_account.payment_due.to_f.should eq 50.25
     end
 
     it "should allow you set balance with currency" do
       @billing_account.balance = 50.25, Currency.usd
-      @billing_account.balance.should eq 50.25
+      @billing_account.balance.to_f.should eq 50.25
     end
 
     after(:all) do

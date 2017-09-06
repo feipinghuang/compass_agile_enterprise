@@ -312,6 +312,43 @@ class BaseTechServices < ActiveRecord::Migration
       add_index :notification_types, :internal_identifier
     end
 
+    unless table_exists?(:job_trackers)
+      create_table :job_trackers do |t|
+        t.string :job_name
+        t.string :job_klass
+        t.string :run_time
+        t.datetime :last_run_at
+        t.datetime :next_run_at
+      end
+    end
+
+    # tags
+    unless table_exists?(:tags)
+      create_table :tags do |t|
+        t.column :name, :string
+      end
+    end
+
+    # tags
+    unless table_exists?(:taggings)
+      create_table :taggings do |t|
+        t.column :tag_id, :integer
+        t.column :taggable_id, :integer
+        t.column :tagger_id, :integer
+        t.column :tagger_type, :string
+
+        # You should make sure that the column created is
+        # long enough to store the required class names.
+        t.column :taggable_type, :string
+        t.column :context, :string
+
+        t.column :created_at, :datetime
+      end
+
+      add_index :taggings, :tag_id
+      add_index :taggings, [:taggable_id, :taggable_type, :context], :name => 'taggable_poly_idx'
+    end
+
   end
 
   def self.down
@@ -320,7 +357,8 @@ class BaseTechServices < ActiveRecord::Migration
      :audit_logs, :sessions, :simple_captcha_data,
      :capability_accessors, :capability_types, :capabilities, :scope_types,
      :parties_security_roles, :roles, :audit_log_items, :audit_log_item_types,
-     :users, :file_assets, :delayed_jobs
+     :users, :file_assets, :delayed_jobs, :job_trackers,
+     :tags, :taggings,
     ].each do |tbl|
       if table_exists?(tbl)
         drop_table tbl

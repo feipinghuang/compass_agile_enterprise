@@ -1,6 +1,5 @@
 class Reservation < ActiveRecord::Base
   has_one :inventory_entry
-  is_repeatable :starttime, :endtime
 
   def product_type=(product_type)
 
