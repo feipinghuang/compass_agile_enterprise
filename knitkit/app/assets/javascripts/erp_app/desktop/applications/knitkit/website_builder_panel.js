@@ -770,7 +770,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
             loadMask.show();
         }
-
         dropPanel.update(me.buildContentBlockTemplate(dropPanel, options));
         var iframe = Ext.get(dropPanel.el.down('div.iframe-container > iframe'));
         document.querySelector('form[target="' + iframe.dom.id + '"]').submit();
@@ -876,11 +875,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     me.saveComponents();
                 }
             }
-
-            //disable navagation links
-            jQuery(iframeNode).contents().find("a").each(function() {
-                jQuery(this).attr("href", "#");
-            });
 
             // start resize interval for iframe
             me.refershIntervals[iframeNode.id] = setInterval(function() {
