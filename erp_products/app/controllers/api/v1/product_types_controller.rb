@@ -1,6 +1,7 @@
 module API
   module V1
-    class ProductTypesController < BaseController
+    ##class ProductTypesController < BaseController
+    class ProductTypesController < ActionController::Base
 
 =begin
 

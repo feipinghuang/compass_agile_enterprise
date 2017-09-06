@@ -136,7 +136,7 @@ class Discount < ActiveRecord::Base
                        :updated_at
                    ])
 
-    # TODO: add offers, product types. and prices
+    # TODO: add offers, product types. and prices??
     product_types = []
     product_offers.each do |product_offer|
       product_type_info = {}

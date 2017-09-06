@@ -86,10 +86,10 @@ class ProductType < ActiveRecord::Base
         statement = statement.where(id: filters[:id])
       end
 
-      if filters[:category_id]
+      if filters[:category_ids]
         statement = statement.joins("inner join category_classifications on category_classifications.classification_type = 'ProductType'
                          and category_classifications.classification_id = product_types.id")
-        statement = statement.where('category_classifications.category_id' => filters[:category_id])
+        statement = statement.where('category_classifications.category_id' => filters[:category_ids])
       end
 
       if filters[:party]
@@ -519,6 +519,22 @@ class ProductType < ActiveRecord::Base
       inventory_entries.first.custom_fields['when_sold_out']
     end
   end
+
+  def discount_price(discount_id)
+    # if there is currently a discount in place for this product type
+    # return the discount price, else return nil
+    now = DateTime.now
+    price = nil
+    product_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id,self.id)
+    unless product_offer.nil?
+      discount = product_offer.discount
+      if discount.valid_from <= now && discount.valid_thru >= now
+        price = product_offer.product_offer_record.get_current_simple_plan.money_amount
+      end
+    end
+    price
+  end
+
 
 end
 

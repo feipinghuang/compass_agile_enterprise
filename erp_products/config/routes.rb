@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       end
 
       resources :discounts, defaults: { :format => 'json' }
+      resources :collections, defaults: { :format => 'json' }
       resources :product_options, defaults: { :format => 'json' }
       resources :selected_product_options, defaults: { :format => 'json' }
     end
