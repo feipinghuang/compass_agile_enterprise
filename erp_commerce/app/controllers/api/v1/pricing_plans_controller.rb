@@ -182,7 +182,7 @@ module API
             end
 
             if params[:money_amount].present?
-              pricing_plan.money_amount = money_amount
+              pricing_plan.money_amount = params[:money_amount]
             end
 
             pricing_plan.save!
