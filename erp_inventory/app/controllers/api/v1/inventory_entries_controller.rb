@@ -239,13 +239,14 @@ module API
 
 =begin
 
- @api {post} /api/v1/add_party_with_role/:id
+ @api {post} /api/v1/inventory_entries/:id/add_party_with_role
  @apiVersion 1.0.0
  @apiName AddPartyWithRole
  @apiGroup InventoryEntry
  @apiDescription Add Party with a Role to an InventoryEntry
   
  @apiParam (query) {Integer} id InventoryEntry Id
+
  @apiParam (body) {integer} party_id Id of Party
  @apiParam (body) {String} role_types Comma seperated list of RoleType Internal Identifiers
 
