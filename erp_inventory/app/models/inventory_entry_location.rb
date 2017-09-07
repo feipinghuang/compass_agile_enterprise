@@ -11,6 +11,7 @@
 # add_index :inventory_entry_locations, :facility_id, :name => "inv_entry_loc_facility_idx"
 
 class InventoryEntryLocation < ActiveRecord::Base
+  attr_protected :created_at, :upated_at
 
   default_scope order('created_at ASC')
 
