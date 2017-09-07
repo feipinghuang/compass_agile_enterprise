@@ -5,6 +5,10 @@ Rails.application.routes.draw do
 
       resources :inventory_entries, defaults: { :format => 'json' } do
         resources :inventory_entry_locations, defaults: { :format => 'json' }
+
+        member do
+          post :add_party_with_role
+        end
       end
 
       resources :inventory_txns, defaults: { :format => 'json' } do
