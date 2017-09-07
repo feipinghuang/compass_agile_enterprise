@@ -40,7 +40,7 @@ module API
 
         total_count = pricing_plans.count
 
-        pricing_plans = pricing_plans.order("#{sort} #{dir}").limit(limit).offset(start)
+        pricing_plans = pricing_plans.order("#{sort} #{dir}").offset(start).limit(limit)
 
         render :json => {success: true, total_count: total_count, pricing_plans: pricing_plans.collect(&:to_data_hash)}
       end
