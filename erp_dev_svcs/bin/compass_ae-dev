@@ -5,9 +5,8 @@ command = ARGV.shift
 case command
 
 when 'new_gem_owner'
-    require 'erp_dev_svcs/commands/new_gem_owner'
-    #require 'erp_dev_svcs/factory_support'
-    ErpDevSvcs::Commands::NewGemOwner.execute
+  require 'erp_dev_svcs/commands/new_gem_owner'
+  ErpDevSvcs::Commands::NewGemOwner.execute
 when 'build_gems'
   require 'erp_dev_svcs/commands/build_gems'
   ErpDevSvcs::Commands::BuildGems.execute
@@ -26,6 +25,9 @@ when 'push_gems'
 when 'uninstall_gems'
   require 'erp_dev_svcs/commands/uninstall_gems'
   ErpDevSvcs::Commands::UninstallGems.execute
+when 'execute'
+  require 'erp_dev_svcs/commands/execute_cmd'
+  ErpDevSvcs::Commands::ExecuteCmd.execute
 else
   puts <<-EOT
 Usage: compass_ae-dev COMMAND [ARGS]
@@ -39,13 +41,17 @@ build_gems      Defaults to building all gems in the lib
 new_gem_owner   This command will add a new owner to the
                 compass gems on rubygems.org
 
+execute         This will execute the supplied command
+                on each CompassAE mountable engine
+
 git             This will execute the supplied git command
-                on each compass application (ie. fetch, pull,status, etc)
+                on each CompassAE mountable engine (ie. fetch, pull,status, etc)
 
-test            Execute the RSpec test suite in each mountable engine
+test            Execute the RSpec test suite in each CompassAE mountable engine
 
-setup_dev_env   Creates dev Gemfiles, runs bundler update in each engine
+setup_dev_env   Creates dev Gemfiles, runs bundler update in each CompassAE mountable engine
                 so tests will work
+
 push_gems       Push gems to ruby gems or geminabox
 
 uninstall_gems  Uninstall installed gems

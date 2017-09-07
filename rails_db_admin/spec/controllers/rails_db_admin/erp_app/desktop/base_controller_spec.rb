@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe RailsDbAdmin::ErpApp::Desktop::BaseController do
+describe RailsDbAdmin::ErpApp::Desktop::BaseController, type: :controller do
 
   #handle devise user auth
   before(:each) do
