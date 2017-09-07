@@ -49,6 +49,7 @@ module API
   @apiSuccess (200) {Object} create_pricing_plan_assignment_response Response
   @apiSuccess (200) {Boolean} create_pricing_plan_assignment_response.success True if the request was successful
   @apiSuccess (200) {Object} create_pricing_plan_assignment_response.pricing_plan_assignment newly created PricingPlanAssignment record
+  @apiSuccess (200) {Number} create_pricing_plan_assignment_response.pricing_plan_assignment.id Id of PricingPlanAssignment
 
 =end
 
