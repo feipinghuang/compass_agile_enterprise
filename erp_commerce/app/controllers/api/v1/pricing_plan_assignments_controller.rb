@@ -11,7 +11,6 @@ module API
   @apiDescription Get Pricing Plan Assignments
 
   @apiParam (query) {Integer} [pricing_plan_id] Id of PricingPlan to scope by
-  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
   @apiParam (query) {Integer} [start] Start to for paging, defaults to 0
   @apiParam (query) {Integer} [limit] Limit to for paging, defaults to 25
   
@@ -23,17 +22,6 @@ module API
 =end
 
       def index
-        sort = 'description'
-        dir = 'ASC'
-        limit = nil
-        start = nil
-
-        unless params[:sort].blank?
-          sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
-          sort = sort_hash[:property] || 'description'
-          dir = sort_hash[:direction] || 'ASC'
-        end
-
         limit = params[:limit] || 25
         start = params[:start] || 0
 
@@ -41,14 +29,14 @@ module API
 
         total_count = pricing_plan_assignments.count
 
-        pricing_plan_assignments = pricing_plan_assignments.order("#{sort} #{dir}").limit(limit).offset(offset)
+        pricing_plan_assignments = pricing_plan_assignments.limit(limit).offset(start)
 
         render :json => {success: true, total_count: total_count, pricing_plan_assignments: pricing_plan_assignments.collect(&:to_data_hash)}
       end
 
 =begin
 
-  @api {get} /api/v1/pricing_plan_assignments Create
+  @api {post} /api/v1/pricing_plan_assignments Create
   @apiVersion 1.0.0
   @apiName CreatePricingPlanAssignment
   @apiGroup PricingPlanAssignment
@@ -61,6 +49,7 @@ module API
   @apiSuccess (200) {Object} create_pricing_plan_assignment_response Response
   @apiSuccess (200) {Boolean} create_pricing_plan_assignment_response.success True if the request was successful
   @apiSuccess (200) {Object} create_pricing_plan_assignment_response.pricing_plan_assignment newly created PricingPlanAssignment record
+  @apiSuccess (200) {Number} create_pricing_plan_assignment_response.pricing_plan_assignment.id Id of PricingPlanAssignment
 
 =end
 

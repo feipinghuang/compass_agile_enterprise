@@ -99,7 +99,6 @@ module API
 
  @apiParam (body) {String} description Description
  @apiParam (body) {String} sku SKU to set
- @apiParam (body) {String} internal_identifier Internal Identifier to set
  @apiParam (body) {String} external_identifier External Identifier to set
  @apiParam (body) {String} external_id_source External Id Source to set
  @apiParam (body) {String} product_type Internal Identifier of ProductType
@@ -121,9 +120,8 @@ module API
             inventory_entry = InventoryEntry.new
             inventory_entry.description = params[:description]
             inventory_entry.sku = params[:sku]
-            inventory_entry.internal_identifier = params[:internal_identifier]
             inventory_entry.unit_of_measurement_id = UnitOfMeasurement.iid(params[:unit_of_measurement])
-            inventory_entry.product_type = ProductType.iid(params[:product_type])
+            inventory_entry.product_type = ProductType.find_by_internal_identifier(params[:product_type])
             inventory_entry.external_id_source = params[:external_id_source]
             inventory_entry.external_identifier = params[:external_identifier]
             inventory_entry.number_in_stock = params[:number_in_stock]
@@ -163,7 +161,6 @@ module API
  @apiParam (query) {Integer} id InventoryEntry Id
  @apiParam (body) {String} [description] Description
  @apiParam (body) {String} [sku] SKU to set
- @apiParam (body) {String} [internal_identifier] Internal Identifier to set
  @apiParam (body) {String} [external_identifier] External Identifier to set
  @apiParam (body) {String} [external_id_source] External Id Source to set
  @apiParam (body) {String} [product_type] Internal Identifier of ProductType
@@ -192,16 +189,12 @@ module API
               inventory_entry.sku = params[:sku]
             end
 
-            if params[:internal_identifier].present?
-              inventory_entry.internal_identifier = params[:internal_identifier]
-            end
-
             if params[:unit_of_measurement].present?
               inventory_entry.unit_of_measurement_id = UnitOfMeasurement.iid(params[:unit_of_measurement])
             end
 
             if params[:product_type].present?
-              inventory_entry.product_type = ProductType.iid(params[:product_type])
+              inventory_entry.product_type = ProductType.find_by_internal_identifier(params[:product_type])
             end
 
             if params[:descripexternal_id_sourcetion].present?
