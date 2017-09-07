@@ -121,7 +121,7 @@ module API
             inventory_entry.description = params[:description]
             inventory_entry.sku = params[:sku]
             inventory_entry.unit_of_measurement_id = UnitOfMeasurement.iid(params[:unit_of_measurement])
-            inventory_entry.product_type = ProductType.iid(params[:product_type])
+            inventory_entry.product_type = ProductType.find_by_internal_identifier(params[:product_type])
             inventory_entry.external_id_source = params[:external_id_source]
             inventory_entry.external_identifier = params[:external_identifier]
             inventory_entry.number_in_stock = params[:number_in_stock]
@@ -194,7 +194,7 @@ module API
             end
 
             if params[:product_type].present?
-              inventory_entry.product_type = ProductType.iid(params[:product_type])
+              inventory_entry.product_type = ProductType.find_by_internal_identifier(params[:product_type])
             end
 
             if params[:descripexternal_id_sourcetion].present?
