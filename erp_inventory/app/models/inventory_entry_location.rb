@@ -17,11 +17,6 @@ class InventoryEntryLocation < ActiveRecord::Base
 
   belongs_to  :inventory_entry
   belongs_to  :facility
-  belongs_to  :postal_address
-
-  def address
-    self.postal_address
-  end
 
   def to_data_hash
     data = to_hash(only: [
@@ -30,8 +25,7 @@ class InventoryEntryLocation < ActiveRecord::Base
                      :valid_thru,
                      :created_at,
                      :updated_at
-                   ],
-                   postal_address: try(:postal_address).try(:to_data_hash))
+    ])
 
     if facility
       data[:facility] = facility.to_data_hash

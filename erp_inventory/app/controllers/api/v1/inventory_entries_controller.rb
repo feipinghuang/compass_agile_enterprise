@@ -242,7 +242,6 @@ module API
  @apiDescription Add Party with a Role to an InventoryEntry
   
  @apiParam (query) {Integer} id InventoryEntry Id
-
  @apiParam (body) {integer} party_id Id of Party
  @apiParam (body) {String} role_types Comma seperated list of RoleType Internal Identifiers
 
