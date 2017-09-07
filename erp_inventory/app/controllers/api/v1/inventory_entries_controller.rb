@@ -255,7 +255,7 @@ module API
         begin
           ActiveRecord::Base.transaction do
             inventory_entry = InventoryEntry.find(params[:id])
-            party = Party.find(params[:id])
+            party = Party.find(params[:party_id])
 
             params[:role_types].split(',').each do |role_type|
               inventory_entry.add_party_with_role(party, RoleType.iid(role_type))
