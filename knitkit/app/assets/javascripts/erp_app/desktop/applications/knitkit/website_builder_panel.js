@@ -845,6 +845,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         iframeDoc.body.appendChild(css);
                         
                         if (iframeNode.contentWindow.__pen__) {
+                            iframeNode.contentWindow.document.addEventListener("contenteditorselect", function(e) {
+                                console.log(e.detail);
+                                var eastRegion = Ext.ComponentQuery.query('knitkit_eastregion').first();
+                                eastRegion.down('knitkitcomponentpropertiesformpanel').loadElementProperties(e.detail.node);
+                                eastRegion.down('knitkitcomponentpropertiesformpanel').show();
+                                eastRegion.expand();
+                            }, false);
                             if (options.websiteSectionContentId) {
                                 Compass.ErpApp.Utility.ajaxRequest({
                                     url: '/knitkit/erp_app/desktop/website_builder/component_dynamic_status',

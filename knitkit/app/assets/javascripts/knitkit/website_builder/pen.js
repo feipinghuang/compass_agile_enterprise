@@ -489,6 +489,14 @@
         node.style.display = hide ? 'none' : 'block';
     }
 
+    function getSelectedText(ctx) {
+        ctx._range.toString()
+    }
+    
+    function getSelectedNode(ctx) {
+        ctx._range.startContainer.parentNode;
+    }
+    
     Pen = function(config) {
 
         if (!config) throw new Error('Can\'t find config');
@@ -779,6 +787,20 @@
 
         menu.style.top = menuOffset.y + 'px';
         menu.style.left = menuOffset.x + 'px';
+
+        var ctx = this,
+            text = ctx._range.toString(),
+            node = ctx._range.startContainer.parentNode;
+        if (text !== undefined && text !== "") {
+            var event = new CustomEvent('contenteditorselect', {
+                detail: {
+                    text: text,
+                    node: node
+                }
+            });
+            doc.dispatchEvent(event)
+            console.log('select');
+        }
         return this;
     };
 
@@ -822,7 +844,7 @@
     Pen.prototype.setParentWindow = function(parentWindow) {
         this._parentWindow = parentWindow;
     };
-
+    
 
     // a fallback for old browers
     root.Pen = function(config) {

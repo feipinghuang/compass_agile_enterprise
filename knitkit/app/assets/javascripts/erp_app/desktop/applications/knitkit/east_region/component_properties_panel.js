@@ -3,47 +3,67 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
     alias: 'widget.knitkitcomponentpropertiesformpanel',
     title: 'Properties Edit',
     autoDestroy: true,
-    element: null,
-    editableItems: [],
-    tbar: [{
-        xtype: 'button',
-        itemId: 'componentPropertiesSaveButton',
-        text: 'Save',
-        hidden: true,
-        iconCls: 'icon-save',
-        handler: function(btn) {
-            var me = btn.up('knitkitcomponentpropertiesformpanel');
-            me.updateHtmlProperties(btn.up('form'));
-        }
-    }],
-    autoScroll: true,
-    boddyPadding: 10,
-    style: {
-        left: '10px'
-    },
+    
+    
+    loadElementProperties: function(element) {
+        var me = this;
+        me.removeAll();
+        
+        me.add({
+            xtype: 'form',
+            autoScroll: true,
+            boddyPadding: 10,
+            style: {
+                left: '10px'
+            },
+            defaults: {
+                labelWidth: 75,
+                width: 275
+            },
+            tbar: [{
+                xtype: 'button',
+                itemId: 'saveButton',
+                text: 'Save',
+                iconCls: 'icon-save'
+            }],
+            items: [{
+                xtype: 'displayfield',
+                fieldLabel: 'Element Type',
+                value: element.tagName
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'ID',
+                value: element.ID
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Class',
+                value: element.className
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Style',
+                value: element.style.cssTxt
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Height',
+                value: element.style.height
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Width',
+                value: element.style.width
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Text Align',
+                value: element.style.textAlign
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Color',
+                value: element.style.color
 
-    defaults: {
-        labelWidth: 80,
-        width: 250
-    },
-
-    updateHtmlProperties: function(formPanel, params, successCallback) {
-        var me = this,
-            websiteBuilderPanel = Ext.ComponentQuery.query("websitebuilderpanel").first();
-
-        if (formPanel.isValid()) {
-            values = formPanel.form.getValues();
-            Ext.Array.each(me.editableItems, function(editableItem) {
-                if (editableItem == 'content' && me.element.isContentEditable) {
-                    websiteBuilderPanel.removeEditable(me.element);
-                    websiteBuilderPanel.deHighlightElement(me.element);
-                } else if (editableItem == 'src') {
-                    jQuery(me.element).attr('src', values[editableItem]);
-                } else {
-                    me.element.style[editableItem] = values[editableItem];
-                }
-            });
-        }
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Font Family',
+                value: element.style.fontFamily
+            }]
+        });
     }
-
 });
