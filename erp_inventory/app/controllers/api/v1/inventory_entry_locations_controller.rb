@@ -91,7 +91,6 @@ module API
 
  @apiParam (body) {Integer} inventory_entry_id Id of InventoryEntry
  @apiParam (body) {Integer} facility_id Id of Facility
- @apiParam (body) {Integer} [postal_address_id] Id of PostalAddress
 
  @apiSuccess (200) {Object} create_inventory_entry_location_response Response.
  @apiSuccess (200) {Boolean} create_inventory_entry_location_response.success True if the request was successful
@@ -105,10 +104,6 @@ module API
           ActiveRecord::Base.transaction do
             inventory_entry_location = InventoryEntryLocation.new(facility_id: params[:facility_id],
                                                                   inventory_entry_id: params[:inventory_entry_id])
-
-            if params[:postal_address_id].present?
-              inventory_entry_location.postal_address_id = params[:postal_address_id]
-            end
 
             inventory_entry_location.save!
 
@@ -141,7 +136,6 @@ module API
  @apiParam (query) {Integer} id InventoryEntryLocation Id
  @apiParam (body) {Integer} [inventory_entry_id] Id of InventoryEntry
  @apiParam (body) {Integer} [facility_id] Id of Facility
- @apiParam (body) {Integer} [postal_address_id] Id of PostalAddress
 
  @apiSuccess (200) {Object} update_inventory_entry_location_response Response.
  @apiSuccess (200) {Boolean} update_inventory_entry_location_response.success True if the request was successful
@@ -161,10 +155,6 @@ module API
 
             if params[:facility_id].present?
               inventory_entry_location.facility_id = params[:facility_id]
-            end
-
-            if params[:postal_address_id].present?
-              inventory_entry_location.postal_address_id = params[:postal_address_id]
             end
 
             inventory_entry_location.save!
