@@ -25,6 +25,9 @@ when 'push_gems'
 when 'uninstall_gems'
   require 'erp_dev_svcs/commands/uninstall_gems'
   ErpDevSvcs::Commands::UninstallGems.execute
+when 'generate_api_docs'
+  require 'erp_dev_svcs/commands/generate_api_docs'
+  ErpDevSvcs::Commands::GenerateApiDocs.execute  
 when 'execute'
   require 'erp_dev_svcs/commands/execute_cmd'
   ErpDevSvcs::Commands::ExecuteCmd.execute
@@ -33,28 +36,30 @@ else
 Usage: compass_ae-dev COMMAND [ARGS]
 
 This app contains utility programs for Compass developers:
+ 
+build_gems        Defaults to building all gems in the lib
+                  directory.  You can also pass specific
+                  gems.
 
-build_gems      Defaults to building all gems in the lib
-                directory.  You can also pass specific
-                gems.
+generate_api_docs Generate API docs  
 
-new_gem_owner   This command will add a new owner to the
-                compass gems on rubygems.org
+new_gem_owner     This command will add a new owner to the
+                  compass gems on rubygems.org
 
-execute         This will execute the supplied command
-                on each CompassAE mountable engine
+execute           This will execute the supplied command
+                  on each CompassAE mountable engine
 
-git             This will execute the supplied git command
-                on each CompassAE mountable engine (ie. fetch, pull,status, etc)
+git               This will execute the supplied git command
+                  on each CompassAE mountable engine (ie. fetch, pull,status, etc)
 
-test            Execute the RSpec test suite in each CompassAE mountable engine
+test              Execute the RSpec test suite in each CompassAE mountable engine
 
-setup_dev_env   Creates dev Gemfiles, runs bundler update in each CompassAE mountable engine
-                so tests will work
+setup_dev_env     Creates dev Gemfiles, runs bundler update in each CompassAE mountable engine
+                  so tests will work
 
-push_gems       Push gems to ruby gems or geminabox
+push_gems         Push gems to ruby gems or geminabox
 
-uninstall_gems  Uninstall installed gems
+uninstall_gems    Uninstall installed gems
 EOT
   exit(1)
 end
