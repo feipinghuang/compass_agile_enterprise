@@ -835,7 +835,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                 });
             } else {
-                if (iframeNode.id.startsWith('header-frame') || iframeNode.id.startsWith('footer-frame')) {
+                if (options.customLayout || iframeNode.id.startsWith('header-frame') || iframeNode.id.startsWith('footer-frame')) {
                     // destroy contenteditable for headers and footers
                     iframeNode.contentWindow.eval("if (window.__pen__) window.__pen__.destroy();");
                 } else {
