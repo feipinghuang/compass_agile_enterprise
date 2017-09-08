@@ -44,6 +44,9 @@ module Knitkit
           if source.present? and source != "undefined" and source != "null" 
             source_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(source)
             render inline: wrap_in_row(source_html), layout: 'knitkit/base'
+          elsif params[:custom_layout].to_s.to_bool and params[:website_section_id].present?
+            @website_section = WebsiteSection.find(params[:website_section_id])
+            render inline: @website_section.layout, layout: 'knitkit/base'
           elsif params[:website_section_content_id]
             website_section_content = WebsiteSectionContent.find(params[:website_section_content_id])
             @website_section = website_section_content.website_section
@@ -261,14 +264,18 @@ module Knitkit
         end
 
         def section_components
-          website_section_contents = WebsiteSection.find(params[:website_section_id]).website_section_contents.order("position, col")
+          website_section = WebsiteSection.find(params[:website_section_id])
 
-          website_section_contents_data = website_section_contents.collect(&:to_data_hash).group_by{|item| item[:position]}.values
+          result = {success: true}
 
-          render json: {
-            success: true,
-            website_section_contents: website_section_contents_data
-          }
+          if website_section.layout.present?
+            result[:layout] = website_section.layout
+          else
+            website_section_contents = website_section.website_section_contents.order("position, col")
+            result[:website_section_contents] = website_section_contents.collect(&:to_data_hash).group_by{|item| item[:position]}.values
+          end
+          
+          render json: result
         end
 
         def widget_source

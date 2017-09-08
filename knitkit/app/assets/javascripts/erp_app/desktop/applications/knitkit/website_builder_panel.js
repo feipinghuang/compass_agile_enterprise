@@ -660,17 +660,23 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var canViewSource = (options.canViewSource === undefined) ? true : options.canViewSource,
             canMove = (options.canMove === undefined) ? true : options.canMove,
             canRemove = (options.canRemove === undefined) ? true : options.canRemove,
-            componentType = options.componentType,
             componentName = options.componentName,
             componentType = options.componentType,
             websiteSectionContentId = options.websiteSectionContentId,
             source = options.source,
+            isCustomLayout =  options.customLayout
             url = '/knitkit/erp_app/desktop/website_builder/render_component.html',
             params = {authenticity_token: Compass.ErpApp.AuthentictyToken};
         if (source) {
             Ext.apply(params, {
                 source: encodeURIComponent(source),
                 id: websiteId
+            });
+        } else if (isCustomLayout) {
+            Ext.apply(params, {
+                id: websiteId,
+                website_section_id: me.websiteSectionId,
+                custom_layout: true
             });
         } else if (componentName) {
             Ext.apply(params, {
@@ -829,7 +835,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                 });
             } else {
-                if (iframeNode.id.startsWith('header-frame') || iframeNode.id.startsWith('footer-frame')) {
+                if (options.customLayout || iframeNode.id.startsWith('header-frame') || iframeNode.id.startsWith('footer-frame')) {
                     // destroy contenteditable for headers and footers
                     iframeNode.contentWindow.eval("if (window.__pen__) window.__pen__.destroy();");
                 } else {
@@ -1251,7 +1257,32 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     website_section_id: me.websiteSectionId
                 },
                 success: function(response) {
-                    if (!Compass.ErpApp.Utility.isBlank(response.website_section_contents)) {
+                    // if there is a custom layout render it else if there are content sections render them
+                    if (!Compass.ErpApp.Utility.isBlank(response.layout)) {
+                        var componentContainer = me.add({
+                            xtype: 'websitebuilderdropzonecontainer',
+                            cls: 'dropzone-container',
+                            layout: 'hbox',
+                            items: [{
+                                xtype: 'websitebuilderdropzone',
+                                flex: 1,
+                                componentType: 'content',
+                                html: ''
+                            }]
+                        });
+                        
+                        me.loadContentBlock(componentContainer.down('websitebuilderdropzone'), {
+                            website_section_id: me.websiteSectionId,
+                            customLayout: true,
+                            canViewSource: false,
+                            canMove: false,
+                            canRemove: false,
+                            afterload: function() {
+                                loadMask.hide();
+                            }
+                        });
+
+                    } else if(!Compass.ErpApp.Utility.isBlank(response.website_section_contents)) {
                         Ext.each(response.website_section_contents, function(columns) {
                             var componentContainer = me.add({
                                 xtype: 'websitebuilderdropzonecontainer',
