@@ -5,7 +5,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
     autoDestroy: true,
     
     
-    loadElementProperties: function(element) {
+    loadElementProperties: function(element, iframe) {
         var me = this;
         me.removeAll();
         
@@ -18,13 +18,40 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             },
             defaults: {
                 labelWidth: 75,
-                width: 275
+                width: 250,
+                emptyText: 'none'
             },
             tbar: [{
                 xtype: 'button',
                 itemId: 'saveButton',
-                text: 'Save',
-                iconCls: 'icon-save'
+                text: 'Apply',
+                iconCls: 'icon-save',
+                handler: function(btn) {
+                    var formPanel = btn.up('form');
+
+                    if (formPanel.isValid()) {
+                        var properties = formPanel.getValues();
+
+                        if (iframe.contentDocument.getElementById(properties.id)) {
+                            Ext.Msg.alert('Error', 'There is an element with this ID');
+                            return;
+                        }
+                        
+                        for(var attr in properties) {
+                            if (attr == 'id') {
+                                element.id = id
+                            } else if (attr == 'className') {
+                                element.className = className;
+                            } else {
+                                element.style[attr] = properties[attr];
+                            }
+                        }
+                        
+                        if (iframeWindow.__pen__) iframe.contentWindow__pen__._menu.style.display = 'none';
+                        
+
+                    }
+                }
             }],
             items: [{
                 xtype: 'displayfield',
@@ -33,35 +60,44 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'ID',
-                value: element.ID
+                name: 'id',
+                value: element.id
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Class',
+                name: 'className',
                 value: element.className
             }, {
                 xtype: 'textfield',
-                fieldLabel: 'Style',
-                value: element.style.cssTxt
-            }, {
-                xtype: 'textfield',
                 fieldLabel: 'Height',
-                value: element.style.height
+                name: 'height',
+                emptyText: '10px',
+                regex: /^(\d)+(px)$/,
+                regexText: 'Invalid height',
+                value: element.offsetHeight + 'px'
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Width',
-                value: element.style.width
-            }, {
-                xtype: 'textfield',
-                fieldLabel: 'Text Align',
-                value: element.style.textAlign
+                name: 'width',
+                emptyText: '10px',
+                regex: /^(\d)+(px)$/,
+                regexText: 'Invalid width',
+                value: element.offsetWidth + 'px'
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Color',
+                name: 'color',
                 value: element.style.color
+            },{
+                xtype: 'textfield',
+                fieldLabel: 'Background Color',
+                name: 'backgroundColor',
+                value: element.style.backgroundColor
 
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Font Family',
+                name: 'fontFamily',
                 value: element.style.fontFamily
             }]
         });
