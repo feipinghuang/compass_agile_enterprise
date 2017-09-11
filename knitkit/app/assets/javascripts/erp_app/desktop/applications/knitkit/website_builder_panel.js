@@ -739,7 +739,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         ).apply({
             panelId: dropPanel.id,
             uniqueId: options.uniqueId,
-            iframeId: options.uniqueId + '-frame' + new Date().getTime(),
+            iframeId: 'frame-' + options.uniqueId + '-' + new Date().getTime(),
             url: url,
             canViewSource: canViewSource,
             canMove: canMove,
@@ -848,15 +848,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     } else {
                         var css = iframeDoc.createElement("style");
                         css.type = "text/css";
-                        css.innerHTML = "[contenteditable] {border: 1px solid;}";
+                        css.innerHTML = "[contenteditable] {border: 1px solid;} ."+ iframeNode.id + "-enclose {outline: rgba(233, 94, 94, 0.5) solid 2px;  outline-offset: -2px;cursor: pointer;}";
                         iframeDoc.body.appendChild(css);
-                        
                         if (iframeNode.contentWindow.__pen__) {
                             iframeNode.contentWindow.document.addEventListener("contenteditorselect", function(e) {
                                 console.log(e.detail);
                                 var eastRegion = Ext.ComponentQuery.query('knitkit_eastregion').first();
-                                eastRegion.down('knitkitcomponentpropertiesformpanel').loadElementProperties(e.detail.node, iframeNode);
-                                eastRegion.down('knitkitcomponentpropertiesformpanel').show();
+                                var elemPropertiesPanel = eastRegion.down('knitkitcomponentpropertiesformpanel');
+                                
+                                elemPropertiesPanel.loadElementProperties(e.detail.node, iframeNode);
+                                elemPropertiesPanel.show();
                                 eastRegion.expand();
                             }, false);
                             if (options.websiteSectionContentId) {
@@ -874,12 +875,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                         } else {
                                             iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
                                             iframeNode.contentWindow.__pen__.setParentWindow(window);
+                                            me.attachBlockElementListener(iframeNode);
                                         }
                                     }
                                 });
                             } else {
                                 iframeNode.contentWindow.__pen__.setIframeId(iframeNode.id);
                                 iframeNode.contentWindow.__pen__.setParentWindow(window);
+                                me.attachBlockElementListener(iframeNode);
                             }
                         }
                     }
@@ -910,6 +913,30 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             if (options.websiteSectionContentId)
                 Ext.Array.remove(me.contentToLoad, options.websiteSectionContentId);
         });
+    },
+
+    attachBlockElementListener: function(iframeNode) {
+        var me = this,
+            blockElem = "blockquote, center, div, fieldset form, h1, h2, h3, h4, h5, h6, hr, ol, p, pre, table, ul";
+        $(iframeNode.contentDocument.body).
+            find('.container > .row > .col-md-12').
+            find(blockElem).
+            mouseenter(function(ev){
+                ev.stopPropagation();
+                $(this).addClass(iframeNode.id+ '-enclose');
+            }).mouseleave(function(evt){
+                evt.stopPropagation();
+                $(this).removeClass(iframeNode.id + '-enclose');
+                if (Compass.ErpApp.Utility.isBlank($(this).attr('class')))
+                    $(this).removeAttr('class');
+            }).click(function(e){
+                e.stopPropagation();
+                var eastRegion = Ext.ComponentQuery.query('knitkit_eastregion').first();
+                var elemPropertiesPanel = eastRegion.down('knitkitcomponentpropertiesformpanel');
+                elemPropertiesPanel.loadElementProperties($(this)[0], iframeNode);
+                elemPropertiesPanel.show();
+                eastRegion.expand();
+            });
     },
 
     attachContentBlockListeners: function(dropPanel, uniqueId) {
@@ -1026,7 +1053,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                                 if (respObj.is_content_dynamic) {
                                                     Ext.apply(prms, { websiteSectionContentId: dropPanel.websiteSectionContentId });
                                                 } else {
-                                                    Ext.apply(prms, { source: editorSource });
+                                                    Ext.apply(prms, {
+                                                        source: editorSource ,
+                                                        websiteSectionContentId: dropPanel.websiteSectionContentId
+                                                    });
                                                 }
                                                 
                                                 Ext.apply(prms, {

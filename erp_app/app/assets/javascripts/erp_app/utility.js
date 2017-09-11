@@ -428,6 +428,15 @@ Compass.ErpApp.Utility.formatCurrency = function(num) {
     return (((sign) ? '' : '-') + '$' + num + '.' + cents);
 };
 
+Compass.ErpApp.Utility.rgbToHex = function(orig) {
+    var rgb = orig.replace(/\s/g,'').match(/^rgba?\((\d+),(\d+),(\d+)/i);
+    var hex = (rgb && rgb.length === 4) ? "#" +
+        ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+        ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+        ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : orig;
+    return hex.toUpperCase();
+};
+
 Compass.ErpApp.Utility.addEventHandler = function(obj, evt, handler) {
     if (obj.addEventListener) {
         // W3C method

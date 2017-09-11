@@ -6,9 +6,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
     
     
     loadElementProperties: function(element, iframe) {
-        var me = this;
+        var me = this,
+            win = iframe.contentWindow,
+            elemComputedStyles = win.getComputedStyle(element, null);
         me.removeAll();
-        
         me.add({
             xtype: 'form',
             autoScroll: true,
@@ -19,7 +20,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             defaults: {
                 labelWidth: 75,
                 width: 250,
-                emptyText: 'none'
             },
             tbar: [{
                 xtype: 'button',
@@ -38,17 +38,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                         }
                         
                         for(var attr in properties) {
+                            if(Compass.ErpApp.Utility.isBlank(properties.attr)) continue;
+                            
                             if (attr == 'id') {
-                                element.id = id
+                                element.id = properties.id
                             } else if (attr == 'className') {
-                                element.className = className;
+                                element.className = properties.className;
                             } else {
                                 element.style[attr] = properties[attr];
                             }
                         }
-                        
-                        if (iframeWindow.__pen__) iframe.contentWindow__pen__._menu.style.display = 'none';
-                        
+
+                        // close the toolbar
+                        if (iframe.contentWindow.__pen__) iframe.contentWindow.__pen__._menu.style.display = 'none';                        
 
                     }
                 }
@@ -66,38 +68,47 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                 xtype: 'textfield',
                 fieldLabel: 'Class',
                 name: 'className',
-                value: element.className
+                value: element.className.match(iframe.id + '-enclose') ? element.className.replace(iframe.id + '-enclose', '') : element.className
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Height',
                 name: 'height',
-                emptyText: '10px',
+                emptyText: elemComputedStyles.height,
                 regex: /^(\d)+(px)$/,
                 regexText: 'Invalid height',
-                value: element.offsetHeight + 'px'
+                value: element.style.height
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Width',
                 name: 'width',
-                emptyText: '10px',
+                emptyText: elemComputedStyles.width,
                 regex: /^(\d)+(px)$/,
                 regexText: 'Invalid width',
-                value: element.offsetWidth + 'px'
+                value: element.style.width
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Color',
                 name: 'color',
+                emptyText: Compass.ErpApp.Utility.rgbToHex(elemComputedStyles.color),
                 value: element.style.color
             },{
                 xtype: 'textfield',
                 fieldLabel: 'Background Color',
                 name: 'backgroundColor',
+                emptyText: Compass.ErpApp.Utility.rgbToHex(elemComputedStyles.backgroundColor),
                 value: element.style.backgroundColor
 
             }, {
                 xtype: 'textfield',
+                fieldLabel: 'Font Size',
+                name: 'fontFamily',
+                emptyText: elemComputedStyles.fontSize,
+                value: element.style.fontSize
+            }, {
+                xtype: 'textfield',
                 fieldLabel: 'Font Family',
                 name: 'fontFamily',
+                emptyText: elemComputedStyles.fontFamily,
                 value: element.style.fontFamily
             }]
         });
