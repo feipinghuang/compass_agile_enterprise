@@ -32,13 +32,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                     if (formPanel.isValid()) {
                         var properties = formPanel.getValues();
 
-                        if (iframe.contentDocument.getElementById(properties.id)) {
-                            Ext.Msg.alert('Error', 'There is an element with this ID');
-                            return;
-                        }
-                        
                         for(var attr in properties) {
-                            if(Compass.ErpApp.Utility.isBlank(properties.attr)) continue;
+                            if(Compass.ErpApp.Utility.isBlank(properties[attr])) continue;
                             
                             if (attr == 'id') {
                                 element.id = properties.id
@@ -48,7 +43,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                                 element.style[attr] = properties[attr];
                             }
                         }
-
                         // close the toolbar
                         if (iframe.contentWindow.__pen__) iframe.contentWindow.__pen__._menu.style.display = 'none';                        
 
@@ -101,7 +95,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Font Size',
-                name: 'fontFamily',
+                name: 'fontSize',
                 emptyText: elemComputedStyles.fontSize,
                 value: element.style.fontSize
             }, {
