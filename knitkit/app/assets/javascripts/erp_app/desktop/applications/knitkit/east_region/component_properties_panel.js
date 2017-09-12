@@ -33,7 +33,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                         var properties = formPanel.getValues();
 
                         for(var attr in properties) {
-                            if(Compass.ErpApp.Utility.isBlank(properties[attr])) continue;
                             
                             if (attr == 'id') {
                                 element.id = properties.id
@@ -44,9 +43,24 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                             }
                         }
                         // close the toolbar
-                        if (iframe.contentWindow.__pen__) iframe.contentWindow.__pen__._menu.style.display = 'none';                        
+                        if (iframe.contentWindow.__pen__) iframe.contentWindow.__pen__._menu.style.display = 'none';
+
+                        buttonConfig = this
+                        me.down('#applyStatus').setText('Applied Successfully')
+                        me.down('#applyStatus').show();
+                        setTimeout(function(){
+                            me.down('#applyStatus').hide();
+                            me.down('#applyStatus').setText('');
+                        }, 3000)
 
                     }
+                }
+            },{
+                xtype: 'label',
+                itemId: 'applyStatus',
+                hidden: true,
+                style: {
+                    color: 'green'
                 }
             }],
             items: [{

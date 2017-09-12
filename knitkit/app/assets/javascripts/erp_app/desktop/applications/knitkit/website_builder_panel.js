@@ -923,6 +923,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             find(blockElem).
             mouseenter(function(ev){
                 ev.stopPropagation();
+                me.removeDesignAtrifacts(iframeNode);
                 $(this).addClass(iframeNode.id+ '-enclose');
             }).mouseleave(function(evt){
                 evt.stopPropagation();
@@ -949,6 +950,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 console.log(dropPanel.cls);
                 if (dropPanel.cls == 'websitebuilder-component-panel') {
                     me.resetContentEditorToolbar();
+                    me.removeDesignAtrifacts(dropPanel.el.down('.iframe-container > iframe').el.dom);
                     me.fetchComponentSource(
                         dropPanel.id,
                         function(dropPanel, responseObj) {
@@ -973,7 +975,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     canMove: true
                                 });
                             }
-
+                            
                             parentContainer.insert(dropPanelIndex, {
                                 xtype: 'codemirror',
                                 mode: 'rhtml',
@@ -1461,6 +1463,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             window.getSelection().removeAllRanges();
             menu.hide();
         }
+    },
+    
+    removeDesignAtrifacts: function(iframe) {
+        $(iframe.contentDocument.body).find('.' + iframe.id + '-enclose').removeClass(iframe.id + '-enclose');
     }
     
 });
