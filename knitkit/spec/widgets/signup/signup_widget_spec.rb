@@ -42,7 +42,7 @@ describe Widgets::Signup::Base, type: :controller do
       widget = Widgets::Signup::Base.new(controller, "signup", :index, uuid, login_url, nil)
 
       result = widget.process('index')
-      expect result.should =~ /class="form-signin"/
+      expect(result).to match(/class="form-signin"/)
     end
   end
 
