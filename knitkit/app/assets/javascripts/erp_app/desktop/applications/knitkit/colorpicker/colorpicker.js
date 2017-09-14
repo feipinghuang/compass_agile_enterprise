@@ -1,7 +1,7 @@
-Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker', {
+Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPickerPanel', {
 
     extend: 'Ext.panel.Panel',
-
+    alias: 'widget.compassaecolorpickerpanel',
     bubbleEvents: [
         'colorSelected'
     ],
@@ -33,8 +33,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker', {
         showPalette: true,
         showPaletteOnly: false,
         showSelectionPalette: false,
-        cancelText: '',
-        chooseText: '',
+        cancelText: 'Cancel',
+        chooseText: 'Choose',
 
         preferredFormat: 'hex',
         showButtons: false,
@@ -132,7 +132,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker', {
     },
 
     setValue: function (color) {
-        this.getJqueryObject().spectrum('set', color);
+        this.getJqueryObject().spectrum('set', tinycolor(color));
         this._fireEventOnColorSelected(this.getValue(true));
     },
 
@@ -159,82 +159,66 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker', {
 
 });
 
-Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker.Window', {
-    extend: 'Ext.window.Window',
-
-    requires: ['Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker'],
-
-    title: 'Pick color',
-    closeAction: 'hide',
-
+Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker', {
+    extend: 'Ext.form.field.Trigger',
+    alias: 'widget.compassaecolorpicker',
     buttonTextOk: 'Done',
     buttonTextCancel: 'Cancel',
-
-    /**
-     * Config for user's Spectrum color picker customizations
-     * @public
-     */
     conf: {},
+    onTriggerClick: function(e) {
+        var me = this;
+        if (me.menu) {
+            me.menu.showAt(e.getXY());
+        } else {
+            me.menu = Ext.create('Ext.menu.Menu', {
+                plain: true,
+                showSeparator: false,
+                items: [{
+                    xtype: 'compassaecolorpickerpanel',
+                    conf: Ext.apply(me.conf, {color: tinycolor(me.value).toHexString()}),
+                }],
+                bbar: [
+                    '->',
+                    {
+                        text: me.buttonTextOk,
+                        handler: function(btn) {
+                            var pickerPanel = btn.up('menu').down('compassaecolorpickerpanel');
+                            var obj = pickerPanel.getJqueryObject();
+                            var clr = obj.spectrum('get').toHexString();
+                            me.setValue(clr);
+                            btn.up('menu').hide();
+                        }
+                    },
+                    {
+                        text: me.buttonTextCancel,
+                        handler: function(btn) {
+                            btn.up('menu').hide();
+                        }
+                    }
+                ],
 
-    colorPicker: null,
+            });
+            
+            me.menu.showAt(e.getXY());
+        }
+    },    
 
-    initComponent: function () {
-
-        this.addEvents(
-            'colorSelectedDone'
-        );
-
-        this.colorPicker = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker', {
-            conf: this.conf
-        });
-
-        this.items = [
-            this.colorPicker
-        ];
-
-        this.bbar = [
-            '->',
-            {
-                text: this.buttonTextOk,
-                handler: this.onOkClick,
-                scope: this
-            },
-            {
-                text: this.buttonTextCancel,
-                handler: this.onCancelClick,
-                scope: this
-            }
-        ];
-
-        this.callParent(arguments);
+    getColorPicker: function() {
+        if(this.menu) {
+            this.menu.down('compassaecolorpickerpanel');
+        }
     },
-
-    getColorPickerCmp: function () {
-        return this.colorPicker;
-    },
-
-    onOkClick: function () {
-        var obj = this.colorPicker.getJqueryObject();
-        var color = obj.spectrum('get');
-
-        this.fireEvent('colorSelectedDone', this, this.getValue(), color);
-        this.hide();
-    },
-
-    onCancelClick: function () {
-        this.hide();
-    },
-
+    
     setValue: function (color) {
-        this.colorPicker.setValue(color);
-    },
-
-    /**
-     * @param {bool} [rawObject] [Optional] - Return raw object, instead of AGBA string, default: False
-     * @returns {*}
-     */
-    getValue: function (rawObject) {
-	return this.colorPicker.getValue(rawObject);
+        var me = this;
+        if (!Compass.ErpApp.Utility.isBlank(color)) {
+            var color = tinycolor(color)
+            if (me.getColorPicker()) me.getColorPicker().setValue(color);
+            var colorStr = color.toHexString();
+            me.setFieldStyle('background-color: '+ colorStr);
+            me.callParent([colorStr])
+        }
     }
+
 
 });

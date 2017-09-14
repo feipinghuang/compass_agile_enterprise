@@ -31,7 +31,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
 
                     if (formPanel.isValid()) {
                         var properties = formPanel.getValues();
-
                         for(var attr in properties) {
                             
                             if (attr == 'id') {
@@ -94,18 +93,15 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                 regexText: 'Invalid width',
                 value: element.style.width
             }, {
-                xtype: 'textfield',
+                xtype: 'compassaecolorpicker',
                 fieldLabel: 'Color',
                 name: 'color',
-                emptyText: Compass.ErpApp.Utility.rgbToHex(elemComputedStyles.color),
                 value: element.style.color
             },{
-                xtype: 'textfield',
+                xtype: 'compassaecolorpicker',
                 fieldLabel: 'Background Color',
                 name: 'backgroundColor',
-                emptyText: Compass.ErpApp.Utility.rgbToHex(elemComputedStyles.backgroundColor),
                 value: element.style.backgroundColor
-
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Font Size',

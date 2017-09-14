@@ -24,5 +24,5 @@
 //= require_tree ./top_menu
 //= require_tree ./west_region
 //= require jquery
-//= require ./spectrum
-//= require ./colorpicker
+//= require ./colorpicker/spectrum
+//= require ./colorpicker/colorpicker
