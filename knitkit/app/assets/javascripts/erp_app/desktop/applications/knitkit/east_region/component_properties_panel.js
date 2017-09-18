@@ -3,12 +3,111 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
     alias: 'widget.knitkitcomponentpropertiesformpanel',
     title: 'Properties Edit',
     autoDestroy: true,
-    
-    
+
+    buildElementCommonPropertiesConfig: function(element, iframe) {
+        return [{
+            xtype: 'displayfield',
+            fieldLabel: 'Element Type',
+            value: element.tagName
+        }, {
+            xtype: 'textfield',
+            fieldLabel: 'ID',
+            emptyText: 'None',
+            name: 'id',
+            value: element.id
+        }, {
+            xtype: 'textfield',
+            fieldLabel: 'Class',
+            emptyText: 'None',
+            name: 'className',
+            value: element.className.match(iframe.id + '-enclose') ? element.className.replace(iframe.id + '-enclose', '') : element.className
+        }];
+    },
+
     loadElementProperties: function(element, iframe) {
-        var me = this,
-            win = iframe.contentWindow,
-            elemComputedStyles = win.getComputedStyle(element, null);
+        var me = this;
+        var items = me.buildElementCommonPropertiesConfig(element, iframe);
+        if (element.tagName == 'IMG') {
+            items = items.concat([{
+                xtype: 'textfield',
+                fieldLabel: 'Height',
+                name: 'height',
+                regex: /^(\d)+$/,
+                regexText: 'Invalid height',
+                value: element.height
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Width',
+                name: 'width',
+                regex: /^(\d)+$/,
+                regexText: 'Invalid width',
+                value: element.width,
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Source',
+                name: 'src',
+                value: element.src,
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Alt',
+                name: 'alt',
+                value: element.alt
+            }, {
+                xtype: 'combo',
+                name: 'align',
+                fieldLabel: 'Align',
+                displayField: 'alignment',
+                valueField: 'name',
+                store: {
+                    fields: ['alignment', 'name'],
+                    data:[
+                        {'alignment': 'Top', name: 'top'},
+                        {'alignment': 'Bottom', name: 'bottom'},
+                        {'alignment': 'Middle', name: 'middle'},
+                        {'alignment': 'Left', name: 'left'},
+                        {'alignment': 'Right', name: 'right'}
+                    ]
+                },
+                value: element.align
+            }])
+        } else {
+            items = items.concat([{
+                xtype: 'textfield',
+                fieldLabel: 'Height',
+                name: 'height',
+                regex: /^(\d)+(px)$/,
+                regexText: 'Invalid height, Try something like 10px',
+                value: element.style.height
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Width',
+                name: 'width',
+                regex: /^(\d)+(px)$/,
+                regexText: 'Invalid width. Try something like 10px',
+                value: element.style.width,
+            }, {
+                xtype: 'compassaecolorpicker',
+                fieldLabel: 'Color',
+                name: 'color',
+                value: element.style.color
+            }, {
+                xtype: 'compassaecolorpicker',
+                fieldLabel: 'Background Color',
+                name: 'backgroundColor',
+                value: element.style.backgroundColor
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Font Size',
+                name: 'fontSize',
+                value: element.style.fontSize
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Font Family',
+                name: 'fontFamily',
+                value: element.style.fontFamily
+            }]);
+        }
+
         me.removeAll();
         me.add({
             xtype: 'form',
@@ -20,6 +119,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             defaults: {
                 labelWidth: 75,
                 width: 250,
+                emptyText: 'Not Set'
             },
             tbar: [{
                 xtype: 'button',
@@ -38,7 +138,10 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                             } else if (attr == 'className') {
                                 element.className = properties.className;
                             } else {
-                                element.style[attr] = properties[attr];
+                                if (element.tagName == 'IMG')
+                                    element[attr] = properties[attr];
+                                else
+                                    element.style[attr] = properties[attr];
                             }
                         }
                         // close the toolbar
@@ -62,59 +165,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                     color: 'green'
                 }
             }],
-            items: [{
-                xtype: 'displayfield',
-                fieldLabel: 'Element Type',
-                value: element.tagName
-            }, {
-                xtype: 'textfield',
-                fieldLabel: 'ID',
-                name: 'id',
-                value: element.id
-            }, {
-                xtype: 'textfield',
-                fieldLabel: 'Class',
-                name: 'className',
-                value: element.className.match(iframe.id + '-enclose') ? element.className.replace(iframe.id + '-enclose', '') : element.className
-            }, {
-                xtype: 'textfield',
-                fieldLabel: 'Height',
-                name: 'height',
-                emptyText: elemComputedStyles.height,
-                regex: /^(\d)+(px)$/,
-                regexText: 'Invalid height',
-                value: element.style.height
-            }, {
-                xtype: 'textfield',
-                fieldLabel: 'Width',
-                name: 'width',
-                emptyText: elemComputedStyles.width,
-                regex: /^(\d)+(px)$/,
-                regexText: 'Invalid width',
-                value: element.style.width
-            }, {
-                xtype: 'compassaecolorpicker',
-                fieldLabel: 'Color',
-                name: 'color',
-                value: element.style.color
-            },{
-                xtype: 'compassaecolorpicker',
-                fieldLabel: 'Background Color',
-                name: 'backgroundColor',
-                value: element.style.backgroundColor
-            }, {
-                xtype: 'textfield',
-                fieldLabel: 'Font Size',
-                name: 'fontSize',
-                emptyText: elemComputedStyles.fontSize,
-                value: element.style.fontSize
-            }, {
-                xtype: 'textfield',
-                fieldLabel: 'Font Family',
-                name: 'fontFamily',
-                emptyText: elemComputedStyles.fontFamily,
-                value: element.style.fontFamily
-            }]
+            items: items 
         });
     }
 });
