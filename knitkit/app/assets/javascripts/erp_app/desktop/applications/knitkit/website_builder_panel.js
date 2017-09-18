@@ -917,7 +917,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     attachBlockElementListener: function(iframeNode) {
         var me = this,
-            blockElem = "blockquote, center, div, fieldset form, h1, h2, h3, h4, h5, h6, hr, ol, p, pre, table, ul, img";
+            blockElem = "blockquote, section, center, div, fieldset, form, h1, h2, h3, h4, h5, h6, hr, ol, p, pre, table, ul, img";
         $(iframeNode.contentDocument.body).
             find('.container > .row > .col-md-12').
             find(blockElem).
