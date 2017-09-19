@@ -856,7 +856,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 var eastRegion = Ext.ComponentQuery.query('knitkit_eastregion').first();
                                 var elemPropertiesPanel = eastRegion.down('knitkitcomponentpropertiesformpanel');
                                 
-                                elemPropertiesPanel.loadElementProperties(e.detail.node, iframeNode);
+                                elemPropertiesPanel.loadSelectedTextProperties(iframeNode);
                                 elemPropertiesPanel.show();
                                 eastRegion.expand();
                             }, false);

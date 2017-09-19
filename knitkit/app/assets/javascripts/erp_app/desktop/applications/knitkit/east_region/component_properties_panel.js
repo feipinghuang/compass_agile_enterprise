@@ -99,6 +99,8 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                 xtype: 'textfield',
                 fieldLabel: 'Font Size',
                 name: 'fontSize',
+                regex: /^(\d)+(px)$/,
+                regexText: 'Invalid font size, Try something like 10px',
                 value: element.style.fontSize
             }, {
                 xtype: 'textfield',
@@ -147,7 +149,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                         // close the toolbar
                         if (iframe.contentWindow.__pen__) iframe.contentWindow.__pen__._menu.style.display = 'none';
 
-                        buttonConfig = this
                         me.down('#applyStatus').setText('Applied Successfully')
                         me.down('#applyStatus').show();
                         setTimeout(function(){
@@ -167,5 +168,91 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             }],
             items: items 
         });
+    },
+
+    loadSelectedTextProperties: function(iframe) {
+        var me = this;
+        me.removeAll();
+        me.add({
+            xtype: 'form',
+            autoScroll: true,
+            boddyPadding: 10,
+            style: {
+                left: '10px'
+            },
+            defaults: {
+                labelWidth: 75,
+                width: 250,
+                emptyText: 'Not Set'
+            },
+            tbar: [{
+                xtype: 'button',
+                itemId: 'saveButton',
+                text: 'Apply',
+                iconCls: 'icon-save',
+                handler: function(btn) {
+                    var formPanel = btn.up('form');
+
+                    if (formPanel.isValid()) {
+                        var properties = formPanel.getValues();
+                        
+                        // construct selected text style
+                        var style = ''; 
+                        for(var attr in properties) {
+                            if(!Compass.ErpApp.Utility.isBlank(properties[attr]))
+                                style += attr + ':' + properties[attr] + '; ';
+                        }
+
+                        // there is no direct way of inserting a span so the hack is insert an anchor tag
+                        // wrap it the a span and then remove the anchor tag
+                        var uniqueId = iframe.id + '-wrap-link';
+                        iframe.contentDocument.execCommand('CreateLink', false, uniqueId);
+                        var sel = $(iframe.contentDocument.body).find('.container > .row > .col-md-12').find('a[href="' + uniqueId + '"]');
+                        sel.wrap('<span style=' + style +'></span>');
+                        sel.contents().unwrap();
+                        
+                        me.down('#applyStatus').setText('Applied Successfully')
+                        me.down('#applyStatus').show();
+                        setTimeout(function(){
+                            me.down('#applyStatus').hide();
+                            me.down('#applyStatus').setText('');
+                        }, 3000)
+
+                    }
+                }
+            },{
+                xtype: 'label',
+                itemId: 'applyStatus',
+                hidden: true,
+                style: {
+                    color: 'green'
+                }
+            }],
+            items: [{
+                xtype: 'displayfield',
+                fieldLabel: 'Element Type',
+                value: 'Selected Text'
+            }, {
+                xtype: 'compassaecolorpicker',
+                fieldLabel: 'Color',
+                name: 'color',
+            }, {
+                xtype: 'compassaecolorpicker',
+                fieldLabel: 'Background Color',
+                name: 'background',
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Font Size',
+                regex: /^(\d)+(px)$/,
+                regexText: 'Invalid font size, Try something like 10px',
+                name: 'font-size',
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Font Family',
+                name: 'font-family',
+            }]
+        });
     }
 });
+
+
