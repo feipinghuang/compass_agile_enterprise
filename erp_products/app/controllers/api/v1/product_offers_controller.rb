@@ -48,13 +48,6 @@ module API
         # hook method to apply any scopes passed via parameters to this api
         product_offers = ProductOffer.apply_filters(query_filter)
 
-        # scope by dba_organizations if there are no parties passed as filters
-        unless query_filter[:party]
-          dba_organizations = [current_user.party.dba_organization]
-          dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
-          product_offers = product_offers.scope_by_dba_organization(dba_organizations)
-        end
-
         if sort and dir
           product_offers = product_offers.order("#{sort} #{dir}")
         end

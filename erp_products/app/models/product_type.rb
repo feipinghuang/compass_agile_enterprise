@@ -92,6 +92,11 @@ class ProductType < ActiveRecord::Base
         statement = statement.where('category_classifications.category_id' => filters[:category_ids])
       end
 
+      if filters[:collection_ids]
+        statement = statement.joins("inner join product_collections on product_collections.product_type_id = product_types.id")
+        statement = statement.where('product_collections.collection_id' => filters[:collection_ids])
+      end
+
       if filters[:party]
         if filters[:party].is_a? Hash
           statement = statement.scope_by_party(filters[:party][:id], {role_types: filters[:party][:role_types].split(',')})
@@ -107,6 +112,11 @@ class ProductType < ActiveRecord::Base
         join_stmt = "LEFT OUTER JOIN descriptive_assets ON descriptive_assets.described_record_id = product_types.id AND descriptive_assets.described_record_type = 'ProductType' AND #{descriptive_assets_tbl[:description].matches('%' + filters[:keyword] + '%').to_sql}"
 
         statement = statement.joins(join_stmt).where(product_types_tbl[:description].matches('%' + filters[:keyword] + '%'))
+      end
+
+      if filters[:exclude_discount_id]
+        statement = statement.joins("LEFT OUTER JOIN product_type_discounts on product_type_discounts.product_type_id = product_types.id ")
+        statement = statement.where('product_type_discounts.discount_id <> ? or product_type_discounts.discount_id is null', filters[:exclude_discount_id])
       end
 
       if filters[:available_on_web]
@@ -227,6 +237,34 @@ class ProductType < ActiveRecord::Base
     data[:options] = product_option_applicabilities.collect{|item| item.to_data_hash({include_options: true})}
 
     data
+  end
+
+  def to_offer_hash(root=true)
+    images = []
+    if self.images.empty?
+      images << "#{ErpTechSvcs::Config.file_protocol}://#{ErpTechSvcs::Config.installation_domain}/#{Rails.configuration.assets.prefix}/place_holder.jpeg"
+    else
+      self.images.each do |image|
+        images << image.fully_qualified_url
+      end
+    end
+
+    {
+       id: id,
+       description: description,
+       children: root ? [] : descendants,
+       discount_price: 0.0,
+       is_base: is_base,
+       is_leaf: leaf?,
+       leaf: leaf?,
+       price: try(:get_current_simple_plan).try(:money_amount),
+       images: images.first,
+       sku: sku,
+       created_at: created_at,
+       updated_at: updated_at
+    }
+
+
   end
 
   def to_display_hash

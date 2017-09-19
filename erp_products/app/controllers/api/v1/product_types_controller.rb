@@ -1,7 +1,6 @@
 module API
   module V1
-    ##class ProductTypesController < BaseController
-    class ProductTypesController < ActionController::Base
+    class ProductTypesController < BaseController
 
 =begin
 
@@ -39,6 +38,8 @@ module API
           start = params[:start] || 0
         end
 
+        #query_filter = {}
+
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
         context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
 
@@ -48,7 +49,7 @@ module API
 
         # hook method to apply any scopes passed via parameters to this api
         product_types = ProductType.apply_filters(query_filter)
-
+        #
         # scope by dba_organizations if there are no parties passed as filters
         unless query_filter[:party]
           dba_organizations = [current_user.party.dba_organization]
@@ -68,18 +69,56 @@ module API
 
         product_types = product_types.order('description')
 
-        if context[:view]
-          if context[:view] == 'mobile'
+        # special handling for discounts custom views
+        # is indicated by the presence of discountView
+        # parameter
+        if params[:discountView].blank?
+          if context[:view]
+            if context[:view] == 'mobile'
+              render :json => {success: true,
+                               total_count: total_count,
+                               product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
+            end
+          else
             render :json => {success: true,
                              total_count: total_count,
-                             product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
+                             product_types: product_types.collect { |product_type| product_type.to_data_hash }}
           end
         else
+          # special handling for discounts custom views
+          # uses a tree, may have node parameter
+          if params[:node].blank? || params[:node] == 'root'
+            # only take roots
+            product_type_ids = product_types.collect{|product_type| product_type.root.id}.uniq
+            product_types = ProductType.where("id in (#{product_type_ids.join(',')})")
+            roots = true
+          else
+            # take descendants of node
+            descendant_ids = ProductType.find(params[:node]).descendants.collect(&:id)
+
+            statement = ProductType
+
+            parent_ids = statement.where(ProductType.arel_table[:id].in(descendant_ids)).all.collect do |node|
+              node.self_and_ancestors.collect do |ancestor|
+                ancestor.id
+              end
+            end
+
+            parent_ids = parent_ids.flatten.uniq
+
+            node_sql = statement.select('product_types.id').where(ProductType.arel_table[:parent_id].eq(params[:node])).to_sql
+            parent_sql = ProductType.select('product_types.id').where(ProductType.arel_table[:parent_id].eq(params[:node])
+                                                                          .and(ProductType.arel_table[:id].in(parent_ids))).to_sql
+
+            product_types = ProductType.where("(id in (#{node_sql})) or (id in (#{parent_sql}))")
+
+            roots = false
+          end
+          total_count = product_types.count
           render :json => {success: true,
                            total_count: total_count,
-                           product_types: product_types.collect { |product_type| product_type.to_data_hash }}
+                           product_types: product_types.collect { |product_type| product_type.to_offer_hash(roots) }}
         end
-
       end
 =begin
 

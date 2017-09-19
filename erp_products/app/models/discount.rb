@@ -9,7 +9,7 @@ class Discount < ActiveRecord::Base
   #   t.datetime  :valid_from
   #   t.datetime  :valid_thru
   #   t.boolean   :round
-  #   t.decimal   :round_amount
+  #   t.integer   :round_amount
   #   t.integer   :created_by_party_id
   #   t.integer   :updated_by_party_id
   #
