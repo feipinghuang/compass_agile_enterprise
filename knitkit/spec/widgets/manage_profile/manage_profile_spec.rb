@@ -186,10 +186,10 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
       login_user(@user)
       @user.party.add_contact(PhoneNumber,{phone_number: '9876543210'},ContactPurpose.find_by_internal_identifier('default'))
-      email_info = {
-        email_address_id: PhoneNumber.last.id.to_s,
+      phone_info = {
+        phone_number_id: PhoneNumber.last.id.to_s,
       }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :remove_phone_number, uuid, email_info, nil)
+      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :remove_phone_number, uuid, phone_info, nil)
       result = widget.process('remove_phone_number')
       expect(result[:json][:message]).to match /Phone number removed/
     end
