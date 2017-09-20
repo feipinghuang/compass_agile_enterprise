@@ -322,8 +322,9 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             if (!Compass.ErpApp.Utility.isBlank(nodeStyle)) {
                 var styleFrags = nodeStyle.split(':');
                 $(node).find('[style*=' + styleFrags[0] + ']').each(function(){
-                    $(this).css(styleFrags[0], '');
+                    $(this).css(styleFrags[0].trim(), '');
                 });
+
             }
         });
     },
