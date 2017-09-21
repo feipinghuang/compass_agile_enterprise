@@ -153,6 +153,28 @@
     width: 16px;
 }
 
+.lock {
+  background-image: url(/assets/icons/lock/lock_16x16.png) !important;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/lock/lock_16x16.png', sizingMethod='crop');
+  height: 16px;
+  width: 16px;
+}
+
+.lock-open {
+  background-image: url(/assets/icons/lock_open/lock_open_16x16.png) !important;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/lock_open/lock_open_16x16.png', sizingMethod='crop');
+  height: 16px;
+  width: 16px;
+}
+
+.refresh {
+  background-image: url(/assets/icons/refresh/refresh_16x16.png) !important;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/refresh/refresh_16x16.png', sizingMethod='crop');
+  height: 16px;
+  width: 16px;
+}
+
+
 #ext-quicktips-tip-outerCt {
     width: auto !important;
 }
@@ -291,4 +313,3 @@
 .dropzone-container{
   position: relative;
 }
-

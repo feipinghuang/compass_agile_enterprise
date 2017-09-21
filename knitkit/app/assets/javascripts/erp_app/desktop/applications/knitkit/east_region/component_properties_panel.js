@@ -30,18 +30,84 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
         if (element.tagName == 'IMG') {
             items = items.concat([{
                 xtype: 'textfield',
-                fieldLabel: 'Height',
-                name: 'height',
-                regex: /^(\d)+$/,
-                regexText: 'Invalid height',
-                value: element.height
-            }, {
-                xtype: 'textfield',
                 fieldLabel: 'Width',
                 name: 'width',
                 regex: /^(\d)+$/,
                 regexText: 'Invalid width',
                 value: element.width,
+                listeners: {
+                    render: function(c) {
+                        c.getEl().on('keyup', function(){
+                            var isRatioLocked = c.up('form').down('#lockRatio').isLocked;
+                            if (isRatioLocked) {
+                                var ratio = element.width / element.height;
+                                var height = c.getValue() / ratio;
+                                c.up('form').down('[name="height"]').setValue(Math.round(height));
+                            }
+                        }, c);
+                        
+                    }
+                }
+            }, {
+                xtype: 'container',
+                layout: 'hbox',
+                width: 50,
+                style: {
+                    marginLeft: '80px',
+                    marginBottom: '2px',
+                },
+                defaults: {
+                    style: {
+                        backgroundColor: '#ffffff',
+                        border: 'none'
+                    }
+                },
+                items: [{
+                    xtype: 'button',
+                    tooltip: 'Lock Ratio',
+                    cls: 'lock',
+                    itemId: 'lockRatio',
+                    isLocked: true,
+                    handler: function(btn) {
+                        if (btn.isLocked){
+                            btn.removeCls('lock');
+                            btn.addCls('lock-open');
+                            btn.isLocked = false;
+                        } else {
+                            btn.removeCls('lock-open');
+                            btn.addCls('lock');
+                            btn.isLocked = true;
+                        }
+                    }
+                }, {
+                    xtype: 'button',
+                    cls: 'refresh',
+                    tooltip: 'Reset',
+                    handler: function(btn) {
+                        var form = btn.up('form');
+                        form.down('[name="width"]').setValue(element.naturalWidth);
+                        form.down('[name="height"]').setValue(element.naturalHeight);
+                    }
+                }]
+            }, {
+                xtype: 'textfield',
+                fieldLabel: 'Height',
+                name: 'height',
+                regex: /^(\d)+$/,
+                regexText: 'Invalid height',
+                value: element.height,
+                listeners: {
+                    render: function(c) {
+                        c.getEl().on('keyup', function(){
+                            var isRatioLocked = c.up('form').down('#lockRatio').isLocked;
+                            if (isRatioLocked) {
+                                var ratio = element.width / element.height;
+                                var width = c.getValue() * ratio;
+                                c.up('form').down('[name="width"]').setValue(Math.round(width));
+                            }
+                        }, c)
+                    }
+                }
             }, {
                 xtype: 'textfield',
                 fieldLabel: 'Source',
@@ -168,6 +234,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
             }],
             items: items 
         });
+        
     },
 
     loadSelectedTextProperties: function(iframe) {
@@ -189,7 +256,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
 
             // If the values are consistent through out the selection get them else get nothing
             function getSelectionProperty(propName) {
-                return startContainerStyle[propName] == endContainerStyle[propName] ? startContainerStyle[propName] : null;
+                return startContainerStyle[propName] == endContainerStyle[propName] ? startContainerStyle[propName.trim()] : null;
             }
             
             color = getSelectionProperty('color');
