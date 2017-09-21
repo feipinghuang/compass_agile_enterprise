@@ -5,11 +5,10 @@ describe Widgets::Signup::Base, type: :controller do
   #create dummy controller
   controller(ApplicationController) do end
 
-  let(:website) { FactoryGirl.create(:website, :configure_with_host, name: 'Test Website', host: 'localhost:3000') }
+  let(:user) { FactoryGirl.create(:user) }
+  let(:website) { FactoryGirl.create(:website, :configure_with_host, name: 'Test Website', host: 'localhost:3000', party: user.party) }
   let(:user_valid_params) { { first_name: 'Test', last_name: 'Test', email: 'test@example.com', username: 'test', password: 'password', password_confirmation: 'password' } }
   let(:user_invalid_params) { { first_name: '', last_name: '', email: '', username: '', password: '', password_confirmation: '' } }
-  let(:role_type) { FactoryGirl.create(:role_type) }
-  let(:user) { FactoryGirl.create(:user) }
 
   describe "GET #index" do
     it "returns index" do
@@ -25,6 +24,13 @@ describe Widgets::Signup::Base, type: :controller do
   end
 
   describe "POST #new" do
+      let!(:application_composer_role_type) { FactoryGirl.create(:role_type, description: 'Application Composer', internal_identifier: 'application_composer') }
+      let!(:dba_org_role_type) { FactoryGirl.create(:role_type, description: 'Doing Business As Organization', internal_identifier: 'dba_org', parent: application_composer_role_type) }
+      RoleType.iid('customer')
+      let!(:customer_role_type) { FactoryGirl.create(:role_type, description: 'Customer', internal_identifier: 'customer', parent: application_composer_role_type) }
+      let!(:website_role_type) { FactoryGirl.create(:role_type, description: 'Website', internal_identifier: 'website') }
+      let!(:member_role_type) { FactoryGirl.create(:role_type, description: 'Member', internal_identifier: 'member', parent: website_role_type) }
+
     context 'with valid data' do
       it "should create user" do
         uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
@@ -64,12 +70,12 @@ describe Widgets::Signup::Base, type: :controller do
         uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
         allow(Website).to receive(:find_by_host).and_return(website)
 
-        user_valid_params[:party_roles] = role_type.internal_identifier
+        user_valid_params[:party_roles] = customer_role_type.internal_identifier
 
         widget = Widgets::Signup::Base.new(controller, "signup", :new, uuid, user_valid_params, nil)
 
         widget.process('new')
-        expect(User.last.party.role_types.first.internal_identifier).to eq(role_type.internal_identifier)
+        expect(User.last.party.role_types.first.internal_identifier).to eq(customer_role_type.internal_identifier)
       end
     end
   end
