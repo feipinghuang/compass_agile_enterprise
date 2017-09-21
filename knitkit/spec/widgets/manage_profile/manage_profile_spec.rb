@@ -22,7 +22,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :index, uuid, {}, nil)
 
       result = widget.process('index')
-      expect(result).to match(/class="manage-profile-widget"/)
+      expect(result).to render_template(:index)
     end
   end
 
@@ -39,7 +39,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       }
       widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_user_information, uuid, user_info, nil)
       result = widget.process('update_user_information')
-      expect(result[:json][:html]).to match /Success!/
+      expect(result[:json][:html]).to render_template(:success)
     end
 
     it "should not update user information to blank" do
@@ -54,7 +54,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       }
       widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_user_information, uuid, user_info, nil)
       result = widget.process('update_user_information')
-      expect(result[:json][:html]).to match /There was an error:/
+      expect(result[:json][:html]).to render_template(:error)
     end
   end
 
@@ -70,7 +70,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       }
       widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
       result = widget.process('update_password')
-      expect(result[:json][:html]).to match /Password Updated/
+      expect(result[:json][:html]).to render_template(:success)
     end
 
     it "should not update user password when password and password_confirmation don't match" do
@@ -84,7 +84,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       }
       widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
       result = widget.process('update_password')
-      expect(result[:json][:html]).to match /Password Confirmation Must Match Password/
+      expect(result[:json][:html]).to render_template(:error)
     end
 
     it "should not update password when current password doesn't match" do
@@ -97,7 +97,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       }
       widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
       result = widget.process('update_password')
-      expect(result[:json][:html]).to match /Invalid Old Password/
+      expect(result[:json][:html]).to render_template(:error)
     end
 
     it "should not update invalid password" do
@@ -111,7 +111,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       }
       widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
       result = widget.process('update_password')
-      expect(result[:json][:html]).to match /Error Updating Password/
+      expect(result[:json][:html]).to render_template(:error)
     end
   end
 
