@@ -26,122 +26,138 @@ describe Widgets::ManageProfile::Base, :type => :controller do
     end
   end
 
-  describe "Update user information" do
-    it "should update user information" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(User).to receive(:find).and_return(@user)
+  describe "POST #update_user_information" do
+    context "with valid user data" do
+      it "should update user information" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(User).to receive(:find).and_return(@user)
 
-      user_info = {
-        first_name: 'Test',
-        last_name: 'Test',
-        middle_name: 'Test',
-        email: 'Test@Test.com'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_user_information, uuid, user_info, nil)
-      result = widget.process('update_user_information')
-      expect(result[:json][:html]).to render_template(:success)
+        user_info = {
+          first_name: 'Test',
+          last_name: 'Test',
+          middle_name: 'Test',
+          email: 'Test@Test.com'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_user_information, uuid, user_info, nil)
+        result = widget.process('update_user_information')
+        expect(result[:json][:html]).to render_template(:success)
+      end
     end
 
-    it "should not update user information to blank" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(User).to receive(:find).and_return(@user)
+    context "with blank user data" do
+      it "should not update user information" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(User).to receive(:find).and_return(@user)
 
-      user_info = {
-        first_name: '',
-        last_name: '',
-        middle_name: '',
-        email: ''
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_user_information, uuid, user_info, nil)
-      result = widget.process('update_user_information')
-      expect(result[:json][:html]).to render_template(:error)
-    end
-  end
-
-  describe "Update user password" do
-    it "should update user password" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(User).to receive(:authenticate).and_return(@user)
-      login_user(@user)
-      user_password = {
-        old_password: 'password',
-        new_password: 'password',
-        password_confirmation: 'password'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
-      result = widget.process('update_password')
-      expect(result[:json][:html]).to render_template(:success)
-    end
-
-    it "should not update user password when password and password_confirmation don't match" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(User).to receive(:authenticate).and_return(@user)
-      login_user(@user)
-      user_password = {
-        old_password: 'password',
-        new_password: 'password',
-        password_confirmation: 'password1'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
-      result = widget.process('update_password')
-      expect(result[:json][:html]).to render_template(:error)
-    end
-
-    it "should not update password when current password doesn't match" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      login_user(@user)
-      user_password = {
-        old_password: 'password1',
-        new_password: 'password',
-        password_confirmation: 'password'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
-      result = widget.process('update_password')
-      expect(result[:json][:html]).to render_template(:error)
-    end
-
-    it "should not update invalid password" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(User).to receive(:authenticate).and_return(@user)
-      login_user(@user)
-      user_password = {
-        old_password: 'password',
-        new_password: 'pass',
-        password_confirmation: 'pass'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
-      result = widget.process('update_password')
-      expect(result[:json][:html]).to render_template(:error)
+        user_info = {
+          first_name: '',
+          last_name: '',
+          middle_name: '',
+          email: ''
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_user_information, uuid, user_info, nil)
+        result = widget.process('update_user_information')
+        expect(result[:json][:html]).to render_template(:error)
+      end
     end
   end
 
-  describe "Add email Address" do
-    it "should add email" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      login_user(@user)
-      email_info = {
-        email_address: 'test123@test.com',
-        contact_purpose: 'default'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_email_address, uuid, email_info, nil)
-      result = widget.process('add_email_address')
-      expect(result[:json][:message]).to match /Email added/
+  describe "POST #update_password" do
+    context "with valid old password and new_password , password_confirmation combination" do
+      it "should update user password" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(User).to receive(:authenticate).and_return(@user)
+        login_user(@user)
+        user_password = {
+          old_password: 'password',
+          new_password: 'password',
+          password_confirmation: 'password'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
+        result = widget.process('update_password')
+        expect(result[:json][:html]).to render_template(:success)
+      end
     end
 
-    it "should not add invalid email address" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      login_user(@user)
-      email_info = {
-        email_address: 'test123',
-        contact_purpose: 'default'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_email_address, uuid, email_info, nil)
-      result = widget.process('add_email_address')
-      expect(result[:json][:message]).to match /Could not add email/
+    context "with invalid password and password combination" do
+      it "should not update user password" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(User).to receive(:authenticate).and_return(@user)
+        login_user(@user)
+        user_password = {
+          old_password: 'password',
+          new_password: 'password',
+          password_confirmation: 'password1'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
+        result = widget.process('update_password')
+        expect(result[:json][:html]).to render_template(:error)
+      end
+    end
+
+    context "with wroung current password" do
+      it "should not update password" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        login_user(@user)
+        user_password = {
+          old_password: 'password1',
+          new_password: 'password',
+          password_confirmation: 'password'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
+        result = widget.process('update_password')
+        expect(result[:json][:html]).to render_template(:error)
+      end
+    end
+
+    context "with invalid new password" do
+      it "should not update password" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(User).to receive(:authenticate).and_return(@user)
+        login_user(@user)
+        user_password = {
+          old_password: 'password',
+          new_password: 'pass',
+          password_confirmation: 'pass'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :update_password, uuid, user_password, nil)
+        result = widget.process('update_password')
+        expect(result[:json][:html]).to render_template(:error)
+      end
     end
   end
 
-  describe "Remove email Address" do
+  describe "POST #add_email_address" do
+    context "with valid email address" do
+      it "should add email" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        login_user(@user)
+        email_info = {
+          email_address: 'test123@test.com',
+          contact_purpose: 'default'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_email_address, uuid, email_info, nil)
+        result = widget.process('add_email_address')
+        expect(result[:json][:message]).to match /Email added/
+      end
+    end
+
+    context "with invalid email" do
+      it "should not add email address" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        login_user(@user)
+        email_info = {
+          email_address: 'test123',
+          contact_purpose: 'default'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_email_address, uuid, email_info, nil)
+        result = widget.process('add_email_address')
+        expect(result[:json][:message]).to match /Could not add email/
+      end
+    end
+  end
+
+  describe "GET #remove_email_address" do
     it "should remove email address" do
       uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
       login_user(@user)
@@ -155,33 +171,37 @@ describe Widgets::ManageProfile::Base, :type => :controller do
     end
   end
 
-  describe "Add Phone number" do
-    it "should add new Phone number" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      login_user(@user)
-      phone_info = {
-        phone_number: '9876543210',
-        contact_purpose: 'default'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_phone_number, uuid, phone_info, nil)
-      result = widget.process('add_phone_number')
-      expect(result[:json][:message]).to match /Phone number added/
+  describe "POST #add_phone_number" do
+    context "with valid phone number" do
+      it "should add new Phone number" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        login_user(@user)
+        phone_info = {
+          phone_number: '9876543210',
+          contact_purpose: 'default'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_phone_number, uuid, phone_info, nil)
+        result = widget.process('add_phone_number')
+        expect(result[:json][:message]).to match /Phone number added/
+      end
     end
 
-    it "should not add invalid Phone number" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      login_user(@user)
-      phone_info = {
-        phone_number: '98765432',
-        contact_purpose: 'default'
-      }
-      widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_phone_number, uuid, phone_info, nil)
-      result = widget.process('add_phone_number')
-      expect(result[:json][:message]).to match /Could not add phone number/
+    context "with invalid phone number" do
+      it "should not add Phone number" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        login_user(@user)
+        phone_info = {
+          phone_number: '98765432',
+          contact_purpose: 'default'
+        }
+        widget = Widgets::ManageProfile::Base.new(controller, "manage_profile", :add_phone_number, uuid, phone_info, nil)
+        result = widget.process('add_phone_number')
+        expect(result[:json][:message]).to match /Could not add phone number/
+      end
     end
   end
 
-  describe "Remove phone number" do
+  describe "GET #remove_phone_number" do
     it "should remove phone number" do
       uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
       login_user(@user)
@@ -195,7 +215,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
     end
   end
 
-  describe "Add Address" do
+  describe "POST #add_address" do
     it "should add address" do
       uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
       login_user(@user)
@@ -213,7 +233,7 @@ describe Widgets::ManageProfile::Base, :type => :controller do
     end
   end
 
-  describe "Remove Address" do
+  describe "GET #remove_address" do
     it "should remove address" do
       uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
       login_user(@user)

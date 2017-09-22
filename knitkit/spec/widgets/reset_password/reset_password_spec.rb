@@ -69,7 +69,7 @@ describe Widgets::ResetPassword::Base, type: :controller do
     end
   end
 
-  describe "Update Password" do
+  describe "POST #update_password" do
     context "with valid token and password" do
       it "should update user password" do
         uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
