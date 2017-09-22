@@ -254,12 +254,4 @@ describe Widgets::ManageProfile::Base, :type => :controller do
       expect(result[:json][:message]).to match /address removed/
     end
   end
-
-  after(:all) do
-    User.destroy_all
-    Individual.destroy_all
-    RoleType.destroy_all
-    Party.destroy_all
-    RelationshipType.destroy_all
-  end
 end

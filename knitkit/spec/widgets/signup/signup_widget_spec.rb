@@ -7,6 +7,7 @@ describe Widgets::Signup::Base, type: :controller do
 
   let(:user) { FactoryGirl.create(:user) }
   let(:website) { FactoryGirl.create(:website, :configure_with_host, name: 'Test Website', host: 'localhost:3000', party: user.party) }
+  let(:customer_role_type) { RoleType.iid('customer') }
   let(:user_valid_params) { { first_name: 'Test', last_name: 'Test', email: 'test@example.com', username: 'test', password: 'password', password_confirmation: 'password' } }
   let(:user_invalid_params) { { first_name: '', last_name: '', email: '', username: '', password: '', password_confirmation: '' } }
 
@@ -24,13 +25,6 @@ describe Widgets::Signup::Base, type: :controller do
   end
 
   describe "POST #new" do
-      let!(:application_composer_role_type) { FactoryGirl.create(:role_type, description: 'Application Composer', internal_identifier: 'application_composer') }
-      let!(:dba_org_role_type) { FactoryGirl.create(:role_type, description: 'Doing Business As Organization', internal_identifier: 'dba_org', parent: application_composer_role_type) }
-      RoleType.iid('customer')
-      let!(:customer_role_type) { FactoryGirl.create(:role_type, description: 'Customer', internal_identifier: 'customer', parent: application_composer_role_type) }
-      let!(:website_role_type) { FactoryGirl.create(:role_type, description: 'Website', internal_identifier: 'website') }
-      let!(:member_role_type) { FactoryGirl.create(:role_type, description: 'Member', internal_identifier: 'member', parent: website_role_type) }
-
     context 'with valid data' do
       it "should create user" do
         uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
