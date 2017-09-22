@@ -47,79 +47,47 @@ class Discount < ActiveRecord::Base
     end
   end
 
-  # take array of product types and generate a set of product offers
+  # take array of product type ids and generate a set of product offers
   def generate_product_offers(product_type_ids)
 
-    # TODO: Ask Rick about aging discounts / history of discounts
-
-    # TODO: For now, going to delete all product offers and re-generate
-    product_type_discounts.each do |product_type_discount|
-      product_type_discount.destroy
-      end
-    product_offers.each do |product_offer|
-      product_offer.destroy
-    end
-    # TODO: Revisit this
 
     product_type_ids.each do |product_type_id|
-      # tie the product type to the discount
-      ProductTypeDiscount.create(
-          discount_id: id,
-          product_type_id: product_type_id.to_i
-      )
+      # check to see if this product type already belongs to the discount
+      product_type_discount = ProductTypeDiscount.find_by_discount_id_and_product_type_id(id, product_type_id)
+      if product_type_discount.nil?
+        # tie the product type to the discount
+        ProductTypeDiscount.create(
+            discount_id: id,
+            product_type_id: product_type_id
+        )
 
-      # create a simple product offer
-      simple_product_offer = SimpleProductOffer.create(
-      )
+        # create a simple product offer
+        simple_product_offer = SimpleProductOffer.create(
+        )
 
+        # update the ProductOffer created by SimpleProductOffer 'acting' as a product offer
+        simple_product_offer.product_offer.description = 'P OFFER ' + product_type_id.to_s
+        simple_product_offer.product_offer.product_type_id = product_type_id
+        simple_product_offer.product_offer.discount_id = id
+        simple_product_offer.product_offer.save
 
-      # create a product offer
-      ProductOffer.create(
-          product_offer_record_id: simple_product_offer.id,
-          product_offer_record_type: 'SimpleProductOffer',
-          description: 'P OFFER ' + product_type_id,
-          product_type_id: product_type_id.to_i,
-          discount_id: id
-      )
+        # calculate the discount price, based on type and amount
+        # get current non-discounted price forthe product
+        discount_price = calculate_discount_amount(product_type_id.to_i)
 
-      # calculate the discount price, based on type and amount
-      # get current non-discounted price forthe product
-      product_type_base_price = ProductType.find(product_type_id.to_i).get_current_simple_plan.money_amount
-      case discount_type.downcase
-        when 'amount'
-          new_price = product_type_base_price - amount
-        when 'percent'
-          new_price = product_type_base_price - (amount * product_type_base_price)
-        when 'rule_based'
-          # tbd
-          new_price = 0.0
+        simple_product_offer.set_default_price(discount_price, currency=Currency.usd)
+
       end
-      if round
-        new_price = new_price.floor + round_amount
-      end
-
-
-      # create a pricing plan
-      pricing_plan = PricingPlan.create(
-          description: 'PP OFFER ' + product_type_id,
-          from_date: valid_from,
-          thru_date: valid_thru,
-          is_simple_amount: true,
-          money_amount: new_price
-      )
-
-
-      # create pricing plan assignment
-      PricingPlanAssignment.create(
-          pricing_plan_id:   pricing_plan.id,
-          priceable_item_type: 'SimpleProductOffer',
-          priceable_item_id: simple_product_offer.id
-      )
-
     end
-
-
   end
+
+  def update_product_offers
+    product_offers.each do |product_offer|
+      discount_price = calculate_discount_amount(product_offer.product_type_id)
+      product_offer.product_offer_record.set_default_price(discount_price, currency=Currency.usd)
+    end
+  end
+
 
   def to_data_hash
     data = to_hash(only: [
@@ -156,6 +124,25 @@ class Discount < ActiveRecord::Base
 
   def to_mobile_hash
     to_data_hash
+  end
+
+  private
+
+  def calculate_discount_amount(product_type_id)
+    product_type_base_price = ProductType.find(product_type_id.to_i).get_current_simple_plan.money_amount
+    case discount_type.downcase
+      when 'amount'
+        new_price = product_type_base_price - amount
+      when 'percent'
+        new_price = product_type_base_price - ((amount/100.0) * product_type_base_price)
+      when 'rule_based'
+        # tbd
+        new_price = 0.0
+    end
+    if round
+      new_price = new_price.floor + (round_amount / 100.0)
+    end
+    new_price
   end
 
 end

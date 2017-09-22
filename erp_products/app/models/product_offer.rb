@@ -8,6 +8,10 @@ class ProductOffer < ActiveRecord::Base
 
   belongs_to :product_offer_record, :polymorphic => true
 
+  before_destroy :before_destroy
+
+  after_destroy :after_destroy
+
   class << self
     # Filter records
     #
@@ -43,7 +47,10 @@ class ProductOffer < ActiveRecord::Base
     end
   end
 
-
+  def before_destroy
+    # get rid of the association that ties product type and discount for this offer
+    ProductTypeDiscount.where('discount_id = ? and product_type_id = ?', discount_id, product_type_id).first.delete
+  end
 
   def after_destroy
     if self.product_offer_record && !self.product_offer_record.frozen?
@@ -70,10 +77,11 @@ class ProductOffer < ActiveRecord::Base
                        :created_at,
                        :updated_at
                    ],
-                   product_sku: product_type.sku,
+                   product_sku: product_type.is_base ? 'base' : product_type.sku,
                    product_description: product_type.description,
                    product_base_price: product_type.get_current_simple_plan.money_amount,
                    product_default_image_url: image_url,
+                   product_is_base: product_type.is_base,
                    product_discount_price: product_offer_record.get_current_simple_plan.money_amount)
 
     data

@@ -4,6 +4,6 @@ class SimpleProductOffer < ActiveRecord::Base
   is_json :custom_fields
   # i.e., a product offer record
   # TODO: not sure if this mixin is needed anymore. it's pretty thin
-  # acts_as_product_offer
+  acts_as_product_offer
 
 end

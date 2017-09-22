@@ -242,6 +242,27 @@ module API
         render :json => {:success => true}
       end
 
+      def add_product_to_discount
+        product_id = params[:id].to_i
+        product_is_base = params[:base_product] == 'true' ? true : false
+        discount_id = params[:discount_id].to_i
+
+        discount = Discount.find(discount_id)
+
+        product_type = ProductType.find(product_id)
+
+        if product_is_base
+          product_ids = product_type.children.collect { |children| children.id}
+          product_ids.unshift(product_id)
+        else
+          product_ids = [product_id]
+        end
+
+        discount.generate_product_offers(product_ids)
+
+        render :json => {:success => true}
+      end
+
     end # DiscountsController
   end # V1
 end # API

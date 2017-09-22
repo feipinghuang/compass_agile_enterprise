@@ -89,35 +89,33 @@ module API
           # uses a tree, may have node parameter
           if params[:node].blank? || params[:node] == 'root'
             # only take roots
+            # need to apply some funky filtering using the exclude discount
             product_type_ids = product_types.collect{|product_type| product_type.root.id}.uniq
-            product_types = ProductType.where("id in (#{product_type_ids.join(',')})")
-            roots = true
+            product_type_ids = filtered_roots(query_filter[:exclude_discount_id], product_type_ids)
           else
             # take descendants of node
             descendant_ids = ProductType.find(params[:node]).descendants.collect(&:id)
-
             statement = ProductType
-
-            parent_ids = statement.where(ProductType.arel_table[:id].in(descendant_ids)).all.collect do |node|
+            product_type_ids = statement.where(ProductType.arel_table[:id].in(descendant_ids)).all.collect do |node|
               node.self_and_ancestors.collect do |ancestor|
                 ancestor.id
               end
             end
-
-            parent_ids = parent_ids.flatten.uniq
-
-            node_sql = statement.select('product_types.id').where(ProductType.arel_table[:parent_id].eq(params[:node])).to_sql
-            parent_sql = ProductType.select('product_types.id').where(ProductType.arel_table[:parent_id].eq(params[:node])
-                                                                          .and(ProductType.arel_table[:id].in(parent_ids))).to_sql
-
-            product_types = ProductType.where("(id in (#{node_sql})) or (id in (#{parent_sql}))")
-
-            roots = false
+            product_type_ids = product_type_ids.flatten.uniq
+            # determine which children are in the discount already and exclude them
+            product_type_ids = filtered_node(query_filter[:exclude_discount_id], product_type_ids )
           end
-          total_count = product_types.count
+          if product_type_ids.count > 0
+            product_types = ProductType.where("id in (#{product_type_ids.join(',')})")
+            total_count = product_types.count
+          else
+            product_types = []
+            total_count = 0
+          end
+
           render :json => {success: true,
                            total_count: total_count,
-                           product_types: product_types.collect { |product_type| product_type.to_offer_hash(roots) }}
+                           product_types: product_types.collect { |product_type| product_type.to_offer_hash() }}
         end
       end
 =begin
@@ -297,7 +295,51 @@ module API
         ProductType.find(params[:id]).destroy
 
         render :json => {:success => true}
+    end
+
+    private
+
+    #
+    # Not part of the exposed API
+    #
+
+    def filtered_roots(discount_id, product_type_ids)
+      filtered_product_type_ids = []
+      # for a potential root, only keep if at least one child is not participating
+      # in the discount
+      product_type_ids.each do |product_type_id|
+        product_type = ProductType.find(product_type_id)
+        product_type_children_ids = product_type.children.collect { |children| children.id}
+        # if no children. let it pass
+        if product_type_children_ids.count == 0
+          filtered_product_type_ids << product_type_id
+        else
+          product_type_discounts = ProductTypeDiscount.where("discount_id = ? and product_type_id in (#{product_type_children_ids.join(',')})", discount_id)
+          # if this root's children are greater than the number of children in the discount,
+          # there's at least on child who isn't in the discount, so take this root
+          if product_type_children_ids.count > product_type_discounts.count
+            filtered_product_type_ids << product_type_id
+          end
+        end
       end
+      filtered_product_type_ids
+    end
+
+    def filtered_node(discount_id, product_type_ids)
+      filtered_product_type_ids = []
+      product_type_ids.each do |product_type_id|
+        product_type = ProductType.find(product_type_id)
+        if product_type.root?
+        else
+          product_type_discount =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", discount_id, product_type.id)
+          if product_type_discount.empty?
+            filtered_product_type_ids << product_type.id
+          end
+        end
+      end
+      filtered_product_type_ids
+    end
+
 
     end # ProductTypesController
   end # V1

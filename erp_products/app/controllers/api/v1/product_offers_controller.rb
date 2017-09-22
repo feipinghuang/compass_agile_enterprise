@@ -237,7 +237,7 @@ module API
  @apiVersion 1.0.0
  @apiName DeleteProductOffer
  @apiGroup ProductOffer
- @apiDescription Delete Product Type
+ @apiDescription Delete Product Offer
 
  @apiParam (param) {Integer} id Id of record to delete
 
@@ -250,6 +250,77 @@ module API
         ProductOffer.find(params[:id]).destroy
 
         render :json => {:success => true}
+      end
+
+=begin
+
+ @api {delete} /api/v1/product_offers/special_delete
+ @apiVersion 1.0.0
+ @apiName SpecialDeleteProductOffer
+ @apiGroup ProductOffer
+ @apiDescription Delete Product Offer
+
+ @apiParam (param) {Integer} id Id of record to delete
+
+ @apiSuccess (200) {Object} delete_product_offer_response Response.
+ @apiSuccess (200) {Boolean} delete_product_offer_response.success True if the request was successful
+
+=end
+
+      def special_delete
+        id = params[:id].to_i
+        associated_product_is_base = params[:base_product] == 'true' ? true : false
+        discount_id = params[:discount_id].to_i
+        product_offer = ProductOffer.find(id.to_i)
+
+        unless product_offer.nil?
+
+          # if it's a base product, remove all of it's variant from the discount
+          # if it's not a base just remove the offer
+          # if it's the last variant for the product, remove the base too
+          if associated_product_is_base
+            product_type = ProductType.find(product_offer.product_type_id)
+            product_variants = product_type.children
+            product_variants.each do |product_variant|
+              # see if there's a product offer for the variant
+              variant_product_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, product_variant.id)
+              unless variant_product_offer.nil?
+                variant_product_offer.destroy
+              end
+            end
+            product_offer.destroy
+          else
+            offer_product_type = ProductType.find(product_offer.product_type_id)
+            if no_other_children_in_discount?(discount_id, offer_product_type, product_offer.product_type_id)
+              # if there no other variants of this product type in the offer, delete the base too
+              # find the the parent and delete it
+              offer_product_type_parent = offer_product_type.parent
+              parent_product_type_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, offer_product_type_parent.id)
+              unless parent_product_type_offer.nil?
+                parent_product_type_offer.destroy
+              end
+            end
+            product_offer.destroy
+          end
+          render :json => {:success => true}
+        else
+          render :json => {:success => false}
+        end
+      end
+
+      private
+
+      def no_other_children_in_discount?(discount_id, offer_product_type, current_offer_product_type_id)
+        offer_product_type_parent = offer_product_type.parent
+        child_ids = offer_product_type_parent.children.collect { |children| children.id}
+        child_ids.delete(current_offer_product_type_id)
+        child_ids.each do |child_id|
+          product_offer_for_child = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, child_id)
+          unless product_offer_for_child.nil?
+            return false
+          end
+        end
+        return true
       end
 
     end # ProductOffersController

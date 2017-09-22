@@ -114,10 +114,10 @@ class ProductType < ActiveRecord::Base
         statement = statement.joins(join_stmt).where(product_types_tbl[:description].matches('%' + filters[:keyword] + '%'))
       end
 
-      if filters[:exclude_discount_id]
-        statement = statement.joins("LEFT OUTER JOIN product_type_discounts on product_type_discounts.product_type_id = product_types.id ")
-        statement = statement.where('product_type_discounts.discount_id <> ? or product_type_discounts.discount_id is null', filters[:exclude_discount_id])
-      end
+      # if filters[:exclude_discount_id]
+      #   statement = statement.joins("LEFT OUTER JOIN product_type_discounts on product_type_discounts.product_type_id = product_types.id ")
+      #   statement = statement.where('product_type_discounts.discount_id <> ? or product_type_discounts.discount_id is null', filters[:exclude_discount_id])
+      # end
 
       if filters[:available_on_web]
         statement = statement.where(available_on_web: true)
@@ -239,7 +239,7 @@ class ProductType < ActiveRecord::Base
     data
   end
 
-  def to_offer_hash(root=true)
+  def to_offer_hash()
     images = []
     if self.images.empty?
       images << "#{ErpTechSvcs::Config.file_protocol}://#{ErpTechSvcs::Config.installation_domain}/#{Rails.configuration.assets.prefix}/place_holder.jpeg"
@@ -252,14 +252,14 @@ class ProductType < ActiveRecord::Base
     {
        id: id,
        description: description,
-       children: root ? [] : descendants,
+       children: [], # no roots passed
        discount_price: 0.0,
        is_base: is_base,
        is_leaf: leaf?,
        leaf: leaf?,
        price: try(:get_current_simple_plan).try(:money_amount),
        images: images.first,
-       sku: sku,
+       sku: is_base ? 'base' : sku,
        created_at: created_at,
        updated_at: updated_at
     }
