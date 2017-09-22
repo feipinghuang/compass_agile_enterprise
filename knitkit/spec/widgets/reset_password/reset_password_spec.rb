@@ -11,122 +11,134 @@ describe Widgets::ResetPassword::Base, type: :controller do
   end
 
   describe "Get index" do
-    it "returns index" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(Website).to receive(:find_by_host).and_return(@website)
+    context "without reset password token" do
+      it "returns index" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(Website).to receive(:find_by_host).and_return(@website)
 
-      widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :index, uuid, {}, nil)
+        widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :index, uuid, {}, nil)
 
-      result = widget.process('index')
-      expect(result).not_to be_empty
-      expect(result).to render_template(:index)
+        result = widget.process('index')
+        expect(result).not_to be_empty
+        expect(result).to render_template(:index)
+      end
     end
 
-    it "should verify reset password token" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(Website).to receive(:find_by_host).and_return(@website)
+    context "with reset password token" do
+      it "returns reset password form" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(Website).to receive(:find_by_host).and_return(@website)
 
-      @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
-      @test_user.reset_password_email_sent_at = Time.now.in_time_zone
-      @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
-      @test_user.save
+        @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
+        @test_user.reset_password_email_sent_at = Time.now.in_time_zone
+        @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
+        @test_user.save
 
-      reset_password_params = {
-        reset_password_url: '/reset-password',
-        token: @test_user.reset_password_token
-      }
+        reset_password_params = {
+          reset_password_url: '/reset-password',
+          token: @test_user.reset_password_token
+        }
 
-      widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :index, uuid, reset_password_params, nil)
+        widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :index, uuid, reset_password_params, nil)
 
-      result = widget.process('index')
-      expect(result).to match(/class="form-update_password"/)
+        result = widget.process('index')
+        expect(result).to render_template(:reset_password)
+      end
     end
 
-    it "should not verify invalid token" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(Website).to receive(:find_by_host).and_return(@website)
+    context "with invalid reset password token" do
+      it "returns invalid reset token template" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(Website).to receive(:find_by_host).and_return(@website)
 
-      @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
-      @test_user.reset_password_email_sent_at = Time.now.in_time_zone
-      @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
-      @test_user.save
+        @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
+        @test_user.reset_password_email_sent_at = Time.now.in_time_zone
+        @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
+        @test_user.save
 
-      reset_password_params = {
-        reset_password_url: '/reset-password',
-        token: SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
-      }
+        reset_password_params = {
+          reset_password_url: '/reset-password',
+          token: SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
+        }
 
-      widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :index, uuid, reset_password_params, nil)
+        widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :index, uuid, reset_password_params, nil)
 
-      result = widget.process('index')
-      expect(result).to match(/Your password reset request looks invalid/)
+        result = widget.process('index')
+        expect(result).to render_template(:invalid_reset_token)
+      end
     end
   end
 
   describe "Update Password" do
-    it "should update user password" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(Website).to receive(:find_by_host).and_return(@website)
+    context "with valid token and password" do
+      it "should update user password" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(Website).to receive(:find_by_host).and_return(@website)
 
-      @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
-      @test_user.reset_password_email_sent_at = Time.now.in_time_zone
-      @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
-      @test_user.save
+        @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
+        @test_user.reset_password_email_sent_at = Time.now.in_time_zone
+        @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
+        @test_user.save
 
-      update_password_params = {
-        login_url: '/login',
-        token: @test_user.reset_password_token,
-        password: 'password',
-        password_confirmation: 'password'
-      }
+        update_password_params = {
+          login_url: '/login',
+          token: @test_user.reset_password_token,
+          password: 'password',
+          password_confirmation: 'password'
+        }
 
-      widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :update_password, uuid, update_password_params, nil)
+        widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :update_password, uuid, update_password_params, nil)
 
-      result = widget.process('update_password')
-      expect(result[:json][:html]).to match(/Your password has successfully been reset/)
+        result = widget.process('update_password')
+        expect(result[:json][:html]).to render_template(:reset_success)
+      end
     end
 
-    it "should not update user password with invalid token" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(Website).to receive(:find_by_host).and_return(@website)
+    context "with invalid token" do
+      it "should not update user password" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(Website).to receive(:find_by_host).and_return(@website)
 
-      @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
-      @test_user.reset_password_email_sent_at = Time.now.in_time_zone
-      @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
-      @test_user.save
+        @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
+        @test_user.reset_password_email_sent_at = Time.now.in_time_zone
+        @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
+        @test_user.save
 
-      update_password_params = {
-        login_url: '/login',
-        token: SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz'),
-        password: 'password',
-        password_confirmation: 'password'
-      }
+        update_password_params = {
+          login_url: '/login',
+          token: SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz'),
+          password: 'password',
+          password_confirmation: 'password'
+        }
 
-      widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :update_password, uuid, update_password_params, nil)
+        widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :update_password, uuid, update_password_params, nil)
 
-      result = widget.process('update_password')
-      expect(result[:json][:html]).to match(/Could not reset Password/)
+        result = widget.process('update_password')
+        expect(result[:json][:html]).to render_template(:invalid_reset_token)
+      end
     end
 
-    it "should not update user password when password and password_confirmation don't match" do
-      uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
-      allow(Website).to receive(:find_by_host).and_return(@website)
+    context "with invalid password and password combination" do
+      it "should not update user" do
+        uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+        allow(Website).to receive(:find_by_host).and_return(@website)
 
-      @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
-      @test_user.reset_password_email_sent_at = Time.now.in_time_zone
-      @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
-      @test_user.save
+        @test_user.reset_password_token = SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz')
+        @test_user.reset_password_email_sent_at = Time.now.in_time_zone
+        @test_user.reset_password_token_expires_at = Time.now.in_time_zone + 1.day
+        @test_user.save
 
-      update_password_params = {
-        token: SecureRandom.base64(15).tr('+/=lIO0', 'pqrsxyz'),
-        password: 'password1',
-        password_confirmation: 'password'
-      }
+        update_password_params = {
+          token: @test_user.reset_password_token,
+          password: 'password1',
+          password_confirmation: 'password'
+        }
 
-      widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :update_password, uuid, update_password_params, nil)
+        widget = Widgets::ResetPassword::Base.new(controller, "reset_password", :update_password, uuid, update_password_params, nil)
 
-      result = widget.process('update_password')
-      expect(result[:json][:html]).to match(/Could not reset Password/)
+        result = widget.process('update_password')
+        expect(result[:json][:html]).to render_template(:reset_password)
+      end
     end
   end
 
