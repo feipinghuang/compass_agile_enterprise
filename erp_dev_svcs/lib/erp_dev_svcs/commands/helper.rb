@@ -57,8 +57,8 @@ module ErpDevSvcs
             Dir.chdir(code_dir)
             root_dir = Dir.pwd
 
-            #we're using gemspecs to know that we have
-            #a mountable engine located there
+            # we're using gemspecs to know that we have
+            # a mountable engine located there
             gemspecs = Dir.glob("**/*.gemspec")
             gemspecs = sort_gems(gemspecs) if code_dir == COMPASS_ROOT
             gemspecs.each do |gem|
@@ -115,26 +115,26 @@ module ErpDevSvcs
       end
 
       def self.compass_gem_names
-         [:erp_base_erp_svcs,
-                     :erp_dev_svcs,
-                     :erp_tech_svcs,
-                     :erp_app,
-                     :erp_agreements,
-                     :erp_products,
-                     :erp_orders,
-                     :erp_txns_and_accts,
-                     :erp_commerce,
-                     :erp_inventory,
-                     :erp_communication_events,
-                     :erp_rules,
-                     :erp_work_effort,
-                     :erp_invoicing,
-                     :erp_financial_accounting,
-                     :compass_ae_console,
-                     :knitkit,
-                     :rails_db_admin,
-                     :compass_ae_starter_kit,
-                     :erp_search]
+        [:erp_base_erp_svcs,
+         :erp_dev_svcs,
+         :erp_tech_svcs,
+         :erp_app,
+         :erp_agreements,
+         :erp_products,
+         :erp_orders,
+         :erp_txns_and_accts,
+         :erp_commerce,
+         :erp_inventory,
+         :erp_communication_events,
+         :erp_rules,
+         :erp_work_effort,
+         :erp_invoicing,
+         :erp_financial_accounting,
+         :compass_ae_console,
+         :knitkit,
+         :rails_db_admin,
+         :compass_ae_starter_kit,
+         :erp_search]
       end
 
     end

@@ -23,8 +23,6 @@
 class InventoryEntry < ActiveRecord::Base
   is_tenantable
 
-  is_repeatable :starttime, :endtime
-
   attr_protected :created_at, :updated_at
 
   has_party_roles

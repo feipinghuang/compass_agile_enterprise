@@ -24,16 +24,17 @@ Gem::Specification.new do |s|
   s.add_dependency 'erp_base_erp_svcs', "~> 4.2"
   s.add_development_dependency 'erp_dev_svcs', "~> 4.2"
 
+  s.add_dependency('acts-as-taggable-on','2.3.3')
   s.add_dependency "chronic", "0.10.2"
   s.add_dependency "aasm", "3.0.14"
   s.add_dependency 'nested-hstore', '0.0.5'
   s.add_dependency 'httparty', '~> 0.12'
   s.add_dependency "aws-sdk", '1.63.0'
-  s.add_dependency('delayed_job_active_record','0.3.3')
-  s.add_dependency('paperclip','3.3.1')
-  s.add_dependency('wicked_pdf','0.11.0')
-  s.add_dependency('sorcery','0.9.1')
-  s.add_dependency('daemons', '1.2.3')
-  s.add_dependency('mail_alternatives_with_attachments','1.0.0')
+  s.add_dependency 'delayed_job_active_record','0.3.3'
+  s.add_dependency 'paperclip','3.3.1'
+  s.add_dependency 'wicked_pdf','0.11.0'
+  s.add_dependency 'sorcery','0.9.1'
+  s.add_dependency 'daemons', '1.2.3'
+  s.add_dependency 'mail_alternatives_with_attachments','1.0.0'
 
 end

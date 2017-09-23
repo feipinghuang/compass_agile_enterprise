@@ -141,10 +141,19 @@ module ErpTechSvcs
         path = path.sub(%r{^/}, '')
         result = false
         message = nil
+
         begin
-          bucket.objects.with_prefix(path).delete_all
-          message = "File was deleted successfully"
-          result = true
+          if is_directory && (self.build_tree(path)[:children].count != 0)
+            message = ErpTechSvcs::FileSupport::Manager::FOLDER_IS_NOT_EMPTY
+            result = false
+
+          else
+            bucket.objects.with_prefix(path).delete_all
+            message = "File was deleted successfully"
+            result = true
+
+          end
+
         rescue => ex
           result = false
           message = ex

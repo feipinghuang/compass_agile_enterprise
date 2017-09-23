@@ -9,29 +9,18 @@ describe RailsDbAdmin::ErpApp::Desktop::QueriesController do
 
   describe "POST execute_query" do
 
-    before(:all) do 
+    before(:all) do
       FactoryGirl.create(:role_type, :internal_identifier => "execute_query_test_role")
     end
 
-    # an empty result set should probably return true, and only false if an exception is caught
-    # if success is used for UI purposes, a count on the data should probably be used instead
-    it "returns unsuccessful because of an empty result set" do
-      post :execute_query, {:use_route => :rails_db_admin,
-                            :cursor_pos => "0",
-                            :sql => "SELECT * FROM relationship_types WHERE id < 0;"}
-
-      parsed_body = JSON.parse(response.body)
-      parsed_body["success"].should eq(false)
-      parsed_body["exception"].should eq("Empty result set")
-    end
 
     it "should not throw exception if there is 1 statement and no semi-colon" do
 
       post :execute_query, {:use_route => :rails_db_admin,
                             :cursor_pos => "0",
                             :sql => "SELECT * FROM role_types "\
-                                    "WHERE internal_identifier"\
-                                    " = 'execute_query_test_role'"}
+                            "WHERE internal_identifier"\
+                            " = 'execute_query_test_role'"}
 
       parsed_body = JSON.parse(response.body)
       parsed_body["success"].should eq(true)
@@ -40,17 +29,17 @@ describe RailsDbAdmin::ErpApp::Desktop::QueriesController do
     it "should work on multi-line queries" do
 
       post :execute_query, {:use_route => :rails_db_admin,
-                      :cursor_pos => "1",
-                      :sql => "SELECT * FROM role_types \n"\
-                              "WHERE internal_identifier ="\
-                              "'execute_query_test_role';"}
+                            :cursor_pos => "1",
+                            :sql => "SELECT * FROM role_types \n"\
+                            "WHERE internal_identifier ="\
+                            "'execute_query_test_role';"}
 
       parsed_body = JSON.parse(response.body)
       parsed_body["success"].should eq(true)
       parsed_body["exception"].should eq(nil)
     end
 
-    it "should work on queries with line count >2" do 
+    it "should work on queries with line count >2" do
       @sql = "DELETE%20FROM%20preference_options_preference_types"\
         "%20WHERE%20%0Apreference_type_id%20%3D%203%20AND%20%0"\
         "Apreference_option_id%20%3D%209%20OR%0Apreference_option_id"\
@@ -61,20 +50,21 @@ describe RailsDbAdmin::ErpApp::Desktop::QueriesController do
       @cursor_pos = "6"
 
       post :execute_query, {:use_route => :rails_db_admin,
-                      :cursor_pos => @cursor_pos,
-                      :sql => @sql}
+                            :cursor_pos => @cursor_pos,
+                            :sql => @sql}
 
       parsed_body = JSON.parse(response.body)
+
       parsed_body["success"].should eq(true)
     end
 
     it "should work on input of multiple queries spanning several lines each " do
 
       post :execute_query, {:use_route => :rails_db_admin,
-                      :cursor_pos => "1",
-                      :sql => "SELECT * FROM role_types \n"\
-                              "WHERE internal_identifier = 'execute_query_test_role';\n"\
-                              "SELECT * FROM widgets"}
+                            :cursor_pos => "1",
+                            :sql => "SELECT * FROM role_types \n"\
+                            "WHERE internal_identifier = 'execute_query_test_role';\n"\
+                            "SELECT * FROM widgets"}
 
       parsed_body = JSON.parse(response.body)
       parsed_body["success"].should eq(true)

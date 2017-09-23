@@ -19,21 +19,19 @@ Gem::Specification.new do |s|
   s.files       = Dir["{public,app,config,db,lib,tasks}/**/*"] + ["GPL-3-LICENSE", "Rakefile", "README.md"]
   s.test_files  = Dir["spec/**/*"]
 
+  s.add_dependency "rails", "~> 3.2"
   s.add_dependency('attr_encrypted','~> 3.0.3')
   s.add_dependency('awesome_nested_set','~> 2.1')
   s.add_dependency('data_migrator','~> 2.0')
   s.add_dependency('has_many_polymorphic','~> 2.0')
   s.add_dependency('uuid','2.3.5')
   s.add_dependency 'wisper', '1.6.0'
-
-  s.add_development_dependency "cucumber-rails", "~> 1.3"
-  s.add_development_dependency "database_cleaner", '~> 0'
-  s.add_development_dependency "factory_girl_rails", "~> 4.1"
-  s.add_development_dependency "rspec-rails", "~> 2.12"
-  s.add_development_dependency "simplecov", "~> 0.7"
-  s.add_development_dependency "spork", "~> 0.9"
-  s.add_development_dependency "sqlite3", "~> 1.3"
-  s.add_development_dependency "watchr", "~> 0.7"
   s.add_dependency "acts_as_list", "~> 0.9.5"
 
+  s.add_development_dependency "test-unit", "~> 3.2.5"
+  s.add_development_dependency "factory_girl_rails", "~> 4.8"
+  s.add_development_dependency "rspec-rails", "~> 3.6"
+  s.add_development_dependency "simplecov", "~> 0.15"
+  s.add_development_dependency "spork", "~> 0.9"
+  s.add_development_dependency "sqlite3", "~> 1.3"
 end

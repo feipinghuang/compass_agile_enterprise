@@ -246,33 +246,6 @@ class SetupKnitkit < ActiveRecord::Migration
       add_index :website_navs, :website_id
     end
 
-    # tags
-    unless table_exists?(:tags)
-      create_table :tags do |t|
-        t.column :name, :string
-      end
-    end
-
-    # tags
-    unless table_exists?(:taggings)
-      create_table :taggings do |t|
-        t.column :tag_id, :integer
-        t.column :taggable_id, :integer
-        t.column :tagger_id, :integer
-        t.column :tagger_type, :string
-
-        # You should make sure that the column created is
-        # long enough to store the required class names.
-        t.column :taggable_type, :string
-        t.column :context, :string
-
-        t.column :created_at, :datetime
-      end
-
-      add_index :taggings, :tag_id
-      add_index :taggings, [:taggable_id, :taggable_type, :context], :name => 'taggable_poly_idx'
-    end
-
     # website_party_roles
     unless table_exists? :website_party_roles
       create_table :website_party_roles do |t|
@@ -354,7 +327,7 @@ class SetupKnitkit < ActiveRecord::Migration
     # check that each table exists before trying to delete it.
     [:websites, :website_sections, :contents, :website_section_contents, :documents, :document_types, :valid_documents,
      :themes, :theme_files, :published_websites, :published_elements, :website_party_roles,
-     :comments, :website_hosts, :website_nav_items, :website_navs, :tags, :taggings, :documented_items].each do |tbl|
+    :comments, :website_hosts, :website_nav_items, :website_navs, :documented_items].each do |tbl|
       if table_exists?(tbl)
         drop_table tbl
       end

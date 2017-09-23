@@ -1,4 +1,0 @@
----
-use_solr_for_content: true
-use_solr_for_dynamic_form_models: true
-use_party_search_facts: true

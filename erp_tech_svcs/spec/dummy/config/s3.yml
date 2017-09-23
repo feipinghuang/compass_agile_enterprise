@@ -1,23 +1,18 @@
+# TODO putting keys in this file is not safe.  Need to find a way to test without saving these keys
+
 common: &common
-  access_key_id: AKIAIK3DDLVVJUWSHVPQ
-  secret_access_key: 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
+  access_key_id: AKIAJOKABKXRFMG73LCA
+  secret_access_key: 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
+  bucket: compass-ae-test
     
 production:
   <<: *common
-  bucket: terralab
 
 development:
   <<: *common
-  bucket: terralabdev
 
 test:
   <<: *common
-  bucket: terralabtest
 
 spec:
   <<: *common
-  bucket: terralabtest
-
-adam:
-  <<: *common
-  bucket: terralab

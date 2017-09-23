@@ -9,7 +9,7 @@ module Knitkit
 
         def index
           websites = Website.joins(:website_party_roles)
-                       .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
+          .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
           .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
 
           render json: {
