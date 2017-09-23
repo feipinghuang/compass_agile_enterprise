@@ -18,6 +18,8 @@
 class Agreement < ActiveRecord::Base
   attr_protected :created_at, :updated_at
 
+  is_tenantable
+
   belongs_to :agreement_type
   has_many   :agreement_items, dependent: :destroy
   has_many   :agreement_party_roles, dependent: :destroy
@@ -25,6 +27,54 @@ class Agreement < ActiveRecord::Base
   has_many   :agreement_records, dependent: :destroy
 
   alias :items :agreement_items
+
+  class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @option filters [Integer | Party] :party Party to filter by
+    # @option filters [String] :role_types Comma delimitted set of Role Types to filter by
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement)
+      statement = statement.joins(agreement_party_roles: :role_type)
+
+      if filters[:id]
+        statement = statement.where(id: filters[:id])
+      end
+
+      # Filter by a party
+      if filters[:party]
+        statement = statement.where(agreement_party_roles: {party_id: filters[:party]})
+      end
+
+      # If roles are passed filter by the roles passed
+      if filters[:role_types]
+        # Get RoleTypes passed on what is passed
+        if filters[:role_types].is_a? Array
+          role_types = []
+          filters[:role_types].each do |role_type|
+            if role_type.is_a? RoleType
+              role_types.push(role_type)
+            else
+              role_types.push(RoleType.iid(role_type))
+            end
+          end
+
+        elsif filters[:role_types].is_a? RoleType
+          role_types = [filters[:role_types]]
+
+        else
+          role_types = RoleType.where(internal_identifier: filters[:role_types].split(','))
+
+        end
+
+        statement = statement.where(agreement_party_roles: {role_type_id: role_types})
+      end
+
+      statement
+    end
+  end
 
   def agreement_relationships
     AgreementRelationship.where('agreement_id_from = ? OR agreement_id_to = ?',id,id)
@@ -59,6 +109,10 @@ class Agreement < ActiveRecord::Base
   def method_missing(m, *args, &block)
     agreement_item = get_item_by_item_type_internal_identifier(m.to_s)
     (agreement_item.nil?) ? super : (return agreement_item.agreement_item_value)
+  end
+
+  def to_data_hash
+    to_hash(only: [:id, :description, :agreement_status, :agreement_date, :from_date, :thru_date, :external_identifier, :external_id_source])
   end
 
 end
