@@ -5461,6 +5461,9 @@ a.list-group-item > .badge,
 .nav-tabs > li.active {
   z-index: 2;
 }
+.modal-open .nav-tabs > li.active {
+  z-index: 0;
+}
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus {
