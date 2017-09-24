@@ -194,9 +194,12 @@ class User < ActiveRecord::Base
   end
 
   def set_profile_image(data, file_name)
+    # delete current profile image
+    self.party.images.scoped_by('is_profile_image', true).destroy_all
+
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
 
-    data = FileAsset.adjust_image(data, '200x200')
+    data = FileAsset.adjust_image(data, '200')
 
     file_asset = self.party.add_file(data, File.join(file_support.root, 'file_assets', 'user', self.id.to_s, 'profile_image', file_name))
     file_asset.add_scope('is_profile_image', true)

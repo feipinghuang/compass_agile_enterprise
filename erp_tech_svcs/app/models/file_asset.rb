@@ -115,7 +115,14 @@ class FileAsset < ActiveRecord::Base
 
       # resize
       if size
-        Paperclip.run("convert", "#{path} -resize #{size}^ #{path}", :swallow_stderr => false)
+        # if there is a an x than we want an exact size such as 200x200
+        if size.include?('x')
+          Paperclip.run("convert", "#{path} -resize #{size}^ #{path}", :swallow_stderr => false)
+
+          # if there is no x than we want to keep the ratio and assume a height
+        else
+          Paperclip.run("convert", "#{path} -geometry x#{size} #{path}", :swallow_stderr => false)
+        end
       end
 
       # rotate
