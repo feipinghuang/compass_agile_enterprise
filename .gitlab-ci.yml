@@ -1,0 +1,65 @@
+variables:
+  POSTGRES_DB: ''
+
+# Cache gems in between builds
+cache:
+  paths:
+    - vendor/ruby
+
+# This is a basic example for a gem or script which doesn't use
+# services such as redis or postgres
+#before_script:
+ # - ruby -v                                   # Print out ruby version for debugging
+ # - gem install bundler  --no-ri --no-rdoc    # Bundler is not installed with the image
+ # - bundle install -j $(nproc) --path vendor  # Install dependencies into ./vendor/ruby
+
+
+#rubocop:
+#  script:
+#  - rubocop
+
+# rspec:
+#  script:
+#  - rspec spec
+
+# image: ruby:2.4.1
+
+runtests:
+  script:
+    - cd ./erp_dev_svcs
+    - bundle
+    - gem build erp_dev_svcs.gemspec
+    - gem install *.gem
+    - cd ..
+    - compass_ae-dev exec bundle
+    - compass_ae-dev exec test
+    
+development:
+  variables:
+    DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/$POSTGRES_DB"
+  script:
+  - ruby -v                                 
+  - gem install bundler  --no-ri --no-rdoc  
+  - bundle install -j $(nproc) --path vendor
+  #- bundle exec rake db:migrate
+  #- bundle exec rake db:seed
+  #- bundle exec rake
+  only:
+    - development
+
+production:
+  variables:
+    DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/$POSTGRES_DB"
+  script:
+  - whoami
+  - echo $HOME
+  - which rbenv
+  - ruby -v                                 
+  - gem install bundler  --no-ri --no-rdoc  
+  - bundle install -j $(nproc) --path vendor
+  # - bundle exec rake db:migrate
+  # - bundle exec rake db:seed
+  # - bundle exec rake
+  # - cap production deploy
+  only:
+    - master
