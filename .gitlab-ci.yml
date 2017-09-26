@@ -31,8 +31,8 @@ runtests:
     - gem build erp_dev_svcs.gemspec
     - gem install *.gem
     - cd ..
-    - compass_ae-dev exec bundle
-    - compass_ae-dev exec test
+    - compass_ae-dev execute bundle
+    - compass_ae-dev execute test
     
 development:
   variables:
