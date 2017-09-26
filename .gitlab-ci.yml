@@ -32,7 +32,7 @@ runtests:
     - gem install *.gem
     - cd ..
     - compass_ae-dev execute bundle
-    - compass_ae-dev execute test
+    - compass_ae-dev test
     
 development:
   variables:
