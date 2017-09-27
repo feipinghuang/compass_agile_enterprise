@@ -1009,13 +1009,30 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                                                        msg: "Please wait..."
                                                                    });
                                                                    loadMsk.show();
-                                                                   me.loadContentBlock(
-                                                                       component, {
-                                                                           websiteSectionContentId: dropPanel.websiteSectionContentId,
-                                                                           afterload: function() {
-                                                                               loadMsk.hide();
-                                                                           }
+                                                                   var options = {
+                                                                       websiteSectionContentId: dropPanel.websiteSectionContentId,
+                                                                       componentType: componentType,
+                                                                       afterload: function() {
+                                                                           loadMsk.hide();
                                                                        }
+
+                                                                   };
+
+                                                                   if (me.isThemeMode()) {
+                                                                       Ext.apply(options, {
+                                                                           canViewSource: true,
+                                                                           canMove: false,
+                                                                           canDelete: true
+                                                                       }); 
+                                                                   } else {
+                                                                       Ext.apply(options, {
+                                                                           canViewSource: true,
+                                                                           canMove: true,
+                                                                           canDelete: true
+                                                                       });
+                                                                   }
+                                                                   me.loadContentBlock(
+                                                                       component, options
                                                                    );
                                                                    centerRegion.clearWindowStatus();
                                                                },
