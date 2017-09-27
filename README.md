@@ -23,3 +23,5 @@ this will clone our repository into a folder named compass_agile_enterprise with
 ##License
 CompassERP’s foundation modules and base applications are released under a GPL license. CompassERP development is supported by [TrueNorth Technology Solutions](http://www.truenorthtechnology.com), which offers vertical solutions based on this framework, support and consulting services around the technology.
 
+
+
