@@ -67,6 +67,9 @@ module ErpDevSvcs
               #set engine name to the submatch via "[1]"
               engine_name = /(.*).gemspec/.match(gemspec[2])[1]
 
+              # skip compass_ae_starter_kit
+              next if engine_name == 'compass_ae_starter_kit'
+
               if only_in_these_gems.nil? || only_in_these_gems.include?(engine_name)
                 Dir.chdir(gemspec[1])
                 #pass in the engine name
