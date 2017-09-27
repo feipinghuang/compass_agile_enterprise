@@ -53,14 +53,12 @@ module ErpDevSvcs
         code_dirs = [COMPASS_ROOT]
         code_dirs.each do |code_dir|
           begin
-            find_rails_root!
-            Dir.chdir(code_dir)
             root_dir = Dir.pwd
 
             # we're using gemspecs to know that we have
             # a mountable engine located there
             gemspecs = Dir.glob("**/*.gemspec")
-            gemspecs = sort_gems(gemspecs) if code_dir == COMPASS_ROOT
+            gemspecs = sort_gems(gemspecs)
             gemspecs.each do |gem|
               #XXX:we're skipping compass_ae since all it does is
               #help install compass
@@ -68,7 +66,6 @@ module ErpDevSvcs
               gemspec = /(.*)\/(.*.gemspec)/.match(gem)
               #set engine name to the submatch via "[1]"
               engine_name = /(.*).gemspec/.match(gemspec[2])[1]
-
 
               if only_in_these_gems.nil? || only_in_these_gems.include?(engine_name)
                 Dir.chdir(gemspec[1])
