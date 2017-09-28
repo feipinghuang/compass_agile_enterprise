@@ -38,6 +38,15 @@ module API
           start = params[:start] || 0
         end
 
+        # TODO: fixed in another branch?
+        unless params[:limit].blank?
+          limit = params[:limit].to_i
+        end
+
+        unless params[:start].blank?
+          start = params[:start].to_i
+        end
+
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
         context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
 
@@ -268,44 +277,75 @@ module API
 =end
 
       def special_delete
-        id = params[:id].to_i
-        associated_product_is_base = params[:base_product] == 'true' ? true : false
-        discount_id = params[:discount_id].to_i
-        product_offer = ProductOffer.find(id.to_i)
+        begin
+          ActiveRecord::Base.transaction do
+            product_offer_ids = CSV.parse(params[:product_offer_ids])[0].collect{ |id| id.to_i}
+            discount_id = params[:discount_id].to_i
+            product_type_tag = params[:product_tag]
 
-        unless product_offer.nil?
+            deleted_offers = []
 
-          # if it's a base product, remove all of it's variant from the discount
-          # if it's not a base just remove the offer
-          # if it's the last variant for the product, remove the base too
-          if associated_product_is_base
-            product_type = ProductType.find(product_offer.product_type_id)
-            product_variants = product_type.children
-            product_variants.each do |product_variant|
-              # see if there's a product offer for the variant
-              variant_product_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, product_variant.id)
-              unless variant_product_offer.nil?
-                variant_product_offer.destroy
+            product_offer_ids.each do |product_offer_id|
+
+              # parent may have gotten whacked first on delete all
+              unless deleted_offers.include?(product_offer_id)
+                product_offer = ProductOffer.find(product_offer_id)
+                associated_product_type = product_offer.product_type
+
+                # if it's a base product, remove all of it's variant from the discount
+                # if it's not a base just remove the offer
+                # if it's the last variant for the product, remove the base too
+                if associated_product_type.is_base
+                  unless product_type_tag.blank?
+                    associated_product_type.tag_list.remove(product_type_tag)
+                    associated_product_type.save
+                  end
+                  product_variants = associated_product_type.children
+                  product_variants.each do |product_variant|
+                    unless product_type_tag.blank?
+                      product_variant.tag_list.remove(product_type_tag)
+                      product_variant.save
+                    end
+                    # see if there's a product offer for the variant
+                    variant_product_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, product_variant.id)
+                    unless variant_product_offer.nil?
+                      deleted_offers << variant_product_offer.id
+                      variant_product_offer.destroy
+                    end
+                  end
+                  deleted_offers << product_offer.id
+                  product_offer.destroy
+                else
+                  unless product_type_tag.blank?
+                    associated_product_type.tag_list.remove(product_type_tag)
+                    associated_product_type.save
+                  end
+                  if no_other_children_in_discount?(discount_id, associated_product_type, product_offer.product_type_id)
+                    # if there no other variants of this product type in the offer, delete the base too
+                    # find the the parent and delete it
+                    parent_product_type_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, product_offer.product_type.parent.id)
+                    unless parent_product_type_offer.nil?
+                      deleted_offers << parent_product_type_offer.id
+                      parent_product_type_offer.destroy
+                    end
+                  end
+                  deleted_offers << product_offer.id
+                  product_offer.destroy
+                end
               end
             end
-            product_offer.destroy
-          else
-            offer_product_type = ProductType.find(product_offer.product_type_id)
-            if no_other_children_in_discount?(discount_id, offer_product_type, product_offer.product_type_id)
-              # if there no other variants of this product type in the offer, delete the base too
-              # find the the parent and delete it
-              offer_product_type_parent = offer_product_type.parent
-              parent_product_type_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, offer_product_type_parent.id)
-              unless parent_product_type_offer.nil?
-                parent_product_type_offer.destroy
-              end
-            end
-            product_offer.destroy
+              render :json => {:success => true}
           end
-          render :json => {:success => true}
-        else
-          render :json => {:success => false}
-        end
+              rescue => ex
+              Rails.logger.error ex.message
+              Rails.logger.error ex.backtrace.join("\n")
+
+              # email error
+              ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+              render :json => {success: false, message: 'Could not remove product types from offer'}
+          end
+
       end
 
       private

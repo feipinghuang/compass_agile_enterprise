@@ -242,25 +242,52 @@ module API
         render :json => {:success => true}
       end
 
-      def add_product_to_discount
-        product_id = params[:id].to_i
-        product_is_base = params[:base_product] == 'true' ? true : false
-        discount_id = params[:discount_id].to_i
+      def add_products_to_discount
+        begin
+          ActiveRecord::Base.transaction do
 
-        discount = Discount.find(discount_id)
+              product_type_ids = CSV.parse(params[:product_type_ids])[0].collect{ |id| id.to_i}
+              discount_id = params[:discount_id].to_i
+              product_type_tag = params[:product_tag]
 
-        product_type = ProductType.find(product_id)
+              discount = Discount.find(discount_id)
 
-        if product_is_base
-          product_ids = product_type.children.collect { |children| children.id}
-          product_ids.unshift(product_id)
-        else
-          product_ids = [product_id]
-        end
+              product_type_ids.each do |product_type_id|
 
-        discount.generate_product_offers(product_ids)
+                product_type = ProductType.find(product_type_id)
 
-        render :json => {:success => true}
+                if product_type.is_base
+                  offer_product_type_ids = product_type.children.collect { |children| children.id}
+                  offer_product_type_ids.unshift(product_type_id)
+                else
+                  offer_product_type_ids = [product_type_id]
+                  # add the parent too
+                  offer_product_type_ids.unshift(product_type.parent.id)
+                end
+
+                # tag these products if there's a tag
+                unless product_type_tag.blank?
+                  offer_product_type_ids.each do |product_type_id|
+                    product_type = ProductType.find(product_type_id)
+                    product_type.tag_list.add(product_type_tag.to_s, parse: true)
+                    product_type.save
+                  end
+                end
+
+                discount.generate_product_offers(offer_product_type_ids)
+            end
+
+              render :json => {:success => true}
+          end
+            rescue => ex
+              Rails.logger.error ex.message
+              Rails.logger.error ex.backtrace.join("\n")
+
+              # email error
+              ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+              render :json => {success: false, message: 'Could not add product types to discount'}
+          end
       end
 
     end # DiscountsController

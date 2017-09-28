@@ -312,7 +312,10 @@ module API
         product_type_children_ids = product_type.children.collect { |children| children.id}
         # if no children. let it pass
         if product_type_children_ids.count == 0
-          filtered_product_type_ids << product_type_id
+          product_type_discount = ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", discount_id, product_type.id)
+          if product_type_discount.nil?
+            filtered_product_type_ids << product_type_id
+          end
         else
           product_type_discounts = ProductTypeDiscount.where("discount_id = ? and product_type_id in (#{product_type_children_ids.join(',')})", discount_id)
           # if this root's children are greater than the number of children in the discount,

@@ -27,7 +27,7 @@ Rails.application.routes.draw do
 
       resources :discounts, defaults: { :format => 'json' } do
         collection do
-          post :add_product_to_discount
+          post :add_products_to_discount
         end
       end
       resources :collections, defaults: { :format => 'json' }
