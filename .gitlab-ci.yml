@@ -33,6 +33,6 @@ run_tests:
     - cd ..
     - compass_ae-dev execute bundle
     - compass_ae-dev test
-    only:
-      - release_candidate
-      - master
+  only:
+    - release_candidate
+    - master
