@@ -2,12 +2,23 @@ class Project < ActiveRecord::Base
 
   attr_protected :created_at, :updated_at
 
-  has_many :work_efforts, :dependent => :destroy
+  has_many :work_efforts
   has_and_belongs_to_many :biz_txn_acct_roots
 
   tracks_created_by_updated_by
   has_tracked_status
   has_party_roles
+
+  before_destroy :destroy_work_efforts
+
+  def destroy_work_efforts
+    # We need to make sure the WorkEffort still exists because if the parent was deleted it won't be there
+    work_efforts.each do |work_effort|
+      if WorkEffort.where('id = ?', work_effort.id).first
+        work_effort.destroy
+      end
+    end
+  end
 
   class << self
 
@@ -39,11 +50,11 @@ class Project < ActiveRecord::Base
       if ActiveRecord::Base.connection.adapter_name == "Mysql2"
         statement = joins("inner join entity_party_roles as #{table_alias} on #{table_alias}.entity_record_id = projects.id
                            and #{table_alias}.entity_record_type = 'Project'")
-                        .where("#{table_alias}.party_id" => party).uniq
+        .where("#{table_alias}.party_id" => party).uniq
       else
         statement = joins("inner join entity_party_roles as \"#{table_alias}\" on \"#{table_alias}\".entity_record_id = projects.id
                            and \"#{table_alias}\".entity_record_type = 'Project'")
-                        .where("#{table_alias}.party_id" => party).uniq
+        .where("#{table_alias}.party_id" => party).uniq
       end
 
       if options[:role_types]
