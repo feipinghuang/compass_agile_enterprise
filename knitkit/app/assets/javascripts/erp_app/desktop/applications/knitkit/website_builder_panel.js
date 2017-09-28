@@ -608,7 +608,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         var data = {
                             position: rowIndex,
                             column: columnIndex,
-                            body_html: Ext.String.htmlDecode(html),
+                            body_html: html,
                             match_id: matchId,
                             website_section_content_id: component.websiteSectionContentId
                         };

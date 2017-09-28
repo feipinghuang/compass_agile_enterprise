@@ -22,7 +22,7 @@ module Knitkit
             node.add_next_sibling(escape_erb("<%= #{widget_statement} %>"))
             node.remove
           end
-          CGI.unescape_html(doc.to_s)
+          unescape_erb(doc.to_s)
         end
 
         def reduce_to_builder_html(html)
@@ -35,9 +35,16 @@ module Knitkit
 
         def escape_erb(html)
           html.
-            gsub("<%", "&lt;%").
-            gsub("%>", "%&gt;").
-            gsub(/(?<=&lt;%)(.*?)(?=%&gt;)/) {|w| CGI.escape_html(w)}
+            gsub("<%", "__ERB__&lt;%").
+            gsub("%>", "__ERB__%&gt;").
+            gsub(/(?<=__ERB__&lt;%)(.*?)(?=__ERB__%&gt;)/) {|w| CGI.escape_html(w)}
+        end
+
+        def unescape_erb(html)
+          html.
+            gsub("__ERB__&lt;%", "<%").
+            gsub("__ERB__%&gt;", "%>").
+            gsub(/(?<=<%)(.*?)(?=%>)/) {|w| CGI.unescape_html(w)}
         end
         
       end

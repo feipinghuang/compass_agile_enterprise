@@ -87,10 +87,9 @@ module Knitkit
                       website_section_content = WebsiteSectionContent.find(data[:website_section_content_id])
                       # if the content block has dynamic content we don't want to process them
                       unless website_section_content.is_content_dynamic || data[:body_html].blank?
-
                         website_section_content.builder_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_builder_html(data[:body_html])
                         # strip off design specific HTML
-                        website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(website_section_content.builder_html)
+                        website_section_content.website_html = ::Knitkit::WebsiteBuilder::HtmlTransformer.reduce_to_website_html(data[:body_html])
                         # the content is dynamic if the source has a pair of script or erb (<%>) tags 
                         website_section_content.is_content_dynamic = website_section_content.website_html.match(/<script>(?:.*)<\/script>/m).is_a?(MatchData) ||
                                                                      website_section_content.website_html.match(/<%(?:.*)%>/m).is_a?(MatchData)
