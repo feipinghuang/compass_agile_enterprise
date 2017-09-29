@@ -29,9 +29,18 @@ module ErpDevSvcs
 
         return_code = 0;
 
+        unless Dir.exists? 'coverage'
+          system('mkdir ./coverage')
+        end
+
         ErpDevSvcs::Commands::Helper.exec_in_engines(options[:gems]) do |engine_name|
           puts "\nRunning #{engine_name}'s test suite...  \n"
           puts system('bundle exec rspec --tty --color spec')
+
+          unless Dir.exists? '../coverage/' + engine_name
+            system('mkdir ../coverage/' + engine_name)
+          end
+          system('cp -r ./coverage/ ../coverage/' + engine_name)
 
           if $?.exitstatus != 0
             return_code = $?.exitstatus

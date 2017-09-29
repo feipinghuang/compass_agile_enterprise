@@ -33,6 +33,25 @@ run_tests:
     - cd ..
     - compass_ae-dev execute bundle
     - compass_ae-dev test
+  artifacts:
+    paths:
+      - coverage/
+      - mv coverage public 
   only:
     - release_candidate
     - master
+
+pages:
+  stage: deploy
+  dependencies:
+    - run_tests
+  script:
+    - mv coverage/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  only:
+    - release_candidate
+    - master
+   
