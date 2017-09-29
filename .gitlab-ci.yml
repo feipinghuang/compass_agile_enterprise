@@ -36,7 +36,6 @@ run_tests:
   artifacts:
     paths:
       - coverage/
-      - mv coverage public 
   only:
     - release_candidate
     - master
