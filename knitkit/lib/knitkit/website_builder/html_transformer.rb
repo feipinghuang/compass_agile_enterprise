@@ -44,7 +44,7 @@ module Knitkit
           html.
             gsub("__ERB__&lt;%", "<%").
             gsub("__ERB__%&gt;", "%>").
-            gsub(/(?<=<%)(.*?)(?=%>)/) {|w| CGI.unescape_html(w)}
+            gsub(/(?<=<%)(.*?)(?=%>)/m) {|w| CGI.unescape_html(w)}
         end
         
       end
