@@ -2,6 +2,23 @@ module API
   module V1
     class StatusApplicationsController < BaseController
 
+=begin
+ @api {get} /api/v1/status_applications
+ @apiVersion 1.0.0
+ @apiName GetStatusApplications
+ @apiGroup StatusApplication
+ @apiDescription Get StatusApplications
+ 
+ @apiParam (query) {Integer} [record_id] Id of Record to filter by
+ @apiParam (query) {String} [record_type] Type of Record to filter by (WorkEffort, OrderTxn)
+
+ @apiSuccess (200) {Object} get_status_applications_response Response
+ @apiSuccess (200) {Boolean} get_status_applications_response.success True if the request was successful.
+ @apiSuccess (200) {Number} get_status_applications_response.total_count Total count of records based on any filters applied.
+ @apiSuccess (200) {Object[]} get_status_applications_response.status_applications List of StatusApplication records.
+ @apiSuccess (200) {Number} get_status_applications_response.status_applications.id Id of StatusApplication.
+=end
+
       def index
         statuses = if params[:record_id].present? && params[:record_type].present?
 
@@ -28,6 +45,21 @@ module API
 
         render :json => {:success => true, :status_applications => statuses}
       end
+
+=begin
+ @api {get} /api/v1/status_applications/:id
+ @apiVersion 1.0.0
+ @apiName GetStatusApplication
+ @apiGroup StatusApplication
+ @apiDescription Get StatusApplication
+ 
+ @apiParam (path) {Integer} [id] Id of StatusApplication
+
+ @apiSuccess (200) {Object} get_status_application_response Response
+ @apiSuccess (200) {Boolean} get_status_application_response.success True if the request was successful.
+ @apiSuccess (200) {Object[]} get_status_application_response.status_application StatusApplication records
+ @apiSuccess (200) {Number} get_status_application_response.status_application.id Id of StatusApplication.
+=end
 
       def show
         status_application = StatusApplication.find(params[:id])

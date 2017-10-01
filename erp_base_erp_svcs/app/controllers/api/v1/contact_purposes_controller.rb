@@ -29,6 +29,21 @@ module API
                       contact_purposes: contact_purposes.collect(&:to_data_hash)}
       end
 
+=begin
+ @api {get} /api/v1/contact_purposes/:id
+ @apiVersion 1.0.0
+ @apiName GetContactPurpose
+ @apiGroup ContactPurpose
+ @apiDescription Get Contact Purpose
+ 
+ @apiParam (path) {Integer} [id] Id of ContactPurpose
+
+ @apiSuccess (200) {Object} get_contact_purpose_response Response.
+ @apiSuccess (200) {Boolean} get_contact_purpose_response.success True if the request was successful.
+ @apiSuccess (200) {Object[]} get_contact_purpose_response.contact_purpose List of ContactPurpose record.
+ @apiSuccess (200) {Number} get_contact_purpose_response.contact_purpose.id Id of ContactPurpose.
+=end
+
       def show
         contact_purpose = ContactPurpose.find(params[:id])
 

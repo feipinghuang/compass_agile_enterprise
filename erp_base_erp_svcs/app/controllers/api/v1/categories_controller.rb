@@ -121,7 +121,7 @@ module API
  @apiGroup Category
  @apiDescription Get Category
 
- @apiParam (query) {Integer} id Id of Category
+ @apiParam (path) {Integer} id Id of Category
 
  @apiSuccess (200) {Object} get_category_response Response.
  @apiSuccess (200) {Boolean} get_category_response.success True if the request was successful
@@ -206,7 +206,8 @@ module API
  @apiGroup Category
  @apiDescription Update Category
 
- @apiParam (query) {Integer} id Id of Category
+ @apiParam (path) {Integer} id Id of Category
+
  @apiParam (body) {String} [internal_identifier] Internal Identifier to set for the Category.
  @apiParam (body) {String} [description] Description to set for the Category
 
@@ -253,7 +254,7 @@ module API
  @apiGroup Category
  @apiDescription Destroy Category
 
- @apiParam (query) {Integer} id Id of Category
+ @apiParam (path) {Integer} id Id of Category
 
  @apiSuccess (200) {Object} destroy_category_response Response.
  @apiSuccess (200) {Boolean} destroy_category_response.success True if the request was successful

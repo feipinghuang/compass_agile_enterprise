@@ -4,6 +4,22 @@ module API
 
       skip_before_filter :require_login, :only => :index
 
+=begin
+
+ @api {get} /api/v1/geo_zones
+ @apiVersion 1.0.0
+ @apiName GetGeoZones
+ @apiGroup GeoZone
+ @apiDescription Get GeoZones
+
+ @apiSuccess (200) {Object} get_get_zones_response Response
+ @apiSuccess (200) {Boolean} get_get_zones_response.success True if the request was successful
+ @apiSuccess (200) {Number} get_get_zones_response.total_count Total count of records based on any filters applied
+ @apiSuccess (200) {Object[]} get_get_zones_response.geo_zones GeoZone records
+ @apiSuccess (200) {Number} get_get_zones_response.geo_zones.id Id of GeoZone
+
+=end
+
       def index
         GeoZone.include_root_in_json = false
 

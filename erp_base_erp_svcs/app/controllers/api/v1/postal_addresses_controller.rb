@@ -10,13 +10,14 @@ module API
  @apiGroup PostalAddress
  @apiDescription Get Postal Addresses
 
- @apiParam {String} [contact_purposes] Comma delimited string of ContactPurpose internal identifiers to filter by
- @apiParam {String} [query] Query to search description by
-
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object[]} postal_addresses List of PostalAddress records
- @apiSuccess {Number} postal_addresses.id Id of PostalAddress
+ @apiParam (query) {String} [contact_purposes] Comma delimited string of ContactPurpose internal identifiers to filter by
+ @apiParam (query) {String} [query] Query to search description by
+ 
+ @apiSuccess (200) {Object} get_postal_addresses_response Response
+ @apiSuccess (200) {Boolean} get_postal_addresses_response.success True if the request was successful
+ @apiSuccess (200) {Number} get_postal_addresses_response.total_count Total count of records based on any filters applied
+ @apiSuccess (200) {Object[]} get_postal_addresses_response.postal_addresses List of PostalAddress records
+ @apiSuccess (200) {Number} get_postal_addresses_response.postal_addresses.id Id of PostalAddress
 
 =end
 
@@ -67,10 +68,13 @@ module API
  @apiGroup PostalAddress
  @apiDescription Get Postal Address
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object} postal_address PostalAddress record
- @apiSuccess {Number} postal_addresses.id Id of PostalAddress
+ @apiParam (path) {Number} id Id of PostalAddress
+ 
+ @apiSuccess (200) {Object} get_postal_address_response Response
+ @apiSuccess (200) {Boolean} get_postal_address_response.success True if the request was successful
+ @apiSuccess (200) {Number} get_postal_address_response.total_count Total count of records based on any filters applied
+ @apiSuccess (200) {Object} get_postal_address_response.postal_address PostalAddress record
+ @apiSuccess (200) {Number} get_postal_address_response.postal_address.id Id of PostalAddress
 
 =end
 
@@ -86,18 +90,19 @@ module API
   @apiGroup PostalAddress
   @apiDescription Create Postal Address
 
-  @apiParam {String} description Description of Postal Address
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} address_line_1 Address Line 1
-  @apiParam {String} [address_line_1] Address Line 2
-  @apiParam {String} city City
-  @apiParam {String} state State
-  @apiParam {String} zip Zip
-  @apiParam {String} country Country
-
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} postal_address PostalAddress record
-  @apiSuccess {Number} postal_address.id Id of PostalAddress
+  @apiParam (body) {String} description Description of Postal Address
+  @apiParam (body) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+  @apiParam (body) {String} address_line_1 Address Line 1
+  @apiParam (body) {String} [address_line_1] Address Line 2
+  @apiParam (body) {String} city City
+  @apiParam (body) {String} state State
+  @apiParam (body) {String} zip Zip
+  @apiParam (body) {String} country Country
+  
+  @apiSuccess (200) {Object} create_postal_address_response Response
+  @apiSuccess (200) {Boolean} create_postal_address_response.success True if the request was successful
+  @apiSuccess (200) {Object} create_postal_address_response.postal_address PostalAddress record
+  @apiSuccess (200) {Number} create_postal_address_response.postal_address.id Id of PostalAddress
 
 =end
 
@@ -155,18 +160,21 @@ module API
   @apiGroup PostalAddress
   @apiDescription Update PostalAddress
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} [address_line_1] Address line 1
-  @apiParam {String} [address_line_2] Address line 2
-  @apiParam {String} [city] City
-  @apiParam {String} [state] State
-  @apiParam {String} [zip] Zip
-  @apiParam {String} [country] Country
-  @apiParam {String} [description] Description of Postal Address
+  @apiParam (path) {Number} id Id of PostalAddress
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} postal_address PostalAddress record
-  @apiSuccess {Number} postal_address.id Id of PostalAddress
+  @apiParam (body) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+  @apiParam (body) {String} [address_line_1] Address line 1
+  @apiParam (body) {String} [address_line_2] Address line 2
+  @apiParam (body) {String} [city] City
+  @apiParam (body) {String} [state] State
+  @apiParam (body) {String} [zip] Zip
+  @apiParam (body) {String} [country] Country
+  @apiParam (body) {String} [description] Description of Postal Address
+  
+  @apiSuccess (200) {Object} update_postal_address_response Response
+  @apiSuccess (200) {Boolean} update_postal_address_response.success True if the request was successful
+  @apiSuccess (200) {Object} update_postal_address_response.postal_address PostalAddress record
+  @apiSuccess (200) {Number} update_postal_address_response.postal_address.id Id of PostalAddress
 
 =end
 
@@ -245,7 +253,10 @@ module API
   @apiGroup PostalAddress
   @apiDescription Delete PostalAddress
   
-  @apiSuccess (200) {Boolean} success True if the request was successful
+  @apiParam (path) {Number} id Id of PostalAddress
+  
+  @apiSuccess (200) {Object} delete_postal_address_response Response
+  @apiSuccess (200) {Boolean} delete_postal_address_response.success True if the request was successful
 
 =end
 

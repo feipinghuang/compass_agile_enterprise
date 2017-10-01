@@ -12,6 +12,7 @@ module API
 
  @apiSuccess (200) {Object} get_facilities_response Response
  @apiSuccess (200) {Boolean} get_facilities_response.success True if the request was successful
+ @apiSuccess (200) {Number} get_facilities_response.total_count Total count of records based on any filters applied
  @apiSuccess (200) {Object[]} get_facilities_response.facilities Facility records
  @apiSuccess (200) {Number} get_facilities_response.facilities.id Id of Facility
 

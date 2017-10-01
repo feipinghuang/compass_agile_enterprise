@@ -15,6 +15,7 @@ module API
 
  @apiSuccess (200) {Object} get_email_addresses_response Response.
  @apiSuccess (200) {Boolean} get_email_addresses_response.success True if the request was successful.
+ @apiSuccess (200) {Number} get_email_addresses_response.total_count Total count of records based on any filters applied
  @apiSuccess (200) {Object[]} get_email_addresses_response.email_addresses
  @apiSuccess (200) {Number} get_email_addresses_response.email_addresses.id Id.
  @apiSuccess (200) {String} get_email_addresses_response.email_addresses.description Description.
@@ -67,7 +68,7 @@ module API
  @apiGroup EmailAddress
  @apiDescription Get Email Address
 
- @apiParam (query) {Number} id Id of Email Address to get.
+ @apiParam (path) {Number} id Id of Email Address to get
  
  @apiSuccess (200) {Object} get_email_address_response Response.
  @apiSuccess (200) {Boolean} get_email_address_response.success True if the request was successful.
@@ -152,7 +153,8 @@ module API
   @apiGroup EmailAddress
   @apiDescription Update Email Address
   
-  @apiParam (body) {Number} id Id of Email Address to update.
+  @apiParam (path) {Number} id Id of Email Address to update.
+  
   @apiParam (body) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by.
   @apiParam (body) {String} [email_address] Email Address.
   @apiParam (body) {String} [description] Description of Email Address.
@@ -222,7 +224,7 @@ module API
   @apiGroup EmailAddress
   @apiDescription Delete Email Address  
 
-  @apiParam (query) {Number} id Id of Email Address to get.
+  @apiParam (path) {Number} id Id of Email Address to get.
   
   @apiSuccess (200) {Object} delete_email_address_response Response.
   @apiSuccess (200) {Boolean} delete_email_address_response.success True if the request was successful.

@@ -10,10 +10,10 @@ module API
  @apiGroup Party
  @apiDescription Get Parties
 
- @apiParam {String} [role_types] Comma delimitted string of RoleTypes to filter by
- @apiParam {Integer} [id] Id of a particular party to filter by
- @apiParam {Boolean} [include_child_roles] True to include child RoleTypes when filtering by RoleTypes
- @apiParam {Boolean} [include_descendants] True to include parties that are related to a parent DBA Organization in the result set
+ @apiParam (query) {String} [role_types] Comma delimitted string of RoleTypes to filter by
+ @apiParam (query) {Integer} [id] Id of a particular party to filter by
+ @apiParam (query) {Boolean} [include_child_roles] True to include child RoleTypes when filtering by RoleTypes
+ @apiParam (query) {Boolean} [include_descendants] True to include parties that are related to a parent DBA Organization in the result set
 
  @apiSuccess (200) {Object} get_parties_response Response.
  @apiSuccess (200) {Boolean} get_parties_response.success True if the request was successful
@@ -35,14 +35,14 @@ module API
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
 
         query_filter[:query] = query
- 
+
         # hook method to apply any scopes passed via parameters to this api
         parties = Party.apply_filters(query_filter)
 
         unless params[:id].blank?
           parties = parties.where(id: params[:id].split(','))
         end
-        
+
         unless role_types.blank?
           if params[:include_child_roles].present? and params[:include_child_roles].to_bool
             role_types = RoleType.find_child_role_types(role_types.split(',')).collect{|role_type| role_type.internal_identifier}
@@ -93,6 +93,8 @@ module API
  @apiGroup Party
  @apiDescription Get Party
 
+ @apiParam (path) {Integer} id Id of Party
+
  @apiSuccess (200) {Object} get_party_response Response.
  @apiSuccess (200) {Boolean} get_party_response.success True if the request was successful
  @apiSuccess (200) {Object} get_party_response.party Party
@@ -124,11 +126,11 @@ module API
   @apiGroup Party
   @apiDescription Create Party
 
-  @apiParam {String} [role_types] Comma seperated list of RoleType Internal Identifiers to apply to this Party
-  @apiParam {String} business_party Type of Party to create Organization | Individual
-  @apiParam {String} description Description of Party
-  @apiParam {String} first_name First name of Party
-  @apiParam {String} last_name Last name of Party
+  @apiParam (body) {String} [role_types] Comma seperated list of RoleType Internal Identifiers to apply to this Party
+  @apiParam (body) {String} business_party Type of Party to create Organization | Individual
+  @apiParam (body) {String} description Description of Party
+  @apiParam (body) {String} first_name First name of Party
+  @apiParam (body) {String} last_name Last name of Party
 
   @apiSuccess (200) {Object} create_party_response Response.
   @apiSuccess (200) {Boolean} create_party_response.success True if the request was successful
@@ -194,10 +196,12 @@ module API
   @apiGroup Party
   @apiDescription Update Party
 
-  @apiParam {String} [role_types] Comma seperated list of RoleType Internal Identifiers to apply to this Party
-  @apiParam {String} description Description of Party
-  @apiParam {String} first_name First name of Party
-  @apiParam {String} last_name Last name of Party
+   @apiParam (path) {Integer} id Id of Party
+
+  @apiParam (body) {String} [role_types] Comma seperated list of RoleType Internal Identifiers to apply to this Party
+  @apiParam (body) {String} description Description of Party
+  @apiParam (body) {String} first_name First name of Party
+  @apiParam (body) {String} last_name Last name of Party
 
   @apiSuccess (200) {Object} update_party_response Response.
   @apiSuccess (200) {Boolean} update_party_response.success True if the request was successful
@@ -260,7 +264,7 @@ module API
   @apiGroup Party
   @apiDescription Delete Party
 
-  @apiSuccess {Boolean} success True if the request was successful
+  @apiParam (path) {Integer} id Id of Party
 
   @apiSuccess (200) {Object} delete_party_response Response.
   @apiSuccess (200) {Boolean} delete_party_response.success True if the request was successful
@@ -281,7 +285,9 @@ module API
   @apiGroup Party
   @apiDescription Update roles for a party
 
-  @apiParam {String} [role_type_iids] Comma seperated list of RoleType Internal Identifiers to apply to this Party
+  @apiParam (path) {Integer} id Id of Party
+
+  @apiParam (body) {String} [role_type_iids] Comma seperated list of RoleType Internal Identifiers to apply to this Party
   
   @apiSuccess (200) {Object} update_party_roles_response Response.
   @apiSuccess (200) {Boolean} update_party_roles_response.success True if the request was successful

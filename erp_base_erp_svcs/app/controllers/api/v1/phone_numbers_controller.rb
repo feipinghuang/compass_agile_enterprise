@@ -10,11 +10,12 @@ module API
  @apiGroup PhoneNumber
 
  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object[]} phone_numbers List of PhoneNumber records
- @apiSuccess {Number} phone_numbers.id Id of PhoneNumber
+ 
+ @apiSuccess (200) {Object} get_phone_numbers_response Response
+ @apiSuccess (200) (query) {Boolean} get_phone_numbers_response.success True if the request was successful
+ @apiSuccess (200) (query) {Number} get_phone_numbers_response.total_count Total count of records based on any filters applied
+ @apiSuccess (200) (query) {Object[]} get_phone_numbers_response.phone_numbers List of PhoneNumber records
+ @apiSuccess (200) (query) {Number} get_phone_numbers_response.phone_numbers.id Id of PhoneNumber
 
 =end
 
@@ -63,11 +64,14 @@ module API
  @apiVersion 1.0.0
  @apiName GetPhoneNumbers
  @apiGroup PhoneNumber
+ 
+ @apiParam (path) {Number} id Id of PhoneNumber
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Object} phone_number Phone Number record
- @apiSuccess {Number} phone_numbers.id Id of PhoneNumber
+ @apiSuccess (200) {Object} get_phone_number_response Response
+ @apiSuccess (200) {Boolean} get_phone_number_response/success True if the request was successful
+ @apiSuccess (200) {Number} get_phone_number_response.total_count Total count of records based on any filters applied
+ @apiSuccess (200) {Object} get_phone_number_response.phone_number Phone Number record
+ @apiSuccess (200) {Number} get_phone_number_response.phone_number.id Id of PhoneNumber
 
 =end
 
@@ -82,13 +86,14 @@ module API
   @apiName CreatePhoneNumber
   @apiGroup PhoneNumber
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} phone_number Email Address
-  @apiParam {String} description Description of Email Address
+  @apiParam (body) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+  @apiParam (body) {String} phone_number Email Address
+  @apiParam (body) {String} description Description of Email Address
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} phone_number PhoneNumber record
-  @apiSuccess {Number} phone_number.id Id of PhoneNumber
+  @apiSuccess (200) {Object} create_phone_number_response Response
+  @apiSuccess (200) {Boolean} create_phone_number_response.success True if the request was successful
+  @apiSuccess (200) {Object} create_phone_number_response.phone_number PhoneNumber record
+  @apiSuccess (200) {Number} create_phone_number_response.phone_number.id Id of PhoneNumber
 
 =end
 
@@ -140,13 +145,16 @@ module API
   @apiName UpdatePhoneNumber
   @apiGroup PhoneNumber
 
-  @apiParam {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
-  @apiParam {String} [phone_number] Email Address
-  @apiParam {String} [description] Description of Email Address
+  @apiParam (path) {Number} id Id of PhoneNumber
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Object} phone_number PhoneNumber record
-  @apiSuccess {Number} phone_number.id Id of PhoneNumber
+  @apiParam (body) {String} [contact_purposes] Comma delimitted string of ContactPurpose internal identifiers to filter by
+  @apiParam (body) {String} [phone_number] Email Address
+  @apiParam (body) {String} [description] Description of Email Address
+   
+  @apiSuccess (200) {Object} update_phone_number_response Response 
+  @apiSuccess (200) {Boolean} update_phone_number_response.success True if the request was successful
+  @apiSuccess (200) {Object} update_phone_number_response.phone_number PhoneNumber record
+  @apiSuccess (200) {Number} update_phone_number_response.phone_number.id Id of PhoneNumber
 
 =end
 
@@ -204,7 +212,10 @@ module API
   @apiName DeletePhoneNumber
   @apiGroup PhoneNumber
 
-  @apiSuccess {Boolean} success True if the request was successful
+  @apiParam (path) {Number} id Id of PhoneNumber
+ 
+  @apiSuccess (200) {Object} delete_phone_number_response Response 
+  @apiSuccess (200) {Boolean} delete_phone_number_response.success True if the request was successful
 
 =end
 

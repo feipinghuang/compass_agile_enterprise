@@ -48,7 +48,7 @@ module API
  @apiGroup CategoryClassification
  @apiDescription Get Category Classification
 
- @apiParam (query) {Integer} id Id of CategoryClassification
+ @apiParam (path) {Integer} id Id of CategoryClassification
 
  @apiSuccess (200) {Object} get_category_classification_response Response.
  @apiSuccess (200) {Boolean} get_category_classification_response.success True if the request was successful
@@ -123,9 +123,11 @@ module API
  @apiGroup CategoryClassification
  @apiDescription Update Category Classification
 
+ @apiParam (path) {Integer} id Id of CategoryClassification
+
  @apiParam (body) {String} record_type Record type to set
  @apiParam (body) {Integer} record_id Record Id to set
-  @apiParam (body) {String} category Category Internal Identifier
+ @apiParam (body) {String} category Category Internal Identifier
 
  @apiSuccess (200) {Object} update_category_classification_response Response.
  @apiSuccess (200) {Boolean} update_category_classification_response.success True if the request was successful
@@ -175,7 +177,7 @@ module API
  @apiGroup CategoryClassification
  @apiDescription Destroy Category Classification
 
- @apiParam (query) {Integer} id Id of CategoryClassification
+ @apiParam (path) {Integer} id Id of CategoryClassification
 
  @apiSuccess (200) {Object} destroy_category_classification_response Response.
  @apiSuccess (200) {Boolean} destroy_category_classification_response.success True if the request was successful
