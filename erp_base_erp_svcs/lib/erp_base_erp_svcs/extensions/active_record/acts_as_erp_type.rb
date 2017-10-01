@@ -163,7 +163,7 @@ module ErpBaseErpSvcs
 
           end
 
-        end
+        end # BelongsToSingletonMethods
 
 
         # Adds instance methods.
@@ -182,7 +182,7 @@ module ErpBaseErpSvcs
             to_hash(only: [:id, :description, :internal_identifier, :created_at, :updated_at])
           end
 
-        end
+        end # ActsAsInstanceMethods
 
         # Adds instance methods.
         module BelongsToInstanceMethods
@@ -191,8 +191,9 @@ module ErpBaseErpSvcs
           #   puts "Instance with ID #{self.id}"
           # end
 
-        end
-      end
-    end
-  end
-end
+        end # BelongsToInstanceMethods
+
+      end # ActsAsErpType
+    end # ActiveRecord
+  end # Extensions
+end # ErpBaseErpSvcs

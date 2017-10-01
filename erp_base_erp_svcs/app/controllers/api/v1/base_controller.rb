@@ -7,6 +7,7 @@ module API
       before_filter :require_login
       before_filter :set_paging
       before_filter :set_query_filters
+
       layout false
 
       protected
