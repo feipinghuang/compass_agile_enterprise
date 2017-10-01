@@ -1,53 +1,244 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>CompassAE API Docs</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="description" content="Beautiful Responsive Animated OnePage Template" />
+<meta name="keywords" content="Zerif, responsive, html, template, creative"/>
+<meta name="author" content="Mizanur Rahman" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CompassAE API Docs</title>
 
-  <script
-    src="https://code.jquery.com/jquery-3.2.1.min.js"
-    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-    crossorigin="anonymous"></script>
+<!-- =========================
+ FAV AND TOUCH ICONS  
+============================== -->
+<link rel="shortcut icon" href="dashboard/images/icons/favicon.ico">
 
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="  sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-  
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="  sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-  
-  <!-- Latest compiled and minified JavaScript -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<!-- =========================
+     STYLESHEETS      
+============================== -->
+<link rel="stylesheet" href="dashboard/css/bootstrap.min.css">
+<link rel="stylesheet" href="dashboard/assets/icon-fonts/styles.css"> 
+<link rel="stylesheet" href="dashboard/css/pixeden-icons.css"> 
 
-  <style>
-  	.list-group-item{
-  		font-size: 24px;
-  	}
-  </style>
+<!-- CUSTOM STYLES -->
+<link rel="stylesheet" href="dashboard/css/styles.css">
+<link rel="stylesheet" href="dashboard/css/responsive.css">
 
+<!-- WEBFONT -->
+<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,400italic|Montserrat:700,400|Homemade+Apple' rel='stylesheet' type='text/css'>
+
+<!--[if lt IE 9]>
+			<script src="js/html5shiv.js"></script>
+			<script src="js/respond.min.js"></script>
+		<![endif]-->
+
+<!-- JQUERY -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 </head>
+
+
 <body>
-	<div class="container">
-	  <div clas="row">
+<!-- =========================
+   PRE LOADER
+============================== -->
+<div class="preloader">
+  <div class="status">&nbsp;</div>
+</div>
+<!-- =========================
+   HOME SECTION       
+============================== -->
+<header id="home" class="header">
+	
+	<!-- TOP BAR -->
+	<div id="main-nav" class="navbar navbar-inverse bs-docs-nav" role="banner">
+		<div class="container">
+			<div class="navbar-header responsive-logo">
+				<button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#bs-navbar-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				</button>
+				<div class="navbar-brand">
+				    <img src="dashboard/images/icon-logo-50x50.png" alt="CompassAE">
+				</div>
+			</div>
 
-	    <div class="col-md-12">
-	      <div class="jumbotron">
-  		    <h1>Welcome to the CompassAE API</h1>
-  		    <p>Please select a CompassAE Module</p>
-	      </div>
-		</div> <!-- col-md-12 -->
 
-		<div class="col-md-12">
-	      <div class="list-group">
-  		    <a type="button" class="list-group-item" href="erp_base_erp_svcs/index.html">erp_base_erp_svcs</a>
-  			<a type="button" class="list-group-item" href="erp_commerce/index.html">erp_commerce</a>
-  			<a type="button" class="list-group-item" href="erp_inventory/index.html">erp_inventory</a>
-  			<a type="button" class="list-group-item" href="erp_products/index.html">erp_products</a>
-  			<a type="button" class="list-group-item" href="erp_txns_and_accts/index.html">erp_txns_and_accts</a>
-  			<a type="button" class="list-group-item" href="erp_work_effort/index.html">erp_work_effort</a>
-	      </div>
-		</div> <!-- col-md-12 -->
+            <div id="navbar-collapse" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-left">
+                    <li><a href="/" style="font-size: 25px; padding-left: 0px; margin-top: -5px; font-weight: 300;">CompassAE API Explorer</a></li>
+                </ul>
+            </div>
 
-	  </div><!-- row -->
-	</div><!-- container -->
+		</div>
+	</div>
+	<!-- / END TOP BAR -->
+
+    <!-- BIG HEADING WITH CALL TO ACTION BUTTONS AND SHORT MESSAGES -->
+    <div class="container banner-hero">
+
+    </div> <!-- / END BIG HEADING WITH CALL TO ACTION BUTTONS AND SHORT MESSAGES  -->
+
+</header> <!-- / END HOME SECTION  -->
+
+<!-- =========================
+   Engines
+============================== -->
+
+<section class="works" id="works">
+<div class="container">
+	
+	<!-- SECTION HEADER -->
+	<div class="section-header">
+		
+		<!-- SECTION TITLE -->
+		<h2 class="dark-text">CompassAE API Documentation</h2>
+		
+		<h6>
+			CompassAE is organized by modular engines. Browse the APIs below.
+		</h6>
+	</div>
+	<!-- / END SECTION HEADER -->
+	<div class="row projects">
+	<div id="loader">
+	    <div class="loader-icon"></div>
+	</div>
+	<div class="col-md-12" id="portfolio-list">
+		<!-- PORTFOLIO ITEMS-->
+		<ul class="cbp-rfgrid">
+		
+        <!-- ENGINE: Base ERP Services -->
+        <li>
+        <a href="base-erp-services.html" class="more"><img src="dashboard/images/tiles/base-erp-tile.png"  alt="project"/>
+			<div class="project-info">
+				<div class="project-details">
+					<h5 class="white-text red-border-bottom">
+					ERP Services </h5>
+					<div class="details white-text">
+						Parties, Roles, Relationships
+					</div>
+				</div>
+			</div>
+			</a>
+        </li>
+        <!-- / ENGINE: Base ERP Services -->
+        
+        <!-- ENGINE: Commerce -->
+        <li>
+        <a href="./erp-commerce.html" class="more"><img src="dashboard/images/tiles/commerce-tile.png" alt="project" />
+			<div class="project-info">
+				<div class="project-details">
+					<h5 class="white-text red-border-bottom">
+					ERP Commerce </h5>
+					<div class="details white-text">
+						Shopping cart-related functions
+					</div>
+				</div>
+			</div>
+			</a>
+        </li>
+        <!-- / ENGINE: Commerce -->
+
+        <!-- ENGINE: Products -->
+        <li>
+        <a href="erp-products.html" class="more"><img src="dashboard/images/tiles/products-tile.png"  alt="project"/>
+			<div class="project-info">
+				<div class="project-details">
+					<h5 class="white-text red-border-bottom">
+					Products </h5>
+					<div class="details white-text" >
+						Product Types, Variants, Product Instances, Features and Options
+					</div>
+				</div>
+			</div>
+			</a>
+        </li>
+        <!-- / ENGINE: Products -->
+        
+		<!-- ENGINE: Inventory -->
+        <li data-scrollreveal="enter right after 0s over 1s">
+        <a href="erp-inventory.html" class="more"><img src="dashboard/images/tiles/inventory-tile.png"  alt="project"/>
+			<div class="project-info">
+				<div class="project-details">
+					<h5 class="white-text red-border-bottom">
+					Inventory</h5>
+					<div class="details white-text">
+						Inventory Entries (Accounts) and Inventory Txns
+					</div>
+				</div>
+			</div>
+			</a>
+        </li>
+        <!-- / ENGINE: Inventory -->
+        
+        <!-- ENGINE: Transactions and Accounts -->
+        <li>
+        <a href="transactions-and-accounts.html" class="more"><img src="dashboard/images/tiles/transactions-and-accounts-tile.png" alt="project"/>
+			<div class="project-info">
+				<div class="project-details">
+					<h5 class="white-text red-border-bottom">
+					Transactions and Accounts</h5>
+					<div class="details white-text">
+						Generic Biz Txn Events, Account Structures
+					</div>
+				</div>
+			</div>
+			</a>
+        </li>
+        <!-- / ENGINE: Transactions and Accounts -->
+		
+        <!-- ENGINE: Work Efforts -->
+        <li>
+        <a href="work-efforts.html" class="more"><img src="dashboard/images/tiles/work-efforts-tile.png" alt="project"/>
+			<div class="project-info">
+				<div class="project-details">
+					<h5 class="white-text red-border-bottom">
+					Work Efforts</h5>
+					<div class="details white-text">
+						Projects, Tasks, Time Tracking, Expenses
+					</div>
+				</div>
+			</div>
+			</a>
+        </li>
+        <!-- / ENGINE: Work Efforts -->
+
+		</ul>
+	</div>
+	<!-- END OF PORTFOLIO ITEMS-->
+</div>
+	
+	<!-- ENGINE DETAILS WILL BE LOADED HERE -->
+	<div id="loaded-content"></div>
+
+    <a id="back-button" class="red-btn" href="#"><i class="icon-fontawesome-webfont-27"></i> Go Back</a>
+	
+</div> <!-- / END CONTAINER -->
+</section> <!-- / END WORKS SECTION -->
+
+<!-- =========================
+   FOOTER             
+============================== -->
+
+<footer>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <p class="text-center" style="padding: 10px;">© <span id="year"></span> TrueNorth Technology Solutions, Inc.</p>
+        </div>
+    </div>
+
+</div> <!-- / END CONTAINER -->
+</footer> <!-- / END FOOOTER  -->
+
+<!-- SCRIPTS -->
+<script src="dashboard/js/bootstrap.min.js"></script>
+<script src="dashboard/js/jquery.nav.js"></script>
+<script src="dashboard/js/smoothscroll.js"></script>
+<script src="dashboard/js/zerif.js"></script>
+
+<script>$('#year').html(new Date().getFullYear());</script>
+
 </body>
-<html>
+</html>
