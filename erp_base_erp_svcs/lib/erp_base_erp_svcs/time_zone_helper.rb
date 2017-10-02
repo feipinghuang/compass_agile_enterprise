@@ -9,11 +9,11 @@ module ErpBaseErpSvcs
         end
 
         def in_client_time(time)
-          time + @offset_in_hours.hours
+          ::Time.parse(time.strftime('%Y-%m-%dT%H:%M:%S UTC')) + @offset_in_hours.hours
         end
 
         def client_to_utc_time(time)
-          time - @offset_in_hours.hours
+          ::Time.parse(time.strftime('%Y-%m-%dT%H:%M:%S UTC')) - @offset_in_hours.hours
         end
 
         def beginning_of_day
@@ -46,12 +46,12 @@ module ErpBaseErpSvcs
           else
             client_utc_offset = client_utc_offset.to_i
             hours = client_utc_offset / 60.0
-            -hours
+              -hours
+            end
           end
+
         end
 
-      end
-
-    end # Time
-  end # Helpers
-end # ErpBaseErpSvcs
+      end # Time
+    end # Helpers
+  end # ErpBaseErpSvcs
