@@ -9,11 +9,19 @@ module ErpDevSvcs
       end
 
       def initialize
+        return_code = 0;
+
         ErpDevSvcs::Commands::Helper.exec_in_engines do
-          result = %x[#{ARGV.join(' ')}]
-          puts result
+          puts = system("#{ARGV.join(' ')}")
+
+          if $?.exitstatus != 0
+            return_code = $?.exitstatus
+          end
         end
-      end
-    end
-  end
-end
+
+        exit(return_code)
+      end # initialize
+
+    end # ExecuteCmd
+  end # Commands
+end # ErpDevSvcs
