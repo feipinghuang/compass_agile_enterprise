@@ -257,7 +257,7 @@ class ProductType < ActiveRecord::Base
 
   # Get dba_organzation info eventually going to be tenant
   def dba_organization
-    find_party_by_role(RoleType.dba_org)
+    find_party_by_role(RoleType.iid('dba_org'))
   end
   alias :tenant :dba_organization
 
@@ -278,7 +278,7 @@ class ProductType < ActiveRecord::Base
       role_type = RoleType.iid(role_type)
     end
 
-     # if this is a dba_org role then set the tenant_id
+    # if this is a dba_org role then set the tenant_id
     if role_type.internal_identifier == 'dba_org'
       self.tenant_id = party.id
       self.save

@@ -24,7 +24,7 @@ cache:
 
 # image: ruby:2.4.1
 
-runtests:
+run_tests:
   script:
     - cd ./erp_dev_svcs
     - bundle
@@ -33,33 +33,24 @@ runtests:
     - cd ..
     - compass_ae-dev execute bundle
     - compass_ae-dev test
-    
-development:
-  variables:
-    DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/$POSTGRES_DB"
-  script:
-  - ruby -v                                 
-  - gem install bundler  --no-ri --no-rdoc  
-  - bundle install -j $(nproc) --path vendor
-  #- bundle exec rake db:migrate
-  #- bundle exec rake db:seed
-  #- bundle exec rake
+  artifacts:
+    paths:
+      - coverage/
   only:
-    - development
-
-production:
-  variables:
-    DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/$POSTGRES_DB"
-  script:
-  - whoami
-  - echo $HOME
-  - which rbenv
-  - ruby -v                                 
-  - gem install bundler  --no-ri --no-rdoc  
-  - bundle install -j $(nproc) --path vendor
-  # - bundle exec rake db:migrate
-  # - bundle exec rake db:seed
-  # - bundle exec rake
-  # - cap production deploy
-  only:
+    - release_candidate
     - master
+
+pages:
+  stage: deploy
+  dependencies:
+    - run_tests
+  script:
+    - mv coverage/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  only:
+    - release_candidate
+    - master
+   

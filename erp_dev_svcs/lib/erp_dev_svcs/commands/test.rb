@@ -26,13 +26,30 @@ module ErpDevSvcs
         end
 
         opt_parser.parse!
+
+        return_code = 0;
+
+        unless Dir.exists? 'coverage'
+          system('mkdir ./coverage')
+        end
+
         ErpDevSvcs::Commands::Helper.exec_in_engines(options[:gems]) do |engine_name|
           puts "\nRunning #{engine_name}'s test suite...  \n"
-          result = %x[bundle exec rspec --tty --color spec]
-          puts result
+          puts system('bundle exec rspec --tty --color spec')
+
+          if $?.exitstatus != 0
+            return_code = $?.exitstatus
+          end
+
+          unless Dir.exists? '../coverage/' + engine_name
+            system('mkdir ../coverage/' + engine_name)
+          end
+          system('cp -r ./coverage/ ../coverage/' + engine_name)
         end
+
+        exit(return_code)
       end
 
-    end
-  end
-end
+    end # Test
+  end # Commands
+end # ErpDevSvcs
