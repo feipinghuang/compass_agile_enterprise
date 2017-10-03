@@ -26,13 +26,21 @@ module ErpDevSvcs
         end
 
         opt_parser.parse!
+
+        return_code = 0;
+
         ErpDevSvcs::Commands::Helper.exec_in_engines(options[:gems]) do |engine_name|
           puts "\nRunning #{engine_name}'s test suite...  \n"
-          result = %x[bundle exec rspec --tty --color spec]
-          puts result
+          puts system('bundle exec rspec --tty --color spec')
+
+          if $?.exitstatus != 0
+            return_code = $?.exitstatus
+          end
         end
+
+        exit(return_code)
       end
 
-    end
-  end
-end
+    end # Test
+  end # Commands
+end # ErpDevSvcs
