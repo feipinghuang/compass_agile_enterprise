@@ -47,8 +47,6 @@ module API
           start = params[:start].to_i
         end
 
-        #query_filter = {}
-
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
         context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
 
@@ -322,9 +320,9 @@ module API
         # in the discount for ProductIncluded or at least one child is
         # not included for the SearchResults
         filtered_product_type_ids = []
+        current_discount_id = filters[:discount_id]
 
         if(params[:panel_type] == 'SearchResults')
-          current_discount_id = filters[:exclude_discount_id]
           product_type_ids.each do |product_type_id|
             product_type = ProductType.find(product_type_id)
             if product_type.at_least_one_child_not_in_discount?(current_discount_id)
@@ -332,7 +330,6 @@ module API
             end
           end
         else
-          current_discount_id = filters[:discount_id]
           product_type_ids.each do |product_type_id|
             product_type = ProductType.find(product_type_id)
             if product_type.at_least_one_child_in_discount?(current_discount_id)
@@ -353,9 +350,9 @@ module API
         # not included for the SearchResults
 
         filtered_product_type_ids = []
+        current_discount_id = filters[:discount_id]
 
         if(params[:panel_type] == 'SearchResults')
-          current_discount_id = filters[:exclude_discount_id]
           product_type_ids.each do |product_type_id|
             product_type = ProductType.find(product_type_id)
             if product_type.root?
@@ -367,7 +364,6 @@ module API
             end
           end
         else
-          current_discount_id = filters[:discount_id]
           product_type_ids.each do |product_type_id|
             product_type = ProductType.find(product_type_id)
             if product_type.root?
