@@ -48,8 +48,7 @@ class Discount < ActiveRecord::Base
   end
 
   # take array of product type ids and generate a set of product offers
-  def generate_product_offers(product_type_ids)
-
+  def generate_product_offers(product_type_ids, product_type_tag)
 
     product_type_ids.each do |product_type_id|
       # check to see if this product type already belongs to the discount
@@ -79,6 +78,54 @@ class Discount < ActiveRecord::Base
 
       end
     end
+  end
+
+  def remove_product_offers(product_type_ids, product_type_tag)
+
+    if product_type_ids.length == 0
+      # remove all
+      # if there's a tag involved grab the ids
+      unless product_type_tag.blank?
+        product_type_ids_to_be_untagged = product_type_discounts.collect{ |product_type| product_type.id }
+      end
+      product_offers_to_remove = product_offers
+    else
+      # remove specific
+      product_type_ids_to_remove = []
+      product_type_ids.each do |product_type_id|
+        product_type = ProductType.find(product_type_id)
+        product_type_ids_to_remove << product_type.id
+        if product_type.is_base
+          # remove product type's children from discount
+          product_type_ids_to_remove.concat( product_type.children.collect{ |child| child.id } )
+        else
+          # if there are no siblings left in the offer, remove the parent too
+          product_type_sibling_ids = product_type.siblings.collect{ |sibling| sibling.id }
+          siblings_still_in_discount = ProductTypeDiscount.where("discount_id = ? and product_type_id in (#{product_type_sibling_ids.join(',')})",id)
+          if siblings_still_in_discount.empty?
+            product_type_ids_to_remove << product_type.parent.id
+          end
+        end
+      end
+      product_offers_to_remove = ProductOffer.where("discount_id = ? and product_type_id in (#{product_type_ids_to_remove.join(',')})", id)
+      unless product_type_tag.blank?
+        product_type_ids_to_be_untagged = product_type_ids_to_remove
+      end
+    end
+
+    product_offers_to_remove.each do |product_offers|
+      product_offers.destroy
+    end
+
+    # do the untagging if necessary
+    unless product_type_ids_to_be_untagged.nil?
+      product_type_ids_to_be_untagged.each do |product_type_id|
+        product_type = ProductType.find(product_type_id)
+        product_type.tag_list.remove(product_type_tag)
+        product_type.save
+      end
+    end
+
   end
 
   def update_product_offers

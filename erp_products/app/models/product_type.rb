@@ -114,17 +114,16 @@ class ProductType < ActiveRecord::Base
         statement = statement.joins(join_stmt).where(product_types_tbl[:description].matches('%' + filters[:keyword] + '%'))
       end
 
-      # if filters[:exclude_discount_id]
-      #   statement = statement.joins("LEFT OUTER JOIN product_type_discounts on product_type_discounts.product_type_id = product_types.id ")
-      #   statement = statement.where('product_type_discounts.discount_id <> ? or product_type_discounts.discount_id is null', filters[:exclude_discount_id])
-      # end
-
       if filters[:available_on_web]
         statement = statement.where(available_on_web: true)
       end
 
       if filters[:not_available_on_web]
         statement = statement.where(available_on_web: false)
+      end
+
+      if filters[:roots_only]
+        statement = statement.where(is_base: true)
       end
 
       statement
@@ -399,10 +398,11 @@ class ProductType < ActiveRecord::Base
           is_base: false
       )
 
-      variant_product_type.description = "#{self.description} Variant-" + variant_product_type.id.to_s
-      variant_product_type.save
+
 
       variant_product_type.move_to_child_of(parent_variant_product_type)
+
+      features_list = ""
 
       variant_features_set.each do |variant_feature|
         ProductFeatureApplicability.create(
@@ -411,7 +411,12 @@ class ProductType < ActiveRecord::Base
             feature_of_record_id: variant_product_type.id,
             product_feature_id: variant_feature.id
         )
+        feature_value = ProductFeatureValue.find(variant_feature.product_feature_value_id)
+        features_list.concat(feature_value.description + '-')
       end
+
+      variant_product_type.description = self.description + ' (' + features_list.slice(0,(features_list.length - 1)) +')'
+      variant_product_type.save
 
       # put the variant in the same category as the base (parent)
       parent_category = self.category
@@ -571,6 +576,36 @@ class ProductType < ActiveRecord::Base
       end
     end
     price
+  end
+
+  def at_least_one_child_in_discount?(discount_id)
+    children.each do |child_product_type|
+      product_types_discount = ProductTypeDiscount.where('discount_id = ? and product_type_id = ?', discount_id, self.id)
+      if product_types_discount.length > 0
+        return true
+      end
+    end
+    return false
+  end
+
+  def at_least_one_child_not_in_discount?(discount_id)
+
+    child_product_type_ids = children.collect{ |child| child.id}
+
+    # if no children, return false. never show a product type without children in discount
+    # Search Results because base product types can't really be sold
+    if child_product_type_ids.empty?
+      return false
+    end
+
+    number_of_children_in_discount = ProductTypeDiscount.where("discount_id = ? and product_type_id in (#{child_product_type_ids.join(',')})", discount_id).length
+
+    if( child_product_type_ids.length > number_of_children_in_discount )
+      return true
+    else
+      return false
+    end
+
   end
 
 

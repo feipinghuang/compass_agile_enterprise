@@ -72,12 +72,12 @@ module API
         if context[:view]
           if context[:view] == 'mobile'
             render :json => {success: true,
-                             total_count: total_count,
+                             total: total_count,
                              product_offers: product_offers.collect { |product_offer| product_offer.to_mobile_hash }}
           end
         else
           render :json => {success: true,
-                           total_count: total_count,
+                           total: total_count,
                            product_offers: product_offers.collect { |product_offer| product_offer.to_data_hash }}
         end
 
@@ -275,93 +275,6 @@ module API
  @apiSuccess (200) {Boolean} delete_product_offer_response.success True if the request was successful
 
 =end
-
-      def special_delete
-        begin
-          ActiveRecord::Base.transaction do
-            product_offer_ids = CSV.parse(params[:product_offer_ids])[0].collect{ |id| id.to_i}
-            discount_id = params[:discount_id].to_i
-            product_type_tag = params[:product_tag]
-
-            deleted_offers = []
-
-            product_offer_ids.each do |product_offer_id|
-
-              # parent may have gotten whacked first on delete all
-              unless deleted_offers.include?(product_offer_id)
-                product_offer = ProductOffer.find(product_offer_id)
-                associated_product_type = product_offer.product_type
-
-                # if it's a base product, remove all of it's variant from the discount
-                # if it's not a base just remove the offer
-                # if it's the last variant for the product, remove the base too
-                if associated_product_type.is_base
-                  unless product_type_tag.blank?
-                    associated_product_type.tag_list.remove(product_type_tag)
-                    associated_product_type.save
-                  end
-                  product_variants = associated_product_type.children
-                  product_variants.each do |product_variant|
-                    unless product_type_tag.blank?
-                      product_variant.tag_list.remove(product_type_tag)
-                      product_variant.save
-                    end
-                    # see if there's a product offer for the variant
-                    variant_product_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, product_variant.id)
-                    unless variant_product_offer.nil?
-                      deleted_offers << variant_product_offer.id
-                      variant_product_offer.destroy
-                    end
-                  end
-                  deleted_offers << product_offer.id
-                  product_offer.destroy
-                else
-                  unless product_type_tag.blank?
-                    associated_product_type.tag_list.remove(product_type_tag)
-                    associated_product_type.save
-                  end
-                  if no_other_children_in_discount?(discount_id, associated_product_type, product_offer.product_type_id)
-                    # if there no other variants of this product type in the offer, delete the base too
-                    # find the the parent and delete it
-                    parent_product_type_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, product_offer.product_type.parent.id)
-                    unless parent_product_type_offer.nil?
-                      deleted_offers << parent_product_type_offer.id
-                      parent_product_type_offer.destroy
-                    end
-                  end
-                  deleted_offers << product_offer.id
-                  product_offer.destroy
-                end
-              end
-            end
-              render :json => {:success => true}
-          end
-              rescue => ex
-              Rails.logger.error ex.message
-              Rails.logger.error ex.backtrace.join("\n")
-
-              # email error
-              ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
-
-              render :json => {success: false, message: 'Could not remove product types from offer'}
-          end
-
-      end
-
-      private
-
-      def no_other_children_in_discount?(discount_id, offer_product_type, current_offer_product_type_id)
-        offer_product_type_parent = offer_product_type.parent
-        child_ids = offer_product_type_parent.children.collect { |children| children.id}
-        child_ids.delete(current_offer_product_type_id)
-        child_ids.each do |child_id|
-          product_offer_for_child = ProductOffer.find_by_discount_id_and_product_type_id(discount_id, child_id)
-          unless product_offer_for_child.nil?
-            return false
-          end
-        end
-        return true
-      end
 
     end # ProductOffersController
   end # V1

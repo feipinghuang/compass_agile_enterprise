@@ -38,10 +38,24 @@ module API
           start = params[:start] || 0
         end
 
+        # TODO: fixed in another branch?
+        unless params[:limit].blank?
+          limit = params[:limit].to_i
+        end
+
+        unless params[:start].blank?
+          start = params[:start].to_i
+        end
+
         #query_filter = {}
 
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
         context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
+
+        # adjust the query filter for discount panels
+        if( params[:panel_type] == 'SearchResults' || params[:panel_type] == 'ProductsIncluded')
+          query_filter[:roots_only] = true
+        end
 
         if params[:query]
           query_filter[:keyword] = params[:query].strip
@@ -76,12 +90,12 @@ module API
           if context[:view]
             if context[:view] == 'mobile'
               render :json => {success: true,
-                               total_count: total_count,
+                               total: total_count,
                                product_types: product_types.collect { |product_type| product_type.to_mobile_hash }}
             end
           else
             render :json => {success: true,
-                             total_count: total_count,
+                             total: total_count,
                              product_types: product_types.collect { |product_type| product_type.to_data_hash }}
           end
         else
@@ -89,9 +103,9 @@ module API
           # uses a tree, may have node parameter
           if params[:node].blank? || params[:node] == 'root'
             # only take roots
-            # need to apply some funky filtering using the exclude discount
+            # need to apply some funky filtering
             product_type_ids = product_types.collect{|product_type| product_type.root.id}.uniq
-            product_type_ids = filtered_roots(query_filter[:exclude_discount_id], product_type_ids)
+            product_type_ids = filtered_roots(query_filter, product_type_ids, params)
           else
             # take descendants of node
             descendant_ids = ProductType.find(params[:node]).descendants.collect(&:id)
@@ -103,7 +117,7 @@ module API
             end
             product_type_ids = product_type_ids.flatten.uniq
             # determine which children are in the discount already and exclude them
-            product_type_ids = filtered_node(query_filter[:exclude_discount_id], product_type_ids )
+            product_type_ids = filtered_node(query_filter, product_type_ids, params)
           end
           if product_type_ids.count > 0
             product_types = ProductType.where("id in (#{product_type_ids.join(',')})")
@@ -114,7 +128,7 @@ module API
           end
 
           render :json => {success: true,
-                           total_count: total_count,
+                           total: total_count,
                            product_types: product_types.collect { |product_type| product_type.to_offer_hash() }}
         end
       end
@@ -299,50 +313,76 @@ module API
 
     private
 
-    #
-    # Not part of the exposed API
-    #
+      def filtered_roots(filters, product_type_ids, params)
 
-    def filtered_roots(discount_id, product_type_ids)
-      filtered_product_type_ids = []
-      # for a potential root, only keep if at least one child is not participating
-      # in the discount
-      product_type_ids.each do |product_type_id|
-        product_type = ProductType.find(product_type_id)
-        product_type_children_ids = product_type.children.collect { |children| children.id}
-        # if no children. let it pass
-        if product_type_children_ids.count == 0
-          product_type_discount = ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", discount_id, product_type.id)
-          if product_type_discount.nil?
-            filtered_product_type_ids << product_type_id
+        # There are two panels: SearchResults and ProductsIncluded.
+        # Both are trees of product types.
+        # When the call is for roots (as opposed to nodes), we
+        # only want to include the root if at least child is included
+        # in the discount for ProductIncluded or at least one child is
+        # not included for the SearchResults
+        filtered_product_type_ids = []
+
+        if(params[:panel_type] == 'SearchResults')
+          current_discount_id = filters[:exclude_discount_id]
+          product_type_ids.each do |product_type_id|
+            product_type = ProductType.find(product_type_id)
+            if product_type.at_least_one_child_not_in_discount?(current_discount_id)
+              filtered_product_type_ids << product_type.id
+            end
           end
         else
-          product_type_discounts = ProductTypeDiscount.where("discount_id = ? and product_type_id in (#{product_type_children_ids.join(',')})", discount_id)
-          # if this root's children are greater than the number of children in the discount,
-          # there's at least on child who isn't in the discount, so take this root
-          if product_type_children_ids.count > product_type_discounts.count
-            filtered_product_type_ids << product_type_id
+          current_discount_id = filters[:discount_id]
+          product_type_ids.each do |product_type_id|
+            product_type = ProductType.find(product_type_id)
+            if product_type.at_least_one_child_in_discount?(current_discount_id)
+              filtered_product_type_ids << product_type.id
+            end
           end
         end
-      end
-      filtered_product_type_ids
-    end
 
-    def filtered_node(discount_id, product_type_ids)
-      filtered_product_type_ids = []
-      product_type_ids.each do |product_type_id|
-        product_type = ProductType.find(product_type_id)
-        if product_type.root?
+        filtered_product_type_ids
+      end
+
+      def filtered_node(filters, product_type_ids, params)
+        # There are two panels: SearchResults and ProductsIncluded.
+        # Both are trees of product types.
+        # When the call is for nodes (as opposed to roots), we
+        # only want to include the node if it is included
+        # in the discount for ProductIncluded or
+        # not included for the SearchResults
+
+        filtered_product_type_ids = []
+
+        if(params[:panel_type] == 'SearchResults')
+          current_discount_id = filters[:exclude_discount_id]
+          product_type_ids.each do |product_type_id|
+            product_type = ProductType.find(product_type_id)
+            if product_type.root?
+            else
+              product_type_discount =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", current_discount_id, product_type.id)
+              if product_type_discount.empty?
+                filtered_product_type_ids << product_type.id
+              end
+            end
+          end
         else
-          product_type_discount =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", discount_id, product_type.id)
-          if product_type_discount.empty?
-            filtered_product_type_ids << product_type.id
+          current_discount_id = filters[:discount_id]
+          product_type_ids.each do |product_type_id|
+            product_type = ProductType.find(product_type_id)
+            if product_type.root?
+            else
+              product_type_discount =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", current_discount_id, product_type.id)
+              if !product_type_discount.empty?
+                filtered_product_type_ids << product_type.id
+              end
+            end
           end
         end
-      end
-      filtered_product_type_ids
-    end
 
+        filtered_product_type_ids
+
+      end
 
     end # ProductTypesController
   end # V1

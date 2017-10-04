@@ -143,7 +143,7 @@ module API
 
             discount.save!
 
-            discount.generate_product_offers(CSV.parse(params[:product_types]).first)
+            discount.generate_product_offers(CSV.parse(params[:product_types]).first, '')
 
             render :json => {success: true,
                              discount: discount.to_data_hash}
@@ -246,23 +246,36 @@ module API
         begin
           ActiveRecord::Base.transaction do
 
+            if params[:product_type_ids].blank?
+              # adding all: have to filter product types to get to what 'all' means since UI uses paging store
+              # 'all' may not present in the UI
+              query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
+              # adjust for search results
+              query_filter[:roots_only] = true
+              query_filter.delete(:discount_id)
+              # hook method to apply any scopes passed via parameters to this api
+              product_types = ProductType.apply_filters(query_filter)
+              product_type_ids = product_types.collect { |product_type| product_type.id }
+            else
               product_type_ids = CSV.parse(params[:product_type_ids])[0].collect{ |id| id.to_i}
-              discount_id = params[:discount_id].to_i
-              product_type_tag = params[:product_tag]
+            end
 
-              discount = Discount.find(discount_id)
+            discount_id = params[:discount_id].to_i
+            product_type_tag = params[:product_tag]
 
-              product_type_ids.each do |product_type_id|
+            discount = Discount.find(discount_id)
 
-                product_type = ProductType.find(product_type_id)
+            product_type_ids.each do |product_type_id|
+
+              product_type = ProductType.find(product_type_id)
 
                 if product_type.is_base
-                  offer_product_type_ids = product_type.children.collect { |children| children.id}
-                  offer_product_type_ids.unshift(product_type_id)
+                  discount_product_type_ids = product_type.children.collect { |children| children.id}
+                  discount_product_type_ids.unshift(product_type_id)
                 else
-                  offer_product_type_ids = [product_type_id]
+                  discount_product_type_ids = [product_type_id]
                   # add the parent too
-                  offer_product_type_ids.unshift(product_type.parent.id)
+                  discount_product_type_ids.unshift(product_type.parent.id)
                 end
 
                 # tag these products if there's a tag
@@ -274,7 +287,7 @@ module API
                   end
                 end
 
-                discount.generate_product_offers(offer_product_type_ids)
+                discount.generate_product_offers(discount_product_type_ids, product_type_tag)
             end
 
               render :json => {:success => true}
@@ -289,6 +302,36 @@ module API
               render :json => {success: false, message: 'Could not add product types to discount'}
           end
       end
+
+      def remove_products_from_discount
+      begin
+        ActiveRecord::Base.transaction do
+
+          if params[:product_type_ids].blank?
+            product_type_ids = []
+          else
+            product_type_ids = CSV.parse(params[:product_type_ids])[0].collect{ |id| id.to_i}
+          end
+
+          discount_id = params[:discount_id].to_i
+          product_type_tag = params[:product_tag]
+
+          discount = Discount.find(discount_id)
+
+          discount.remove_product_offers(product_type_ids, product_type_tag)
+
+          render :json => {:success => true}
+        end
+      rescue => ex
+        Rails.logger.error ex.message
+        Rails.logger.error ex.backtrace.join("\n")
+
+        # email error
+        ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+        render :json => {success: false, message: 'Could not delete product types from discount'}
+      end
+    end
 
     end # DiscountsController
   end # V1

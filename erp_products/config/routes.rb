@@ -19,19 +19,15 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :product_offers, defaults: { :format => 'json' } do
-        collection do
-          delete :special_delete
-        end
-      end
-
       resources :discounts, defaults: { :format => 'json' } do
         collection do
           post :add_products_to_discount
+          delete :remove_products_from_discount
         end
       end
       resources :collections, defaults: { :format => 'json' }
 
+      resources :product_offers, defaults: { :format => 'json' }
       resources :product_options, defaults: { :format => 'json' }
       resources :selected_product_options, defaults: { :format => 'json' }
     end

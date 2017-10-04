@@ -45,6 +45,10 @@ class ProductOffer < ActiveRecord::Base
 
       statement
     end
+
+    def product_offer_ids_in_discount(discount_id)
+      ProductOffer.where('discount_id = ?', discount_id).collect{ |product_offer| product_offer.id }
+    end
   end
 
   def before_destroy
@@ -101,6 +105,8 @@ class ProductOffer < ActiveRecord::Base
   def to_mobile_hash
     to_data_hash
   end
+
+
 
 
   
