@@ -2,7 +2,7 @@ module API
   module V1
     class BaseController < ActionController::Base
 
-      class ApiError < StandardError; end
+      class APIError < StandardError; end
 
       before_filter :require_login
       before_filter :set_paging
