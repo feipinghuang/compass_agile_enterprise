@@ -1,15 +1,19 @@
 <div class="alert alert-danger">
   <h2>There was an error.</h2>
   <% if !@user.errors.empty? %>
-      <h3>Please address the following issues</h3>
-      <hr>
-      <ul>
-        <% @user.errors.each do |attribute, error| %>
-            <li class="error_text"><%= attribute.to_s.capitalize %> : <%= error %> </li>
-        <% end %>
-      </ul>
+    <h3>Please address the following issues</h3>
+    <hr>
+    <ul>
+      <% @user.errors.each do |attribute, error| %>
+        <li class="error_text"><%= attribute.to_s.capitalize %> : <%= raw error %> </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p><%= @message %></p>
   <% end %>
 </div>
 <br/>
 <%= render "/signup_form" %>
-
+<script type="text/javascript">
+  window.scrollTo(0, 0);
+</script>
