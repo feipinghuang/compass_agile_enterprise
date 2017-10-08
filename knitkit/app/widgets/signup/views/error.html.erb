@@ -1,7 +1,6 @@
 <div class="alert alert-danger">
-  <h2>There was an error.</h2>
   <% if !@user.errors.empty? %>
-    <h3>Please address the following issues</h3>
+    <h4>Please address the following issues</h4>
     <hr>
     <ul>
       <% @user.errors.each do |attribute, error| %>
