@@ -444,6 +444,10 @@ Compass.ErpApp.Desktop.Applications.Knitkit.websiteMenu = function() {
                                                     } else {
                                                         knitkitModule.clearWebsite();
                                                     }
+
+                                                    // close all active tabs
+                                                    if (knitkitModule.centerRegion)
+                                                        knitkitModule.centerRegion.closeActiveTabs();
                                                 }
                                             });
                                         } else {
