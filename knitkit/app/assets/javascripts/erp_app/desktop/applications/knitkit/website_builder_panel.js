@@ -752,7 +752,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var me = this;
         var uniqueId = null;
 
-        if (options.componentType) {
+        if (options.componentType == "header" || options.componentType == "footer") {
             uniqueId = options.componentType;
 
         } else if (options.websiteSectionContentId) {
@@ -762,7 +762,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         } else {
             uniqueId = new Date().getTime();
         }
-
         options['uniqueId'] = uniqueId;
         
         dropPanel.removeCls('website-builder-dropzone');
