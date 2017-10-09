@@ -1,6 +1,7 @@
 Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function(self, items, record) {
     var sectionId = record.get('recordId');
-    var websiteId = compassDesktop.getModule('knitkit-win').currentWebsite.id;
+    var knitkitModule = compassDesktop.getModule('knitkit-win');
+    var websiteId = knitkitModule.currentWebsite.id;
 
     // Update Security
     if (currentUser.hasCapability('unsecure', 'WebsiteSection') || currentUser.hasCapability('secure', 'WebsiteSection')) {
@@ -774,6 +775,26 @@ Compass.ErpApp.Desktop.Applications.Knitkit.addSectionOptions = function(self, i
                                     var obj = Ext.decode(response.responseText);
                                     if (obj.success) {
                                         record.remove();
+                                        // remove tab if opened
+                                        var centerRegion = knitkitModule.centerRegion;
+                                        if (centerRegion) {
+                                            var websiteSectionBuilder = centerRegion.workArea.getComponent('websiteSection' + sectionId),
+                                                layoutPanel = centerRegion.workArea.getComponent('section-' + sectionId);
+
+                                            if (websiteSectionBuilder)
+                                                websiteSectionBuilder.destroy();
+                                            
+                                            if (layoutPanel)
+                                                layoutPanel.destroy();
+                                        }
+
+                                        var eastRegion = Ext.getCmp('knitkitEastRegion'),
+                                            compPropPanel = eastRegion.down('knitkitcomponentpropertiesformpanel');
+                                        if (compPropPanel) {
+                                            if (compPropPanel.getWebsiteSectionId() == sectionId)
+                                                compPropPanel.removeAll();
+                                        }
+                                        
                                     } else {
                                         Ext.Msg.alert('Error', 'Error deleting page');
                                     }

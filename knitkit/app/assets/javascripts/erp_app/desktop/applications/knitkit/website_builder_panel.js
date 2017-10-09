@@ -934,6 +934,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 e.stopPropagation();
                 var eastRegion = Ext.ComponentQuery.query('knitkit_eastregion').first();
                 var elemPropertiesPanel = eastRegion.down('knitkitcomponentpropertiesformpanel');
+                elemPropertiesPanel.setWebsiteSectionId(me.websiteSectionId);
                 elemPropertiesPanel.loadElementProperties($(this)[0], iframeNode);
                 elemPropertiesPanel.show();
                 eastRegion.expand();

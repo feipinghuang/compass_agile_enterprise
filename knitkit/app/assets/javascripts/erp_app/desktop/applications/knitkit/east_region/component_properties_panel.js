@@ -383,6 +383,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
         });
     },
 
+    setWebsiteSectionId: function(websiteSectionId) {
+        this.websiteSectionId = websiteSectionId;
+    },
+
+    getWebsiteSectionId: function() {
+        return this.websiteSectionId;
+    },
+    
     cleanUpDuplicateStyles: function(node) {
         if (!node.style) return;
         Ext.each(node.style.cssText.split(';'), function(nodeStyle){
