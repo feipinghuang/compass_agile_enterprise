@@ -916,25 +916,33 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
     attachBlockElementListener: function(iframeNode) {
         var me = this,
-            blockElem = "blockquote, section, center, div, fieldset, form, h1, h2, h3, h4, h5, h6, hr, ol, p, pre, table, ul, img";
+            blockElem = "blockquote, section, center, div, fieldset, form, h1, h2, h3, h4, h5, h6, hr, ol, p, pre, table, ul, img",
+            blockElems = blockElem.split(', ');
+        function isElementBlock(element) {
+            return blockElems.indexOf(element.tagName.toLowerCase()) > -1 ;
+        }
+        
         $(iframeNode.contentDocument.body).
             find('.container > .row > .col-md-12').
             find(blockElem).
             mouseenter(function(ev){
                 ev.stopPropagation();
+                var elem = isElementBlock(ev.target) ? ev.target : this;
                 me.removeDesignAtrifacts(iframeNode);
-                $(this).addClass(iframeNode.id+ '-enclose');
+                $(elem).addClass(iframeNode.id+ '-enclose');
             }).mouseleave(function(evt){
                 evt.stopPropagation();
-                $(this).removeClass(iframeNode.id + '-enclose');
-                if (Compass.ErpApp.Utility.isBlank($(this).attr('class')))
-                    $(this).removeAttr('class');
+                var elem = isElementBlock(evt.target) ? evt.target : this;
+                $(elem).removeClass(iframeNode.id + '-enclose');
+                if (Compass.ErpApp.Utility.isBlank($(elem).attr('class')))
+                    $(elem).removeAttr('class');
             }).click(function(e){
                 e.stopPropagation();
+                var elem = isElementBlock(e.target) ? e.target : this;
                 var eastRegion = Ext.ComponentQuery.query('knitkit_eastregion').first();
                 var elemPropertiesPanel = eastRegion.down('knitkitcomponentpropertiesformpanel');
                 elemPropertiesPanel.setWebsiteSectionId(me.websiteSectionId);
-                elemPropertiesPanel.loadElementProperties($(this)[0], iframeNode);
+                elemPropertiesPanel.loadElementProperties(elem, iframeNode);
                 elemPropertiesPanel.show();
                 eastRegion.expand();
             });
