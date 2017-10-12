@@ -636,6 +636,14 @@
         }
         if (name === 'indent') this.checkContentChange();
         else this.cleanContent({cleanAttrs: ['style']});
+
+        var event = new CustomEvent('contenteditorcommandexecute', {
+            detail: {
+                name: name,
+                value: value
+            }
+        });
+        doc.dispatchEvent(event)
     };
 
     // remove attrs and tags

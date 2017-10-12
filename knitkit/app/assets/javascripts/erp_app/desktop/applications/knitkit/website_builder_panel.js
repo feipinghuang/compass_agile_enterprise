@@ -852,7 +852,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         if (iframeNode.contentWindow.__pen__) {
 
                             // show properties panel on content editor select
-                            iframeNode.contentDocument.addEventListener("contenteditorselect", function(e) {
+                            iframeNode.contentDocument.addEventListener("contenteditorselect", function() {
                                 var eastRegion = Ext.ComponentQuery.query('knitkit_eastregion').first();
                                 var elemPropertiesPanel = eastRegion.down('knitkitcomponentpropertiesformpanel');
                                 
@@ -865,7 +865,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             iframeNode.contentDocument.addEventListener("contenteditorlinebreak", function(){
                                 me.attachBlockElementListener(iframeNode);
                             });
-                            
+
+                            // rebind listeners for any executed command
+                            iframeNode.contentDocument.addEventListener("contenteditorcommandexecute", function(){
+                                me.attachBlockElementListener(iframeNode);
+                            });
+
                             if (options.websiteSectionContentId) {
                                 Compass.ErpApp.Utility.ajaxRequest({
                                     url: '/knitkit/erp_app/desktop/website_builder/component_dynamic_status',
