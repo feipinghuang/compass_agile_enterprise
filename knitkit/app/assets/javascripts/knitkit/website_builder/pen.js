@@ -241,6 +241,8 @@
             if (e.which === 8 && ctx.isEmpty()) return lineBreak(ctx, true);
             // toggle toolbar on key select
             if (e.which !== 13 || e.shiftKey) return updateStatus(400);
+            var event = new CustomEvent('contenteditorlinebreak');
+            doc.dispatchEvent(event)
             var node = getNode(ctx, true);
             if (!node || !node.nextSibling || !lineBreakReg.test(node.nodeName)) return;
             if (node.nodeName !== node.nextSibling.nodeName) return;
@@ -338,6 +340,7 @@
                 ctx.cleanContent();
             });
         });
+        
     }
 
     function addListener(ctx, target, type, listener) {
@@ -799,7 +802,6 @@
                 }
             });
             doc.dispatchEvent(event)
-            console.log('select');
         }
         return this;
     };
@@ -831,6 +833,10 @@
         this.config.editor[attr]('contenteditable', '');
 
         return this;
+    };
+
+    Pen.prototype.isDestroyed = function() {
+        return this._isDestroyed;
     };
 
     Pen.prototype.rebuild = function() {
