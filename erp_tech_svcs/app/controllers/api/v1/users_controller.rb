@@ -2,6 +2,30 @@ module API
   module V1
     class UsersController < BaseController
 
+=begin
+
+ @api {get} /api/v1/users
+ @apiVersion 1.0.0
+ @apiName GetUsers
+ @apiGroup User
+ @apiDescription Get Users
+
+ @apiParam (query) {String} [query_filter] JSON encoded string of filter options
+ @apiParam (query) {String} [username] Username to filter by
+ @apiParam (query) {String} [sort] JSON encoded data for sorting {"property": 'username', "direction": "ASC"}
+ @apiParam (query) {Integer} [limit] Limit for paging
+ @apiParam (query) {Integer} [start] Start for paging
+
+ @apiSuccess (200) {Object} get_users_response Response
+ @apiSuccess (200) {Boolean} get_users_response.success True if the request was successful
+ @apiSuccess (200) {Integer} get_users_response.total_count Total count of CalendarDays records
+ @apiSuccess (200) {Object[]} get_users_response.users List of User records
+ @apiSuccess (200) {Integer} get_users_response.users.id Id
+ @apiSuccess (200) {string} get_users_response.users.username Username
+ @apiSuccess (200) {string} get_users_response.users.email Email
+
+=end
+
       def index
         sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
         sort = sort_hash[:property] || 'username'
@@ -37,11 +61,45 @@ module API
         render json: {total_count: total_count, users: users.uniq.collect(&:to_data_hash)}
       end
 
+=begin
+
+ @api {get} /api/v1/users/:id
+ @apiVersion 1.0.0
+ @apiName GetUser
+ @apiGroup User
+ @apiDescription Get User
+
+ @apiParam (path) {Integer} id ID of User
+
+ @apiSuccess (200) {Object} get_user_response Response
+ @apiSuccess (200) {Boolean} get_user_response.success True if the request was successful
+ @apiSuccess (200) {Object[]} get_user_response.user User record
+ @apiSuccess (200) {Integer} get_user_response.user.id Id
+ @apiSuccess (200) {string} get_user_response.user.username Username
+ @apiSuccess (200) {string} get_user_response.user.email Email
+
+=end
+
       def show
         user = User.find(params[:id])
 
         render json: {success: true, user: user.to_data_hash}
       end
+
+=begin
+
+ @api {get} /api/v1/users/check_username
+ @apiVersion 1.0.0
+ @apiName CheckUsername
+ @apiGroup User
+ @apiDescription Check if username is taken
+
+ @apiParam (query) {String} username Username to check
+
+ @apiSuccess (200) {Object} check_username_response Response
+ @apiSuccess (200) {Boolean} check_username_response.success True if username is not taken
+
+=end
 
       def check_username
         if User.where('username = ?', params[:username]).first
