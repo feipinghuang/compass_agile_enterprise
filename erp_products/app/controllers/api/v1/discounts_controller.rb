@@ -46,11 +46,11 @@ module API
         discounts = Discount.apply_filters(query_filter)
 
         # scope by dba_organizations if there are no parties passed as filters
-        unless query_filter[:party]
-          dba_organizations = [current_user.party.dba_organization]
-          dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
-          discounts = discounts.scope_by_dba_organization(dba_organizations)
-        end
+        # unless query_filter[:party]
+        #   dba_organizations = [current_user.party.dba_organization]
+        #   dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
+        #   discounts = discounts.scope_by_dba_organization(dba_organizations)
+        # end
 
         if sort and dir
           discounts = discounts.order("#{sort} #{dir}")
@@ -242,6 +242,8 @@ module API
         render :json => {:success => true}
       end
 
+
+
       def add_products_to_discount
         begin
           ActiveRecord::Base.transaction do
@@ -252,7 +254,7 @@ module API
               query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
               # adjust for search results
               query_filter[:roots_only] = true
-              query_filter.delete(:discount_id)
+              query_filter.delete(:target_id)
               # hook method to apply any scopes passed via parameters to this api
               product_types = ProductType.apply_filters(query_filter)
               product_type_ids = product_types.collect { |product_type| product_type.id }
@@ -260,8 +262,7 @@ module API
               product_type_ids = CSV.parse(params[:product_type_ids])[0].collect{ |id| id.to_i}
             end
 
-            discount_id = params[:discount_id].to_i
-            product_type_tag = params[:product_tag]
+            discount_id = params[:target_id].to_i
 
             discount = Discount.find(discount_id)
 
@@ -278,16 +279,7 @@ module API
                   discount_product_type_ids.unshift(product_type.parent.id)
                 end
 
-                # tag these products if there's a tag
-                unless product_type_tag.blank?
-                  offer_product_type_ids.each do |product_type_id|
-                    product_type = ProductType.find(product_type_id)
-                    product_type.tag_list.add(product_type_tag.to_s, parse: true)
-                    product_type.save
-                  end
-                end
-
-                discount.generate_product_offers(discount_product_type_ids, product_type_tag)
+                discount.generate_product_offers(discount_product_type_ids, params[:product_tag])
             end
 
               render :json => {:success => true}
@@ -313,12 +305,10 @@ module API
             product_type_ids = CSV.parse(params[:product_type_ids])[0].collect{ |id| id.to_i}
           end
 
-          discount_id = params[:discount_id].to_i
-          product_type_tag = params[:product_tag]
-
+          discount_id = params[:target_id].to_i
           discount = Discount.find(discount_id)
 
-          discount.remove_product_offers(product_type_ids, product_type_tag)
+          discount.remove_product_offers(product_type_ids, params[:product_tag])
 
           render :json => {:success => true}
         end

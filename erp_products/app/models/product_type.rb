@@ -86,6 +86,11 @@ class ProductType < ActiveRecord::Base
         statement = statement.where(id: filters[:id])
       end
 
+      if filters[:discount_ids]
+        statement = statement.joins("inner join product_type_discounts on product_type_discounts.product_type_id = product_types.id")
+        statement = statement.where('product_type_discounts.discount_id' => filters[:discount_ids])
+      end
+
       if filters[:category_ids]
         statement = statement.joins("inner join category_classifications on category_classifications.classification_type = 'ProductType'
                          and category_classifications.classification_id = product_types.id")
@@ -238,7 +243,8 @@ class ProductType < ActiveRecord::Base
     data
   end
 
-  def to_offer_hash()
+  def to_target_hash()
+    # hash used by both discounts and collections custom views
     images = []
     if self.images.empty?
       images << "#{ErpTechSvcs::Config.file_protocol}://#{ErpTechSvcs::Config.installation_domain}/#{Rails.configuration.assets.prefix}/place_holder.jpeg"
@@ -260,10 +266,26 @@ class ProductType < ActiveRecord::Base
        images: images.first,
        sku: is_base ? 'base' : sku,
        created_at: created_at,
-       updated_at: updated_at
+       updated_at: updated_at,
+       discount_info: discount_info,
+       category: category.description,
+       number_in_stock: number_in_stock,
+       number_available: number_available,
+       number_sold: number_sold
     }
 
+  end
 
+  def discount_info
+    discount_details = []
+
+    product_type_discounts.sort_by{|ptd| ptd.id}.each do |product_type_discount|
+      discount = Discount.find(product_type_discount.discount_id)
+      discount_details << {discount_name: discount.description, discount_price: discount_price(discount.id).nil? ? 0.0 : discount_price(discount.id)}
+    end
+
+
+    discount_details
   end
 
   def to_display_hash
@@ -580,8 +602,8 @@ class ProductType < ActiveRecord::Base
 
   def at_least_one_child_in_discount?(discount_id)
     children.each do |child_product_type|
-      product_types_discount = ProductTypeDiscount.where('discount_id = ? and product_type_id = ?', discount_id, self.id)
-      if product_types_discount.length > 0
+      product_types_discounts = ProductTypeDiscount.where('discount_id = ? and product_type_id = ?', discount_id, self.id)
+      if product_types_discounts.length > 0
         return true
       end
     end
@@ -607,6 +629,37 @@ class ProductType < ActiveRecord::Base
     end
 
   end
+
+  def at_least_one_child_in_collection?(collection_id)
+    children.each do |child_product_type|
+      product_collections = ProductCollection.where('collection_id = ? and product_type_id = ?', collection_id, child_product_type.id)
+      if product_collections.length > 0
+        return true
+      end
+    end
+    return false
+  end
+
+  def at_least_one_child_not_in_collection?(collection_id)
+
+    child_product_type_ids = children.collect{ |child| child.id}
+
+    # if no children, return false. never show a product type without children in discount
+    # Search Results because base product types can't really be sold
+    if child_product_type_ids.empty?
+      return false
+    end
+
+    number_of_children_in_collection = ProductCollection.where("collection_id = ? and product_type_id in (#{child_product_type_ids.join(',')})", collection_id).length
+
+    if( child_product_type_ids.length > number_of_children_in_collection )
+      return true
+    else
+      return false
+    end
+
+  end
+
 
 
 end

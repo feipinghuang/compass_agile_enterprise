@@ -10,9 +10,11 @@ Rails.application.routes.draw do
           end
         end
       end
+
       resources :product_option_types, defaults: { :format => 'json' } do
         resources :product_options, defaults: { :format => 'json' }
       end
+
       resources :product_option_applicabilities, defaults: { :format => 'json' } do
         collection do
           put :update_positions
@@ -25,7 +27,13 @@ Rails.application.routes.draw do
           delete :remove_products_from_discount
         end
       end
-      resources :collections, defaults: { :format => 'json' }
+
+      resources :collections, defaults: { :format => 'json' } do
+        collection do
+          post :add_products_to_collection
+          delete :remove_products_from_collection
+        end
+      end
 
       resources :product_offers, defaults: { :format => 'json' }
       resources :product_options, defaults: { :format => 'json' }

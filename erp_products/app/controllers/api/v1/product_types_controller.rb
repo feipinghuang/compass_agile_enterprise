@@ -50,8 +50,12 @@ module API
         query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
         context = params[:context].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:context]))
 
-        # adjust the query filter for discount panels
-        if( params[:panel_type] == 'SearchResults' || params[:panel_type] == 'ProductsIncluded')
+        # adjust the query filter for discount/collection panels: smelly
+        if( params[:panel_type] == 'DiscountSearchResults' ||
+            params[:panel_type] == 'DiscountProductsIncluded' ||
+            params[:panel_type] == 'CollectionSearchResults' ||
+            params[:panel_type] == 'CollectionProductsIncluded'
+        )
           query_filter[:roots_only] = true
         end
 
@@ -81,10 +85,10 @@ module API
 
         product_types = product_types.order('description')
 
-        # special handling for discounts custom views
-        # is indicated by the presence of discountView
+        # special handling for discounts/collections custom views
+        # is indicated by the presence of targetView
         # parameter
-        if params[:discountView].blank?
+        if params[:targetView].blank?
           if context[:view]
             if context[:view] == 'mobile'
               render :json => {success: true,
@@ -125,9 +129,10 @@ module API
             total_count = 0
           end
 
+          # special return hash for discounts and collections
           render :json => {success: true,
                            total: total_count,
-                           product_types: product_types.collect { |product_type| product_type.to_offer_hash() }}
+                           product_types: product_types.collect { |product_type| product_type.to_target_hash() }}
         end
       end
 =begin
@@ -313,29 +318,45 @@ module API
 
       def filtered_roots(filters, product_type_ids, params)
 
-        # There are two panels: SearchResults and ProductsIncluded.
+        # There are two typespanels: SearchResults and ProductsIncluded.
         # Both are trees of product types.
         # When the call is for roots (as opposed to nodes), we
         # only want to include the root if at least child is included
-        # in the discount for ProductIncluded or at least one child is
+        # in the discount/collection for ProductIncluded or at least one child is
         # not included for the SearchResults
         filtered_product_type_ids = []
-        current_discount_id = filters[:discount_id]
 
-        if(params[:panel_type] == 'SearchResults')
-          product_type_ids.each do |product_type_id|
+        case params[:panel_type]
+          when 'DiscountSearchResults'
+            product_type_ids.each do |product_type_id|
+              product_type = ProductType.find(product_type_id)
+              if product_type.at_least_one_child_not_in_discount?(filters[:target_id])
+                filtered_product_type_ids << product_type.id
+              end
+            end
+          when 'DiscountProductsIncluded'
+            product_type_ids.each do |product_type_id|
+              product_type = ProductType.find(product_type_id)
+              if product_type.at_least_one_child_in_discount?(filters[:target_id])
+                filtered_product_type_ids << product_type.id
+              end
+            end
+          when 'CollectionSearchResults'
+            product_type_ids.each do |product_type_id|
             product_type = ProductType.find(product_type_id)
-            if product_type.at_least_one_child_not_in_discount?(current_discount_id)
+            if product_type.at_least_one_child_not_in_collection?(filters[:target_id])
               filtered_product_type_ids << product_type.id
             end
           end
-        else
-          product_type_ids.each do |product_type_id|
-            product_type = ProductType.find(product_type_id)
-            if product_type.at_least_one_child_in_discount?(current_discount_id)
-              filtered_product_type_ids << product_type.id
+          when 'CollectionProductsIncluded'
+            product_type_ids.each do |product_type_id|
+              product_type = ProductType.find(product_type_id)
+              if product_type.at_least_one_child_in_collection?(filters[:target_id])
+                filtered_product_type_ids << product_type.id
+              end
             end
-          end
+          else
+            filtered_product_type_ids = product_type_ids
         end
 
         filtered_product_type_ids
@@ -346,34 +367,60 @@ module API
         # Both are trees of product types.
         # When the call is for nodes (as opposed to roots), we
         # only want to include the node if it is included
-        # in the discount for ProductIncluded or
+        # in the discount/collection for ProductIncluded or
         # not included for the SearchResults
 
         filtered_product_type_ids = []
-        current_discount_id = filters[:discount_id]
 
-        if(params[:panel_type] == 'SearchResults')
-          product_type_ids.each do |product_type_id|
-            product_type = ProductType.find(product_type_id)
-            if product_type.root?
-            else
-              product_type_discount =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", current_discount_id, product_type.id)
-              if product_type_discount.empty?
-                filtered_product_type_ids << product_type.id
+        case params[:panel_type]
+          when 'DiscountSearchResults'
+            product_type_ids.each do |product_type_id|
+              product_type = ProductType.find(product_type_id)
+              if product_type.root?
+              else
+                product_type_discounts =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", filters[:target_id], product_type.id)
+                if product_type_discounts.empty?
+                  filtered_product_type_ids << product_type.id
+                end
+              end
+            end
+          when 'DiscountProductsIncluded'
+            product_type_ids.each do |product_type_id|
+              product_type = ProductType.find(product_type_id)
+              if product_type.root?
+              else
+                product_type_discounts =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", filters[:target_id], product_type.id)
+                if !product_type_discounts.empty?
+                  filtered_product_type_ids << product_type.id
+                end
+              end
+            end
+          when 'CollectionSearchResults'
+            product_type_ids.each do |product_type_id|
+            product_type_ids.each do |product_type_id|
+              product_type = ProductType.find(product_type_id)
+              if product_type.root?
+              else
+                product_collections =  ProductCollection.where("collection_id = ? and product_type_id = ?", filters[:target_id], product_type.id)
+                if product_collections.empty?
+                  filtered_product_type_ids << product_type.id
+                end
               end
             end
           end
-        else
-          product_type_ids.each do |product_type_id|
-            product_type = ProductType.find(product_type_id)
-            if product_type.root?
-            else
-              product_type_discount =  ProductTypeDiscount.where("discount_id = ? and product_type_id = ?", current_discount_id, product_type.id)
-              if !product_type_discount.empty?
-                filtered_product_type_ids << product_type.id
+          when 'CollectionProductsIncluded'
+            product_type_ids.each do |product_type_id|
+              product_type = ProductType.find(product_type_id)
+              if product_type.root?
+              else
+                product_collections =  ProductCollection.where("collection_id = ? and product_type_id = ?", filters[:target_id], product_type.id)
+                if !product_collections.empty?
+                  filtered_product_type_ids << product_type.id
+                end
               end
             end
-          end
+          else
+            filtered_product_type_ids = product_type_ids
         end
 
         filtered_product_type_ids

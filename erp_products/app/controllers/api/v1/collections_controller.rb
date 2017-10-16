@@ -62,7 +62,7 @@ module API
           collections = collections.offset(start).limit(limit)
         end
 
-        collections = collections.order('description')
+        collections = collections.order('name')
 
         if context[:view]
           if context[:view] == 'mobile'
@@ -112,8 +112,9 @@ module API
         begin
           ActiveRecord::Base.transaction do
             collection = Collection.new
+            collection.name = params[:name]
+            collection.internal_identifier = params[:name].to_iid
             collection.description = params[:description]
-            collection.internal_identifier = params[:description].to_iid
 
 
             collection.save!
@@ -153,9 +154,9 @@ module API
       def update
         begin
           ActiveRecord::Base.transaction do
-            collection = Collection.find(params[:id].to_i)
+            collection.name = params[:name]
+            collection.internal_identifier = params[:name].to_iid
             collection.description = params[:description]
-            collection.internal_identifier = params[:description].to_iid
             collection.save!
 
             render :json => {success: true,
@@ -191,6 +192,87 @@ module API
         Collection.find(params[:id]).destroy
 
         render :json => {:success => true}
+      end
+
+
+      def add_products_to_collection
+        begin
+          ActiveRecord::Base.transaction do
+
+            if params[:product_type_ids].blank?
+              # adding all: have to filter product types to get to what 'all' means since UI uses paging store
+              # 'all' may not present in the UI
+              query_filter = params[:query_filter].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:query_filter]))
+              # adjust for search results
+              query_filter[:roots_only] = true
+              query_filter.delete(:target_id)
+              # hook method to apply any scopes passed via parameters to this api
+              product_types = ProductType.apply_filters(query_filter)
+              product_type_ids = product_types.collect { |product_type| product_type.id }
+            else
+              product_type_ids = CSV.parse(params[:product_type_ids])[0].collect{ |id| id.to_i}
+            end
+
+            collection_id = params[:target_id].to_i
+
+            collection = Collection.find(collection_id)
+
+            product_type_ids.each do |product_type_id|
+
+              product_type = ProductType.find(product_type_id)
+
+              if product_type.is_base
+                collection_product_type_ids = product_type.children.collect { |children| children.id}
+                collection_product_type_ids.unshift(product_type_id)
+              else
+                collection_product_type_ids = [product_type_id]
+                # add the parent too
+                collection_product_type_ids.unshift(product_type.parent.id)
+              end
+
+              collection.add_products(collection_product_type_ids, params[:product_tag])
+            end
+
+            render :json => {:success => true}
+          end
+        rescue => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          # email error
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {success: false, message: 'Could not add product types to collection'}
+        end
+      end
+
+      def remove_products_from_collection
+        begin
+          ActiveRecord::Base.transaction do
+
+            if params[:product_type_ids].blank?
+              product_type_ids = []
+            else
+              product_type_ids = CSV.parse(params[:product_type_ids])[0].collect{ |id| id.to_i}
+            end
+
+            collection_id = params[:target_id].to_i
+
+            collection = Collection.find(collection_id)
+
+            collection.remove_products(product_type_ids, params[:product_tag])
+
+            render :json => {:success => true}
+          end
+        rescue => ex
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          # email error
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          render :json => {success: false, message: 'Could not delete product types from collection'}
+        end
       end
 
     end # CollectionsController

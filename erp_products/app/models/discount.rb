@@ -76,6 +76,13 @@ class Discount < ActiveRecord::Base
 
         simple_product_offer.set_default_price(discount_price, currency=Currency.usd)
 
+        # tag these products if there's a tag
+        unless product_type_tag.blank?
+            product_type = ProductType.find(product_type_id)
+            product_type.tag_list.add(product_type_tag.to_s, parse: true)
+            product_type.save
+        end
+
       end
     end
   end
@@ -109,23 +116,14 @@ class Discount < ActiveRecord::Base
       end
       product_offers_to_remove = ProductOffer.where("discount_id = ? and product_type_id in (#{product_type_ids_to_remove.join(',')})", id)
       unless product_type_tag.blank?
-        product_type_ids_to_be_untagged = product_type_ids_to_remove
+        product_type.tag_list.remove(product_type_tag)
+        product_type.save
       end
     end
 
     product_offers_to_remove.each do |product_offers|
       product_offers.destroy
     end
-
-    # do the untagging if necessary
-    unless product_type_ids_to_be_untagged.nil?
-      product_type_ids_to_be_untagged.each do |product_type_id|
-        product_type = ProductType.find(product_type_id)
-        product_type.tag_list.remove(product_type_tag)
-        product_type.save
-      end
-    end
-
   end
 
   def update_product_offers
@@ -165,6 +163,8 @@ class Discount < ActiveRecord::Base
     end
 
     data[:product_types] = product_types
+
+    data[:name] = description
 
     data
   end
