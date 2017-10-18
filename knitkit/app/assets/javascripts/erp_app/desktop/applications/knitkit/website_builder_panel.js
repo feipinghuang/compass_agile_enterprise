@@ -15,6 +15,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZone',
     height: 150,
     componentType: null,
     html: '<div>Drop Component Here</div>',
+    autoRemovableDropZone: false,
     empty: false,
     listeners: {
         afterrender: function(comp) {
@@ -304,22 +305,33 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 onBeforeDrag: function(data, e) {
                     me.disableComponents();
                     me.addAutoRemovableDropZones(data.panelId);
+                    me.dragStarted = true;
                 },
 
+                onMouseUp: function(e) {
+                    if (me.dragStarted) {
+                        me.enableComponents();
+                        me.removeAutoRemovableDropZones();
+                        me.dragStarted = false;
+                    }
+                        
+                },
+                
                 afterDragDrop: function(target, e, id) {
                     me.enableComponents();
                     me.removeAutoRemovableDropZones();
+                    me.dragStarted = false;
                 },
 
                 afterInvalidDrop: function(target, e, id) {
                     me.enableComponents();
                     me.removeAutoRemovableDropZones();
+                    me.dragStarted = false;
                 },
 
                 getDragData: function(e) {
                     var moveEl = e.getTarget('.icon-move'),
                         targetId = null;
-
                     if (moveEl) {
                         targetId = moveEl.getAttribute('panelId');
                     }
@@ -387,10 +399,15 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         var draggedPanel = Ext.getCmp(data.panelId);
                         var dropPanel = Ext.getCmp(Ext.fly(target).dom.id);
 
-                        Ext.apply(dropPanel.up('websitebuilderdropzonecontainer'), {
-                            autoRemovableDropZone: false
-                        });
-
+                        if (dropPanel.up('websitebuilderdropzonecontainer').autoRemovableDropZone) {
+                            Ext.apply(dropPanel.up('websitebuilderdropzonecontainer'), {
+                                autoRemovableDropZone: false
+                            });
+                        } else {
+                            if (dropPanel.autoRemovableDropZone) {
+                                dropPanel.autoRemovableDropZone = false;
+                            }
+                        }
                         if (draggedPanel && draggedPanel.componentType) {
                             dropPanel.componentType = draggedPanel.componentType;
                         }
@@ -476,37 +493,73 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         me.savedScrollPos = me.body.dom.scrollTop;
 
-        var components = me.query('websitebuilderdropzone');
+        var components = me.query('websitebuilderdropzonecontainer');
         
         me.currentHeight = Ext.get(me.el.query('.x-panel-body')).first().query('div').first().clientHeight;
-        
-        for (var index = 0; index <= components.length; index++) {
-            me.insert(index*2, {
-                xtype: 'websitebuilderdropzonecontainer',
-                cls: 'dropzone-container',
-                autoRemovableDropZone: true,
-                items: [{
+
+        var draggedComponent = Ext.getCmp(panelId),
+            container = draggedComponent.up('websitebuilderdropzonecontainer');
+
+        if (container.query('websitebuilderdropzone').length == 1) {
+            for (var index = 0; index <= components.length; index++) {
+                me.insert(index*2, {
+                    xtype: 'websitebuilderdropzonecontainer',
+                    cls: 'dropzone-container',
+                    autoRemovableDropZone: true,
+                    items: [{
+                        xtype: 'websitebuilderdropzone',
+                        height: 1,
+                        html: '<div style="margin-top:-40px;font-size:15px;">Drop Component Here</div>',
+                        componentType: 'content',
+                        flex: 1
+                    }]
+                });
+            }
+
+            var components = me.query('websitebuilderdropzone[layout!="hbox"]');
+            var componentIndex = components.indexOf(Ext.getCmp(panelId));
+            
+            var componentsToDestroy = []
+            if (components[componentIndex - 1] && components[componentIndex - 1].up('container').autoRemovableDropZone)
+                componentsToDestroy.push(components[componentIndex - 1]);
+
+            if (components[componentIndex + 1] && components[componentIndex + 1].up('container').autoRemovableDropZone)
+                componentsToDestroy.push(components[componentIndex + 1]);
+
+            Ext.each(componentsToDestroy, function(comp){
+                comp.destroy();
+            });
+
+
+        } else {
+            dropZones = container.query('websitebuilderdropzone');
+            for (var colIndex = 0; colIndex <= dropZones.length; colIndex++) {
+                container.insert(colIndex*2, {
                     xtype: 'websitebuilderdropzone',
                     height: 1,
-                    html: '<div style="margin-top:-40px;">Drop Component Here</div>',
+                    html: '<div style="margin-top:-40px;font-size:15px;">Drop Component Here</div>',
                     componentType: 'content',
+                    autoRemovableDropZone: true,
                     flex: 1
-                }]
+                });
+            }
+            
+            var components = container.query('websitebuilderdropzone')
+            var componentIndex = components.indexOf(draggedComponent);
+            var componentsToDestroy = []
+            if (components[componentIndex - 1] && components[componentIndex - 1].autoRemovableDropZone)
+                componentsToDestroy.push(components[componentIndex - 1]);
+
+            if (components[componentIndex + 1] && components[componentIndex + 1].autoRemovableDropZone)
+                componentsToDestroy.push(components[componentIndex + 1]);
+
+            Ext.each(componentsToDestroy, function(comp){
+                comp.destroy();
             });
+
+
+
         }
-        var components = me.query('websitebuilderdropzone');
-        var componentIndex = components.indexOf(Ext.getCmp(panelId));
-
-        var componentsToDestroy = []
-        if (components[componentIndex - 1] && components[componentIndex - 1].up('container').autoRemovableDropZone)
-            componentsToDestroy.push(components[componentIndex - 1]);
-
-        if (components[componentIndex + 1] && components[componentIndex + 1].up('container').autoRemovableDropZone)
-            componentsToDestroy.push(components[componentIndex + 1]);
-
-        Ext.each(componentsToDestroy, function(comp){
-            comp.destroy();
-        });
 
         me.suspendLayout = false;
         me.doLayout();
@@ -515,10 +568,17 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     removeAutoRemovableDropZones: function() {
         var me = this;
         me.suspendLayout = true;
-        Ext.each(me.query('websitebuilderdropzonecontainer'), function(dropZone) {
-            if (dropZone.autoRemovableDropZone) {
+        Ext.each(me.query('websitebuilderdropzonecontainer'), function(dropZoneContainer) {
+            if (dropZoneContainer.autoRemovableDropZone) {
                 // remove the removable drop zones
-                dropZone.destroy();
+                dropZoneContainer.destroy();
+            } else {
+                var dropZones = dropZoneContainer.query('websitebuilderdropzone');
+                Ext.each(dropZones, function(dropZone){
+                    if (dropZone.autoRemovableDropZone) {
+                        dropZone.destroy();
+                    }
+                });
             }
         });
         me.suspendLayout = false;
@@ -1266,13 +1326,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             parentContainer = draggedPanel.up('websitebuilderdropzonecontainer');
 
         if (draggedPanel.cls == "websitebuilder-component-panel" && parentContainer.hasCls('dropzone-container')) {
+            
             if (parentContainer.items.length > 2) {
-                parentContainer.insert(parentContainer.items.indexOf(draggedPanel), {
-                    xtype: 'websitebuilderdropzone',
-                    empty: true,
-                    componentType: 'content',
-                    flex: 1
-                });
+                // parentContainer.insert(parentContainer.items.indexOf(draggedPanel), {
+                //     xtype: 'websitebuilderdropzone',
+                //     empty: true,
+                //     componentType: 'content',
+                //     flex: 1
+                // });
                 draggedPanel.destroy();
             } else {
                 parentContainer.destroy();
