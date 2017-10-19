@@ -53,7 +53,10 @@ class ProductOffer < ActiveRecord::Base
 
   def before_destroy
     # get rid of the association that ties product type and discount for this offer
-    ProductTypeDiscount.where('discount_id = ? and product_type_id = ?', discount_id, product_type_id).first.delete
+    product_type_discount = ProductTypeDiscount.where('discount_id = ? and product_type_id = ?', discount_id, product_type_id).first
+    unless product_type_discount.nil?
+      product_type_discount.delete
+    end
   end
 
   def after_destroy

@@ -64,12 +64,15 @@ class ProductType < ActiveRecord::Base
   has_many :collections, through: :product_collections
 
   has_many :product_feature_applicabilities, dependent: :destroy, as: :feature_of_record
+
   has_one :category_classification, as: :classification, dependent: :destroy
   has_one :category, through: :category_classification
 
   has_many :product_option_applicabilities, dependent: :destroy, as: :optioned_record
 
   validates :internal_identifier, :uniqueness => true, :allow_nil => true
+
+  before_destroy :delete_related_records
 
   class << self
     # Filter records
@@ -348,9 +351,6 @@ class ProductType < ActiveRecord::Base
 
     dba_org_role_type = RoleType.iid('dba_org')
 
-    # find the dba_org party for the base product, want to keep it the same for the variants
-
-
 
     product_features = []
     product_feature_applicabilities.each do |product_feature_applicability|
@@ -420,7 +420,15 @@ class ProductType < ActiveRecord::Base
           is_base: false
       )
 
-
+      # experimental code
+      parent_product_image = self.images.first
+      file_asset_holder = FileAssetHolder.new
+      file_asset_holder.file_asset_id = parent_product_image.id
+      file_asset_holder.file_asset_holder_id = variant_product_type.id
+      file_asset_holder.file_asset_holder_type = 'ProductType'
+      file_asset_holder.created_at = DateTime.now
+      file_asset_holder.updated_at = DateTime.now
+      file_asset_holder.save
 
       variant_product_type.move_to_child_of(parent_variant_product_type)
 
@@ -474,7 +482,7 @@ class ProductType < ActiveRecord::Base
       variant_product_type.pricing_plans << pricing_plan
       variant_product_type.save
 
-      # Test Code Auto Generate Inventoty Entry for Generated Variants
+      # Auto Generate Inventory Entry for Generated Variants
       inventory_entry = InventoryEntry.new
       inventory_entry.description = variant_product_type.description
       inventory_entry.sku = variant_product_type.sku
@@ -593,11 +601,32 @@ class ProductType < ActiveRecord::Base
     product_offer = ProductOffer.find_by_discount_id_and_product_type_id(discount_id,self.id)
     unless product_offer.nil?
       discount = product_offer.discount
-      if discount.valid_from <= now && discount.valid_thru >= now
+      if discount_valid?(discount)
         price = product_offer.product_offer_record.get_current_simple_plan.money_amount
+      else
+        price = self.get_current_simple_plan.money_amount
       end
     end
     price
+  end
+
+  def discount_valid?(discount)
+    # if date matter check dates
+    # if active
+    if discount.active
+      if discount.date_constrained
+        now = DateTime.now
+        if (!discount.valid_from.nil? && discount.valid_from <= now) && (!discount.valid_thru.nil? &&  discount.valid_thru >= now )
+          return true
+        else
+          return false
+        end
+      else
+        return true
+      end
+    else
+      return false
+    end
   end
 
   def at_least_one_child_in_discount?(discount_id)
@@ -658,6 +687,24 @@ class ProductType < ActiveRecord::Base
       return false
     end
 
+  end
+
+  private
+
+  def delete_related_records
+    # clean up any product offers realted to this product type
+    product_offers = ProductOffer.where('product_type_id = ?', self.id)
+    product_offers.each do |product_offer|
+      product_offer.delete
+    end
+    # clean up any variants if this is a base product type
+    # semi-experimental code: this assumes children were
+    # generated and should not outlive the parent base.
+    if is_base
+      children.each do |child|
+        child.delete
+      end
+    end
   end
 
 

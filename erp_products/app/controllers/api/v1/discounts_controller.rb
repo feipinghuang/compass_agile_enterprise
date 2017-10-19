@@ -243,7 +243,21 @@ module API
       end
 
 
-
+=begin
+ @api {post} /api/v1/discounts/add_products_to_discount
+ @apiVersion 1.0.0
+ @apiName AddProductsToDiscount
+ @apiGroup Discount
+ @apiDescription Adds product types to target discount
+ @apiParam (body) {Array} product_type_ids array of product type ids or all if array is empty
+ @apiParam (body) {Number} target_id id of the discount to which products should be added
+ @apiParam (body) {Number} amount Amount
+ @apiParam (body) {String} product_tag tag to be used to tag product type
+ @apiParam (body) {String} [query_filter] JSON string of data to filter by
+ @apiSuccess (200) {Object} add_products_to_discount Response.
+ @apiSuccess (200) {Boolean} add_products_to_discount.success True if the request was successful
+ @apiSuccess (200) {String} add_products_to_discount.message message if error
+=end
       def add_products_to_discount
         begin
           ActiveRecord::Base.transaction do
@@ -295,6 +309,19 @@ module API
           end
       end
 
+=begin
+ @api {post} /api/v1/discounts/remove_products_from_discount.json
+ @apiVersion 1.0.0
+ @apiName RemoveProductsToDiscount
+ @apiGroup Discount
+ @apiDescription Removes product types from target discount
+ @apiParam (body) {Array} product_type_ids array of product type ids or all if array is empty
+ @apiParam (body) {Number} target_id id of the discount from which products should be removed
+ @apiParam (body) {String} product_tag tag to be removed from product type
+ @apiSuccess (200) {Object} add_products_to_discount Response.
+ @apiSuccess (200) {Boolean} add_products_to_discount.success True if the request was successful
+ @apiSuccess (200) {String} add_products_to_discount.message message if error
+=end
       def remove_products_from_discount
       begin
         ActiveRecord::Base.transaction do

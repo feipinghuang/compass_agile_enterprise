@@ -194,7 +194,21 @@ module API
         render :json => {:success => true}
       end
 
-
+=begin
+ @api {post} /api/v1/collections/add_products_to_collection
+ @apiVersion 1.0.0
+ @apiName AddProductsToCollection
+ @apiGroup Collection
+ @apiDescription Adds product types to target collection
+ @apiParam (body) {Array} product_type_ids array of product type ids or all if array is empty
+ @apiParam (body) {Number} target_id id of the collection to which products should be added
+ @apiParam (body) {Number} amount Amount
+ @apiParam (body) {String} product_tag tag to be used to tag product type
+ @apiParam (body) {String} [query_filter] JSON string of data to filter by
+ @apiSuccess (200) {Object} add_products_to_discount Response.
+ @apiSuccess (200) {Boolean} add_products_to_collection.success True if the request was successful
+ @apiSuccess (200) {String} add_products_to_collection.message message if error
+=end
       def add_products_to_collection
         begin
           ActiveRecord::Base.transaction do
@@ -246,6 +260,19 @@ module API
         end
       end
 
+=begin
+ @api {post} /api/v1/collections/remove_products_from_collections.json
+ @apiVersion 1.0.0
+ @apiName RemoveProductsToCollections
+ @apiGroup Collection
+ @apiDescription Removes product types from target collection
+ @apiParam (body) {Array} product_type_ids array of product type ids or all if array is empty
+ @apiParam (body) {Number} target_id id of the collection from which products should be removed
+ @apiParam (body) {String} product_tag tag to be removed from product type
+ @apiSuccess (200) {Object} add_products_to_discount Response.
+ @apiSuccess (200) {Boolean} add_products_to_discount.success True if the request was successful
+ @apiSuccess (200) {String} add_products_to_discount.message message if error
+=end
       def remove_products_from_collection
         begin
           ActiveRecord::Base.transaction do
