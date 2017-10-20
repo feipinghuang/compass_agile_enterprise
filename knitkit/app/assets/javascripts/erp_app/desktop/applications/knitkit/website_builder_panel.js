@@ -340,9 +340,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         var element = Ext.getCmp(targetId),
                             dragEl = element.getEl(),
                             dragElDom = dragEl.dom.cloneNode(true);
-
+                        
                         dragElDom.id = Ext.id();
                         dragElDom.querySelector('iframe').src = "";
+                        this.proxy.el.dom.style.width = dragEl.dom.offsetWidth + "px";
                         return {
                             panelConfig: element.initialConfig,
                             panelId: element.id,
@@ -374,8 +375,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     if (this.validDrop(target, dragData)) {
                         var dropComponent = Ext.getCmp(target.id);
                         if (dropComponent) {
-                            var moveCls = dragData.isMove ? 'website-builder-move-within-component-hover' : 'website-builder-move-component-hover'
-                            Ext.fly(target).addCls(moveCls);
+                            Ext.fly(target).addCls('website-builder-move-component-hover');
                         }
                     } else {
                         return Ext.dd.DropZone.prototype.dropNotAllowed;
@@ -388,8 +388,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         var dropComponent = Ext.getCmp(target.id);
 
                         if (dropComponent) {
-                            var moveCls = dragData.isMove ? 'website-builder-move-within-component-hover' : 'website-builder-move-component-hover'
-                            Ext.fly(target).removeCls(moveCls);
+                            Ext.fly(target).removeCls('website-builder-move-component-hover');
                         }
                     }
                 },
@@ -536,8 +535,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             for (var colIndex = 0; colIndex <= dropZones.length; colIndex++) {
                 container.insert(colIndex*2, {
                     xtype: 'websitebuilderdropzone',
-                    height: 1,
-                    html: '<div style="margin-top:-40px;font-size:15px;">Drop Component Here</div>',
+                    html: '<div style="margin-top:-20px;font-size:15px;">Drop Component Here</div>',
                     componentType: 'content',
                     autoRemovableDropZone: true,
                     flex: 1

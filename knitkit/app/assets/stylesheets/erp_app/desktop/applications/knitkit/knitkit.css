@@ -201,14 +201,7 @@
 
 .website-builder-move-component-hover {
   border: dashed 2px #CCC;
-  height: 150px !important;
 }
-
-.website-builder-move-within-component-hover {
-  border: dashed 2px #CCC;
-  height: 50px !important;
-}
-
 
 
 .dropzone-empty{
