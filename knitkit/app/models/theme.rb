@@ -427,7 +427,7 @@ class Theme < ActiveRecord::Base
       'bootstrap.min.css',
       'bootstrap-tagsinput.css',
       'inline_editing.css',
-      'font-awesome.css',
+      'font-awesome.min.css',
       'flat-ui-pro.css',
       'flat-ui-pro.map',
     ]
