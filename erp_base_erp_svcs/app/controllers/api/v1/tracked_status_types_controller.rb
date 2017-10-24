@@ -36,7 +36,13 @@ module API
               render :json => {success: true, tracked_status_types: parent.children_to_tree_hash}
             end
             format.json do
-              render :json => {success: true, tracked_status_types: parent.children.all.collect{|item| item.to_data_hash}}
+              if params[:query].present?
+                tracked_status_types = parent.children.where(TrackedStatusType.arel_table[:description].matches("%#{params[:query]}%"))
+              else
+                tracked_status_types = parent.children
+              end
+
+              render :json => {success: true, tracked_status_types: tracked_status_types.all.collect{|item| item.to_data_hash}}
             end
             format.all_representation do
 
@@ -57,7 +63,13 @@ module API
               render :json => {success: true, tracked_status_types: parent.children_to_tree_hash}
             end
             format.json do
-              render :json => {success: true, tracked_status_types: parent.children.all.collect{|item| item.to_data_hash}}
+              if params[:query].present?
+                tracked_status_types = parent.children.where(TrackedStatusType.arel_table[:description].matches("%#{params[:query]}%"))
+              else
+                tracked_status_types = parent.children
+              end
+
+              render :json => {success: true, tracked_status_types: tracked_status_types.all.collect{|item| item.to_data_hash}}
             end
             format.all_representation do
 
