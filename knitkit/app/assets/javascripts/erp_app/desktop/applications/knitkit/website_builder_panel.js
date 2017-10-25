@@ -2,6 +2,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZoneCo
     extend: 'Ext.Container',
     alias: 'widget.websitebuilderdropzonecontainer',
     autoRemovableDropZone: false,
+    border: 1,
+    margin: '1 1 1 1',
+    style: {
+        borderColor: '#e1e4e9',
+        borderStyle: 'dotted'
+    },
     empty: function() {
         return Ext.isEmpty(this.el.query('iframe'));
     }
@@ -17,6 +23,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZone',
     html: '<div>Drop Component Here</div>',
     autoRemovableDropZone: false,
     empty: false,
+    border: 1,
+    margin: '10 10 10 10',
+    style: {
+        borderColor: '#e1e4e9',
+        borderStyle: 'solid'
+    },
     listeners: {
         afterrender: function(comp) {
             if (!comp.autoRemovableDropZone && comp.empty) {
@@ -491,7 +503,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         me.suspendLayout = true;
 
         me.savedScrollPos = me.body.dom.scrollTop;
-
+        
         var components = me.query('websitebuilderdropzonecontainer');
         
         me.currentHeight = Ext.get(me.el.query('.x-panel-body')).first().query('div').first().clientHeight;
@@ -499,65 +511,30 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var draggedComponent = Ext.getCmp(panelId),
             container = draggedComponent.up('websitebuilderdropzonecontainer');
 
-        if (container.query('websitebuilderdropzone').length == 1) {
-            for (var index = 0; index <= components.length; index++) {
-                me.insert(index*2, {
-                    xtype: 'websitebuilderdropzonecontainer',
-                    cls: 'dropzone-container',
-                    autoRemovableDropZone: true,
-                    items: [{
-                        xtype: 'websitebuilderdropzone',
-                        height: 1,
-                        html: '<div style="margin-top:-40px;font-size:15px;">Drop Component Here</div>',
-                        componentType: 'content',
-                        flex: 1
-                    }]
-                });
-            }
-
-            var components = me.query('websitebuilderdropzone[layout!="hbox"]');
-            var componentIndex = components.indexOf(Ext.getCmp(panelId));
-            
-            var componentsToDestroy = []
-            if (components[componentIndex - 1] && components[componentIndex - 1].up('container').autoRemovableDropZone)
-                componentsToDestroy.push(components[componentIndex - 1]);
-
-            if (components[componentIndex + 1] && components[componentIndex + 1].up('container').autoRemovableDropZone)
-                componentsToDestroy.push(components[componentIndex + 1]);
-
-            Ext.each(componentsToDestroy, function(comp){
-                comp.destroy();
+        dropZones = container.query('websitebuilderdropzone');
+        for (var colIndex = 0; colIndex <= dropZones.length; colIndex++) {
+            container.insert(colIndex*2, {
+                xtype: 'websitebuilderdropzone',
+                html: '<div style="margin-top:-20px;font-size:15px;">Drop Component Here</div>',
+                componentType: 'content',
+                autoRemovableDropZone: true,
+                flex: 1
             });
-
-
-        } else {
-            dropZones = container.query('websitebuilderdropzone');
-            for (var colIndex = 0; colIndex <= dropZones.length; colIndex++) {
-                container.insert(colIndex*2, {
-                    xtype: 'websitebuilderdropzone',
-                    html: '<div style="margin-top:-20px;font-size:15px;">Drop Component Here</div>',
-                    componentType: 'content',
-                    autoRemovableDropZone: true,
-                    flex: 1
-                });
-            }
-            
-            var components = container.query('websitebuilderdropzone')
-            var componentIndex = components.indexOf(draggedComponent);
-            var componentsToDestroy = []
-            if (components[componentIndex - 1] && components[componentIndex - 1].autoRemovableDropZone)
-                componentsToDestroy.push(components[componentIndex - 1]);
-
-            if (components[componentIndex + 1] && components[componentIndex + 1].autoRemovableDropZone)
-                componentsToDestroy.push(components[componentIndex + 1]);
-
-            Ext.each(componentsToDestroy, function(comp){
-                comp.destroy();
-            });
-
-
-
         }
+        
+        var components = container.query('websitebuilderdropzone')
+        var componentIndex = components.indexOf(draggedComponent);
+        var componentsToDestroy = []
+        if (components[componentIndex - 1] && components[componentIndex - 1].autoRemovableDropZone)
+            componentsToDestroy.push(components[componentIndex - 1]);
+        
+        if (components[componentIndex + 1] && components[componentIndex + 1].autoRemovableDropZone)
+            componentsToDestroy.push(components[componentIndex + 1]);
+        
+        Ext.each(componentsToDestroy, function(comp){
+            comp.destroy();
+        });
+
 
         me.suspendLayout = false;
         me.doLayout();
@@ -892,7 +869,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     } else {
                         var css = iframeDoc.createElement("style");
                         css.type = "text/css";
-                        css.innerHTML = "[contenteditable] {border: 1px solid;} ."+ iframeNode.id + "-enclose {outline: rgba(233, 94, 94, 0.5) solid 2px;  outline-offset: -2px;cursor: pointer;}";
+                        css.innerHTML = "."+ iframeNode.id + "-enclose {outline: rgba(233, 94, 94, 0.5) solid 2px;  outline-offset: -2px;cursor: pointer;}";
                         iframeDoc.body.appendChild(css);
                         if (iframeNode.contentWindow.__pen__) {
 
