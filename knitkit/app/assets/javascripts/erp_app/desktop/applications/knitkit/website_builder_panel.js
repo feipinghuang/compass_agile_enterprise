@@ -396,7 +396,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                     iframe.src = "";
                                 });
 
-                                var containerData = Ext.each(container.query('websitebuilderdropzone'), function(element){
+                                var containerData = Ext.Array.map(container.query('websitebuilderdropzone'), function(element){
                                     return {
                                         websiteSectionContentId: element.websiteSectionContentId,
                                         componentName: element.componentName,
@@ -452,52 +452,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         }
                     }
                 },
-
+                
                 onNodeDrop: function(target, dd, e, data) {
                     if (this.validDrop(target, data)) {
-                        var draggedPanel = Ext.getCmp(data.panelId);
-                        var dropPanel = Ext.getCmp(Ext.fly(target).dom.id);
-
-                        if (dropPanel.up('websitebuilderdropzonecontainer').autoRemovableDropZone) {
-                            Ext.apply(dropPanel.up('websitebuilderdropzonecontainer'), {
-                                autoRemovableDropZone: false
-                            });
+                        if (data.isContainer) {
+                            var draggedContainer = Ext.getCmp(data.containerId);
+                            var dropContainer = Ext.getCmp(Ext.fly(target).dom.id).up('websitebuilderdropzonecontainer');
+                            this.dropContainer(dropContainer, draggedContainer, data.containerData);
                         } else {
-                            if (dropPanel.autoRemovableDropZone) {
-                                dropPanel.autoRemovableDropZone = false;
-                            }
+                            var draggedPanel = Ext.getCmp(data.panelId);
+                            var dropPanel = Ext.getCmp(Ext.fly(target).dom.id);
+                            
+                            this.dropContentBlock(dropPanel, draggedPanel, data);
                         }
-                        if (draggedPanel && draggedPanel.componentType) {
-                            dropPanel.componentType = draggedPanel.componentType;
-                        }
-
-                        if (data.websiteSectionContentId) {
-                            me.loadContentBlock(dropPanel, {
-                                autoSave: true,
-                                websiteSectionContentId: data.websiteSectionContentId
-                            });
-
-                            me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
-
-                        } else if (data.widgetName) {
-                            me.loadContentBlock(dropPanel, {
-                                autoSave: true,
-                                widgetName: data.widgetName
-                            });
-
-                            dropPanel.componentType = 'widget';
-
-                        } else {
-                            me.loadContentBlock(dropPanel, {
-                                autoSave: true,
-                                componentName: data.componentName,
-                                componentType: data.componentType
-                            });
-
-                            me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
-                        }
-
-                        me.removeAutoRemovableDropZonesAndContainers();
                     }
                 },
 
@@ -534,6 +501,83 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     } else {
                         return this.validContentBlockDrop(target, dragData);
                     }
+                },
+
+
+                dropContentBlock: function(dropPanel, draggedPanel, data) {
+                    if (dropPanel.autoRemovableDropZone) {
+                        dropPanel.autoRemovableDropZone = false;
+                    }
+                    
+                    if (draggedPanel && draggedPanel.componentType) {
+                        dropPanel.componentType = draggedPanel.componentType;
+                    }
+
+                    if (data.websiteSectionContentId) {
+                        me.loadContentBlock(dropPanel, {
+                            autoSave: true,
+                            websiteSectionContentId: data.websiteSectionContentId
+                        });
+
+                        me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
+
+                    } else if (data.widgetName) {
+                        me.loadContentBlock(dropPanel, {
+                            autoSave: true,
+                            widgetName: data.widgetName
+                        });
+
+                        dropPanel.componentType = 'widget';
+
+                    } else {
+                        me.loadContentBlock(dropPanel, {
+                            autoSave: true,
+                            componentName: data.componentName,
+                            componentType: data.componentType
+                        });
+
+                        me.removeContentFromDraggedPanel(dropPanel, draggedPanel);
+                    }
+
+                    me.removeAutoRemovableDropZonesAndContainers();
+                },
+
+
+                dropContainer: function(dropContainer, draggedContainer, containerData) {
+                    if (dropContainer.autoRemovableDropZone) {
+                        dropContainer.autoRemovableDropZone = false;
+                    }
+                    Ext.each(containerData, function(data){
+                        var dropPanel = dropContainer.down('websitebuilderdropzone[websiteSectionContentId="' + data.websiteSectionContentId + '"]');
+                        if (dropPanel.autoRemovableDropZone) {
+                            dropPanel.autoRemovableDropZone = false;
+                        }
+                        
+                        if (data.websiteSectionContentId) {
+                            me.loadContentBlock(dropPanel, {
+                                autoSave: true,
+                                websiteSectionContentId: data.websiteSectionContentId
+                            });
+                        } else if (data.widgetName) {
+                            me.loadContentBlock(dropPanel, {
+                                autoSave: true,
+                                widgetName: data.widgetName
+                            });
+
+                            dropPanel.componentType = 'widget';
+
+                        } else {
+                            me.loadContentBlock(dropPanel, {
+                                autoSave: true,
+                                componentName: data.componentName,
+                                componentType: data.componentType
+                            });
+                        }
+
+                    });
+                    draggedContainer.destroy();
+                    me.removeAutoRemovableDropZonesAndContainers();
+                    
                 }
                 
             });
@@ -601,7 +645,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         me.suspendLayout = false;
         me.doLayout();
     },
-
+    
     addAutoRemovableContainers: function(containerId) {
         var me = this;
         me.suspendLayout = true;
@@ -615,7 +659,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         var container = Ext.getCmp(containerId),
             dropZones = container.query('websitebuilderdropzone');
         
-        for(var rowIndex = 0; rowIndex < containers.length; rowIndex++) {
+        for(var rowIndex = 0; rowIndex <= containers.length; rowIndex++) {
             me.insert(rowIndex*2, {
                 xtype: 'websitebuilderdropzonecontainer',
                 cls: 'dropzone-container',
@@ -627,14 +671,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         html: '<div style="margin-top:-20px;font-size:15px;">Drop Component Here</div>',
                         componentType: 'content',
                         autoRemovableDropZone: true,
+                        websiteSectionContentId: dropZone.websiteSectionContentId,
                         flex: 1
                     };
                 })
             });
-            console.log(me.query('websitebuilderdropzonecontainer').length);
         }
 
-        containers = container.query('websitebuilderdropzonecontainer');
+        containers = me.query('websitebuilderdropzonecontainer');
         var containerIndex = containers.indexOf(container);
         var containersToDestroy = []
         if (containers[containerIndex - 1] && containers[containerIndex - 1].autoRemovableDropZone)
@@ -642,7 +686,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         
         if (containers[containerIndex + 1] && containers[containerIndex + 1].autoRemovableDropZone)
             containersToDestroy.push(containers[containerIndex + 1]);
-        
+
         Ext.each(containersToDestroy, function(comp){
             comp.destroy();
         });
@@ -867,11 +911,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             '</tpl>',
             '</div>',
             '<div class="iframe-container">',
-            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" name="{iframeId}" src="{url}"></iframe>',
+            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" name="{iframeId}"></iframe>',
             '</div>',
             '<tpl else>',
             '<div class="iframe-container">',
-            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" name="{iframeId}" src="{url}"></iframe>',
+            '<iframe height="100%" width="100%" frameBorder="0" id="{iframeId}" name="{iframeId}"></iframe>',
             '</div>',
             '</tpl>',
             '<form action="{url}" method="POST" target="{iframeId}">',
