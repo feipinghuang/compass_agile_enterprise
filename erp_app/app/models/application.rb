@@ -104,6 +104,10 @@ class Application < ActiveRecord::Base
     alias tools desktop_applications
   end
 
+  def to_s
+    internal_identifier
+  end
+
   def to_data_hash
     to_hash(only: [:id,
                    :description,

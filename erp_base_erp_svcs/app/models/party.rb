@@ -4,6 +4,8 @@
 #   t.column :business_party_type, :string
 #   t.column :list_view_image_id, :integer
 #
+#   t.string :time_zone
+#
 #   #This field is here to provide a direct way to map CompassAE
 #   #business parties to unified idenfiers in organizations if they
 #   #have been implemented in an enterprise.

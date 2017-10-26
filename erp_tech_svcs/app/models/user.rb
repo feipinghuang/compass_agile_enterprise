@@ -40,8 +40,6 @@
 #   t.string :auth_token
 #   t.datetime :auth_token_expires_at
 #
-#   t.string :time_zone
-#
 #   t.timestamps
 # end
 #
@@ -137,6 +135,7 @@ class User < ActiveRecord::Base
     # @option options [Array] :security_roles Security Roles to add to the User
     # @option options [Array] :applications Applications to add to the User
     # @option options [Party] :tenant Tenant to set for the User
+    # @option options [Boolean] :auto_activate True to auto active user and skip validation email
     # @option options [RelationshipType] :tenant_reln_type RelationshipType to use for the Tenant relationship
     #
     # @raise [ExceptionClass] Username is required
@@ -156,8 +155,70 @@ class User < ActiveRecord::Base
 
       user = User.where('username = ?', options[:username]).first
 
-      unless user
-        user = create(username: options[:username], email: options[:email], password: options[:password])
+      if user
+        # if a user was found then we can update thier roles and applications
+
+        if options[:party_roles]
+          new_party_roles_str = options[:party_roles].collect{|item| item.to_s}
+          current_party_roles_str =  user.party.role_types.collect{|item| item.to_s}
+
+          to_add = new_party_roles_str - current_party_roles_str
+          to_remove = current_party_roles_str - new_party_roles_str
+
+          to_add.each do |party_role_iid|
+            user.party.add_role_type(RoleType.iid(party_role_iid))
+          end
+
+          to_remove.each do |party_role_iid|
+            user.party.party_roles.where(internal_identifier: party_role_iid).destroy_all
+          end
+        end
+
+        if options[:security_roles]
+          new_security_roles_str = options[:security_roles].collect{|item| item.to_s}
+          current_security_roles_str =  user.party.roles.collect{|item| item.to_s}
+
+          to_add = new_security_roles_str - current_security_roles_str
+          to_remove = current_security_roles_str - new_security_roles_str
+
+          user.remove_roles(to_remove)
+          user.add_roles(to_add)
+        end
+
+        if options[:applications]
+          new_applications_str = options[:applications].collect{|item| item.to_s}
+          current_applications_str =  user.applications.collect{|item| item.to_s}
+
+          to_add = new_applications_str - current_applications_str
+          to_remove = current_applications_str - new_applications_str
+
+          to_remove.each do |application_iid|
+            user.applications.where(internal_identifier: application_iid).delete
+          end
+
+          to_add.each do |application_iid|
+            user.applications << Application.iid(application_iid)
+          end
+
+        end
+
+        if options[:time_zone]
+          user.party.time_zone = options[:time_zone]
+          user.party.save!
+        end
+
+      else
+        user = new(username: options[:username], email: options[:email], password: options[:password])
+
+        if options[:auto_activate]
+          user.skip_activation_email = true
+        end
+
+        user.save!
+
+        if options[:auto_activate]
+          user.activate!
+        end
 
         individual = Individual.create(current_first_name: options[:first_name], current_last_name: options[:last_name])
 
@@ -183,10 +244,19 @@ class User < ActiveRecord::Base
             user.applications << application
           end
         end
+
+        if options[:time_zone]
+          user.party.time_zone = options[:time_zone]
+          user.party.save!
+        end
       end
 
       user
     end
+  end
+
+  def time_zone
+    self.party.time_zone
   end
 
   def profile_image

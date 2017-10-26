@@ -275,10 +275,6 @@ module API
           user.skip_activation_email = true
         end
 
-        if params[:time_zone].present?
-          user.time_zone = params[:time_zone]
-        end
-
         user.save!
 
         if params[:auto_activate] == 'yes'
@@ -312,6 +308,11 @@ module API
 
         if params[:profile_image]
           user.set_profile_image(params[:profile_image].read, params[:profile_image].original_filename)
+        end
+
+        if params[:time_zone].present?
+          user.party.time_zone = params[:time_zone]
+          user.party.save!
         end
 
         user
@@ -351,7 +352,8 @@ module API
         end
 
         if params[:time_zone].present?
-          user.time_zone = params[:time_zone]
+          user.party.time_zone = params[:time_zone]
+          user.party.save!
         end
 
         user.save!
