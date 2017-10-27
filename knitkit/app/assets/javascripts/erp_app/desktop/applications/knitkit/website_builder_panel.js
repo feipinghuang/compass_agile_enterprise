@@ -480,9 +480,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     if (Ext.get(target).id.indexOf('websitebuilderdropzone') === -1) {
                         return false;
                     } else {
-                        var draggedPanel = Ext.getCmp(Ext.get(target).id);
-
-                        if (dragData.componentType == draggedPanel.componentType || dragData.componentType == 'widget') {
+                        var dropPanel = Ext.getCmp(Ext.get(target).id);
+                        if (dropPanel.empty) return false;
+                        if (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget') {
                             return true;
                         } else {
                             return false;
