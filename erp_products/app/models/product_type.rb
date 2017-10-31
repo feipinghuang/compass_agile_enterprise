@@ -167,6 +167,36 @@ class ProductType < ActiveRecord::Base
 
       statement
     end
+
+    def find_product_by_features(choices)
+      # given a product type, find the related product type with a specific feature value set
+      # choices['product_type_id'] is current product type id
+      # choices['n'] where 'n' is product feature type id and hash value product feature value id - one hash key for each feature
+      #
+      # first identify the parent of the family, product ype has to be within the family
+      product_type = ProductType.find(choices['product_type_id'].to_i)
+      if product_type.is_base
+        candidate_product_type_ids = product_type.children.collect{ |child| child.id}
+      else
+        candidate_product_type_ids = ProductType.find(product_type.parent_id).children.collect{ |child| child.id}
+      end
+      # grab the product feature applicabilities for the candidate product types
+      product_feature_applicabilities = ProductFeatureApplicability.where( "feature_of_record_type = ? and feature_of_record_id in (#{candidate_product_type_ids.join(',')})", "ProductType" )
+      # grab the product_feature_ids that match the choices
+      product_feature_ids = []
+      choices.each do |key, value|
+        unless key == 'product_type_id'
+          product_feature_ids << ProductFeature.find_by_product_feature_type_id_and_product_feature_value_id(key.to_i, value.to_i).id
+        end
+      end
+      product_feature_ids.sort!
+      candidate_product_type_ids.each do |candidate_id|
+        if product_feature_applicabilities.select{ |pfa| pfa.feature_of_record_id == candidate_id }.collect{ |pfa| pfa.product_feature_id}.sort == product_feature_ids
+          return candidate_id
+        end
+      end
+      nil
+    end
   end
 
   # add party with passed role to this ProductType
@@ -516,6 +546,37 @@ class ProductType < ActiveRecord::Base
       )
 
     end
+  end
+
+  def product_feature_types_with_values
+     # ProductTypeDiscount.where("discount_id = ? and product_type_id in (#{child_product_type_ids.join(',')})", discount_id).length
+    product_features = []
+    ProductFeature.where("id in (#{product_feature_applicabilities.collect{ |pfa| pfa.product_feature_id}.join(',')})").each do |product_feature|
+      product_features << product_feature
+    end
+    feature_type_ids = []
+    product_features.each do |product_feature|
+      tmp = [product_feature.product_feature_type_id, product_feature.product_feature_value_id]
+      feature_type_ids << product_feature.product_feature_type_id
+    end
+    feature_type_ids.uniq!
+    result = []
+    feature_type_ids.each do |feature_type_id|
+      result_hash = {}
+      result_hash[:feature_type] = ProductFeatureType.find(feature_type_id).description
+      result_hash[:feature_type_id] = feature_type_id
+      features_for_type_ids= product_features.select{ |pf| pf.product_feature_type_id == feature_type_id}
+      features = []
+      features << ['Select', 0]
+      features_for_type_ids.each do |feature_for_type_id|
+        product_feature_value = ProductFeatureValue.find(feature_for_type_id.product_feature_value_id)
+        feature_values = [product_feature_value.description,product_feature_value.id]
+        features << feature_values
+      end
+      result_hash[:feature_values] = features
+      result << result_hash
+    end
+    result
   end
 
 

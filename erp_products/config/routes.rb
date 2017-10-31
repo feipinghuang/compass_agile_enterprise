@@ -4,6 +4,9 @@ Rails.application.routes.draw do
     namespace :v1 do
 
       resources :product_types, defaults: { :format => 'json' } do
+        collection do
+          get :get_variant_for_selections
+        end
         resources :product_option_applicabilities, defaults: { :format => 'json' } do
           collection do
             put :update_positions
