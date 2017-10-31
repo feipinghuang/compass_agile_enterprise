@@ -15,13 +15,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZoneCo
         afterrender: function(container) {
             container.update(
                 new Ext.XTemplate(
-                    '<div class="website-builder-reorder-setting">',
+                    '<div id="outer-{containerId}" class="website-builder-reorder-setting">',
                     '  <div class="icon-move pull-left" containerId = "{containerId}" style="margin-right:5px;"></div>',
                     '</div>'
                 ).apply({
                     containerId: container.id
                 })
             );
+
+            $('#outer-' + container.id).on('mouseenter', function(){
+                $(this).children().show();
+            }).on('mouseleave', function(){
+                $(this).children().hide();
+            });
         }
     }
 });
@@ -899,7 +905,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         return new Ext.XTemplate(
             '<div class="component" style="height:100%;width:100%;position:relative;">',
             '<tpl if="canViewSource || canMove || canRemove">',
-            '<div class="website-builder-reorder-setting">',
+            '<div id="inner-{panelId}" class="website-builder-reorder-setting">',
             '<tpl if="canViewSource">',
             '<div class="icon-edit-code pull-left" id="{uniqueId}-source" style="margin-right:5px;"></div>',
             '</tpl>',
@@ -1360,6 +1366,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 }
             });
         }
+
+        $('#inner-' + dropPanel.id).on('mouseenter', function(){
+            $(this).children().show();
+        }).on('mouseleave', function(){
+            $(this).children().hide();
+        });
+
     },
     
     fetchComponentSource: function(dropPanelId, success, failure) {

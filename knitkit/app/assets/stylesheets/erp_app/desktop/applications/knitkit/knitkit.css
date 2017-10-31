@@ -210,16 +210,23 @@
   margin: 5px;
 }
 
-.website-builder-reorder-setting{
-    background-color: #ccc;
+.website-builder-reorder-setting {
     padding: 10px;
     top: 0;
     right: 0;
     height: 36px;
-    border-radius: 5px;
     z-index: 500;
     position: absolute;
 }
+
+.website-builder-reorder-setting div {
+  display: none;
+}
+
+.website-builder-reorder-setting:hover {
+  background-color: #ccc;
+}
+
 
 .website-builder-dragzone-ghost {
   width: 1010px;
