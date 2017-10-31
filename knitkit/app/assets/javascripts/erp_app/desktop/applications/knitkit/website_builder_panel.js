@@ -501,7 +501,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 },
 
 
-                validDrop(target, dragData) {
+                validDrop: function(target, dragData) {
                     if (dragData.isContainer) {
                         return this.validContainerDrop(target, dragData);
                     } else {
