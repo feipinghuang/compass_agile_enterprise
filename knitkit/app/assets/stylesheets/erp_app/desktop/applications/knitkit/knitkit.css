@@ -223,11 +223,6 @@
   display: none;
 }
 
-.website-builder-reorder-setting:hover {
-  background-color: #ccc;
-}
-
-
 .website-builder-dragzone-ghost {
   width: 1010px;
   height: 50px;

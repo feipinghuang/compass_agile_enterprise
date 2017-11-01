@@ -17,17 +17,25 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZoneCo
                 new Ext.XTemplate(
                     '<div id="outer-{containerId}" class="website-builder-reorder-setting">',
                     '  <div class="icon-move pull-left" containerId = "{containerId}" style="margin-right:5px;"></div>',
+                    '  <div class="icon-remove pull-left" style="margin-right:5px;"></div>',
                     '</div>'
                 ).apply({
                     containerId: container.id
                 })
             );
 
+
             $('#outer-' + container.id).on('mouseenter', function(){
+                $(this).css('background-color', '#ccc');
                 $(this).children().show();
             }).on('mouseleave', function(){
                 $(this).children().hide();
+                $(this).css('background-color', '');
             });
+
+            container.el.down('.icon-remove').on('click', function(){
+                container.destroy();
+            })
         }
     }
 });
@@ -334,6 +342,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
                 onBeforeDrag: function(data, e) {
+                    if (me.hasEmptyContainerOrContentBlock()){
+                        Ext.Msg.alert('Error', 'Cannot move when there are empty content blocks');
+                        return false;
+                    } 
                     me.disableComponents();
                     if (data.isContainer) {
                         me.addAutoRemovableContainers(data.containerId);
@@ -487,7 +499,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         return false;
                     } else {
                         var dropPanel = Ext.getCmp(Ext.get(target).id);
-                        if (dropPanel.empty) return false;
                         if (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget') {
                             return true;
                         } else {
@@ -1367,12 +1378,15 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
         }
 
-        $('#inner-' + dropPanel.id).on('mouseenter', function(){
-            $(this).children().show();
-        }).on('mouseleave', function(){
-            $(this).children().hide();
-        });
-
+        if (!dropPanel.empty) {
+            $('#inner-' + dropPanel.id).on('mouseenter', function(){
+                $(this).css('background-color', '#ccc');
+                $(this).children().show();
+            }).on('mouseleave', function(){
+                $(this).children().hide();
+                $(this).css('background-color', '');
+            });
+        }
     },
     
     fetchComponentSource: function(dropPanelId, success, failure) {
@@ -1723,6 +1737,31 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     
     removeDesignAtrifacts: function(iframe) {
         $(iframe.contentDocument.body).find('.' + iframe.id + '-enclose').removeClass(iframe.id + '-enclose');
+    },
+
+    hasEmptyContainerOrContentBlock: function() {
+        var me = this,
+            hasEmpty = false,
+            containers = me.query('websitebuilderdropzonecontainer');
+        
+        for (var i = 0; i < containers.length; i++) {
+            if (containers[i].empty()){
+                hasEmpty = true;
+                break;
+            } else {
+                var breakInnerLoop = false;
+                var contentBlocks = containers[i].query('websitebuilderdropzone');
+                for (var j = 0; j < contentBlocks.length; j++) {
+                    if (contentBlocks[j].empty){
+                        hasEmpty = true;
+                        breakInnerLoop = true;
+                        break;
+                    }
+                }
+                if (breakInnerLoop) break;
+            }
+        }
+        return hasEmpty
     }
     
 });
