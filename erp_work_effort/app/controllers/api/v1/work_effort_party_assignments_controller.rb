@@ -13,16 +13,16 @@ module API
  @apiParam (query) {Integer} [project_id] Project ID to scope by
  @apiParam (query) {Integer} [work_effort_id] WorkEffort ID to scope by
 
- @apiSuccess (200) {Object} get_work_effort_party_assignments_response 
+ @apiSuccess (200) {Object} get_work_effort_party_assignments_response
  @apiSuccess (200) {Boolean} get_work_effort_party_assignments_response.success True if the request was successful
  @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.total_count Total count of records
  @apiSuccess (200) {Object[]} get_work_effort_party_assignments_response.work_effort_party_assignments List of WorkEffortPartyAssignments
  @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.work_effort_party_assignments.id Id of WorkEffortPartyAssignment
  @apiSuccess (200) {Decimal} get_work_effort_party_assignments_response.work_effort_party_assignments.resource_allocation Allocation of resource
- 
+
  @apiSuccess (200) {Object} get_work_effort_party_assignments_response.work_effort_party_assignments.work_effort WorkEffort allocated for
  @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.work_effort_party_assignments.work_effort.id WorkEffort Id
- 
+
  @apiSuccess (200) {Object} get_work_effort_party_assignments_response.work_effort_party_assignments.party Party allocated
  @apiSuccess (200) {Integer} get_work_effort_party_assignments_response.work_effort_party_assignments.party.id Party Id
 
@@ -78,15 +78,15 @@ module API
  @apiParam (body) {Integer} work_effort_id ID of WorkEffort
  @apiParam (body) {Decimal} resource_allocation Allocation percentage
 
- @apiSuccess (200) {Object} create_work_effort_party_assignments_response 
+ @apiSuccess (200) {Object} create_work_effort_party_assignments_response
  @apiSuccess (200) {Boolean} create_work_effort_party_assignments_response.success True if the request was successful
  @apiSuccess (200) {Object} create_work_effort_party_assignments_response.work_effort_party_assignment WorkEffortPartyAssignment
  @apiSuccess (200) {Integer} create_work_effort_party_assignments_response.work_effort_party_assignment.id Id of WorkEffortPartyAssignment
  @apiSuccess (200) {Decimal} create_work_effort_party_assignments_response.work_effort_party_assignment.resource_allocation Allocation of resource
- 
+
  @apiSuccess (200) {Object} create_work_effort_party_assignments_response.work_effort_party_assignments.work_effort WorkEffort allocated for
  @apiSuccess (200) {Integer} create_work_effort_party_assignments_response.work_effort_party_assignments.work_effort.id WorkEffort Id
- 
+
  @apiSuccess (200) {Object} create_work_effort_party_assignments_response.work_effort_party_assignments.party Party allocated
  @apiSuccess (200) {Integer} create_work_effort_party_assignments_response.work_effort_party_assignments.party.id Party Id
 
@@ -151,15 +151,15 @@ module API
  @apiParam (body) {Integer} work_effort_id ID of WorkEffort
  @apiParam (body) {Decimal} resource_allocation Allocation percentage
 
- @apiSuccess (200) {Object} update_work_effort_party_assignments_response 
+ @apiSuccess (200) {Object} update_work_effort_party_assignments_response
  @apiSuccess (200) {Boolean} update_work_effort_party_assignments_response.success True if the request was successful
  @apiSuccess (200) {Object} update_work_effort_party_assignments_response.work_effort_party_assignment WorkEffortPartyAssignment
  @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignment.id Id of WorkEffortPartyAssignment
  @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignment.resource_allocation Allocation of resource
- 
+
  @apiSuccess (200) {Object} update_work_effort_party_assignments_response.work_effort_party_assignments.work_effort WorkEffort allocated for
  @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignments.work_effort.id WorkEffort Id
- 
+
  @apiSuccess (200) {Object} update_work_effort_party_assignments_response.work_effort_party_assignments.party Party allocated
  @apiSuccess (200) {Integer} update_work_effort_party_assignments_response.work_effort_party_assignments.party.id Party Id
 
@@ -213,14 +213,24 @@ module API
 =end
 
       def destroy
-
-        work_effort_party_assignment = WorkEffortPartyAssignment.find(params[:id])
-
+        party_id = params['party.id'] || params[:party_id]
+        work_effort_id = params['work_effort.id'] || params[:work_effort_id]
+        work_effort_party_assignments = WorkEffortPartyAssignment.where(party_id: party_id, work_effort_id: work_effort_id)
         begin
           ActiveRecord::Base.connection.transaction do
-
-            render json: {success: work_effort_party_assignment.destroy}
-
+            if work_effort_party_assignments.destroy_all.count > 0
+              # if the party assigned is not watching this task then make them a watcher
+              current_watcher_relationship = EntityPartyRole.where('entity_record_type = ?
+                                                                  and entity_record_id = ?
+                                                                  and party_id = ?',
+                                                                   'WorkEffort',
+                                                                   work_effort_id,
+                                                                   party_id).first
+              current_watcher_relationship.destroy
+              render json: {success: true}
+            else
+              render json: {success: true}
+            end
           end
         rescue StandardError => ex
           Rails.logger.error ex.message
