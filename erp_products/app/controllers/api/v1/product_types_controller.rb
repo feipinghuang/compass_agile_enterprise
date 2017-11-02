@@ -314,6 +314,27 @@ module API
         render :json => {:success => true}
     end
 
+    def get_variant_for_selections
+
+      product_type_id = ProductType.find_product_by_features(params['choices'])
+
+      unless product_type_id.nil?
+        product_type = ProductType.find(product_type_id)
+        offers = CompassAeBusinessSuite::BasicOfferEngine.new(dba_organization_id: current_user.party.dba_organization.id,
+                                                              user_id: current_user ? current_user.id : nil,
+                                                              product_type_id: product_type.id).filter[:results_hash_array]
+
+
+        product_type_info = CompassAeBusinessSuite::BasicOfferEngine.determine_best_offer(offers, 'priority').first
+
+
+        render :json => {:success => true, product_types:product_type_info}
+      else
+        render :json => {:success => false, product_types: nil}
+      end
+
+    end
+
     private
 
       def filtered_roots(filters, product_type_ids, params)

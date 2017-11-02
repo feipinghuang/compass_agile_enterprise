@@ -199,6 +199,7 @@ class ProductType < ActiveRecord::Base
     end
   end
 
+
   # add party with passed role to this ProductType
   #
   # @param party [Party] party to add
@@ -549,32 +550,35 @@ class ProductType < ActiveRecord::Base
   end
 
   def product_feature_types_with_values
-     # ProductTypeDiscount.where("discount_id = ? and product_type_id in (#{child_product_type_ids.join(',')})", discount_id).length
-    product_features = []
-    ProductFeature.where("id in (#{product_feature_applicabilities.collect{ |pfa| pfa.product_feature_id}.join(',')})").each do |product_feature|
-      product_features << product_feature
-    end
-    feature_type_ids = []
-    product_features.each do |product_feature|
-      tmp = [product_feature.product_feature_type_id, product_feature.product_feature_value_id]
-      feature_type_ids << product_feature.product_feature_type_id
-    end
-    feature_type_ids.uniq!
-    result = []
-    feature_type_ids.each do |feature_type_id|
-      result_hash = {}
-      result_hash[:feature_type] = ProductFeatureType.find(feature_type_id).description
-      result_hash[:feature_type_id] = feature_type_id
-      features_for_type_ids= product_features.select{ |pf| pf.product_feature_type_id == feature_type_id}
-      features = []
-      features << ['Select', 0]
-      features_for_type_ids.each do |feature_for_type_id|
-        product_feature_value = ProductFeatureValue.find(feature_for_type_id.product_feature_value_id)
-        feature_values = [product_feature_value.description,product_feature_value.id]
-        features << feature_values
+    unless product_feature_applicabilities.empty?
+      product_features = []
+      ProductFeature.where("id in (#{product_feature_applicabilities.collect{ |pfa| pfa.product_feature_id}.join(',')})").each do |product_feature|
+        product_features << product_feature
       end
-      result_hash[:feature_values] = features
-      result << result_hash
+      feature_type_ids = []
+      product_features.each do |product_feature|
+        tmp = [product_feature.product_feature_type_id, product_feature.product_feature_value_id]
+        feature_type_ids << product_feature.product_feature_type_id
+      end
+      feature_type_ids.uniq!
+      result = []
+      feature_type_ids.each do |feature_type_id|
+        result_hash = {}
+        result_hash[:feature_type] = ProductFeatureType.find(feature_type_id).description
+        result_hash[:feature_type_id] = feature_type_id
+        features_for_type_ids= product_features.select{ |pf| pf.product_feature_type_id == feature_type_id}
+        features = []
+        features << ['Select', 0]
+        features_for_type_ids.each do |feature_for_type_id|
+          product_feature_value = ProductFeatureValue.find(feature_for_type_id.product_feature_value_id)
+          feature_values = [product_feature_value.description,product_feature_value.id]
+          features << feature_values
+        end
+        result_hash[:feature_values] = features
+        result << result_hash
+      end
+    else
+      result = []
     end
     result
   end
