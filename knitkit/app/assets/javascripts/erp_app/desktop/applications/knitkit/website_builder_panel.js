@@ -988,6 +988,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         me.attachContentBlockListeners(dropPanel, uniqueId);
 
         iframe.on('load', function() {
+            dropPanel.empty = false;
+            
+            $('#inner-' + dropPanel.id).on('mouseenter', function(){
+                $(this).css('background-color', '#ccc');
+                $(this).children().show();
+            }).on('mouseleave', function(){
+                $(this).children().hide();
+                $(this).css('background-color', '');
+            });
+            
             if (options.autoSave)
                 loadMask.hide();
 
@@ -1378,15 +1388,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
         }
 
-        if (!dropPanel.empty) {
-            $('#inner-' + dropPanel.id).on('mouseenter', function(){
-                $(this).css('background-color', '#ccc');
-                $(this).children().show();
-            }).on('mouseleave', function(){
-                $(this).children().hide();
-                $(this).css('background-color', '');
-            });
-        }
     },
     
     fetchComponentSource: function(dropPanelId, success, failure) {
