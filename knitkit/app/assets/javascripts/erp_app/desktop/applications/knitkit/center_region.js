@@ -710,6 +710,19 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.CenterRegion", {
         this.workArea.setActiveTab(item);
     },
 
+
+    closeActiveTabs: function() {
+        var me = this;
+        me.workArea.removeAll();
+        
+        startupPanel = Ext.createWidget('knitkit_splash_screen', {
+            closable: true,
+            centerRegion: region
+        });
+        me.workArea.add(startupPanel);
+        me.workArea.setActiveTab(startupPanel);
+    },
+
     editContent: function(title, id, content, siteId, contentType, contentGridStore) {
         var self = this;
         var itemId = 'editContent-' + id;

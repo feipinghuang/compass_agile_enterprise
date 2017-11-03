@@ -352,7 +352,7 @@ class Theme < ActiveRecord::Base
 
   def init_design_layout!
     file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
-    
+
     ['header', 'footer'].each do |template|
       template_path = File.join(path, "templates", "shared", "knitkit", "_#{template}.html.erb")
       template_contents = file_support.get_contents(template_path).first
@@ -382,7 +382,7 @@ class Theme < ActiveRecord::Base
     file_support = ErpTechSvcs::FileSupport::Base.new(
       storage: Rails.application.config.erp_tech_svcs.file_storage
     )
-   
+
     unless node
       path = File.join(file_support.root, self.url, 'templates', 'components', type.to_s)
       node = file_support.build_tree(path, :preload => true)
@@ -391,12 +391,13 @@ class Theme < ActiveRecord::Base
     node[:children].each do |child_node|
       if child_node[:leaf]
         name = File.basename(File.basename(child_node[:text], ".*"), ".*")
+        fileAsset = self.files.where(name: "#{name}.png").first
 
         blocks.push({
                       type: type,
                       name: name,
                       path: child_node[:id],
-                      thumbnail_url: File.join(ErpTechSvcs::Config.installation_url, 'sites', website.iid, 'themes', theme_id, 'images', 'components', type.to_s, "#{name}.png")
+                      thumbnail_url: File.join(fileAsset.fully_qualified_url, 'sites', website.iid, 'themes', theme_id, 'images', 'components', type.to_s, "#{name}.png")
         })
       else
         self.block_templates(type, blocks, child_node)

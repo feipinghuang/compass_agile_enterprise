@@ -201,8 +201,8 @@
 
 .website-builder-move-component-hover {
   border: dashed 2px #CCC;
-  height: 150px !important;
 }
+
 
 .dropzone-empty{
   border: dashed 2px #CCC;
@@ -219,6 +219,15 @@
     border-radius: 5px;
     z-index: 500;
     position: absolute;
+}
+
+.website-builder-dragzone-ghost {
+  width: 1010px;
+  height: 50px;
+}
+
+.website-builder-dragzone-ghost .x-dd-drag-ghost {
+  height: 50px;
 }
 
 .icon-move {

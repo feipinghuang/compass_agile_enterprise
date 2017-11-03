@@ -73,7 +73,6 @@ module Knitkit
           begin
             result = {success: false, website_section_contents:[]}
             contents_data = JSON.parse(params["content"])
-
             current_user.with_capability('create', 'WebsiteSection') do
               begin
                 ActiveRecord::Base.transaction do

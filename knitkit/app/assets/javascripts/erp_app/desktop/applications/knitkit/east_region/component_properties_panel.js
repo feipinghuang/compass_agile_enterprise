@@ -135,7 +135,32 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                     ]
                 },
                 value: element.align
-            }])
+            }, {
+                xtype: 'checkbox',
+                fieldLabel: 'Center',
+                submitValue: false,
+                listeners: {
+                    render: function(checkbox) {
+                        var classField = checkbox.up('form').down('[name="className"]');
+                        if (classField.getValue().match(/\bcenter-block/))
+                            checkbox.setValue(true);
+                            
+                        
+                    }, 
+                    change: function(checkbox, newValue, oldValue, eOpts) {
+                        var classField = checkbox.up('form').down('[name="className"]');
+                        if (newValue) {
+                            if (!classField.getValue().match(/\bcenter-block/))
+                                classField.setValue(classField.getValue().trim() + " center-block");
+                            
+                        } else {
+                            if (classField.getValue().match(/\bcenter-block/))
+                                classField.setValue(classField.getValue().replace(/\bcenter-block/, ''));
+                        }
+                    }
+                }
+                
+            }]);
         } else {
             items = items.concat([{
                 xtype: 'textfield',
@@ -383,6 +408,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
         });
     },
 
+    setWebsiteSectionId: function(websiteSectionId) {
+        this.websiteSectionId = websiteSectionId;
+    },
+
+    getWebsiteSectionId: function() {
+        return this.websiteSectionId;
+    },
+    
     cleanUpDuplicateStyles: function(node) {
         if (!node.style) return;
         Ext.each(node.style.cssText.split(';'), function(nodeStyle){

@@ -46,7 +46,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WidgetsPanel", {
                     new Ext.dd.DragZone(dataView.getEl(), {
                         ddGroup: 'websiteBuilderPanelDDgroup',
                         // Let the native drag and drop work for widgets
-                        onBeforeDrag: function(data, e) {
+                        beforeDragEnter: function(data, e) {
                             var centerRegion = Ext.getCmp('knitkit').down('knitkit_centerregion');
                             if (centerRegion.workArea.getActiveTab() && centerRegion.workArea.getActiveTab().xtype == "websitebuilderpanel")
                                 centerRegion.workArea.getActiveTab().disableComponents();
