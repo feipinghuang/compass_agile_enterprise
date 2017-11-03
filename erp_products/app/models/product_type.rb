@@ -583,6 +583,17 @@ class ProductType < ActiveRecord::Base
     result
   end
 
+  def featureless?
+    is_base && children.length == 0
+  end
+
+  def in_discount_as_base?(discount_id)
+    is_base && discounts.collect{|d| d.id }.include?(discount_id)
+  end
+
+  def in_collection_as_base?(collection_id)
+    is_base && collections.collect{|c| c.id }.include?(collection_id)
+  end
 
   def product_feature_values
     product_values = []

@@ -8,10 +8,12 @@ class Collection < ActiveRecord::Base
   #   t.string  :external_identifier
   #   t.string  :external_id_source
   #   t.text    :custom_fields
+  #   t.integer   :tenant_id
   #   t.timestamps
 
 
   has_file_assets
+  is_tenantable
 
   attr_protected :created_at, :updated_at
 

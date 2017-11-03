@@ -351,28 +351,28 @@ module API
           when 'DiscountSearchResults'
             product_type_ids.each do |product_type_id|
               product_type = ProductType.find(product_type_id)
-              if product_type.at_least_one_child_not_in_discount?(filters[:target_id])
+              if !product_type.in_discount_as_base?(filters[:target_id]) || product_type.at_least_one_child_not_in_discount?(filters[:target_id])
                 filtered_product_type_ids << product_type.id
               end
             end
           when 'DiscountProductsIncluded'
             product_type_ids.each do |product_type_id|
               product_type = ProductType.find(product_type_id)
-              if product_type.at_least_one_child_in_discount?(filters[:target_id])
+              if product_type.in_discount_as_base?(filters[:target_id]) || product_type.at_least_one_child_in_discount?(filters[:target_id])
                 filtered_product_type_ids << product_type.id
               end
             end
           when 'CollectionSearchResults'
             product_type_ids.each do |product_type_id|
             product_type = ProductType.find(product_type_id)
-            if product_type.at_least_one_child_not_in_collection?(filters[:target_id])
+            if !product_type.in_collection_as_base?(filters[:target_id]) ||  product_type.at_least_one_child_not_in_collection?(filters[:target_id])
               filtered_product_type_ids << product_type.id
             end
           end
           when 'CollectionProductsIncluded'
             product_type_ids.each do |product_type_id|
               product_type = ProductType.find(product_type_id)
-              if product_type.at_least_one_child_in_collection?(filters[:target_id])
+              if product_type.in_collection_as_base?(filters[:target_id]) ||  product_type.at_least_one_child_in_collection?(filters[:target_id])
                 filtered_product_type_ids << product_type.id
               end
             end

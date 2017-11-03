@@ -46,11 +46,9 @@ module API
         discounts = Discount.apply_filters(query_filter)
 
         # scope by dba_organizations if there are no parties passed as filters
-        # unless query_filter[:party]
-        #   dba_organizations = [current_user.party.dba_organization]
-        #   dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
-        #   discounts = discounts.scope_by_dba_organization(dba_organizations)
-        # end
+        dba_organizations = [current_user.party.dba_organization]
+        dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
+        discounts = discounts.by_tenant(dba_organizations)
 
         if sort and dir
           discounts = discounts.order("#{sort} #{dir}")
@@ -138,6 +136,8 @@ module API
             discount.valid_thru = params[:valid_thru].present? ? DateTime.parse(params[:valid_thru]) : nil
             discount.round = params[:round].to_bool
             discount.round_amount = params[:round_amount].present? ? BigDecimal.new(params[:round_amount]) : nil
+
+            discount.set_tenant!(current_user.party.dba_organization)
 
             discount.created_by_party = current_user.party
 

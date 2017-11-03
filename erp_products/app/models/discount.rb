@@ -12,9 +12,13 @@ class Discount < ActiveRecord::Base
   #   t.integer   :round_amount
   #   t.integer   :created_by_party_id
   #   t.integer   :updated_by_party_id
+  #   t.integer   :tenant_id
   #
   #   t.timestamps
   #
+
+
+  is_tenantable
 
   has_many :product_offers, dependent: :destroy
   has_many :product_type_discounts, dependent: :destroy

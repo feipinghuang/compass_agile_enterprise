@@ -46,11 +46,9 @@ module API
         collections = Collection.apply_filters(query_filter)
 
         # scope by dba_organizations if there are no parties passed as filters
-        # unless query_filter[:party]
-        #   dba_organizations = [current_user.party.dba_organization]
-        #   dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
-        #   collections = collections.scope_by_dba_organization(dba_organizations)
-        # end
+        dba_organizations = [current_user.party.dba_organization]
+        dba_organizations = dba_organizations.concat(current_user.party.dba_organization.child_dba_organizations)
+        collections = collections.by_tenant(dba_organizations)
 
         if sort and dir
           collections = collections.order("#{sort} #{dir}")
@@ -115,6 +113,8 @@ module API
             collection.name = params[:name]
             collection.internal_identifier = params[:name].to_iid
             collection.description = params[:description]
+
+            collection.set_tenant!(current_user.party.dba_organization)
 
 
             collection.save!

@@ -325,7 +325,7 @@ class OrderTxn < ActiveRecord::Base
     line_item
   end
 
-  def add_product_discount_offer_line_item(simple_product_offer)
+  def add_simple_product_offer_line_item(simple_product_offer)
     line_item = get_line_item_for_simple_product_offer(simple_product_offer)
 
 
