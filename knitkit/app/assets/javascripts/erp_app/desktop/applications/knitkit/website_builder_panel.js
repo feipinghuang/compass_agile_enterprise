@@ -98,14 +98,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         me.callParent(arguments);
 
         if (me.savedScrollPos !== undefined) {
-            console.log(me.savedScrollPos)
             var heightDiff = null;
             if (me.currentHeight) {
                 heightDiff = Ext.get(me.el.query('.x-panel-body')).first().query('div').first().clientHeight - me.currentHeight;
             } else {
                 heightDiff = 0;
             }
-
             me.body.scrollTo('top', me.savedScrollPos + heightDiff);
         }
     },
@@ -335,6 +333,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             me.setWebsiteTheme();
         });
 
+        me.on('afterrender', function(){
+            me.body.ddScrollConfig = {
+                vthresh: 50,
+                increment: 200,
+            };
+            Ext.dd.ScrollManager.register(me.body);
+        })
+
         /*
          * Handle drag and drop of components from the west panel onto a page
          */
@@ -354,7 +360,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                     me.dragStarted = true;
                 },
-
+                
                 onMouseUp: function(e) {
                     if (me.dragStarted) {
                         me.enableComponents();
@@ -363,7 +369,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                         
                 },
-                
+
                 afterDragDrop: function(target, e, id) {
                     me.enableComponents();
                     me.removeAutoRemovableDropZonesAndContainers();
