@@ -173,13 +173,18 @@ module API
             party_id = params['party.id'] || params[:party_id]
             work_effort_id = params['work_effort.id'] || params[:work_effort_id]
             work_effort_party_assignment = WorkEffortPartyAssignment.where(party_id: party_id, work_effort_id: work_effort_id).first
-            work_effort_party_assignment.role_type = RoleType.iid('work_resource')
-            work_effort_party_assignment.resource_allocation = params[:resource_allocation]
 
-            work_effort_party_assignment.updated_by_party = current_user.party
+            if work_effort_party_assignment
+              work_effort_party_assignment.role_type = RoleType.iid('work_resource')
+              work_effort_party_assignment.resource_allocation = params[:resource_allocation]
 
-            render :json => {success: work_effort_party_assignment.save!,
-                             work_effort_party_assignment: work_effort_party_assignment.to_data_hash}
+              work_effort_party_assignment.updated_by_party = current_user.party
+
+              render :json => {success: work_effort_party_assignment.save!,
+                               work_effort_party_assignment: work_effort_party_assignment.to_data_hash}
+            else
+              raise "WorkEffortPartyAssignment could not be found with Party Id: #{party_id}, WorkEffort Id: #{work_effort_id}"
+            end
 
           end
         rescue ActiveRecord::RecordInvalid => invalid
@@ -216,6 +221,7 @@ module API
         party_id = params['party.id'] || params[:party_id]
         work_effort_id = params['work_effort.id'] || params[:work_effort_id]
         work_effort_party_assignments = WorkEffortPartyAssignment.where(party_id: party_id, work_effort_id: work_effort_id)
+
         begin
           ActiveRecord::Base.connection.transaction do
             if work_effort_party_assignments.destroy_all.count > 0
