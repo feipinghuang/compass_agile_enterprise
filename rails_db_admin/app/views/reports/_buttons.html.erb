@@ -50,7 +50,7 @@
     		params[field.name] = field.value;
 		});
 	
-		params['client_utc_offset'] = new Date().getTimezoneOffset();
+		params['client_utc_offset'] = (0 - new Date().getTimezoneOffset());
 		params = encodeURIComponent(JSON.stringify(params));
 
 		return params;

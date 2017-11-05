@@ -9,21 +9,11 @@ module ErpBaseErpSvcs
         end
 
         def in_client_time(time)
-          # if time includes UTC just add the offset
-          if(time.to_s.include?('UTC'))
-            time + + @offset_in_hours.hours
-          else
-            ::Time.parse(time.strftime('%Y-%m-%dT%H:%M:%S UTC')) + @offset_in_hours.hours
-          end
+          time + @offset_in_hours.hours
         end
 
         def client_to_utc_time(time)
-          # if time includes UTC it is already in UTC so just return it
-          if(time.to_s.include?('UTC'))
-            time
-          else
-            ::Time.parse(time.strftime('%Y-%m-%dT%H:%M:%S UTC')) - @offset_in_hours.hours
-          end
+          time - @offset_in_hours.hours
         end
 
         def beginning_of_day
@@ -55,13 +45,13 @@ module ErpBaseErpSvcs
             end
           else
             client_utc_offset = client_utc_offset.to_i
-            hours = client_utc_offset / 60.0
-              -hours
+            client_utc_offset / 60.0
+
             end
+
           end
 
-        end
-
+        end # Client
       end # Time
     end # Helpers
   end # ErpBaseErpSvcs
