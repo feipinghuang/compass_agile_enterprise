@@ -153,7 +153,7 @@ class User < ActiveRecord::Base
       raise 'Last Name is required' unless options[:last_name]
       raise 'Tenant is required' unless options[:tenant]
 
-      user = User.where('username = ?', options[:username]).first
+      user = User.where('username = ? or email = ?', options[:username], options[:email]).first
 
       if user
         # if a user was found then we can update thier roles and applications
