@@ -515,14 +515,35 @@ function OnDemandLoadByAjax() {
         }
     };
 
+    this.waitForScript = function(scriptToLoad) {
+        var self = this;
+
+        if (window['scriptsToLoad'][scriptToLoad.url].loaded) {
+            self.scriptDone();
+        } else {
+            setTimeout(function() {
+                self.waitForScript(scriptToLoad);
+            }, 100);
+        }
+    };
+
     this.loadScript = function(scriptToLoad) {
+        window['scriptsToLoad'] = window['scriptsToLoad'] || [];
+        window['scriptsToLoad'][scriptToLoad.url] = window['scriptsToLoad'][scriptToLoad.url] || {
+            loaded: false
+        };
+
         var self = this;
         var ss = document.getElementsByTagName("script");
         for (i = 0; i < ss.length; i++) {
             if (ss[i].src && ss[i].src.indexOf(scriptToLoad.url) != -1) {
-                scriptToLoad.status = 'success';
-                self.scriptDone();
-                return;
+                if (window['scriptsToLoad'][scriptToLoad.url] && window['scriptsToLoad'][scriptToLoad.url].loaded) {
+                    scriptToLoad.status = 'success';
+                    self.scriptDone();
+                    return;
+                } else {
+                    self.waitForScript(scriptToLoad);
+                }
             }
         }
 
@@ -535,6 +556,9 @@ function OnDemandLoadByAjax() {
         s.onload = s.onreadystatechange = function() {
             if (this.readyState && this.readyState == "loading")
                 return;
+
+            window['scriptsToLoad'][scriptToLoad.url].loaded = true;
+
             scriptToLoad.status = 'success';
             self.scriptDone();
         };
@@ -542,7 +566,7 @@ function OnDemandLoadByAjax() {
             head.removeChild(s);
             scriptToLoad.status = 'failure';
             self.scriptDone();
-        }
+        };
     };
 
     this.onSuccess = function() {
