@@ -45,13 +45,13 @@ module ErpBaseErpSvcs
             end
           else
             client_utc_offset = client_utc_offset.to_i
-            hours = client_utc_offset / 60.0
-            -hours
+            client_utc_offset / 60.0
+
+            end
+
           end
-        end
 
-      end
-
-    end # Time
-  end # Helpers
-end # ErpBaseErpSvcs
+        end # Client
+      end # Time
+    end # Helpers
+  end # ErpBaseErpSvcs
