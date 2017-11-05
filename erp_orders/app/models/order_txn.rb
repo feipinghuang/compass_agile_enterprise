@@ -48,7 +48,11 @@ class OrderTxn < ActiveRecord::Base
 
   # validation
   validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i, :on => :update, :allow_nil => true
-  validates :order_number, {uniqueness: true, :allow_nil => true}
+  validates_uniqueness_of :order_number,  :allow_nil => true, :unless => :skip_order_number_uniqueness_validation?
+  
+  def skip_order_number_uniqueness_validation?
+    false
+  end
 
   class << self
     # Filter records

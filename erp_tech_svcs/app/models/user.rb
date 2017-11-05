@@ -154,7 +154,7 @@ class User < ActiveRecord::Base
       raise 'Last Name is required' unless options[:last_name]
       raise 'Tenant is required' unless options[:tenant]
 
-      user = User.where('username = ?', options[:username]).first
+      user = User.where('username = ? or email = ?', options[:username], options[:email]).first
 
       unless user
         user = create(username: options[:username], email: options[:email], password: options[:password])

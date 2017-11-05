@@ -1,5 +1,5 @@
 class TrackedStatusType < ActiveRecord::Base
-  attr_accessible :description, :internal_identifier
+  attr_accessible :description, :internal_identifier, :external_identifier
 
   acts_as_erp_type
   acts_as_nested_set
