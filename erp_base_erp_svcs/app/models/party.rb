@@ -113,6 +113,26 @@ class Party < ActiveRecord::Base
       statement
     end
 
+    # if dba_org exists, delete it and replace it
+    # if it doesn't exist, create it
+    #
+    # @param party party of the dba org for this party
+    def set_dba_org(description, to_party_id, reln_type)
+      if dba_organization
+        dba_party_relationship = find_relationship_by_role_type('dba_org')
+        unless dba_party_relationship.nil?
+          dba_party_relationship.delete
+        end
+      end
+      create_relationship(description, to_party_id, reln_type)
+    end
+
+    def find_relationship_by_role_type(role_type_iid)
+      PartyRelationship.includes(:relationship_type).
+        where('party_id_from = ? or party_id_to = ?', id, id).
+        where('role_type_id_to' => RoleType.iid(role_type_iid)).first
+    end
+
     # scope by dba organization
     #
     # @param dba_organization [Party, Array] dba organization to scope by or Array of dba organizations to
@@ -287,12 +307,10 @@ class Party < ActiveRecord::Base
     PartyRelationship.destroy_all("party_id_from = #{id} or party_id_to = #{id}")
   end
 
-  def add_role_type(role)
-    role = role.is_a?(RoleType) ? role : RoleType.iid(role)
-
-    PartyRole.create(party: self, role_type: role)
-  end
-
+  # Check if Party has any of the passed RoleTypes
+  #
+  # @param role [RoleType, String, Array] RoleType instance, Internal Identifier of RoleType or an Array of RoleType instance or Internal Identifiers
+  # @return [Boolean] True if the Party has any of the RoleTypes
   def has_role_type?(*passed_roles)
     result = false
     passed_roles.flatten!
@@ -305,7 +323,26 @@ class Party < ActiveRecord::Base
       end
 
     end
+
     result
+  end
+
+  # Add RoleType to Party
+  #
+  # @param role [String, RoleType] RoleType instance or Internal Identifier of RoleType
+  def add_role_type(role_type)
+    role_type = role_type.is_a?(RoleType) ? role_type : RoleType.iid(role_type)
+
+    PartyRole.create(party: self, role_type: role_type)
+  end
+
+  # Remove RoleType from Party
+  #
+  # @param role [String, RoleType] RoleType instance or Internal Identifier of RoleType
+  def remove_role_type(role_type)
+    role_type = role_type.is_a?(RoleType) ? role : RoleType.iid(role_type)
+
+    PartyRole.find_by_party_id_and_role_type_id(self.id, role_type.id).delete
   end
 
   # Alias for to_s
