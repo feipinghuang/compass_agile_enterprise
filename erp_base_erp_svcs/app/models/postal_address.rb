@@ -40,7 +40,7 @@ class PostalAddress < ActiveRecord::Base
   end
 
   def to_s
-    "#{address_line_1}, #{city}, #{state} - #{zip}"
+    "#{address_line_1}, #{city}, #{state} #{zip}"
   end
 
   def zip_eql_to?(zip)
