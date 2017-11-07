@@ -3,7 +3,7 @@
 }
 
 .x-column-header-wysiwyg {
-    background: url(/assets/icons/code/code_16x16.png) center no-repeat !important;
+  background: url(/assets/icons/code/code_16x16.png) center no-repeat !important;
 }
 
 .x-column-header-ordered-list {
@@ -222,6 +222,26 @@
 .website-builder-reorder-setting div {
   display: none;
 }
+
+.website-builder-scroll-indicator {
+  position: sticky;
+  left: 0;
+  right: 0;
+  height: 50px;
+  width: 100%;
+  background-color: #ccc;
+  overflow: hidden;
+  display: none;
+}
+
+.website-builder-scroll-indicator .icon-arrow-up-white , .website-builder-scroll-indicator .icon-arrow-down-white {
+  position: relative;
+  left: 50%;
+  top: 17px;
+  height: 16px;
+  width: 16px;
+}
+
 
 .website-builder-dragzone-ghost {
   width: 1010px;

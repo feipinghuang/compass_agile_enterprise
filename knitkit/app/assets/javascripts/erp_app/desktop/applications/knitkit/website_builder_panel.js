@@ -331,9 +331,23 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
         me.on('beforerender', function() {
             me.setWebsiteTheme();
+            
         });
-
+        
         me.on('afterrender', function(){
+            me.update(
+                new Ext.Template('<div class="website-builder-scroll-indicator" id="scroll-indicator-up-{id}">',
+                                 '  <div class="icon-arrow-up-white"></div>',
+                                 '</div>',
+                                 '<div class="website-builder-scroll-indicator" id="scroll-indicator-down-{id}">',
+                                 '  <div class="icon-arrow-down-white"></div>',
+                                 '</div>'
+                                ).apply({
+                                    id: me.id
+                                })
+            );
+
+            
             me.body.ddScrollConfig = {
                 vthresh: 50,
                 increment: 200,
@@ -358,13 +372,18 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     } else {
                         me.addAutoRemovableDropZones(data.panelId);
                     }
+                    $("#scroll-indicator-up-" + me.id).show().css('bottom', me.body.getHeight() - 50);
+                    $("#scroll-indicator-down-" + me.id).show().css('bottom', 0);
                     me.dragStarted = true;
+                    
                 },
                 
                 onMouseUp: function(e) {
                     if (me.dragStarted) {
                         me.enableComponents();
                         me.removeAutoRemovableDropZonesAndContainers();
+                        $("#scroll-indicator-up-" + me.id).hide();
+                        $("#scroll-indicator-down-" + me.id).hide();
                         me.dragStarted = false;
                     }
                         
@@ -373,12 +392,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 afterDragDrop: function(target, e, id) {
                     me.enableComponents();
                     me.removeAutoRemovableDropZonesAndContainers();
+                    $("#scroll-indicator-up-" + me.id).hide();
+                    $("#scroll-indicator-down-" + me.id).hide();
                     me.dragStarted = false;
                 },
 
                 afterInvalidDrop: function(target, e, id) {
                     me.enableComponents();
                     me.removeAutoRemovableDropZonesAndContainers();
+                    $("#scroll-indicator-up-" + me.id).hide();
+                    $("#scroll-indicator-down-" + me.id).hide();
                     me.dragStarted = false;
                 },
 
