@@ -9,43 +9,27 @@ module ErpBaseErpSvcs
         end
 
         def in_client_time(time)
-          if time.to_s.include?('UTC')
-            time + @offset_in_hours.hours
-          elsif time.utc_offset == 0
-            time + @offset_in_hours.hours
-          elsif time.zone
-            time
-          else
-            time + @offset_in_hours.hours
-          end
+          time + @offset_in_hours.hours
         end
 
         def client_to_utc_time(time)
-          if time.to_s.include?('UTC')
-            time
-          elsif time.utc_offset == 0
-            time
-          elsif time.zone
-            time.utc
-          else
-            time - @offset_in_hours.hours
-          end
+          time - @offset_in_hours.hours
         end
 
         def beginning_of_day
-          (::Time.now  + @offset_in_hours.hours).beginning_of_day
+          (::Time.now + @offset_in_hours.hours).beginning_of_day
         end
 
         def end_of_day
-          (::Time.now  + @offset_in_hours.hours).end_of_day
+          (::Time.now + @offset_in_hours.hours).end_of_day
         end
 
         def beginning_of_week
-          (::Time.now  + @offset_in_hours.hours).beginning_of_week
+          (::Time.now + @offset_in_hours.hours).beginning_of_week
         end
 
         def end_of_week
-          (::Time.now  + @offset_in_hours.hours).end_of_week
+          (::Time.now + @offset_in_hours.hours).end_of_week
         end
 
         protected
