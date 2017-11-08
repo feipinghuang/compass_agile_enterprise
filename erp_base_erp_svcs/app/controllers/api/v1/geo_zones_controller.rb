@@ -21,18 +21,32 @@ module API
 =end
 
       def index
-        GeoZone.include_root_in_json = false
+        begin
+          GeoZone.include_root_in_json = false
 
-        if params[:geo_country_iso_code_2].present?
-          geo_country = GeoCountry.find_by_iso_code_2(params[:geo_country_iso_code_2])
-          if geo_country
-            render json: {success: true, geo_zones: GeoZone.where('geo_country_id = ?', geo_country.id).all}
+          if params[:geo_country_iso_code_2].present?
+            geo_country = GeoCountry.find_by_iso_code_2(params[:geo_country_iso_code_2])
+
+            if geo_country
+              geo_zones = GeoZone.where('geo_country_id = ?', geo_country.id)
+            else
+              raise APIError 'Invalid Geo Country'
+            end
+
           else
-            render json: {success: false, message: 'Invalid Geo Country'}
+            geo_zones GeoZone
+
+            render json: {success: true, geo_zones: GeoZone.all}
           end
 
-        else
-          render json: {success: true, geo_zones: GeoZone.all}
+          if params[:query]
+            query = params[:query]
+            geo_zones = geo_zones.where(GeoZone.arel_table[:zone_name].matches("%#{query}%"))
+          end
+
+          render json: {success: true, geo_zones: geo_zones.all}
+        rescue APIError => ex
+          render json: {success: false, message: ex.message}, status: 400
         end
       end
 
