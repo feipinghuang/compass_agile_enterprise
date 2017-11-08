@@ -43,7 +43,7 @@ module API
         end
 
         if sort and dir
-          statement = statement.order(sanitize_sql_array(['%s %s', sort, dir]))
+          statement = statement.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         if start and limit

@@ -60,7 +60,7 @@ module API
           format.json do
 
             if sort and dir
-              categories = categories.except(:order).order(sanitize_sql_array(['%s %s', sort, dir]))
+              categories = categories.except(:order).order(ActiveRecord::Base.sanitize_order_params(sort, dir))
             end
 
             total_count = categories.count
@@ -80,7 +80,7 @@ module API
                                categories: Category.find(params[:parent_id]).children_to_tree_hash({child_ids: categories})}
             else
               nodes = [].tap do |nodes|
-                categories.roots.except(:order).order(sanitize_sql_array(['%s %s', sort, dir])).each do |root|
+                categories.roots.except(:order).order(ActiveRecord::Base.sanitize_order_params(sort, dir)).each do |root|
                   nodes.push(root.to_tree_hash)
                 end
               end

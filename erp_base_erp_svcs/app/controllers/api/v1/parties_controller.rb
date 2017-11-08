@@ -63,7 +63,7 @@ module API
           parties = parties.scope_by_dba_organization(current_user.party.dba_organization)
         end
 
-        parties = parties.uniq.order(sanitize_sql_array(['%s %s', sort, dir]))
+        parties = parties.uniq.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
 
         total_count = parties.count
         parties = parties.offset(start).limit(limit)
