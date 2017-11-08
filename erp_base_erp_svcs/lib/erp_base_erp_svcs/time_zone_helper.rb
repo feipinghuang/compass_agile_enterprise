@@ -11,14 +11,22 @@ module ErpBaseErpSvcs
         def in_client_time(time)
           if time.to_s.include?('UTC')
             time + @offset_in_hours.hours
-          else
+          elsif time.utc_offset == 0
+            time + @offset_in_hours.hours
+          elsif time.zone
             time
+          else
+            time + @offset_in_hours.hours
           end
         end
 
         def client_to_utc_time(time)
           if time.to_s.include?('UTC')
             time
+          elsif time.utc_offset == 0
+            time
+          elsif time.zone
+            time.utc
           else
             time - @offset_in_hours.hours
           end
