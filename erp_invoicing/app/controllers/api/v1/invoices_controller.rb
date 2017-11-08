@@ -111,20 +111,20 @@ module API
       end
 
 
-       def pdf_footer
-         return {
-             :right => 'Page [page] of [topage]'
-         }
-       end
+      def pdf_footer
+        return {
+          :right => 'Page [page] of [topage]'
+        }
+      end
 
-       def pdf_margin
-          return {
-            :top => 0,
-            :bottom => 15,
-            :left => 10,
-            :right => 10
-          }
-       end
+      def pdf_margin
+        return {
+          :top => 0,
+          :bottom => 15,
+          :left => 10,
+          :right => 10
+        }
+      end
 
       #
       # Payment actions
@@ -181,7 +181,7 @@ module API
       protected
 
       def set_utc_offset
-        @client_utc_offset = params[:client_utc_offset]
+        @client_utc_offset = (0 - params[:client_utc_offset])
       end
 
       def set_address_and_logo

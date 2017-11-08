@@ -2,6 +2,8 @@ module API
   module V1
     class BaseController < ActionController::Base
 
+      protect_from_forgery only: []
+
       class APIError < StandardError; end
 
       before_filter :require_login

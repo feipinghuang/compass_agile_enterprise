@@ -11,6 +11,7 @@
 # add_index :agreement_records, [:governed_record_id, :governed_record_type], name: 'agreement_record_governed_record_idx'
 
 class AgreementRecord < ActiveRecord::Base
+  attr_protected :created_at, :updated_at
 
   belongs_to :agreement
   belongs_to :agreement_role_type

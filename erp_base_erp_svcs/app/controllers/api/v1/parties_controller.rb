@@ -63,7 +63,7 @@ module API
           parties = parties.scope_by_dba_organization(current_user.party.dba_organization)
         end
 
-        parties = parties.uniq.order("#{sort} #{dir}")
+        parties = parties.uniq.order(sanitize_sql_array(['%s %s', sort, dir]))
 
         total_count = parties.count
         parties = parties.offset(start).limit(limit)
@@ -143,10 +143,16 @@ module API
         begin
           ActiveRecord::Base.transaction do
             role_type_iids = params[:role_types].present? ? params[:role_types].split(',') : []
-            business_party_klass = params[:business_party]
 
-            business_party = business_party_klass.constantize.new
-            if business_party_klass == 'Organization'
+            business_party_klass = nil
+            if params[:business_party] == 'Organization'
+              business_party_klass = Organization
+            else
+              business_party_klass = Individual
+            end
+
+            business_party = business_party_klass.new
+            if business_party.is_a? Organization
               business_party.description = params[:description].strip
             else
               business_party.current_first_name = params[:first_name].strip

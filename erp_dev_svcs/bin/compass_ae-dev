@@ -28,6 +28,9 @@ when 'uninstall_gems'
 when 'generate_api_docs'
   require 'erp_dev_svcs/commands/generate_api_docs'
   ErpDevSvcs::Commands::GenerateApiDocs.execute  
+when 'run_brakeman'
+  require 'erp_dev_svcs/commands/run_brakeman'
+  ErpDevSvcs::Commands::RunBrakeman.execute  
 when 'execute'
   require 'erp_dev_svcs/commands/execute_cmd'
   ErpDevSvcs::Commands::ExecuteCmd.execute

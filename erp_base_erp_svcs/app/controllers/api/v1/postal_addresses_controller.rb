@@ -55,7 +55,7 @@ module API
           postal_addresses = postal_addresses.offset(params[:start])
         end
 
-        postal_addresses = postal_addresses.uniq.order("#{sort} #{dir}")
+        postal_addresses = postal_addresses.uniq.order(sanitize_sql_array(['%s %s', sort, dir]))
 
         render :json => {success: true, total_count: total_count, postal_addresses: postal_addresses.all.collect(&:to_data_hash)}
       end

@@ -15,6 +15,7 @@
 #  add_index :status_applications, :thru_date, :name => 'thru_date_idx'
 
 class StatusApplication < ActiveRecord::Base
+  attr_accessible :created_at, :updated_at
 
   belongs_to :tracked_status_type
   belongs_to :status_application_record, :polymorphic => true

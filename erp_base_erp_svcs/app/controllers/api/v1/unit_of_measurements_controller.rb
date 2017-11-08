@@ -43,7 +43,7 @@ module API
         end
 
         if sort and dir
-          statement = statement.order("#{sort} #{dir}")
+          statement = statement.order(sanitize_sql_array(['%s %s', sort, dir]))
         end
 
         if start and limit

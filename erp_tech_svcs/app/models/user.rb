@@ -170,7 +170,7 @@ class User < ActiveRecord::Base
           end
 
           to_remove.each do |party_role_iid|
-            user.party.party_roles.where(internal_identifier: party_role_iid).destroy_all
+            user.party.party_roles.joins(:role_type).where(role_types: {internal_identifier: party_role_iid}).destroy_all
           end
         end
 

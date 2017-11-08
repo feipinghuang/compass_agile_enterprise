@@ -53,7 +53,7 @@ module API
           phone_numbers = phone_numbers.offset(params[:start])
         end
 
-        phone_numbers = phone_numbers.uniq.order("#{sort} #{dir}")
+        phone_numbers = phone_numbers.uniq.order(sanitize_sql_array(['%s %s', sort, dir]))
 
         render :json => {success: true, total_count: total_count, phone_numbers: phone_numbers.all.collect(&:to_data_hash)}
       end

@@ -35,7 +35,7 @@ module API
           facilities = facilities.offset(params[:start])
         end
 
-        facilities = facilities.uniq.order("#{sort} #{dir}")
+        facilities = facilities.uniq.order(sanitize_sql_array(['%s %s', sort, dir]))
 
         render :json => {success: true, total_count: total_count, facilities: facilities.all.collect(&:to_data_hash)}
       end

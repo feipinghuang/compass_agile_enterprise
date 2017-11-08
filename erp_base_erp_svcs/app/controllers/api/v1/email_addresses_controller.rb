@@ -56,7 +56,7 @@ module API
           email_addresses = email_addresses.offset(params[:start])
         end
 
-        email_addresses = email_addresses.uniq.order("#{sort} #{dir}")
+        email_addresses = email_addresses.uniq.order(sanitize_sql_array(['%s %s', sort, dir]))
 
         render :json => {success: true, total_count: total_count, email_addresses: email_addresses.all.collect(&:to_data_hash)}
       end
