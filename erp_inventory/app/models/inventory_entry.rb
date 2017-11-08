@@ -128,6 +128,7 @@ class InventoryEntry < ActiveRecord::Base
                      :description,
                      :number_available,
                      :number_in_stock,
+                     :number_sold,
                      :created_at,
                      :updated_at
                    ],
