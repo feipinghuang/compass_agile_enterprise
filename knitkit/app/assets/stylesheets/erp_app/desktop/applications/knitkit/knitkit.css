@@ -200,7 +200,7 @@
 }
 
 .website-builder-move-component-hover {
-  border: dashed 2px #CCC;
+  border: dashed 2px red !important;
 }
 
 
@@ -350,3 +350,5 @@
 .dropzone-container{
   position: relative;
 }
+
+

@@ -506,10 +506,15 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                 // On entry into a target node, highlight that node.
                 onNodeEnter: function(target, dd, e, dragData) {
-                    if (this.validDrop(target, dragData)) {
+                    var validObj = this.validDrop(target, dragData);
+                    if (validObj.isValid) {
                         var dropComponent = Ext.getCmp(target.id);
                         if (dropComponent) {
-                            Ext.fly(target).addCls('website-builder-move-component-hover');
+                            if (validObj.isContainer) {
+                                Ext.fly(target).parent('.dropzone-container').addCls('website-builder-move-component-hover');
+                            } else {
+                                Ext.fly(target).addCls('website-builder-move-component-hover');
+                            }
                         }
                     } else {
                         return Ext.dd.DropZone.prototype.dropNotAllowed;
@@ -522,13 +527,17 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         var dropComponent = Ext.getCmp(target.id);
 
                         if (dropComponent) {
-                            Ext.fly(target).removeCls('website-builder-move-component-hover');
+                            if (dragData.isContainer) {
+                                Ext.fly(target).parent('.dropzone-container').removeCls('website-builder-move-component-hover')
+                            } else {
+                                Ext.fly(target).removeCls('website-builder-move-component-hover');
+                            }
                         }
                     }
                 },
                 
                 onNodeDrop: function(target, dd, e, data) {
-                    if (this.validDrop(target, data)) {
+                    if (this.validDrop(target, data).isValid) {
                         if (data.isContainer) {
                             var draggedContainer = Ext.getCmp(data.containerId);
                             var dropContainer = Ext.getCmp(Ext.fly(target).dom.id).up('websitebuilderdropzonecontainer');
@@ -571,9 +580,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                 validDrop: function(target, dragData) {
                     if (dragData.isContainer) {
-                        return this.validContainerDrop(target, dragData);
+                        return {
+                            isValid: this.validContainerDrop(target, dragData),
+                            isContainer: true
+                        };
                     } else {
-                        return this.validContentBlockDrop(target, dragData);
+                        
+                        return {
+                            isValid: this.validContentBlockDrop(target, dragData),
+                            isContainer: false
+                        };
                     }
                 },
 
@@ -695,7 +711,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         for (var colIndex = 0; colIndex <= dropZones.length; colIndex++) {
             container.insert(colIndex*2, {
                 xtype: 'websitebuilderdropzone',
-                html: '<div style="margin-top:-20px;font-size:15px;">Drop Component Here</div>',
+                html: '<div style="margin-top:-35px;font-size:15px;">Drop Component Here</div>',
+                height: 5,
                 componentType: 'content',
                 autoRemovableDropZone: true,
                 flex: 1
@@ -743,6 +760,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     return {
                         xtype: 'websitebuilderdropzone',
                         html: '<div style="margin-top:-20px;font-size:15px;">Drop Component Here</div>',
+                        height: 5,
                         componentType: 'content',
                         autoRemovableDropZone: true,
                         websiteSectionContentId: dropZone.websiteSectionContentId,
