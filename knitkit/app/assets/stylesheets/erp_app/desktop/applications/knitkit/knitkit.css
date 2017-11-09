@@ -244,14 +244,19 @@
 
 
 .website-builder-dragzone-ghost {
-  width: 1010px;
-  height: 50px;
+  width: 75px;
+  height: 100px;
+  background-image: url(/assets/knitkit/icons/drag-ghost.png) !important;
+  background-repeat: no-repeat;
 }
 
 .website-builder-dragzone-ghost .x-dd-drag-ghost {
-  height: 50px;
+  height: 100px;
 }
 
+.website-builder-dragzone-ghost .x-dd-drop-icon {
+  display: none;
+}
 .icon-move {
     background-image: url(/assets/knitkit/icons/move-component.png) !important;
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/knitkit/icons/move-component.png', sizingMethod='crop');

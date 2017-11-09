@@ -347,12 +347,28 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                                 })
             );
 
-            
-            me.body.ddScrollConfig = {
-                vthresh: 50,
-                increment: 200,
-            };
-            Ext.dd.ScrollManager.register(me.body);
+            if (me.body) {
+                me.body.ddScrollConfig = {
+                    vthresh: 50,
+                    increment: 200,
+                };
+                Ext.dd.ScrollManager.register(me.body);
+
+                $('#' + me.body.id).scroll(function(){
+                    var div = $(this);
+
+                    if (Math.floor(div[0].scrollHeight - div.scrollTop()) == div.height()) {
+                        // bottom
+                        console.log('bottom');
+                        me.hideScrollIndicators()
+                    } else if(div.scrollTop() == 0) {
+                        // top
+                        console.log('top');
+                        me.hideScrollIndicators();
+                    } else {
+                    }
+                });
+            }
         })
 
         /*
@@ -361,21 +377,31 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         me.on('render', function() {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
+                scroll: true,
                 onBeforeDrag: function(data, e) {
                     if (me.hasEmptyContainerOrContentBlock()){
                         Ext.Msg.alert('Error', 'Cannot move when there are empty content blocks');
                         return false;
-                    } 
+                    }
+
+                    
                     me.disableComponents();
                     if (data.isContainer) {
+                        if (me.hasOnlyOrNoContainer()) return false;
                         me.addAutoRemovableContainers(data.containerId);
                     } else {
                         me.addAutoRemovableDropZones(data.panelId);
                     }
-                    $("#scroll-indicator-up-" + me.id).show().css('bottom', me.body.getHeight() - 50);
-                    $("#scroll-indicator-down-" + me.id).show().css('bottom', 0);
+                    
+                    if (me.hasVerticalScroll()) {
+                        me.showScrollIndicators();
+                    }
                     me.dragStarted = true;
                     
+                },
+
+                onStartDrag: function() {
+                    this.setDelta(50,50);
                 },
                 
                 onMouseUp: function(e) {
@@ -414,12 +440,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                     if (targetId) {
                         var element = Ext.getCmp(targetId),
-                            dragEl = element.getEl(),
-                            dragElDom = dragEl.dom.cloneNode(true);
+                            dragElDom = document.createElement('div');
                         
                         dragElDom.id = Ext.id();
-                        dragElDom.querySelector('iframe').src = "";
-                        this.proxy.el.dom.style.width = dragEl.dom.offsetWidth + "px";
                         return {
                             panelId: element.id,
                             repairXY: element.getEl().getXY(),
@@ -436,13 +459,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                             if (containerId) {
                                 var container = Ext.getCmp(containerId),
-                                    dragElDom = container.getEl().dom.cloneNode(true);
+                                    dragElDom = document.createElement('div')
                                 
                                 dragElDom.id = Ext.id();
-                                Ext.each(dragElDom.querySelectorAll('iframe'), function(iframe){
-                                    iframe.src = "";
-                                });
-
                                 var containerData = Ext.Array.map(container.query('websitebuilderdropzone'), function(element){
                                     return {
                                         websiteSectionContentId: element.websiteSectionContentId,
@@ -517,6 +536,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                 onNodeOver: function(target, dd, e, data) {
                     if (this.validDrop(target, data)) {
+                        
                         return Ext.dd.DropZone.prototype.dropAllowed;
                     } else {
                         return Ext.dd.DropZone.prototype.dropNotAllowed;
@@ -1792,6 +1812,25 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             }
         }
         return hasEmpty
+    },
+
+    hasOnlyOrNoContainer: function() {
+        return this.query('websitebuilderdropzonecontainer[autoRemovableDropZone=false]').length < 2;
+    },
+
+    hasVerticalScroll: function() {
+        return  this.body.dom.scrollHeight - this.body.dom.clientHeight > 1;
+    },
+
+    showScrollIndicators: function() {
+        var me = this;
+        $("#scroll-indicator-up-" + me.id).fadeIn().css('bottom', me.body.getHeight() - 50);
+        $("#scroll-indicator-down-" + me.id).fadeIn().css('bottom', 0);
+    },
+
+    hideScrollIndicators: function() {
+        var me = this;
+        $("#scroll-indicator-up-" + me.id).fadeOut();
+        $("#scroll-indicator-down-" + me.id).fadeOut();
     }
-    
 });
