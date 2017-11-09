@@ -354,20 +354,27 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 };
                 Ext.dd.ScrollManager.register(me.body);
 
-                $('#' + me.body.id).scroll(function(){
+                $('#' + me.body.id).scroll(function(e){
+                    if (me.dragStarted == undefined || !me.dragStarted) return false;
                     var div = $(this);
-
                     if (Math.floor(div[0].scrollHeight - div.scrollTop()) == div.height()) {
                         // bottom
-                        console.log('bottom');
-                        me.hideScrollIndicators()
+                        me.hideScrollIndicator('bottom')
                     } else if(div.scrollTop() == 0) {
                         // top
-                        console.log('top');
-                        me.hideScrollIndicators();
-                    } else {
-                    }
+                        me.hideScrollIndicator('top');
+                    } 
                 });
+
+                me.getEl().on('mouseover', function(e, t){
+                    if(me.dragStarted) {
+                        if (t.id.match(/scroll-indicator-up-/)) {
+                            me.showScrollIndicator('bottom');
+                        } else if (t.id.match(/scroll-indicator-down-/)) {
+                            me.showScrollIndicator('top');
+                        } 
+                    }
+                })
             }
         })
 
@@ -394,7 +401,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                     
                     if (me.hasVerticalScroll()) {
-                        me.showScrollIndicators();
+                        me.showScrollIndicator('top');
+                        me.showScrollIndicator('bottom');
                     }
                     me.dragStarted = true;
                     
@@ -408,8 +416,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     if (me.dragStarted) {
                         me.enableComponents();
                         me.removeAutoRemovableDropZonesAndContainers();
-                        $("#scroll-indicator-up-" + me.id).hide();
-                        $("#scroll-indicator-down-" + me.id).hide();
+                        me.hideScrollIndicator('top');
+                        me.hideScrollIndicator('bottom');
                         me.dragStarted = false;
                     }
                         
@@ -418,16 +426,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 afterDragDrop: function(target, e, id) {
                     me.enableComponents();
                     me.removeAutoRemovableDropZonesAndContainers();
-                    $("#scroll-indicator-up-" + me.id).hide();
-                    $("#scroll-indicator-down-" + me.id).hide();
+                    me.hideScrollIndicator('top');
+                    me.hideScrollIndicator('bottom');
                     me.dragStarted = false;
                 },
 
                 afterInvalidDrop: function(target, e, id) {
                     me.enableComponents();
                     me.removeAutoRemovableDropZonesAndContainers();
-                    $("#scroll-indicator-up-" + me.id).hide();
-                    $("#scroll-indicator-down-" + me.id).hide();
+                    me.hideScrollIndicator('top');
+                    me.hideScrollIndicator('bottom');
                     me.dragStarted = false;
                 },
 
@@ -1822,15 +1830,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         return  this.body.dom.scrollHeight - this.body.dom.clientHeight > 1;
     },
 
-    showScrollIndicators: function() {
+    showScrollIndicator: function(which) {
         var me = this;
-        $("#scroll-indicator-up-" + me.id).fadeIn().css('bottom', me.body.getHeight() - 50);
-        $("#scroll-indicator-down-" + me.id).fadeIn().css('bottom', 0);
+        if (which == 'top' && !$("#scroll-indicator-up-" + me.id).is(':visible'))
+            $("#scroll-indicator-up-" + me.id).fadeIn().css('bottom', me.body.getHeight() - 50);
+        if (which == 'bottom' && !$("#scroll-indicator-down-" + me.id).is(':visible'))
+            $("#scroll-indicator-down-" + me.id).fadeIn().css('bottom', 0);
     },
 
-    hideScrollIndicators: function() {
+    hideScrollIndicator: function(which) {
         var me = this;
-        $("#scroll-indicator-up-" + me.id).fadeOut();
-        $("#scroll-indicator-down-" + me.id).fadeOut();
+        if (which == 'top' && $("#scroll-indicator-up-" + me.id).is(':visible'))
+            $("#scroll-indicator-up-" + me.id).fadeOut();
+        if (which == 'bottom' && $("#scroll-indicator-down-" + me.id).is(':visible'))
+            $("#scroll-indicator-down-" + me.id).fadeOut();
     }
 });
