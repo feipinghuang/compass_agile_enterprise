@@ -158,6 +158,17 @@ class Party < ActiveRecord::Base
 
   end
 
+  # Get initials
+  #
+  # @return [String]
+  def initials
+    if self.business_party
+      result = self.business_party.initials
+    else
+      ''
+    end
+  end
+
   # helper method to get dba_organization related to this party
   #
   # @return [Party] DBA Organization

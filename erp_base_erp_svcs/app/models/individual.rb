@@ -47,7 +47,7 @@ class Individual < ActiveRecord::Base
   end
 
   alias :social_security_number= :ssn=
-  alias :social_security_number :ssn
+    alias :social_security_number :ssn
 
   before_update :update_ssn_last_4
 
@@ -65,6 +65,23 @@ class Individual < ActiveRecord::Base
 
   def formatted_ssn_label
     (self.ssn_last_four.blank?) ? "" : "XXX-XX-#{self.ssn_last_four}"
+  end
+
+  # Get initials
+  #
+  # @return [String]
+  def initials
+    result = ''
+
+    if self.current_first_name
+      result = self.current_first_name[0]
+    end
+
+    if self.current_last_name
+      result += self.current_last_name[0]
+    end
+
+    result
   end
 
   def self.from_registered_user(a_user)
