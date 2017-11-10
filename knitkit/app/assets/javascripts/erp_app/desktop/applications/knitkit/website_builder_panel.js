@@ -408,7 +408,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 },
 
                 onStartDrag: function() {
-                    this.setDelta(50,50);
+                    this.setDelta(20,20);
                 },
                 
                 onMouseUp: function(e) {

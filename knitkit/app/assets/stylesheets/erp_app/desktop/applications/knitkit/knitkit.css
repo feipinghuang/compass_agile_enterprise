@@ -245,8 +245,8 @@
 
 
 .website-builder-dragzone-ghost {
-  width: 75px;
-  height: 100px;
+  width: 24px;
+  height: 32px;
   background-image: url(/assets/knitkit/icons/drag-ghost.png) !important;
   background-repeat: no-repeat;
 }
