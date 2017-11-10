@@ -1,5 +1,6 @@
 class CreateDiscounts < ActiveRecord::Migration
-  def change
+
+  def up
     unless table_exists?(:discounts)
       create_table :discounts do |t|
         t.string    :description
@@ -26,4 +27,15 @@ class CreateDiscounts < ActiveRecord::Migration
       end
     end
   end
+
+  def down
+    if table_exists?(:discounts)
+      drop_table :discounts
+    end
+
+    if table_exists?(:product_type_discounts)
+      drop_table :product_type_discounts
+    end
+  end
+
 end

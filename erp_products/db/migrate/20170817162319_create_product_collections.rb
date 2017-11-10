@@ -1,5 +1,5 @@
 class CreateProductCollections < ActiveRecord::Migration
-  def change
+  def up
     unless table_exists?(:product_collections)
       create_table :product_collections do |t|
         t.string      :description
@@ -8,6 +8,12 @@ class CreateProductCollections < ActiveRecord::Migration
 
         t.timestamps
       end
+    end
+  end
+
+  def down
+    if table_exists? :product_collections
+      drop_table :product_collections
     end
   end
 end
