@@ -2,7 +2,6 @@
   <div class="row">
     <div class="col-md-6 col-md-offset-3" style="margin: 0 auto;float:none;">
       <h2><%= @website_section.title %></h2>
-
       <%= render_widget :login,
                         :params => {:logout_to => "/login",
                                     :login_to => "/home",
@@ -14,9 +13,3 @@
     </div>
   </div>
 </div>
-
-
-<%= render_widget :login,
-    :params => {:login_to => '/home',
-                :logout_to => '/home',
-                #optional field if Sign Up widget is setup\n               #:signup_url => '/sign-up',\n               #optional field if Reset Password widget is setup\n               #:reset_password_url => '/reset-password'}%>

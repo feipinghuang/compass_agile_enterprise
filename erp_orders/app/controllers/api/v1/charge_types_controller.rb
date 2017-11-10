@@ -14,8 +14,8 @@ module API
 
 =end
 
-    	def index
-    		sort = 'description'
+      def index
+        sort = 'description'
         dir = 'ASC'
 
         unless params[:sort].blank?
@@ -39,7 +39,7 @@ module API
         end
 
         if sort and dir
-          charge_types = charge_types.order("#{sort} #{dir}")
+          charge_types = charge_types.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         if start and limit
@@ -47,10 +47,10 @@ module API
         end
 
         render :json => {success: true,
-                           total_count: total_count,
-                           charge_types: charge_types.collect { |charge_type| charge_type.to_data_hash }}
+                         total_count: total_count,
+                         charge_types: charge_types.collect { |charge_type| charge_type.to_data_hash }}
 
-    	end
+      end
 
 =begin
 
@@ -69,12 +69,12 @@ module API
 
 =end
 
-    	def show
-    		charge_type = ChargeType.find(params[:id])
+      def show
+        charge_type = ChargeType.find(params[:id])
 
         render :json => {success: true,
                          charge_type: charge_type.to_data_hash}
-    	end
+      end
 
 =begin
 
@@ -93,8 +93,8 @@ module API
 
 =end
 
-    	def create
-    		begin
+      def create
+        begin
           ActiveRecord::Base.transaction do
             charge_type = ChargeType.new
             charge_type.description = params[:description]
@@ -117,7 +117,7 @@ module API
 
           render :json => {success: false, message: 'Could not create charge type'}
         end
-    	end
+      end
 
 =begin
 
@@ -136,8 +136,8 @@ module API
 
 =end
 
-    	def update
-    		begin
+      def update
+        begin
           ActiveRecord::Base.transaction do
             charge_type = ChargeType.find(params[:id])
 
@@ -163,7 +163,7 @@ module API
 
           render :json => {success: false, message: 'Could not update charge type'}
         end
-    	end
+      end
 
 =begin
 

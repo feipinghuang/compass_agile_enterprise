@@ -17,7 +17,7 @@ module ErpApp
 
         def index
           party_id = params[:party_id]
-          contact_type = params[:contact_type]
+          contact_type = ActionController::Base.helpers.sanitize(params[:contact_type]).to_param
 
           contact_mechanism_class = contact_type.constantize
 
@@ -28,10 +28,10 @@ module ErpApp
 
           data = contact_mechanisms.collect do |contact_mechanism|
             contact_mechanism.to_hash({
-                                          contact_purposes: (contact_mechanism.contact_purposes_to_s),
-                                          contact_purpose_iids: (contact_mechanism.contact_purpose_iids),
-                                          is_primary: (contact_mechanism.is_primary),
-                                      })
+                                        contact_purposes: (contact_mechanism.contact_purposes_to_s),
+                                        contact_purpose_iids: (contact_mechanism.contact_purpose_iids),
+                                        is_primary: (contact_mechanism.is_primary),
+            })
           end
 
           render :json => {success: true, data: data}
@@ -39,7 +39,7 @@ module ErpApp
 
         def create
           party_id = params[:party_id]
-          contact_type = params[:contact_type]
+          contact_type = ActionController::Base.helpers.sanitize(params[:contact_type]).to_param
           contact_purposes = params[:contact_purpose] || []
 
           params[:is_primary] = (params[:is_primary] == 'on') ? true : nil
@@ -60,9 +60,9 @@ module ErpApp
           contact_mechanism = party.add_contact(contact_mechanism_class, params, contact_purposes)
 
           data = contact_mechanism.to_hash({
-                                               contact_purposes: (contact_mechanism.contact_purposes_to_s),
-                                               is_primary: (contact_mechanism.is_primary),
-                                           })
+                                             contact_purposes: (contact_mechanism.contact_purposes_to_s),
+                                             is_primary: (contact_mechanism.is_primary),
+          })
 
           render :json => {success: true, data: data, message: "#{contact_type} added"}
 
@@ -70,7 +70,7 @@ module ErpApp
 
         def update
           party_id = params[:party_id]
-          contact_type = params[:contact_type]
+          contact_type = ActionController::Base.helpers.sanitize(params[:contact_type]).to_param
           contact_mechanism_id = params[:id]
           contact_purposes = params[:contact_purpose] || []
 
@@ -101,9 +101,9 @@ module ErpApp
           party.update_contact(klass, contact_mechanism.contact, params)
 
           data = contact_mechanism.to_hash({
-                                               contact_purposes: (contact_mechanism.contact_purposes_to_s),
-                                               is_primary: (contact_mechanism.is_primary),
-                                           })
+                                             contact_purposes: (contact_mechanism.contact_purposes_to_s),
+                                             is_primary: (contact_mechanism.is_primary),
+          })
 
 
           render :json => {success: true, data: data, message: "#{contact_type} updated"}
@@ -112,7 +112,7 @@ module ErpApp
 
         def destroy
           party_id = params[:party_id]
-          contact_type = params[:contact_type]
+          contact_type = ActionController::Base.helpers.sanitize(params[:contact_type]).to_param
           contact_mechanism_id = params[:id]
 
           contact_type_class = contact_type.constantize
@@ -124,9 +124,9 @@ module ErpApp
 
           data = contact_mechanisms.collect do |_contact_mechanism_|
             _contact_mechanism_.to_hash({
-                                            contact_purposes: (contact_mechanism.contact_purposes_to_s),
-                                            is_primary: (contact_mechanism.is_primary),
-                                        })
+                                          contact_purposes: (contact_mechanism.contact_purposes_to_s),
+                                          is_primary: (contact_mechanism.is_primary),
+            })
           end
 
           render :json => {success: true, data: data, message: "#{contact_type} deleted"}

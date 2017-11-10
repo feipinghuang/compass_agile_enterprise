@@ -22,13 +22,14 @@ module API
       def index
         statuses = if params[:record_id].present? && params[:record_type].present?
 
+          record_type = ActionController::Base.helpers.sanitize(params[:record_type]).to_param
+
           # if the record acts as BizTxnEvent we need to use BizTxnEvent
-          record = params[:record_type].constantize.find(params[:record_id])
+          record = record_type.constantize.find(params[:record_id])
           if record.respond_to?(:root_txn)
             record_type = 'BizTxnEvent'
             record_id = record.root_txn.id
           else
-            record_type = params[:record_type]
             record_id = params[:record_id]
           end
 

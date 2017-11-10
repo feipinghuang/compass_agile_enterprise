@@ -53,7 +53,7 @@ module API
         end
 
         if sort and dir
-          inventory_entries = inventory_entries.order("#{sort} #{dir}")
+          inventory_entries = inventory_entries.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         total_count = inventory_entries.count

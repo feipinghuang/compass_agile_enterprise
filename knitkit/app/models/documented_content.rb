@@ -1,4 +1,5 @@
 class DocumentedContent < Content
+  attr_protected :created_at, :updated_at
 
   before_save :check_internal_identifier
 

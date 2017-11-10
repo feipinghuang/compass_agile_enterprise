@@ -3,7 +3,7 @@ module Knitkit
     before_filter :set_website
     before_filter :set_login_path, :set_active_publication, :load_sections, :set_section, :except => [:view_current_publication, :website_preview]
     acts_as_themed_controller
-    
+
     layout 'knitkit/base', :except => :website_preview
 
     def website_preview
@@ -18,7 +18,7 @@ module Knitkit
 
     def view_current_publication
       session[:website_version].delete_if{|item| item[:website_id] == @website.id}
-      redirect_to request.env["HTTP_REFERER"]
+      redirect_to URI.parse(request.env["HTTP_REFERER"])
     end
 
     protected
@@ -48,7 +48,7 @@ module Knitkit
     end
 
     def set_login_path
-      @login_path = @website.configurations.first.get_configuration_item(ConfigurationItemType.find_by_internal_identifier('login_url')).options.first.value
+      @login_path = URI.parse(@website.configurations.first.get_configuration_item(ConfigurationItemType.find_by_internal_identifier('login_url')).options.first.value)
     end
 
     def set_active_publication

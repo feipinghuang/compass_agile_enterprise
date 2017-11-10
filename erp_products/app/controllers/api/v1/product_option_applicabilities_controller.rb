@@ -44,7 +44,7 @@ module API
         end
 
         if sort and dir
-          product_option_applicabilities = product_option_applicabilities.order("#{sort} #{dir}")
+          product_option_applicabilities = product_option_applicabilities.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         total_count = product_option_applicabilities.count

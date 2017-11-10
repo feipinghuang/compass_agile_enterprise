@@ -61,7 +61,7 @@ module API
         end
 
         if sort and dir
-          product_types = product_types.order("#{sort} #{dir}")
+          product_types = product_types.sanitize_order_params(sort, dir)
         end
 
         total_count = product_types.count

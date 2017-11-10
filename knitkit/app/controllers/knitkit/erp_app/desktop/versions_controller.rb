@@ -13,7 +13,7 @@ module Knitkit
           limit     = params[:limit] || 15
           start     = params[:start] || 0
 
-          versions = content.versions.order("#{sort} #{dir}").offset(start).limit(limit)
+          versions = content.versions.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).offset(start).limit(limit)
 
           Content::Version.class_exec(website) do
             cattr_accessor :website
@@ -38,12 +38,12 @@ module Knitkit
           end
 
           render :json => {:totalCount => content.versions.count,
-            :data => versions.collect{|version|version.to_hash(
-                :only => [:id, :content_id, :version, :title, :body_html, :excerpt_html, :updated_at],
-                :methods => [:active, :published, :publisher])}
-          }
+                           :data => versions.collect{|version|version.to_hash(
+                               :only => [:id, :content_id, :version, :title, :body_html, :excerpt_html, :updated_at],
+                           :methods => [:active, :published, :publisher])}
+                           }
         end
-  
+
         def non_published_content_versions
           content   = Content.find(params[:id])
           sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
@@ -52,12 +52,12 @@ module Knitkit
           limit     = params[:limit] || 15
           start     = params[:start] || 0
 
-          versions = content.versions.order("#{sort} #{dir}").offset(start).limit(limit)
+          versions = content.versions.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).offset(start).limit(limit)
 
           render :json => {:totalCount => content.versions.count,
-            :data => versions.collect{|version|version.to_hash(
-                :only => [:id, :version, :title, :body_html, :excerpt_html, :updated_at])}
-          }
+                           :data => versions.collect{|version|version.to_hash(
+                           :only => [:id, :version, :title, :body_html, :excerpt_html, :updated_at])}
+                           }
         end
 
         def publish_content
@@ -99,7 +99,7 @@ module Knitkit
           limit = params[:limit] || 15
           start = params[:start] || 0
 
-          versions = website_section.versions.order("#{sort} #{dir}").offset(start).limit(limit)
+          versions = website_section.versions.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).offset(start).limit(limit)
 
           WebsiteSection::Version.class_exec(website) do
             cattr_accessor :website
@@ -123,10 +123,10 @@ module Knitkit
           end
 
           render :json => {:totalCount => website_section.versions.count,
-            :data => versions.collect{|version|version.to_hash(
-                :only => [:id, :version, :title, :updated_at],
-                :methods => [:active, :published, :publisher])}
-          }
+                           :data => versions.collect{|version|version.to_hash(
+                               :only => [:id, :version, :title, :updated_at],
+                           :methods => [:active, :published, :publisher])}
+                           }
         end
 
         def get_website_section_version
@@ -148,7 +148,7 @@ module Knitkit
 
           render :text => {:success => true, :body_html => website_section.layout}.to_json
         end
-        
+
       end#VersionsController
     end#Desktop
   end#ErpApp

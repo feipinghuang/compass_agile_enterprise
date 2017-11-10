@@ -18,7 +18,7 @@ module Knitkit
               tree << menu_hash
             end
           end
-          
+
           render :json => tree
         end
 
@@ -78,7 +78,10 @@ module Knitkit
           begin
             current_user.with_capability('create', 'WebsiteNavItem') do
               result = {}
-              klass = params[:klass].constantize
+
+              klass = ActionController::Base.helpers.sanitize(params[:klass]).to_param
+              klass = klass.constantize
+
               parent = klass.find(params[:id])
               website_nav = parent.is_a?(WebsiteNav) ? parent : parent.website_nav
               website_nav_item = WebsiteNavItem.new(:title => params[:title])

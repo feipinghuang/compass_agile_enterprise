@@ -1,18 +1,20 @@
 class CaptchaController < ActionController::Base
 
+  protect_from_forgery only: []
+
   include Knitkit::Extensions::Railties::ActionController::CaptchaHelper
 
   before_filter :setup_visual_captcha
 
   def setup_visual_captcha
-  	@session = VisualCaptcha::Session.new session
-  	@headers = {
-        'Access-Control-Allow-Origin' => '*'
+    @session = VisualCaptcha::Session.new session
+    @headers = {
+      'Access-Control-Allow-Origin' => '*'
     }
   end
 
   def start
-  	captcha = VisualCaptcha::Captcha.new @session
+    captcha = VisualCaptcha::Captcha.new @session
 
     captcha.generate params[:how_many]
 
@@ -20,7 +22,7 @@ class CaptchaController < ActionController::Base
   end
 
   def audio
-  	captcha = VisualCaptcha::Captcha.new @session
+    captcha = VisualCaptcha::Captcha.new @session
 
     type = params[:type]
     type = 'mp3' if type != 'ogg'
@@ -33,7 +35,7 @@ class CaptchaController < ActionController::Base
   end
 
   def image
-  	captcha = VisualCaptcha::Captcha.new @session
+    captcha = VisualCaptcha::Captcha.new @session
 
     if (body = captcha.stream_image @headers, params[:index], params[:retina])
       send_data body, type: 'image/png', disposition: 'inline'

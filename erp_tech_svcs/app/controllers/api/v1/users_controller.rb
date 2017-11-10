@@ -42,9 +42,9 @@ module API
         users = User.joins(:party).joins("inner join party_relationships as dba_reln on
                           (dba_reln.party_id_from = parties.id
                           and
-                          dba_reln.party_id_to in (#{dba_org_ids.join(',')})
+                          dba_reln.party_id_to in (#{User.sanitize(dba_org_ids.join(','))})
                           and
-                          dba_reln.role_type_id_to = #{RoleType.iid('dba_org').id}
+                          dba_reln.role_type_id_to = #{User.sanitize(RoleType.iid('dba_org').id)}
                           )")
 
         query_filter = params[:query_filter].blank? ? {} : JSON.parse(params[:query_filter]).symbolize_keys
@@ -56,7 +56,7 @@ module API
         end
 
         total_count = users.uniq.count
-        users = users.order("#{sort} #{dir}").offset(start).limit(limit)
+        users = users.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).offset(start).limit(limit)
 
         render json: {total_count: total_count, users: users.uniq.collect(&:to_data_hash)}
       end

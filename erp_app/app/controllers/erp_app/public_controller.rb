@@ -1,10 +1,12 @@
 module ErpApp
-	class PublicController < ActionController::Base
+  class PublicController < ActionController::Base
+    protect_from_forgery only: []
+
     before_filter :set_file_support
 
     # TODO:
     # reorder menuitems
-    # drag and drop image into ckeditor uses bad (but somehow not broken, i.e. ../../images/) url (filesystem on firefox, chrome OK) 
+    # drag and drop image into ckeditor uses bad (but somehow not broken, i.e. ../../images/) url (filesystem on firefox, chrome OK)
 
     # Download Inline Example: /download/filename.ext?path=/directory&disposition=inline
     # Download Prompt Example: /download/filename.ext?path=/directory&disposition=attachment
@@ -76,5 +78,5 @@ module ErpApp
       @file_support = ErpTechSvcs::FileSupport::Base.new(:storage => Rails.application.config.erp_tech_svcs.file_storage)
     end
 
-	end
+  end
 end

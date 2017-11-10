@@ -49,7 +49,7 @@ module API
         end
 
         if sort and dir
-          order_txns = order_txns.order("#{sort} #{dir}")
+          order_txns = order_txns.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         else
           order_txns = order_txns.order("id desc")
         end

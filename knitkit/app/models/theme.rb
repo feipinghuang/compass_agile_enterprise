@@ -388,21 +388,22 @@ class Theme < ActiveRecord::Base
       node = file_support.build_tree(path, :preload => true)
     end
 
-    node[:children].each do |child_node|
-      if child_node[:leaf]
-        name = File.basename(File.basename(child_node[:text], ".*"), ".*")
-        fileAsset = self.files.where(name: "#{name}.png").first
+    if node
+      node[:children].each do |child_node|
+        if child_node[:leaf]
+          name = File.basename(File.basename(child_node[:text], ".*"), ".*")
+          fileAsset = self.files.where(name: "#{name}.png").first
 
-        blocks.push({
-                      type: type,
-                      name: name,
-                      path: child_node[:id],
-                      thumbnail_url: File.join(fileAsset.fully_qualified_url, 'sites', website.iid, 'themes', theme_id, 'images', 'components', type.to_s, "#{name}.png")
-        })
-      else
-        self.block_templates(type, blocks, child_node)
+          blocks.push({
+                        type: type,
+                        name: name,
+                        path: child_node[:id],
+                        thumbnail_url: File.join(fileAsset.fully_qualified_url, 'sites', website.iid, 'themes', theme_id, 'images', 'components', type.to_s, "#{name}.png")
+          })
+        else
+          self.block_templates(type, blocks, child_node)
+        end
       end
-
     end
 
     blocks

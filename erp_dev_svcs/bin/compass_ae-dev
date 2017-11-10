@@ -28,7 +28,7 @@ when 'uninstall_gems'
 when 'generate_api_docs'
   require 'erp_dev_svcs/commands/generate_api_docs'
   ErpDevSvcs::Commands::GenerateApiDocs.execute  
-when 'run_brakeman'
+when 'brakeman'
   require 'erp_dev_svcs/commands/run_brakeman'
   ErpDevSvcs::Commands::RunBrakeman.execute  
 when 'execute'
@@ -45,6 +45,8 @@ build_gems        Defaults to building all gems in the lib
                   gems.
 
 generate_api_docs Generate API docs  
+
+brakeman          Run Brakeman in the engines
 
 new_gem_owner     This command will add a new owner to the
                   compass gems on rubygems.org

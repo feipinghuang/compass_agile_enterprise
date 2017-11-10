@@ -8,7 +8,7 @@ module ErpApp
           type          = ConfigurationItemType.find(params[:type_id])
 
           render :json => if configuration.configuration_item_types << type
-            {:success => true}
+          {:success => true}
           else
             {:success => false}
           end
@@ -19,7 +19,7 @@ module ErpApp
           type          = ConfigurationItemType.find(params[:type_id])
 
           render :json => if configuration.configuration_item_types.delete(type)
-            {:success => true}
+          {:success => true}
           else
             {:success => false}
           end
@@ -62,9 +62,13 @@ module ErpApp
         end
 
         def create_configuration
-          model = params[:type].constantize.find(params[:model])
+          type = ActionController::Base.helpers.sanitize(params[:type]).to_param
+          template = ActionController::Base.helpers.sanitize(params[:template]).to_param
+          configuration_action = ActionController::Base.helpers.sanitize(params[:configuration_action]).to_param
+
+          model = type.constantize.find(params[:model])
           model.configurations.destroy_all
-          configuration = ::Configuration.find(params[:template]).send(params[:configuration_action].to_sym)
+          configuration = ::Configuration.find(template).send(configuration_action.to_sym)
           unless params[:name].blank?
             configuration.description = params[:name]
             configuration.save

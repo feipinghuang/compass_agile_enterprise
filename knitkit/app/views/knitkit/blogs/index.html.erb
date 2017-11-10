@@ -1,47 +1,36 @@
 <div class="container">
-
   <div class="row">
     <div class="col-md-12">
       <div class="page-header">
         <h1><%= @website_section.title %></h1>
       </div>
     </div>
-
     <div class="col-md-8">
-
       <% @contents.each do |content| %>
-          <div id="blog_<%= h content.id %>">
-            <h4><%= content.title %></h4>
-
-            <p>
-              Posted: <%= content.created_at.to_s(:long) %> <%= published_content_created_by %><br/>
-              Topics: <%= content.content.pretty_tag_list %>
-            </p>
-
-            <p>
-              <%= raw content.excerpt_html %>
-            </p>
-
-            <div><%= link_to 'Read More...', main_app.blog_article_path(@website_section.id, content.permalink) %></div>
-
-          </div>
+        <div id="blog_<%= h content.id %>">
+          <h4><%= content.title %></h4>
+          <p>
+            Posted: <%= content.created_at.to_s(:long) %> <%= published_content_created_by %>
+            <br>
+            Topics: <%= content.content.pretty_tag_list %>
+          </p>
+          <p>
+            <%= sanitize content.excerpt_html %>
+          </p>
+          <div><%= link_to 'Read More...', main_app.blog_article_path(@website_section.id, content.permalink) %></div>
+        </div>
       <% end %>
-
       <%= blog_pagination 'blog_pagination', params %>
-
     </div>
-
     <div class="col-md-4">
       <div>
         <h4>Topics</h4>
         <%= blog_topics 'tag_link' %>
       </div>
-
       <div>
         <h4>Links</h4>
         <%= blog_rss_links 'RSS Feed' %>
       </div>
-
       <div>
         <% #Optional Parameters:
            # content_type: Leave blank to search all section types, set to Blog to only search Blog articles
@@ -61,5 +50,4 @@
       </div>
     </div>
   </div>
-
 </div>

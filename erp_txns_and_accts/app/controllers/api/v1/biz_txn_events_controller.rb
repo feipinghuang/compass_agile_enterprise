@@ -29,7 +29,7 @@ module API
         end
 
         if sort and dir
-          biz_txn_events = biz_txn_events.order("#{sort} #{dir}")
+          biz_txn_events = biz_txn_events.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         total_count = biz_txn_events.count
@@ -71,15 +71,15 @@ module API
       end
 
       def parties
-         biz_txn_event = BizTxnEvent.find(params[:id])
+        biz_txn_event = BizTxnEvent.find(params[:id])
 
-         if params[:role_types]
+        if params[:role_types]
           parties = biz_txn_event.parties(params[:role_types].split(','))
-         else
+        else
           parties = biz_txn_event.parties
-         end
+        end
 
-         render json: {success: true, parties: parties}
+        render json: {success: true, parties: parties}
       end
 
     end # BizTxnEvents

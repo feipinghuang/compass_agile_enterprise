@@ -11,7 +11,7 @@ module Knitkit
             current_user.with_capability('create', 'WebsiteSection') do
               begin
                 ActiveRecord::Base.transaction do
-                  
+
                   @website = Website.find(params[:website_id])
                   @website_primary_host = @website.nil? ? nil : @website.config_value('primary_host')
 
@@ -230,12 +230,12 @@ module Knitkit
         def enable_source_edit
           begin
             current_user.with_capability('edit', 'WebsiteSectionLayout') do
-      
-               @website_section.layout = HtmlBeautifier.beautify(@website_section.to_html)
-               @website_section.source_enabled = true
-               @website_section.save!
 
-               render :text => @website_section.layout
+              @website_section.layout = HtmlBeautifier.beautify(@website_section.to_html)
+              @website_section.source_enabled = true
+              @website_section.save!
+
+              render :text => @website_section.layout
 
             end
           rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
@@ -262,8 +262,9 @@ module Knitkit
         end
 
         def available_articles
-          website_id = params[:website_id]
-          current_articles = Article.joins(:website_section_contents).where("website_section_id = #{params[:section_id]}").all
+          website_id = Article.sanitize(params[:website_id])
+
+          current_articles = Article.joins(:website_section_contents).where("website_section_id = #{Article.sanitize(params[:section_id])}").all
 
           # Defaults to retrieving all articles
           available_articles = Article.with_party_role(current_user.party.dba_organization,

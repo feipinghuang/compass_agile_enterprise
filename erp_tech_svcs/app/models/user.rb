@@ -76,7 +76,7 @@ class User < ActiveRecord::Base
   validates :email, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false,
                                                                                   message: "In use by another user"}
 
-  validates_format_of :email, :with => /\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/
+  validates_format_of :email, :with => /\A\b[A-Z0-9._%a-z\-]+@(?:[A-Z0-9a-z\-]+\.)+[A-Za-z]{2,4}\z/
 
   #username validations
   validates :username, :presence => {:message => 'cannot be blank'}, :uniqueness => {:case_sensitive => false,

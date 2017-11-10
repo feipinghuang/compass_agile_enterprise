@@ -1,4 +1,5 @@
 class Article < Content
+  attr_protected :created_at, :updated_at
 
   before_save :check_internal_indentifier
 
@@ -14,4 +15,3 @@ class Article < Content
     "#{title} (#{internal_identifier})"
   end
 end
-

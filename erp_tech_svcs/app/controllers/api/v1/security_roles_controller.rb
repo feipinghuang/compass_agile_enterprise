@@ -98,7 +98,7 @@ module API
       end
 
       def available
-        type = params[:type]
+        type = ActionController::Base.helpers.sanitize(params[:type]).to_param
         id = params[:id]
 
         sort = (params[:sort] || 'description').downcase
@@ -113,7 +113,7 @@ module API
       end
 
       def selected
-        type = params[:type]
+        type = ActionController::Base.helpers.sanitize(params[:type]).to_param
         id = params[:id]
 
         sort = (params[:sort] || 'description').downcase
@@ -129,7 +129,7 @@ module API
 
       def add
         begin
-          type = params[:type]
+          type = ActionController::Base.helpers.sanitize(params[:type]).to_param
           id = params[:id]
           security_role_ids = JSON.parse(params[:security_role_ids])
 
@@ -159,7 +159,7 @@ module API
 
       def remove
         begin
-          type = params[:type]
+          ActionController::Base.helpers.sanitize(params[:type]).to_param
           id = params[:id]
           security_role_ids = JSON.parse(params[:security_role_ids])
 
@@ -191,7 +191,7 @@ module API
         begin
           ActiveRecord::Base.connection.transaction do
             security_role = SecurityRole.create!(description: params[:description].strip,
-                                                internal_identifier: params[:internal_identifier].strip)
+                                                 internal_identifier: params[:internal_identifier].strip)
 
 
             if params[:parent]
@@ -199,10 +199,10 @@ module API
             end
 
             render :json => {
-                     success: true,
-                     security_role: security_role.to_data_hash,
-                     message: 'Role created successfully'
-                   }
+              success: true,
+              security_role: security_role.to_data_hash,
+              message: 'Role created successfully'
+            }
           end
         rescue ActiveRecord::RecordInvalid => invalid
           Rails.logger.error invalid.record.errors
@@ -217,7 +217,7 @@ module API
         rescue StandardError => ex
           Rails.logger.error ex.message
           Rails.logger.error ex.backtrace.join("\n")
-          
+
           ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
 
           render :json => {:success => false, :message => 'Error creating Security Role'}

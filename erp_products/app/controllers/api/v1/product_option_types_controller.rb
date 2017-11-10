@@ -42,7 +42,7 @@ module API
         end
 
         if sort and dir
-          product_option_types = product_option_types.order("#{sort} #{dir}")
+          product_option_types = product_option_type.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         total_count = product_option_types.count

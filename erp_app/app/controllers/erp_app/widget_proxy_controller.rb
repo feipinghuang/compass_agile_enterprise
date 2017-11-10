@@ -6,7 +6,7 @@ module ErpApp
     protect_from_forgery :except => :clear
 
     def index
-      @widget_name = params[:widget_name]
+      @widget_name = ActionController::Base.helpers.sanitize(params[:widget_name]).to_param
       @widget_action = params[:widget_action]
       @uuid = params[:uuid]
 

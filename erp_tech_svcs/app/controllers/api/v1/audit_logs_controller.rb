@@ -20,7 +20,7 @@ module API
 
         total_count = audit_logs.count
         audit_logs = audit_logs.limit(limit).offset(start)
-        audit_logs.order("#{sort} #{dir}")
+        audit_logs.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
 
         render json: {success: true,
                       total_count: total_count,

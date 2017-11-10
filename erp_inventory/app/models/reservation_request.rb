@@ -2,6 +2,8 @@ require 'ruleby'
 include Ruleby
 
 class ReservationRequest < ActiveRecord::Base
+  attr_protected :created_at, :updated_at
+
   belongs_to :inventory_entry
   belongs_to :product_type
 

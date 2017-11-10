@@ -102,7 +102,7 @@ class FileAsset < ActiveRecord::Base
   validates_each :directory, :name do |record, attr, value|
     record.errors.add attr, 'may not contain consequtive dots' if value =~ /\.\./
   end
-  validates_format_of :name, :with => /^\w/
+  validates_format_of :name, :with => /\A\w\z/
 
   class << self
     def adjust_image(data, size=nil)
@@ -475,6 +475,8 @@ class FileAsset < ActiveRecord::Base
 end
 
 class Image < FileAsset
+  attr_protected :created_at, :updated_at
+
   self.file_type = :image
   self.valid_extensions = %w(.jpg .JPG .jpeg .JPEG .gif .GIF .png .PNG .ico .ICO .bmp .BMP .tif .tiff .TIF .TIFF)
 
@@ -490,6 +492,8 @@ class Image < FileAsset
 end
 
 class TextFile < FileAsset
+  attr_protected :created_at, :updated_at
+
   self.file_type = :textfile
   self.content_type = 'text/plain'
   self.valid_extensions = %w(.txt .TXT .text)
@@ -509,6 +513,8 @@ class TextFile < FileAsset
 end
 
 class Javascript < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :javascript
   self.content_type = 'text/javascript'
   self.valid_extensions = %w(.js .JS)
@@ -519,6 +525,8 @@ class Javascript < TextFile
 end
 
 class Stylesheet < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :stylesheet
   self.content_type = 'text/css'
   self.valid_extensions = %w(.css .CSS)
@@ -529,6 +537,8 @@ class Stylesheet < TextFile
 end
 
 class Template < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :template
   self.content_type = 'text/plain'
   self.valid_extensions = %w(.erb .haml .liquid .builder)
@@ -539,6 +549,8 @@ class Template < TextFile
 end
 
 class HtmlFile < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :html
   self.content_type = 'text/html'
   self.valid_extensions = %w(.html .HTML)
@@ -549,6 +561,8 @@ class HtmlFile < TextFile
 end
 
 class XmlFile < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :xml
   self.content_type = 'text/plain'
   self.valid_extensions = %w(.xml .XML)
@@ -559,6 +573,8 @@ class XmlFile < TextFile
 end
 
 class DocFile < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :doc
   self.content_type = 'application/msword'
   self.valid_extensions = %w(.doc .dot)
@@ -569,6 +585,8 @@ class DocFile < TextFile
 end
 
 class DocxFile < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :docx
   self.content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   self.valid_extensions = %w(.docx)
@@ -579,6 +597,8 @@ class DocxFile < TextFile
 end
 
 class Xls < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :xls
   self.content_type = 'application/vnd.ms-excel'
   self.valid_extensions = %w(.xls .xlt .xla .xlsx)
@@ -589,6 +609,8 @@ class Xls < TextFile
 end
 
 class Ppt < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :ppt
   self.content_type = 'application/vnd.ms-powerpoint'
   self.valid_extensions = %w(.ppt .pot .pps .ppa)
@@ -599,6 +621,8 @@ class Ppt < TextFile
 end
 
 class Pptx < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :pptx
   self.content_type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
   self.valid_extensions = %w(.pptx)
@@ -609,6 +633,8 @@ class Pptx < TextFile
 end
 
 class Pdf < TextFile
+  attr_protected :created_at, :updated_at
+
   self.file_type = :pdf
   self.content_type = 'application/pdf'
   self.valid_extensions = %w(.pdf .PDF)
@@ -619,6 +645,8 @@ class Pdf < TextFile
 end
 
 class Swf < FileAsset
+  attr_protected :created_at, :updated_at
+
   self.file_type = :swf
   self.content_type = 'application/x-shockwave-flash'
   self.valid_extensions = %w(.swf .SWF)
@@ -629,6 +657,8 @@ class Swf < FileAsset
 end
 
 class Mp3 < FileAsset
+  attr_protected :created_at, :updated_at
+
   self.file_type = :mp3
   self.content_type = 'audio/mpeg'
   self.valid_extensions = %w(.mp3)
@@ -639,6 +669,8 @@ class Mp3 < FileAsset
 end
 
 class Wav < FileAsset
+  attr_protected :created_at, :updated_at
+
   self.file_type = :wav
   self.content_type = 'audio/wav'
   self.valid_extensions = %w(.wav)

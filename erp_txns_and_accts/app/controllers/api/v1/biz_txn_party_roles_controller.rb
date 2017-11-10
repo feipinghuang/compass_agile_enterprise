@@ -38,7 +38,7 @@ module API
           biz_txn_party_roles = BizTxnPartyRoles.where(party: params[:party_id])
 
           if sort and dir
-            biz_txn_party_roles = biz_txn_party_roles.order("#{sort} #{dir}")
+            biz_txn_party_roles = biz_txn_party_roles.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
           end
 
           total_count = biz_txn_party_roles.count

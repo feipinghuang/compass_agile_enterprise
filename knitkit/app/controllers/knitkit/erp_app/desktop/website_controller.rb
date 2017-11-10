@@ -64,7 +64,7 @@ module Knitkit
           limit = params[:limit] || 9
           start = params[:start] || 0
 
-          published_websites = @website.published_websites.order("#{sort} #{dir}").limit(limit).offset(start)
+          published_websites = @website.published_websites.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).limit(limit).offset(start)
 
           #set site_version. User can view different versions. Check if they are viewing another version
           site_version = @website.active_publication.version
@@ -210,7 +210,7 @@ module Knitkit
             render :json => {:success => false, :message => ex.message}
           end
         end
-        
+
         def export_template
           zip_path = @website.export_template
           if zip_path

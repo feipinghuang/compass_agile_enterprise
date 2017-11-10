@@ -1,4 +1,6 @@
 class Blog < WebsiteSection
+  attr_protected :created_at, :updated_at
+
   def find_blog_posts
     Article.find_by_website_section_id(self.id).sort_by{|article| article.created_at}.reverse
   end
