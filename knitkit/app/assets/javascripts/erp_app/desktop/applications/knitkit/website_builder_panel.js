@@ -390,20 +390,19 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         Ext.Msg.alert('Error', 'Cannot move when there are empty content blocks');
                         return false;
                     }
-
                     
                     me.disableComponents();
                     if (data.isContainer) {
                         if (me.hasOnlyOrNoContainer()) return false;
                         me.addAutoRemovableContainers(data.containerId);
+                        if (me.hasVerticalScroll()) {
+                            me.showScrollIndicator('top');
+                            me.showScrollIndicator('bottom');
+                        }
                     } else {
                         me.addAutoRemovableDropZones(data.panelId);
                     }
                     
-                    if (me.hasVerticalScroll()) {
-                        me.showScrollIndicator('top');
-                        me.showScrollIndicator('bottom');
-                    }
                     me.dragStarted = true;
                     
                 },
