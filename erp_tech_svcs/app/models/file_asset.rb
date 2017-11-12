@@ -102,7 +102,7 @@ class FileAsset < ActiveRecord::Base
   validates_each :directory, :name do |record, attr, value|
     record.errors.add attr, 'may not contain consequtive dots' if value =~ /\.\./
   end
-  validates_format_of :name, :with => /\A\w\z/
+  #validates_format_of :name, :with => /\A\w*\z/
 
   class << self
     def adjust_image(data, size=nil)

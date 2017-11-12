@@ -1,5 +1,5 @@
 class SecurityRole < ActiveRecord::Base
-  attr_protected :created_at, :updated_at
+  attr_accessible :description, :internal_identifier
 
   acts_as_erp_type
   acts_as_nested_set
@@ -12,8 +12,6 @@ class SecurityRole < ActiveRecord::Base
   validates :internal_identifier, :presence => {:message => 'Internal identifier cannot be blank'}
   validates_uniqueness_of :internal_identifier, :case_sensitive => false
   validates_length_of     :internal_identifier, :within => 3..100
-
-  attr_accessible :description, :internal_identifier
 
   def to_xml(options = {})
     default_only = []

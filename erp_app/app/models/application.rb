@@ -12,7 +12,7 @@
 # add_index :applications, :internal_identifier, :name => 'applications_internal_identifier_idx'
 
 class Application < ActiveRecord::Base
-  attr_protected :created_at, :updated_at
+  attr_accessible :description, :icon, :internal_identifier, :type, :can_delete, :sequence
 
   has_user_preferences
   has_file_assets

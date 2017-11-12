@@ -1,5 +1,5 @@
 class ContactPurpose < ActiveRecord::Base
-  attr_protected :created_at, :updated_at
+  attr_accessible :description, :icon, :internal_identifier
 
   acts_as_erp_type
   acts_as_nested_set

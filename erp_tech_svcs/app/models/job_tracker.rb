@@ -1,21 +1,29 @@
+# create_table :job_trackers do |t|
+#   t.string :job_name
+#   t.string :job_klass
+#   t.string :run_time
+#   t.datetime :last_run_at
+#   t.datetime :next_run_at
+# end
+
 class JobTracker < ActiveRecord::Base
-  attr_protected :created_at, :updated_at
+  attr_accessible :job_name, :job_klass, :run_time, :last_run_at, :next_run_at
 
   def scheduled?
     !tracked_job.nil?
   end
-  
+
   def tracked_job
     delayed_job_tbl = Delayed::Job.arel_table
     Delayed::Job.where(delayed_job_tbl[:handler].matches("%#{self.job_klass}%")).first
   end
-  
+
   def track_job(job_name)
     job_tracker = JobTracker.where('job_name = ?', job_name).first
     job_tracker = JobTracker.new(:job_name => job_name) if job_tracker.nil?
     job_tracker.save
   end
-  
+
   class << self
     def job_ran(job_name, job_klass, run_time=nil, next_run_at=nil)
       job_tracker = JobTracker.where('job_klass = ?', job_klass).first
@@ -24,9 +32,9 @@ class JobTracker < ActiveRecord::Base
       job_tracker.run_time = run_time
       job_tracker.next_run_at = next_run_at
       job_tracker.save
-      
+
       job_tracker
     end
   end
-  
+
 end
