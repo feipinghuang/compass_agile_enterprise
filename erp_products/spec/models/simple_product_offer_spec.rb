@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe SimpleProductOffer do
+describe ProductDiscountOffer do
   it "can be instantiated" do
-    SimpleProductOffer.new.should be_an_instance_of(SimpleProductOffer)
+    ProductDiscountOffer.new.should be_an_instance_of(ProductDiscountOffer)
   end
 
   it "can be saved successfully" do
-    SimpleProductOffer.create().should be_persisted
+    ProductDiscountOffer.create().should be_persisted
   end
 end
 
