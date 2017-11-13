@@ -20,15 +20,16 @@
 </div>
 <script type="text/javascript">
   Ext.onReady(function () {
-    var appContainers = [['/erp_app/organizer/', 'CompassAE CSR'], ['/erp_app/desktop/', 'Admin Console']];
-    Ext.create('Compass.ErpApp.Login.Window',
+    appContainers = [['/erp_app/organizer/', 'CompassAE CSR'], ['/erp_app/desktop/', 'Admin Console']];
+    loginWindow = Ext.create('Compass.ErpApp.Login.Window',
         {
-          appContainers: appContainers,
+          appContainers: window.appContainers,
           selectedAppContainerValue: '<%= @app_container %>',
           redirectTo: '/erp_app/desktop/',
           logoutTo: '/erp_app/login',
           message: '<%=flash[:notice]%>'
-        }).show();
+        });
+    loginWindow.show();
   });
 </script>
 

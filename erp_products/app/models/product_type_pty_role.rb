@@ -4,4 +4,9 @@ class ProductTypePtyRole < ActiveRecord::Base
   belongs_to :product_type
   belongs_to :party
   belongs_to :role_type
+
+  def is_vendor_role?
+    role_type.internal_identifier == 'vendor'
+  end
+
 end
