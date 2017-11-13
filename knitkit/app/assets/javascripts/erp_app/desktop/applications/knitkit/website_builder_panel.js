@@ -594,6 +594,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                 dropContentBlock: function(dropPanel, draggedPanel, data) {
                     if (dropPanel.autoRemovableDropZone) {
+                        dropPanel.setBorder(1);
+                        dropPanel.addCls('website-builder-dropzone');
                         dropPanel.autoRemovableDropZone = false;
                     }
                     
@@ -633,6 +635,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                 dropContainer: function(dropContainer, draggedContainer, containerData) {
                     if (dropContainer.autoRemovableDropZone) {
+                        dropContainer.removeCls('grey-background');
                         dropContainer.autoRemovableDropZone = false;
                     }
                     
@@ -645,6 +648,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     Ext.each(containerData, function(data){
                         var dropPanel = dropContainer.down('websitebuilderdropzone[websiteSectionContentId="' + data.websiteSectionContentId + '"]');
                         if (dropPanel.autoRemovableDropZone) {
+                            dropPanel.setBorder(1);
                             dropPanel.autoRemovableDropZone = false;
                         }
                         
@@ -716,11 +720,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         for (var colIndex = 0; colIndex <= dropZones.length; colIndex++) {
             container.insert(colIndex*2, {
                 xtype: 'websitebuilderdropzone',
-                html: '<div style="margin-top:-35px;font-size:15px;">Drop Component Here</div>',
+                html: '',
                 height: 5,
                 componentType: 'content',
                 autoRemovableDropZone: true,
-                flex: 1
+                flex: 1,
+                listeners: {
+                    render: function(comp) {
+                        comp.setBorder(0);
+                    }
+                }
             });
         }
         
@@ -764,14 +773,25 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 items: Ext.Array.map(dropZones, function(dropZone){
                     return {
                         xtype: 'websitebuilderdropzone',
-                        html: '<div style="margin-top:-35px;font-size:15px;">Drop Component Here</div>',
+                        html: '',
                         height: 50,
                         componentType: 'content',
                         autoRemovableDropZone: true,
                         websiteSectionContentId: dropZone.websiteSectionContentId,
-                        flex: 1
+                        flex: 1,
+                        listeners: {
+                            render: function(comp) {
+                                comp.setBorder(0);
+                                comp.addCls('website-builder-dropzone grey-background');
+                            }
+                        }
                     };
                 }),
+                listeners: {
+                    render: function(cnt) {
+                        cnt.addCls('.dropzone-container grey-background');
+                    }
+                }
                 
             };
 

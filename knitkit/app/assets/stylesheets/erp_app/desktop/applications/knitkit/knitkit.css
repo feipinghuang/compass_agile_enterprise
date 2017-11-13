@@ -18,8 +18,12 @@
     background: url(/assets/icons/delete/delete_16x16.png) center no-repeat !important;
 }
 
+.grey-background {
+  background-color: #bbb !important;
+}
+
 .image-assets-panel .x-tab-bar-body {
-    background-color: #fff;
+  background-color: #fff;
 }
 
 .image-assets-panel a.x-tab {
@@ -200,7 +204,7 @@
 }
 
 .website-builder-move-component-hover {
-  border: dashed 2px red !important;
+  border: dashed 2px #ff0000 !important;
 }
 
 
