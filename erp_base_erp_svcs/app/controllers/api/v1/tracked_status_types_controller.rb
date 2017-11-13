@@ -42,6 +42,8 @@ module API
                 tracked_status_types = parent.children
               end
 
+              tracked_status_types = tracked_status_types.reorder(ActiveRecord::Base.sanitize_order_params(@sort, @dir))
+
               render :json => {success: true, tracked_status_types: tracked_status_types.all.collect{|item| item.to_data_hash}}
             end
             format.all_representation do
@@ -68,6 +70,8 @@ module API
               else
                 tracked_status_types = parent.children
               end
+
+              tracked_status_types = tracked_status_types.reorder(ActiveRecord::Base.sanitize_order_params(@sort, @dir))
 
               render :json => {success: true, tracked_status_types: tracked_status_types.all.collect{|item| item.to_data_hash}}
             end
@@ -117,6 +121,8 @@ module API
                 end
               end
               format.json do
+                tracked_status_types = tracked_status_types.reorder(ActiveRecord::Base.sanitize_order_params(@sort, @dir))
+
                 tracked_status_types.push(tracked_status_type.to_data_hash)
               end
             end

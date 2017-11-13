@@ -48,7 +48,7 @@ module Knitkit
     end
 
     def set_login_path
-      @login_path = URI.parse(@website.configurations.first.get_configuration_item(ConfigurationItemType.find_by_internal_identifier('login_url')).options.first.value)
+      @login_path = URI.parse(@website.configurations.first.get_configuration_item(ConfigurationItemType.find_by_internal_identifier('login_url')).options.first.value).to_s
     end
 
     def set_active_publication

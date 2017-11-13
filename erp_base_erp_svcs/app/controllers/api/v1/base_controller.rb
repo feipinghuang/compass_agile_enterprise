@@ -8,6 +8,7 @@ module API
 
       before_filter :require_login
       before_filter :set_paging
+      before_filter :set_order
       before_filter :set_query_filters
 
       layout false
@@ -21,6 +22,17 @@ module API
       def set_paging
         @offset, @start = params[:offset] || params[:start] || nil
         @limit = params[:limit] || nil
+      end
+
+      def set_order
+        if params[:sort].blank?
+          @sort = 'id'
+          @dir = 'DESC'
+        else
+          sort_hash = params[:sort].blank? ? {} : Hash.symbolize_keys(JSON.parse(params[:sort]).first)
+          @sort = sort_hash[:property] || 'id'
+          @dir = sort_hash[:direction] || 'DESC'
+        end
       end
 
       def set_query_filters
