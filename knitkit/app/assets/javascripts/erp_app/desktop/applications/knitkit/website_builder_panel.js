@@ -635,6 +635,13 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     if (dropContainer.autoRemovableDropZone) {
                         dropContainer.autoRemovableDropZone = false;
                     }
+                    
+                    if (dropContainer.extremeContainer) {
+                        delete dropContainer.style.top;
+                        dropContainer.extremeContainer = false;
+                        dropContainer.updateLayout();
+                    }
+                    
                     Ext.each(containerData, function(data){
                         var dropPanel = dropContainer.down('websitebuilderdropzone[websiteSectionContentId="' + data.websiteSectionContentId + '"]');
                         if (dropPanel.autoRemovableDropZone) {
@@ -749,7 +756,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             dropZones = container.query('websitebuilderdropzone');
         
         for(var rowIndex = 0; rowIndex <= containers.length; rowIndex++) {
-            me.insert(rowIndex*2, {
+            var containerConfig = {
                 xtype: 'websitebuilderdropzonecontainer',
                 cls: 'dropzone-container',
                 layout: 'hbox',
@@ -757,15 +764,34 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 items: Ext.Array.map(dropZones, function(dropZone){
                     return {
                         xtype: 'websitebuilderdropzone',
-                        html: '<div style="margin-top:-20px;font-size:15px;">Drop Component Here</div>',
-                        height: 5,
+                        html: '<div style="margin-top:-35px;font-size:15px;">Drop Component Here</div>',
+                        height: 50,
                         componentType: 'content',
                         autoRemovableDropZone: true,
                         websiteSectionContentId: dropZone.websiteSectionContentId,
                         flex: 1
                     };
-                })
-            });
+                }),
+                
+            };
+
+            if (rowIndex == 0) {
+                Ext.apply(containerConfig, {
+                    extremeContainer: true,
+                    style: {
+                        top: '0'
+                    }
+                });
+            } else if (rowIndex == containers.length) {
+                Ext.apply(containerConfig, {
+                    extremeContainer: true,
+                    style: {
+                        top: '50px'
+                    }
+                });
+            }
+            
+            me.insert(rowIndex*2, containerConfig);
         }
 
         containers = me.query('websitebuilderdropzonecontainer');
