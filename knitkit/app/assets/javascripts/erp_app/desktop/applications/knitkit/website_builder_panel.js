@@ -640,7 +640,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     }
                     
                     if (dropContainer.extremeContainer) {
-                        delete dropContainer.style.top;
+                        dropContainer.getEl().applyStyles({top: 0});
                         dropContainer.extremeContainer = false;
                         dropContainer.updateLayout();
                     }
@@ -767,8 +767,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         for(var rowIndex = 0; rowIndex <= containers.length; rowIndex++) {
             var containerConfig = {
                 xtype: 'websitebuilderdropzonecontainer',
-                cls: 'dropzone-container',
+                cls: 'dropzone-container grey-background',
                 layout: 'hbox',
+                style: {
+                    borderColor: '#e1e4e9',
+                    borderStyle: 'dotted'
+                },
                 autoRemovableDropZone: true,
                 items: Ext.Array.map(dropZones, function(dropZone){
                     return {
@@ -787,28 +791,17 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         }
                     };
                 }),
-                listeners: {
-                    render: function(cnt) {
-                        cnt.addCls('.dropzone-container grey-background');
-                    }
-                }
                 
             };
 
-            if (rowIndex == 0) {
-                Ext.apply(containerConfig, {
-                    extremeContainer: true,
-                    style: {
-                        top: '0'
-                    }
-                });
-            } else if (rowIndex == containers.length) {
-                Ext.apply(containerConfig, {
-                    extremeContainer: true,
-                    style: {
-                        top: '50px'
-                    }
-                });
+            if (me.hasVerticalScroll()) {
+                if (rowIndex == 0) {  
+                    containerConfig.extremeContainer = true;
+                    containerConfig.style.top = '0'
+                } else if (rowIndex == containers.length) {
+                    containerConfig.extremeContainer = true;
+                    containerConfig.style.top = '50px'
+                }
             }
             
             me.insert(rowIndex*2, containerConfig);
