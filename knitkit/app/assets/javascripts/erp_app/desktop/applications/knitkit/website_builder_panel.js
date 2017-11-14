@@ -390,6 +390,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         Ext.Msg.alert('Error', 'Cannot move when there are empty content blocks');
                         return false;
                     }
+
+                    if (me.isLayoutIncluded) {
+                        Ext.Msg.alert('Error', 'Cannot move when layout is included');
+                        return false;
+                    }
                     
                     me.disableComponents();
                     if (data.isContainer) {
