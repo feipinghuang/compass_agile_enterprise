@@ -639,6 +639,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
 
                 dropContainer: function(dropContainer, draggedContainer, containerData) {
+                    var loadMask = new Ext.LoadMask(me, {
+                        msg: "Please wait..."
+                    });
+                    loadMask.show();
+                    
                     if (dropContainer.autoRemovableDropZone) {
                         dropContainer.removeCls('grey-background');
                         dropContainer.autoRemovableDropZone = false;
@@ -659,12 +664,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         
                         if (data.websiteSectionContentId) {
                             me.loadContentBlock(dropPanel, {
-                                autoSave: true,
                                 websiteSectionContentId: data.websiteSectionContentId
                             });
                         } else if (data.widgetName) {
                             me.loadContentBlock(dropPanel, {
-                                autoSave: true,
                                 widgetName: data.widgetName
                             });
 
@@ -672,15 +675,27 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                         } else {
                             me.loadContentBlock(dropPanel, {
-                                autoSave: true,
                                 componentName: data.componentName,
                                 componentType: data.componentType
                             });
                         }
-
+                        
+                        me.contentToLoad.push(data.websiteSectionContentId);
                     });
-                    draggedContainer.destroy();
-                    me.removeAutoRemovableDropZonesAndContainers();
+
+                    loadInterval = setInterval(function(){
+                        if (me.contentToLoad.length === 0) {
+                            clearInterval(loadInterval);
+                            draggedContainer.destroy();
+                            me.removeAutoRemovableDropZonesAndContainers();
+                            
+                            me.saveComponents(function(){
+                                loadMask.hide();
+                            }, function(){
+                                loadMask.hide();
+                            })
+                        }
+                    }, 500)
                     
                 }
                 
