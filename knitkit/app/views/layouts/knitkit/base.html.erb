@@ -48,7 +48,7 @@
     <%= yield %>
     <%= javascript_include_tag 'knitkit/website_builder/pen.js' %>
     <script>
-      window.__pen__ = new Pen(document.body);
+      window.__pen__ = new Pen(document.querySelector('.container > .row > .col-md-12') || document.body);
     </script>
   <% else %>
     <div id="wrap">
