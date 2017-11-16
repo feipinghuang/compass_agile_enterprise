@@ -80,6 +80,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     items: [],
     refershIntervals: {},
     rowHeights: {},
+    initialRowColumnCount: 1,
     matchWebsiteSectionContents: {},
     contentToLoad: [],
 
@@ -1753,6 +1754,21 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                         }, 500);
                     } else {
+                        if (me.initialRowColumnCount) {
+                            me.insert(0, {
+                                xtype: 'websitebuilderdropzonecontainer',
+                                cls: 'dropzone-container',
+                                layout: 'hbox',
+                                items: Ext.Array.map(Array.apply(null, Array(me.initialRowColumnCount)), function(){
+                                    return {
+                                        xtype: 'websitebuilderdropzone',
+                                        empty: true,
+                                        componentType: 'content',
+                                        flex: 1
+                                    }
+                                })
+                            });
+                        }
                         loadMask.hide();
                     }
                 }
