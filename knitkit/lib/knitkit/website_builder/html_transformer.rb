@@ -5,7 +5,7 @@ module Knitkit
 
         def insert_widget_statements(html)
           html.gsub!("render_widget", "render_builder_widget")
-          html.scan(/<%=\s*render_builder_widget\s*:(?:.*)?(?<=%>)/m).each do |widget_statement|
+          html.scan(/<%=\s*render_builder_widget\s*:\w*?\s*%>/).uniq.each do |widget_statement|
             trimmed_widget_statement = widget_statement.gsub('<%=', '')
             trimmed_widget_statement = trimmed_widget_statement.gsub('%>', '')
             trimmed_widget_statement.squish!
@@ -46,7 +46,7 @@ module Knitkit
             gsub("__ERB__%&gt;", "%>").
             gsub(/(?<=<%)(.*?)(?=%>)/m) {|w| CGI.unescape_html(w)}
         end
-        
+
       end
     end
   end
