@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 3.2"
   s.add_dependency('attr_encrypted','~> 3.0.3')
   s.add_dependency('awesome_nested_set','~> 2.1')
-  s.add_dependency('data_migrator','~> 2.0')
+  s.add_dependency('data_migrator','~> 2.0.2')
   s.add_dependency('has_many_polymorphic','~> 2.0')
   s.add_dependency('uuid','2.3.5')
   s.add_dependency 'wisper', '1.6.0'
