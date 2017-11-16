@@ -510,7 +510,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 ddGroup: 'websiteBuilderPanelDDgroup',
 
                 getTargetFromEvent: function(e) {
-                    return e.getTarget('.website-builder-dropzone')||e.getTarget('.component');
+                    return e.getTarget('.website-builder-dropzone');
                 },
 
                 // On entry into a target node, highlight that node.
@@ -570,11 +570,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 },
                 
                 validContentBlockDrop: function(target, dragData) {
+                    console.log(Ext.get(target).id);
                     if (Ext.get(target).id.indexOf('websitebuilderdropzone') === -1) {
                         return false;
                     } else {
                         var dropPanel = Ext.getCmp(Ext.get(target).id);
-                        if (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget') {
+                        if (dropPanel.empty
+                            &&
+                            (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget')) {
                             return true;
                         } else {
                             return false;
@@ -594,7 +597,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             isContainer: true
                         };
                     } else {
-                        
                         return {
                             isValid: this.validContentBlockDrop(target, dragData),
                             isContainer: false
