@@ -13,29 +13,31 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZoneCo
     },
     listeners: {
         afterrender: function(container) {
-            container.update(
-                new Ext.XTemplate(
-                    '<div id="outer-{containerId}" class="website-builder-reorder-setting">',
-                    '  <div class="icon-move pull-left" containerId = "{containerId}" style="margin-right:5px;"></div>',
-                    '  <div class="icon-remove pull-left" style="margin-right:5px;"></div>',
-                    '</div>'
-                ).apply({
-                    containerId: container.id
+            if (!container.up('websitebuilderpanel').isThemeMode()) {
+                container.update(
+                    new Ext.XTemplate(
+                        '<div id="outer-{containerId}" class="website-builder-reorder-setting">',
+                        '  <div class="icon-move pull-left" containerId = "{containerId}" style="margin-right:5px;"></div>',
+                        '  <div class="icon-remove pull-left" style="margin-right:5px;"></div>',
+                        '</div>'
+                    ).apply({
+                        containerId: container.id
+                    })
+                );
+
+
+                $('#outer-' + container.id).on('mouseenter', function(){
+                    $(this).css('background-color', '#ccc');
+                    $(this).children().show();
+                }).on('mouseleave', function(){
+                    $(this).children().hide();
+                    $(this).css('background-color', '');
+                });
+
+                container.el.down('.icon-remove').on('click', function(){
+                    container.destroy();
                 })
-            );
-
-
-            $('#outer-' + container.id).on('mouseenter', function(){
-                $(this).css('background-color', '#ccc');
-                $(this).children().show();
-            }).on('mouseleave', function(){
-                $(this).children().hide();
-                $(this).css('background-color', '');
-            });
-
-            container.el.down('.icon-remove').on('click', function(){
-                container.destroy();
-            })
+            }
         }
     }
 });
@@ -80,6 +82,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
     items: [],
     refershIntervals: {},
     rowHeights: {},
+    initialRowColumnCount: 1,
     matchWebsiteSectionContents: {},
     contentToLoad: [],
 
@@ -318,8 +321,9 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         }
 
         me.on('activate', function() {
-            if(!me.isThemeMode())
+            if(!me.isThemeMode()) {
                 me.resetContentEditorToolbar();
+            }
             Ext.getCmp('knitkitWestRegion').addComponentsTabPanel(me.isThemeMode());
         });
 
@@ -335,46 +339,48 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         });
         
         me.on('afterrender', function(){
-            me.update(
-                new Ext.Template('<div class="website-builder-scroll-indicator" id="scroll-indicator-up-{id}">',
-                                 '  <div class="icon-arrow-up-white"></div>',
-                                 '</div>',
-                                 '<div class="website-builder-scroll-indicator" id="scroll-indicator-down-{id}">',
-                                 '  <div class="icon-arrow-down-white"></div>',
-                                 '</div>'
-                                ).apply({
-                                    id: me.id
-                                })
-            );
+            if (!me.isThemeMode()) {
+                me.update(
+                    new Ext.Template('<div class="website-builder-scroll-indicator" id="scroll-indicator-up-{id}">',
+                                     '  <div class="icon-arrow-up-white"></div>',
+                                     '</div>',
+                                     '<div class="website-builder-scroll-indicator" id="scroll-indicator-down-{id}">',
+                                     '  <div class="icon-arrow-down-white"></div>',
+                                     '</div>'
+                                    ).apply({
+                                        id: me.id
+                                    })
+                );
 
-            if (me.body) {
-                me.body.ddScrollConfig = {
-                    vthresh: 50,
-                    increment: 200,
-                };
-                Ext.dd.ScrollManager.register(me.body);
+                if (me.body) {
+                    me.body.ddScrollConfig = {
+                        vthresh: 50,
+                        increment: 200,
+                    };
+                    Ext.dd.ScrollManager.register(me.body);
 
-                $('#' + me.body.id).scroll(function(e){
-                    if (me.dragStarted == undefined || !me.dragStarted) return false;
-                    var div = $(this);
-                    if (Math.floor(div[0].scrollHeight - div.scrollTop()) == div.height()) {
-                        // bottom
-                        me.hideScrollIndicator('bottom')
-                    } else if(div.scrollTop() == 0) {
-                        // top
-                        me.hideScrollIndicator('top');
-                    } 
-                });
-
-                me.getEl().on('mouseover', function(e, t){
-                    if(me.dragStarted) {
-                        if (t.id.match(/scroll-indicator-up-/)) {
-                            me.showScrollIndicator('bottom');
-                        } else if (t.id.match(/scroll-indicator-down-/)) {
-                            me.showScrollIndicator('top');
+                    $('#' + me.body.id).scroll(function(e){
+                        if (me.dragStarted == undefined || !me.dragStarted) return false;
+                        var div = $(this);
+                        if (Math.floor(div[0].scrollHeight - div.scrollTop()) == div.height()) {
+                            // bottom
+                            me.hideScrollIndicator('bottom')
+                        } else if(div.scrollTop() == 0) {
+                            // top
+                            me.hideScrollIndicator('top');
                         } 
-                    }
-                })
+                    });
+
+                    me.getEl().on('mouseover', function(e, t){
+                        if(me.dragStarted) {
+                            if (t.id.match(/scroll-indicator-up-/)) {
+                                me.showScrollIndicator('bottom');
+                            } else if (t.id.match(/scroll-indicator-down-/)) {
+                                me.showScrollIndicator('top');
+                            } 
+                        }
+                    })
+                }
             }
         })
 
@@ -396,7 +402,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         return false;
                     }
                     
-                    me.disableComponents();
                     if (data.isContainer) {
                         if (me.hasOnlyOrNoContainer()) return false;
                         me.addAutoRemovableContainers(data.containerId);
@@ -407,6 +412,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         me.showScrollIndicator('top');
                         me.showScrollIndicator('bottom');
                     }
+                    me.disableComponents();
                     me.dragStarted = true;
                     
                 },
@@ -504,7 +510,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 ddGroup: 'websiteBuilderPanelDDgroup',
 
                 getTargetFromEvent: function(e) {
-                    return e.getTarget('.website-builder-dropzone')||e.getTarget('.component');
+                    return e.getTarget('.website-builder-dropzone');
                 },
 
                 // On entry into a target node, highlight that node.
@@ -564,11 +570,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 },
                 
                 validContentBlockDrop: function(target, dragData) {
+                    console.log(Ext.get(target).id);
                     if (Ext.get(target).id.indexOf('websitebuilderdropzone') === -1) {
                         return false;
                     } else {
                         var dropPanel = Ext.getCmp(Ext.get(target).id);
-                        if (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget') {
+                        if (dropPanel.empty
+                            &&
+                            (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget')) {
                             return true;
                         } else {
                             return false;
@@ -588,7 +597,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                             isContainer: true
                         };
                     } else {
-                        
                         return {
                             isValid: this.validContentBlockDrop(target, dragData),
                             isContainer: false
@@ -639,6 +647,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
 
                 dropContainer: function(dropContainer, draggedContainer, containerData) {
+                    var loadMask = new Ext.LoadMask(me, {
+                        msg: "Please wait..."
+                    });
+                    loadMask.show();
+                    
                     if (dropContainer.autoRemovableDropZone) {
                         dropContainer.removeCls('grey-background');
                         dropContainer.autoRemovableDropZone = false;
@@ -659,12 +672,10 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         
                         if (data.websiteSectionContentId) {
                             me.loadContentBlock(dropPanel, {
-                                autoSave: true,
                                 websiteSectionContentId: data.websiteSectionContentId
                             });
                         } else if (data.widgetName) {
                             me.loadContentBlock(dropPanel, {
-                                autoSave: true,
                                 widgetName: data.widgetName
                             });
 
@@ -672,15 +683,27 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                         } else {
                             me.loadContentBlock(dropPanel, {
-                                autoSave: true,
                                 componentName: data.componentName,
                                 componentType: data.componentType
                             });
                         }
-
+                        
+                        me.contentToLoad.push(data.websiteSectionContentId);
                     });
-                    draggedContainer.destroy();
-                    me.removeAutoRemovableDropZonesAndContainers();
+
+                    loadInterval = setInterval(function(){
+                        if (me.contentToLoad.length === 0) {
+                            clearInterval(loadInterval);
+                            draggedContainer.destroy();
+                            me.removeAutoRemovableDropZonesAndContainers();
+                            
+                            me.saveComponents(function(){
+                                loadMask.hide();
+                            }, function(){
+                                loadMask.hide();
+                            })
+                        }
+                    }, 500)
                     
                 }
                 
@@ -1179,7 +1202,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     } else {
                         var css = iframeDoc.createElement("style");
                         css.type = "text/css";
-                        css.innerHTML = "."+ iframeNode.id + "-enclose {outline: rgba(233, 94, 94, 0.5) solid 2px;  outline-offset: -2px;cursor: pointer;}";
+                        css.innerHTML = "[contenteditable]:focus {outline: 0px transparent;} ."+ iframeNode.id + "-enclose {outline: rgba(233, 94, 94, 0.5) solid 2px;  outline-offset: -2px;cursor: pointer;}";
                         iframeDoc.body.appendChild(css);
                         if (iframeNode.contentWindow.__pen__) {
 
@@ -1737,6 +1760,21 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                         }, 500);
                     } else {
+                        if (me.initialRowColumnCount) {
+                            me.insert(0, {
+                                xtype: 'websitebuilderdropzonecontainer',
+                                cls: 'dropzone-container',
+                                layout: 'hbox',
+                                items: Ext.Array.map(Array.apply(null, Array(me.initialRowColumnCount)), function(){
+                                    return {
+                                        xtype: 'websitebuilderdropzone',
+                                        empty: true,
+                                        componentType: 'content',
+                                        flex: 1
+                                    }
+                                })
+                            });
+                        }
                         loadMask.hide();
                     }
                 }
