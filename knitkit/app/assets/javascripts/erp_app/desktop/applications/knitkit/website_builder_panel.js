@@ -339,46 +339,48 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         });
         
         me.on('afterrender', function(){
-            me.update(
-                new Ext.Template('<div class="website-builder-scroll-indicator" id="scroll-indicator-up-{id}">',
-                                 '  <div class="icon-arrow-up-white"></div>',
-                                 '</div>',
-                                 '<div class="website-builder-scroll-indicator" id="scroll-indicator-down-{id}">',
-                                 '  <div class="icon-arrow-down-white"></div>',
-                                 '</div>'
-                                ).apply({
-                                    id: me.id
-                                })
-            );
+            if (!me.isThemeMode()) {
+                me.update(
+                    new Ext.Template('<div class="website-builder-scroll-indicator" id="scroll-indicator-up-{id}">',
+                                     '  <div class="icon-arrow-up-white"></div>',
+                                     '</div>',
+                                     '<div class="website-builder-scroll-indicator" id="scroll-indicator-down-{id}">',
+                                     '  <div class="icon-arrow-down-white"></div>',
+                                     '</div>'
+                                    ).apply({
+                                        id: me.id
+                                    })
+                );
 
-            if (me.body) {
-                me.body.ddScrollConfig = {
-                    vthresh: 50,
-                    increment: 200,
-                };
-                Ext.dd.ScrollManager.register(me.body);
+                if (me.body) {
+                    me.body.ddScrollConfig = {
+                        vthresh: 50,
+                        increment: 200,
+                    };
+                    Ext.dd.ScrollManager.register(me.body);
 
-                $('#' + me.body.id).scroll(function(e){
-                    if (me.dragStarted == undefined || !me.dragStarted) return false;
-                    var div = $(this);
-                    if (Math.floor(div[0].scrollHeight - div.scrollTop()) == div.height()) {
-                        // bottom
-                        me.hideScrollIndicator('bottom')
-                    } else if(div.scrollTop() == 0) {
-                        // top
-                        me.hideScrollIndicator('top');
-                    } 
-                });
-
-                me.getEl().on('mouseover', function(e, t){
-                    if(me.dragStarted) {
-                        if (t.id.match(/scroll-indicator-up-/)) {
-                            me.showScrollIndicator('bottom');
-                        } else if (t.id.match(/scroll-indicator-down-/)) {
-                            me.showScrollIndicator('top');
+                    $('#' + me.body.id).scroll(function(e){
+                        if (me.dragStarted == undefined || !me.dragStarted) return false;
+                        var div = $(this);
+                        if (Math.floor(div[0].scrollHeight - div.scrollTop()) == div.height()) {
+                            // bottom
+                            me.hideScrollIndicator('bottom')
+                        } else if(div.scrollTop() == 0) {
+                            // top
+                            me.hideScrollIndicator('top');
                         } 
-                    }
-                })
+                    });
+
+                    me.getEl().on('mouseover', function(e, t){
+                        if(me.dragStarted) {
+                            if (t.id.match(/scroll-indicator-up-/)) {
+                                me.showScrollIndicator('bottom');
+                            } else if (t.id.match(/scroll-indicator-down-/)) {
+                                me.showScrollIndicator('top');
+                            } 
+                        }
+                    })
+                }
             }
         })
 
@@ -400,7 +402,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         return false;
                     }
                     
-                    me.disableComponents();
                     if (data.isContainer) {
                         if (me.hasOnlyOrNoContainer()) return false;
                         me.addAutoRemovableContainers(data.containerId);
@@ -411,6 +412,7 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                         me.showScrollIndicator('top');
                         me.showScrollIndicator('bottom');
                     }
+                    me.disableComponents();
                     me.dragStarted = true;
                     
                 },
