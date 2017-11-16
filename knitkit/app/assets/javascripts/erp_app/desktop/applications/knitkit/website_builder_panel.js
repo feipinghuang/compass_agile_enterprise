@@ -13,29 +13,31 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderDropZoneCo
     },
     listeners: {
         afterrender: function(container) {
-            container.update(
-                new Ext.XTemplate(
-                    '<div id="outer-{containerId}" class="website-builder-reorder-setting">',
-                    '  <div class="icon-move pull-left" containerId = "{containerId}" style="margin-right:5px;"></div>',
-                    '  <div class="icon-remove pull-left" style="margin-right:5px;"></div>',
-                    '</div>'
-                ).apply({
-                    containerId: container.id
+            if (!container.up('websitebuilderpanel').isThemeMode()) {
+                container.update(
+                    new Ext.XTemplate(
+                        '<div id="outer-{containerId}" class="website-builder-reorder-setting">',
+                        '  <div class="icon-move pull-left" containerId = "{containerId}" style="margin-right:5px;"></div>',
+                        '  <div class="icon-remove pull-left" style="margin-right:5px;"></div>',
+                        '</div>'
+                    ).apply({
+                        containerId: container.id
+                    })
+                );
+
+
+                $('#outer-' + container.id).on('mouseenter', function(){
+                    $(this).css('background-color', '#ccc');
+                    $(this).children().show();
+                }).on('mouseleave', function(){
+                    $(this).children().hide();
+                    $(this).css('background-color', '');
+                });
+
+                container.el.down('.icon-remove').on('click', function(){
+                    container.destroy();
                 })
-            );
-
-
-            $('#outer-' + container.id).on('mouseenter', function(){
-                $(this).css('background-color', '#ccc');
-                $(this).children().show();
-            }).on('mouseleave', function(){
-                $(this).children().hide();
-                $(this).css('background-color', '');
-            });
-
-            container.el.down('.icon-remove').on('click', function(){
-                container.destroy();
-            })
+            }
         }
     }
 });
