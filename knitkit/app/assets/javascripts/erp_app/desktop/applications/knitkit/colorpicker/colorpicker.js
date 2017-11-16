@@ -1,0 +1,224 @@
+Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPickerPanel', {
+
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.compassaecolorpickerpanel',
+    bubbleEvents: [
+        'colorSelected'
+    ],
+
+    spectrumWidth: 250,
+
+    spectrumCss: '',
+
+    defaultColor: '#000000',
+
+    /**
+     * Config for user's Spectrum color picker customizations
+     * @public
+     */
+    conf: {},
+
+    /**
+     * Default configuration
+     * Might be rewrited with parameter `conf` during object initiation
+     * @private
+     */
+    _defaultConf: {
+        flat: true,
+        showInput: true,
+        showInitial: true,
+        allowEmpty: true,
+        showAlpha: true,
+        disabled: false,
+        showPalette: true,
+        showPaletteOnly: false,
+        showSelectionPalette: false,
+        cancelText: 'Cancel',
+        chooseText: 'Choose',
+
+        preferredFormat: 'hex',
+        showButtons: false,
+        clickoutFiresChange: false,
+        palette: [
+            ['#FF8080', '#FFFF74', '#00FF74', '#00FF74', '#00FFFF', '#0080FF', '#FF80C3', '#FF80FF'],
+            ['#FF0000', '#FFFF00', '#00FF00', '#00FF00', '#00FFFF', '#0080C3', '#8080C3', '#FF00FF'],
+            ['#8E4040', '#696969', '#00FF00', '#008080', '#004082', '#8080FF', '#920042', '#FF0083'],
+            ['#920000', '#FF8000', '#008000', '#00803A', '#0000FF', '#0000A4', '#920083', '#9200FF'],
+            ['#490000', '#8E4000', '#004000', '#004040', '#000083', '#000042', '#490042', '#490083'],
+            ['#000000', '#808000', '#80803A', '#808080', '#008080', '#C0C0C0', '#490042', '#FFFFFF']
+        ]
+    },
+
+    border: 0,
+
+    colorPickerIdent: null,
+
+    initComponent: function () {
+
+        this.addEvents(
+            'colorSelected'
+        );
+
+        if (typeof this.conf.color === 'string') {
+            this.defaultColor = this.conf.color;
+        }
+        this._defaultConf.color = this.defaultColor;
+
+        this.colorPickerIdent = 'colorPicker-' + this.id;
+
+        var css =
+            "<style type='text/css'>\n"+
+            "   .AmbientColorPicker.sp-container {border: none; background-color: transparent; z-index: auto;} \n" +
+            "   .AmbientColorPicker .sp-palette-container {border-right-color: #E5E5FB;} \n" +
+            "   .AmbientColorPicker .sp-picker-container {width: " + this.spectrumWidth + "px;} \n" +
+            "   .AmbientColorPicker .sp-input-container {width: 100%; margin: 5px 0 5px 0; background-color: white;} \n" +
+            "   .AmbientColorPicker .sp-input-container .sp-input {border-radius: 0px;} \n" +
+            this.spectrumCss +
+            "</style> \n"
+        ;
+
+        this.html = css + '<input type="text" id="' + this.colorPickerIdent + '" />';
+
+        this.on({
+            beforerender: this.onBeforeRrender,
+            afterrender: this.onAfterRrender,
+            scope: this
+        });
+
+        this.callParent(arguments);
+    },
+
+    onBeforeRrender: function () {
+        //...
+    },
+
+    onAfterRrender: function () {
+        this.initSpectrum();
+    },
+
+    _fireEventOnColorSelected: function (color) {
+        var colorString = color ? color.toString() : '';
+        this.fireEvent('colorSelected', this, colorString, color);
+    },
+
+    getJqueryObject: function () {
+        return $("#"+this.colorPickerIdent);
+    },
+
+    initSpectrum: function () {
+
+        var resultConf = {};
+
+        var ident = 'AmbientColorPicker AcpRnd-'+this.colorPickerIdent+' AcpId-'+this.id;
+
+        var issentialConf = {
+            className: ident,
+            move: Ext.bind(this._fireEventOnColorSelected, this)
+        };
+
+        Ext.iterate(this._defaultConf, function (key, value) {
+            resultConf[key] = value;
+        });
+
+        Ext.iterate(this.conf, function (key, value) {
+            resultConf[key] = value;
+        });
+
+        Ext.iterate(issentialConf, function (key, value) {
+            resultConf[key] = value;
+        });
+
+        this.getJqueryObject().spectrum(resultConf);
+    },
+
+    setValue: function (color) {
+        this.getJqueryObject().spectrum('set', tinycolor(color));
+        this._fireEventOnColorSelected(this.getValue(true));
+    },
+
+    /**
+     * @param {bool} [rawObject] [Optional] [default: False] - Return raw object, instead of AGBA string
+     * @returns {*}
+     */
+    getValue: function (rawObject) {
+
+        rawObject = (typeof rawObject == 'undefined') ? false : !!rawObject;
+
+        var colorObj = this.getJqueryObject().spectrum('get');
+
+        if (rawObject) {
+            return this.isColorObject(colorObj) ? colorObj : null;
+        } else {
+            return this.isColorObject(colorObj) ? colorObj.toString() : this.defaultColor;
+        }
+    },
+
+    isColorObject: function (obj) {
+	return typeof obj === 'object' && typeof obj.getAlpha === 'function';
+    }
+
+});
+
+Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.ColorPicker', {
+    extend: 'Ext.form.field.Trigger',
+    alias: 'widget.compassaecolorpicker',
+    buttonTextOk: 'Done',
+    buttonTextCancel: 'Cancel',
+    conf: {},
+    onTriggerClick: function(e) {
+        var me = this;
+        if (me.menu) {
+            me.menu.showAt(e.getXY());
+        } else {
+            me.menu = Ext.create('Ext.menu.Menu', {
+                plain: true,
+                showSeparator: false,
+                items: [{
+                    xtype: 'compassaecolorpickerpanel',
+                    conf: Ext.apply(me.conf, {color: tinycolor(me.value).toHexString()}),
+                }],
+                bbar: [
+                    '->',
+                    {
+                        text: me.buttonTextOk,
+                        handler: function(btn) {
+                            var pickerPanel = btn.up('menu').down('compassaecolorpickerpanel');
+                            var obj = pickerPanel.getJqueryObject();
+                            var clr = obj.spectrum('get').toHexString();
+                            me.setValue(clr);
+                            btn.up('menu').hide();
+                        }
+                    },
+                    {
+                        text: me.buttonTextCancel,
+                        handler: function(btn) {
+                            btn.up('menu').hide();
+                        }
+                    }
+                ],
+
+            });
+            
+            me.menu.showAt(e.getXY());
+        }
+    },    
+
+    getColorPicker: function() {
+        if(this.menu) {
+            this.menu.down('compassaecolorpickerpanel');
+        }
+    },
+    
+    setValue: function (color) {
+        var me = this;
+        if (!Compass.ErpApp.Utility.isBlank(color)) {
+            var color = tinycolor(color)
+            if (me.getColorPicker()) me.getColorPicker().setValue(color);
+            var colorStr = color.toHexString();
+            me.setFieldStyle('background-color: '+ colorStr);
+            me.callParent([colorStr])
+        }
+    }
+
+
+});

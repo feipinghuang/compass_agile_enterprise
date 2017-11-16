@@ -4,8 +4,7 @@ module Knitkit
       class WebsiteController < Knitkit::ErpApp::Desktop::AppController
         IGNORED_PARAMS = %w{action controller id}
 
-        before_filter :set_website, :only => [:build_content_tree, :export, :exporttemplate, :website_publications,
-                                              :set_viewing_version,
+        before_filter :set_website, :only => [:build_content_tree, :export_template, :website_publications, :set_viewing_version,
                                               :build_host_hash, :activate_publication, :publish, :update, :delete]
 
         def index
@@ -13,9 +12,19 @@ module Knitkit
           .where('website_party_roles.party_id = ?', current_user.party.dba_organization.id)
           .where('website_party_roles.role_type_id = ?', RoleType.iid('dba_org'))
 
-          render :json => {:sites => websites.all.collect { |item| item.to_hash(:only => [:id, :name, :title, :subtitle],
-                                                                                :configuration_id => item.configurations.first.id,
-                                                                                :url => "#{request.protocol}#{item.config_value('primary_host')}") }}
+          render json: {
+            sites: websites.all.collect do |item|
+              theme = item.themes.first
+              item.to_hash(only: [:id, :name, :title, :subtitle],
+                           configuration_id: item.configurations.first.id,
+                           url: "#{request.protocol}#{item.config_value('primary_host')}",
+                           theme: theme.to_hash(only: [:id],
+                                                header: theme.meta_data['header'],
+                                                footer: theme.meta_data['footer']
+                                                )
+                           )
+            end
+          }
         end
 
         def build_content_tree
@@ -55,7 +64,7 @@ module Knitkit
           limit = params[:limit] || 9
           start = params[:start] || 0
 
-          published_websites = @website.published_websites.order("#{sort} #{dir}").limit(limit).offset(start)
+          published_websites = @website.published_websites.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).limit(limit).offset(start)
 
           #set site_version. User can view different versions. Check if they are viewing another version
           site_version = @website.active_publication.version
@@ -73,11 +82,10 @@ module Knitkit
             end
           end
 
-          render :inline => "{\"success\":true, \"results\":#{published_websites.count},
-                            \"totalCount\":#{@website.published_websites.count},
-                            \"data\":#{published_websites.to_json(
-                :only => [:comment, :id, :version, :created_at, :active],
-          :methods => [:viewing, :published_by_username])} }"
+          published_data = published_websites.map{|item| item.to_hash(:only => [:comment, :id, :version, :created_at, :active],:methods => [:viewing, :published_by_username])}
+          data = {sucess: true, results: @website.published_websites.count, totalCount: @website.published_websites.count, data: published_data}
+
+          render json: data
         end
 
         def activate_publication
@@ -158,6 +166,16 @@ module Knitkit
                                         party: current_user.party.dba_organization,
                                         role_type: RoleType.iid('dba_org'))
 
+                #create a theme for the website
+                theme = Theme.create(
+                  website: website,
+                  name: "#{website.name} Theme",
+                  theme_id: "#{website.internal_identifier}-theme"
+                )
+                theme.create_theme_files!
+                theme.init_design_layout!
+                theme.activate!
+
                 render :json => {:success => true, :website => website.to_hash(:only => [:id, :name],
                                                                                :configuration_id => website.configurations.first.id,
                                                                                :url => "http://#{website.config_value('primary_host')}")}
@@ -193,16 +211,7 @@ module Knitkit
           end
         end
 
-        def export
-          zip_path = @website.export
-          begin
-            send_file(zip_path.to_s, :stream => false)
-          rescue StandardError => ex
-            raise "Error sending #{zip_path} file"
-          end
-        end
-
-        def exporttemplate
+        def export_template
           zip_path = @website.export_template
           if zip_path
             begin
@@ -213,22 +222,6 @@ module Knitkit
           else
             render :inline => {:success => false, :message => 'test'}.to_json
           end
-        end
-
-        # TODO add role restriction to this
-        def import
-          website, message = Website.import(params[:website_data], current_user)
-
-          if website
-            render :inline => {:success => true, :website => website.to_hash(:only => [:id, :name])}.to_json
-          else
-            render :inline => {:success => false, :message => message}.to_json
-          end
-          WebsitePartyRole.create(website: website,
-                                  party: current_user.party.dba_organization,
-                                  role_type: RoleType.iid('dba_org'))
-        ensure
-          FileUtils.rm_r File.dirname(zip_path) rescue nil
         end
 
         def import_template

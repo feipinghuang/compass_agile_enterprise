@@ -9,7 +9,7 @@ module ErpApp
     config.erp_app = ErpApp::Config
 
     initializer "erp_app.merge_public" do |app|
-      app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
+      app.middleware.insert_after ::ActionDispatch::Static, ::ActionDispatch::Static, "#{root}/public"
     end
 
     initializer :assets do |config|

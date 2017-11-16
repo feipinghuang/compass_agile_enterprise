@@ -9,7 +9,7 @@ module ErpApp
               action = opts[:action] || :index
               params = opts[:params].nil? ? {} : opts[:params]
               render_inline = opts[:render_inline] === false ? false : true
-         
+
               uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
 
               if render_inline
@@ -27,6 +27,26 @@ module ErpApp
               else
                 html = "<div id=\"#{uuid}\" class='compass_ae-widget'>Loading ...<script type=\"text/javascript\">Compass.ErpApp.Widgets.setup('#{uuid}', '#{name}', '#{action}', #{params.to_json}, true);</script></div>"
               end
+
+              raw html
+            end
+
+            def render_builder_widget(name, opts={})
+              #render widget
+              params = opts[:params].nil? ? {} : opts[:params]
+              uuid = Digest::SHA1.hexdigest(Time.now.to_s + rand(10000).to_s)
+
+              action = "website_builder"
+              widget_obj = "::Widgets::#{name.to_s.camelize}::Base".constantize.new(self.controller, name.to_s, action, uuid, params, nil)
+              widget_obj.define_singleton_method(:original_action) do
+                opts[:action] || :index
+              end
+
+              result = widget_obj.process(action)
+
+              html = "<div id=\"#{uuid}\" class='compass_ae-widget' data-widget-name= '#{name.to_s}'>"
+              html << result
+              html << "</div>"
 
               raw html
             end

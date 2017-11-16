@@ -1,5 +1,5 @@
 class EducationHistory < ActiveRecord::Base
-  # attr_accessible :title, :body
+  attr_protected :created_at, :updated_at
 
   is_json :custom_fields
 

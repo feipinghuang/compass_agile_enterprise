@@ -1,15 +1,53 @@
 Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
-    extend: "Ext.panel.Panel",
+    extend: "Ext.tab.Panel",
     id: 'knitkitWestRegion',
     alias: 'widget.knitkit_westregion',
-    layout: 'accordion',
 
-    setWindowStatus: function (status) {
-        this.findParentByType('statuswindow').setStatus(status);
+    module: null,
+
+    constructor: function(config) {
+        this.siteStructureTabPanel = Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel', {
+            module: config.module
+        });
+
+        this.items = [this.siteStructureTabPanel];
+
+        config = Ext.apply({
+            deferredRender: false,
+            id: 'knitkitWestRegion',
+            region: 'west',
+            width: 280,
+            split: true,
+            collapsible: true,
+            activeTab: 0
+        }, config);
+
+        this.callParent([config]);
     },
 
-    clearWindowStatus: function () {
-        this.findParentByType('statuswindow').clearStatus();
+    addComponentsTabPanel: function(isTheme) {
+        if (this.down('knitkit_componenttabpanel')) {
+            this.down('knitkit_componenttabpanel').destroy();
+        }
+
+        this.componentTabPanel = this.add(Ext.create('Compass.ErpApp.Desktop.Applications.Knitkit.ComponentTabPanel', {
+            module: this.module,
+            isTheme: isTheme
+        }));
+
+        this.setActiveTab(this.componentTabPanel);
+    },
+
+    removeComponentsTabPanel: function() {
+        this.down('knitkit_componenttabpanel').destroy();
+    },
+
+    selectWebsite: function(website) {
+        this.siteStructureTabPanel.selectWebsite(website);
+    },
+
+    clearWebsite: function() {
+        this.siteStructureTabPanel.clearWebsite();
     },
 
     changeSecurity: function (node, updateUrl, id) {
@@ -62,115 +100,5 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.WestRegion", {
                 Ext.Msg.alert('Error', 'Could not load available roles');
             }
         });
-    },
-
-    selectWebsite: function (website) {
-        var siteContentsPanel = Ext.ComponentQuery.query('#knitkitSiteContentsTreePanel').first();
-        siteContentsPanel.selectWebsite(website);
-
-        var themePanel = Ext.ComponentQuery.query('#themesTreePanel').first();
-        themePanel.selectWebsite(website);
-
-        var menuPanel = Ext.ComponentQuery.query('#knitkitMenuTreePanel').first();
-        menuPanel.selectWebsite(website);
-
-        var hostPanel = Ext.ComponentQuery.query('#knitkitHostListPanel').first();
-        hostPanel.selectWebsite(website);
-    },
-
-    clearWebsite: function () {
-        var siteContentsPanel = Ext.ComponentQuery.query('#knitkitSiteContentsTreePanel').first();
-        siteContentsPanel.clearWebsite();
-
-        var themePanel = Ext.ComponentQuery.query('#themesTreePanel').first();
-        themePanel.clearWebsite();
-
-        var menuPanel = Ext.ComponentQuery.query('#knitkitMenuTreePanel').first();
-        menuPanel.clearWebsite();
-
-        var hostPanel = Ext.ComponentQuery.query('#knitkitHostListPanel').first();
-        hostPanel.clearWebsite();
-    },
-
-    initComponent: function () {
-
-        var siteContentsPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Site Contents',
-            autoScroll: true,
-            items: [
-                {
-                    xtype: 'knitkit_sitecontentstreepanel',
-                    centerRegion: this.initialConfig['module'].centerRegion,
-                    header: false
-                }
-            ]
-        });
-
-        var themesPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Visual Theme Files',
-            autoScroll: true,
-            items: [
-                {
-                    xtype: 'knitkit_themestreepanel',
-                    centerRegion: this.initialConfig['module'].centerRegion,
-                    header: false
-                }
-            ]
-
-        });
-
-        var menuPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Menus and Navigation',
-            autoScroll: true,
-            items: [
-                {
-                    xtype: 'knitkit_menutreepanel'
-                }
-            ]
-        });
-
-        var configPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Hosts',
-            autoScroll: true,
-            items: [
-                {
-                    xtype: 'knitkit_hostspanel'
-                }
-            ]
-
-        });
-
-        this.items = [siteContentsPanel, themesPanel, menuPanel, configPanel];
-
-        this.dockedItems = [
-            {
-                xtype: 'toolbar',
-                dock: 'top',
-                items: [
-                    {
-                        text: 'Site:'
-                    },
-                    {
-                        xtype: 'websitescombo',
-                        width: 205
-                    }
-                ]
-            }
-        ];
-
-        this.callParent(arguments);
-    },
-
-    constructor: function (config) {
-        config = Ext.apply({
-
-            region: 'west',
-            split: true,
-            width: 300,
-            collapsible: true
-
-        }, config);
-
-        this.callParent([config]);
     }
 });

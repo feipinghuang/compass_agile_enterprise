@@ -20,7 +20,7 @@ module API
 
         total_count = file_assets.count
         file_assets = file_assets.limit(limit).offset(start)
-        file_assets.order("#{sort} #{dir}")
+        file_assets.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
 
         render json: {success: true,
                       total_count: total_count,
@@ -32,12 +32,14 @@ module API
           ActiveRecord::Base.transaction do
             file_support = ErpTechSvcs::FileSupport::Base.new(:storage => ErpTechSvcs::Config.file_storage)
 
-            record = params[:file_asset_holder_type].constantize.find(params[:file_asset_holder_id])
+            file_asset_holder_type = ActionController::Base.helpers.sanitize(params[:file_asset_holder_type]).to_param
+
+            record = file_asset_holder_type.constantize.find(params[:file_asset_holder_id])
 
             file_name = params[:file].original_filename
             data = params[:file].read
 
-            path = File.join(file_support.root, 'file_assets', params[:file_asset_holder_type], params[:file_asset_holder_id], file_name)
+            path = File.join(file_support.root, 'file_assets', file_asset_holder_type, params[:file_asset_holder_id], file_name)
 
             file_asset = record.add_file(data, path)
 

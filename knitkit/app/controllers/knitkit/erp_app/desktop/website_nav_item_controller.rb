@@ -7,7 +7,10 @@ module Knitkit
           begin
             current_user.with_capability('create', 'WebsiteNavItem') do
               result = {}
-              klass = params[:klass].constantize
+
+              klass = ActionController::Base.helpers.sanitize(params[:klass]).to_param
+              klass = klass.constantize
+
               parent = klass.find(params[:parent_id])
               website_nav = parent.is_a?(WebsiteNav) ? parent : parent.website_nav
               website_nav_item = WebsiteNavItem.new(:title => params[:title])
@@ -18,7 +21,7 @@ module Knitkit
                 params[:link_to] = 'WebsiteSection' if params[:link_to] == 'website_section'
 
                 #get link to item can be Article or Section
-                linked_to_id = params["#{params[:link_to].underscore}_id".to_sym]
+                linked_to_id = params["#{WebsiteNavItem.sanitize(params[:link_to]).underscore}_id".to_sym]
                 link_to_item = params[:link_to].constantize.find(linked_to_id)
                 #setup link
                 website_nav_item.url = '/' + link_to_item.permalink

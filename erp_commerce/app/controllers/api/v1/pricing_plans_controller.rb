@@ -40,7 +40,7 @@ module API
 
         total_count = pricing_plans.count
 
-        pricing_plans = pricing_plans.order("#{sort} #{dir}").offset(start).limit(limit)
+        pricing_plans = pricing_plans.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).offset(start).limit(limit)
 
         render :json => {success: true, total_count: total_count, pricing_plans: pricing_plans.collect(&:to_data_hash)}
       end

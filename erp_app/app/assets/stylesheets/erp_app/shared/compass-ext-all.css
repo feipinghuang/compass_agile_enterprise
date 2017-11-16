@@ -557,6 +557,16 @@
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/arrow_right_blue/arrow_right_blue_16x16.png', sizingMethod='crop');
 }
 
+.icon-arrow-up-white {
+  background-image: url(/assets/icons/arrow_up_white/arrow_up_white_16x16.png) !important;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/arrow_up_white/arrow_up_white_16x16.png', sizingMethod='crop');  
+}
+
+.icon-arrow-down-white {
+  background-image: url(/assets/icons/arrow_down_white/arrow_down_white_16x16.png) !important;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/arrow_down_white/arrow_down_white_16x16.png', sizingMethod='crop');  
+}
+
 .icon-eye {
     background-image: url(/assets/icons/eye/eye_16x16.png) !important;
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/eye/eye_16x16.png', sizingMethod='crop');
@@ -571,6 +581,17 @@
     background-image: url(/assets/icons/list/list_light_16x16.png) !important;
     filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/list/list_light_16x16.png', sizingMethod='crop');
 }
+
+.icon-lock {
+  background-image: url(/assets/icons/lock/lock_16x16.png) !important;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/lock/lock_16x16.png', sizingMethod='crop');
+}
+
+.icon-lock-open {
+  background-image: url(/assets/icons/lock_opn/lock_open_16x16.png) !important;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/assets/icons/lock_open/lock_open_16x16.png', sizingMethod='crop');
+}
+
 
 .schedule-col {
     background-image: url(/assets/icons/calendar/calendar_16x16.png) !important;

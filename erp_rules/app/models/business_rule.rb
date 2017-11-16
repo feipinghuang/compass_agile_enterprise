@@ -60,23 +60,10 @@ class BusinessRule < ActiveRecord::Base
   end
 
   def to_data_hash
-    data = to_hash(only: [:id, :description, :internal_identifier, :created_at, :updated_at])
+    data = to_hash(only: [:description, :id, :internal_identifier, :created_at, :updated_at])
 
     data[:rule_matching_conditions] = rule_matching_conditions.collect(&:to_data_hash)
     data[:rule_actions] = rule_actions.collect(&:to_data_hash)
-
-    data
-  end
-
-  def export
-    data = to_data_hash
-
-    data.delete(:id)
-    data.delete(:created_at)
-    data.delete(:updated_at)
-
-    data[:rule_matching_conditions] = rule_matching_conditions.collect(&:export)
-    data[:rule_actions] = rule_actions.collect(&:export)
 
     data
   end

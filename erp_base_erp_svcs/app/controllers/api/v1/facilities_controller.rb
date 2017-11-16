@@ -12,6 +12,7 @@ module API
 
  @apiSuccess (200) {Object} get_facilities_response Response
  @apiSuccess (200) {Boolean} get_facilities_response.success True if the request was successful
+ @apiSuccess (200) {Number} get_facilities_response.total_count Total count of records based on any filters applied
  @apiSuccess (200) {Object[]} get_facilities_response.facilities Facility records
  @apiSuccess (200) {Number} get_facilities_response.facilities.id Id of Facility
 
@@ -34,7 +35,7 @@ module API
           facilities = facilities.offset(params[:start])
         end
 
-        facilities = facilities.uniq.order("#{sort} #{dir}")
+        facilities = facilities.uniq.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
 
         render :json => {success: true, total_count: total_count, facilities: facilities.all.collect(&:to_data_hash)}
       end

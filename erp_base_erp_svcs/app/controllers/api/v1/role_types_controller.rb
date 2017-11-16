@@ -2,6 +2,20 @@ module API
   module V1
     class RoleTypesController < BaseController
 
+=begin
+ @api {get} /api/v1/role_types
+ @apiVersion 1.0.0
+ @apiName GetRoleTypes
+ @apiGroup RoleType
+ @apiDescription Get RoleTypes
+ 
+ @apiSuccess (200) {Object} get_role_types_response Response
+ @apiSuccess (200) {Boolean} get_role_types_response.success True if the request was successful.
+ @apiSuccess (200) {Number} get_role_types_response.total_count Total count of records based on any filters applied.
+ @apiSuccess (200) {Object[]} get_role_types_response.role_types List of RoleType records.
+ @apiSuccess (200) {Number} get_role_types_response.role_types.id Id of RoleType.
+=end
+
       def index
         if params[:party_id].present?
           party = Party.find(params[:party_id])
@@ -97,6 +111,21 @@ module API
         end
       end
 
+=begin
+ @api {get} /api/v1/role_types/:id
+ @apiVersion 1.0.0
+ @apiName GetRoleType
+ @apiGroup RoleType
+ @apiDescription Get RoleType
+ 
+ @apiParam (path) {Number} id Id of RoleType
+
+ @apiSuccess (200) {Object} get_role_type_response Response
+ @apiSuccess (200) {Boolean} get_role_type_response.success True if the request was successful.
+ @apiSuccess (200) {Object[]} get_role_type_response.role_type List of RoleType records.
+ @apiSuccess (200) {Number} get_role_type_response.role_type.id Id of RoleType.
+=end
+
       def show
         id = params[:id]
 
@@ -116,6 +145,23 @@ module API
           end
         end
       end
+
+=begin
+ @api {post} /api/v1/role_types
+ @apiVersion 1.0.0
+ @apiName CreateRoleType
+ @apiGroup RoleType
+ @apiDescription Create RoleType
+ 
+ @apiParam (body) {String} description Description
+ @apiParam (body) {String} [parent] If parent is sent and it is not 'No Parent' then it will be set as the parent of the new RoleType
+ @apiParam (body) {String} [default_parent] If default_parent is sent it will be set as the parent of the new RoleType
+
+ @apiSuccess (200) {Object} create_role_type_response Response
+ @apiSuccess (200) {Boolean} create_role_type_response.success True if the request was successful.
+ @apiSuccess (200) {Object[]} create_role_type_response.role_type RoleType record.
+ @apiSuccess (200) {Number} create_role_type_response.role_type.id Id of RoleType.
+=end
 
       def create
         description = params[:description].strip

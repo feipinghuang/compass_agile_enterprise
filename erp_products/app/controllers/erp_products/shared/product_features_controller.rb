@@ -1,6 +1,9 @@
 module ErpProducts
   module Shared
+
     class ProductFeaturesController < ActionController::Base
+
+      protect_from_forgery only: []
 
       def index
         product_features = []
@@ -43,4 +46,3 @@ module ErpProducts
     end # ErpProducts
   end # Shared
 end # ProductFeaturesController
-

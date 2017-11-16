@@ -11,6 +11,7 @@ Ext.define('SiteContentsModel', {
         'display_title',
         'leaf',
         'isSection',
+        'source_enabled',
         'isDocument',
         'contentInfo',
         'content_area',
@@ -102,7 +103,7 @@ var viewConfigItems = {
                 // if the record is modified and the parentId has changed we need to change
                 // the section parent
                 var parentNode = null;
-                
+
                 if (dropPosition == 'append') {
                     positionArray.push({
                         id: record.get('recordId'),
@@ -228,18 +229,42 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                     }]);
             },
             failure: function(response) {
-                Ext.Msg.alert('Error', 'Error loading section layout.');
+                Ext.Msg.error('Error', 'Error loading section layout.');
+            }
+        });
+    },
+
+    editSectionSource: function(sectionName, sectionId, websiteId) {
+        var self = this;
+
+        Ext.Ajax.request({
+            url: '/knitkit/erp_app/desktop/section/enable_source_edit',
+            method: 'put',
+            params: {
+                id: sectionId
+            },
+            success: function(response) {
+                self.initialConfig['centerRegion'].editSectionSource(
+                    sectionName,
+                    websiteId,
+                    sectionId,
+                    response.responseText, []);
+            },
+            failure: function(response) {
+                Ext.Msg.error('Error', 'Error loading section source');
             }
         });
     },
 
     clearWebsite: function() {
+        this.theme = null;
         var store = this.getStore();
         store.getProxy().extraParams = {};
         store.load();
     },
 
     selectWebsite: function(website) {
+        this.theme = website.theme;
         var store = this.getStore();
         store.getProxy().extraParams = {
             website_id: website.id
@@ -251,19 +276,24 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
         itemclick: function(view, record, htmlItem, index, e) {
             var url = null;
             var self = this;
+
             e.stopEvent();
-
-            if (record.data['isSection']) {
-                self.initialConfig['centerRegion'].openIframeInTab(record.data.text, record.data['url']);
-            } else if (record.data['objectType'] === "Article") {
+                
+            if (record.get('type') == 'Page') {
+                if (record.get('source_enabled')) {
+                    self.editSectionLayout(record.data.text, record.data.recordId, record.data['siteId']);
+                } else {
+                    self.initialConfig['centerRegion'].openWebsiteBuilderInTab(record.data.text, record.data.recordId, self.theme);
+                }
+            } else if (record.get('type') == 'Blog') {
+                url = '/blogs/' + record.get('recordId');
+                self.initialConfig['centerRegion'].openIframeInTab(record.get('text'), url)
+            }  else if (record.get('objectType') == 'Article') {
                 url = '/knitkit/erp_app/desktop/articles/show/' + record.get('recordId');
-
+                
                 Ext.Ajax.request({
                     url: url,
                     method: 'GET',
-                    extraParams: {
-                        id: record.get('recordId')
-                    },
                     timeout: 90000,
                     success: function(response) {
                         var article = Ext.decode(response.responseText);
@@ -273,59 +303,12 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                         Ext.Msg.alert('Error', 'Could not load content');
                     }
                 });
-            } else if (record.data['isDocument']) {
-                url = '/knitkit/erp_app/desktop/online_document_sections/' + record.get('recordId') + '/content/';
-                var contentInfo = record.data['contentInfo'];
-
-                Ext.Ajax.request({
-                    url: url,
-                    method: 'GET',
-                    timeout: 90000,
-                    success: function(response) {
-                        var result = Ext.decode(response.responseText);
-                        if (result.success) {
-                            if (record.data['useMarkdown']) {
-                                self.initialConfig['centerRegion'].editDocumentationMarkdown(
-                                    contentInfo.title,
-                                    record.data['siteId'],
-                                    contentInfo.id,
-                                    result.content, []
-                                );
-                            } else {
-                                self.initialConfig['centerRegion'].editContent(
-                                    contentInfo.title,
-                                    contentInfo.id,
-                                    result.content,
-                                    record.data['siteId'],
-                                    'article'
-                                );
-                            }
-                        } else {
-                            Ext.Msg.alert('Error', 'Could not load content');
-                        }
-                    },
-                    failure: function() {
-                        Ext.Msg.alert('Error', 'Could not load content');
-                    }
-                });
             }
+
         },
         itemcontextmenu: function(view, record, htmlItem, index, e) {
             e.stopEvent();
             var items = [];
-
-            if (!Compass.ErpApp.Utility.isBlank(record.data['url'])) {
-                items.push({
-                    text: 'View In Web Navigator',
-                    iconCls: 'icon-globe',
-                    listeners: {
-                        'click': function() {
-                            var webNavigator = window.compassDesktop.getModule('web-navigator-win');
-                            webNavigator.createWindow(record.data['url']);
-                        }
-                    }
-                });
-            }
 
             if (record.isRoot() && record.hasChildNodes()) {
                 items = [
@@ -337,10 +320,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.SiteContentsTreePanel", {
                     Compass.ErpApp.Desktop.Applications.Knitkit.websitePublishMenuItem(false),
                     Compass.ErpApp.Desktop.Applications.Knitkit.websiteInquiresMenuItem(false)
                 ];
-            }
-
-            if (record.data['isDocument']) {
-                items = Compass.ErpApp.Desktop.Applications.Knitkit.addDocumentOptions(self, items, record);
             }
 
             if (record.data['objectType'] === "Article") {

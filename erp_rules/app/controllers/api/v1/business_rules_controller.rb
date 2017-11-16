@@ -18,7 +18,7 @@ module API
             business_rule = rule_set.business_rules.create(description: data[:description], internal_identifier: data[:internal_identifier])
 
             data[:conditions].each do |condition|
-              business_rule.rule_matching_conditions.create(description: condition[:description], lhs: condition[:lhs], operator: condition[:operator], rhs: condition[:rhs], custom_statement: condition[:custom_statement])
+              business_rule.rule_matching_conditions.create(lhs: condition[:lhs], operator: condition[:operator], rhs: condition[:rhs])
             end
 
             data[:actions].each do |action|
@@ -50,7 +50,7 @@ module API
 
             business_rule.rule_matching_conditions.destroy_all
             data[:conditions].each do |condition|
-              business_rule.rule_matching_conditions.create(description: condition[:description], lhs: condition[:lhs], operator: condition[:operator], rhs: condition[:rhs], custom_statement: condition[:custom_statement])
+              business_rule.rule_matching_conditions.create(lhs: condition[:lhs], operator: condition[:operator], rhs: condition[:rhs])
             end
 
             business_rule.rule_actions.destroy_all

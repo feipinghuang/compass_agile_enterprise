@@ -3,19 +3,13 @@ module API
     class RulesetsController < BaseController
 
       def index
-        rulesets = Ruleset
-
         respond_to do |format|
           format.json do
-            total_count = rulesets.count
-
-            rulesets = rulesets.limit(@limit).offset(@offset)
-
-            render json: {success: true, total_count: total_count, rulesets: Ruleset.all.collect(&:to_data_hash)}
+            render json: {success: true, rulesets: Ruleset.all.collect(&:to_data_hash)}
           end
 
           format.tree do
-            render json: Ruleset.all.map{|ruleset| ruleset.to_tree}.to_json
+            render json: Ruleset.all.map{|ruleset| {text: ruleset.description, id: ruleset.id, children: [], leaf: true}}.to_json
           end
         end
       end
@@ -69,41 +63,6 @@ module API
         ruleset = Ruleset.find(params[:id])
 
         render json: {success: ruleset.destroy}
-      end
-
-      # Export a Ruleset
-      #
-      def export
-        ruelset = Ruleset.find(params[:id])
-
-        send_data ruelset.export.to_json, filename: "#{ruelset.description}.json", type: 'application/json'
-      end
-
-      # Import a Ruleset
-      #
-      def import
-        file_data = params[:file]
-
-        data = nil
-        if file_data.respond_to?(:read)
-          data = file_data.read
-
-        elsif file_data.respond_to?(:path)
-          data = File.read(file_data.path)
-
-        end
-
-        if data
-          ruelset = Ruleset.import(params[:description].strip, params[:internal_identifier].strip, JSON.parse(data))
-
-          render json: {success: true, ruleset: ruelset.to_tree}
-
-        else
-          Rails.logger.error("Bad file_data: #{file_data.class.name}: #{file_data.inspect}")
-
-          render json: {success: false, message: 'Error processing file'}
-
-        end
       end
 
     end # RulesetsController

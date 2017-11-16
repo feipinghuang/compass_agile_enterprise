@@ -52,7 +52,7 @@ module API
       end
 
       def available
-        type = params[:type]
+        type = ActionController::Base.helpers.sanitize(params[:type]).to_param
         id = params[:id]
 
         sort = (params[:sort] || 'description').downcase
@@ -69,7 +69,7 @@ module API
       end
 
       def selected
-        type = params[:type]
+        ActionController::Base.helpers.sanitize(params[:type]).to_param
         id = params[:id]
 
         sort = (params[:sort] || 'description').downcase
@@ -87,7 +87,7 @@ module API
 
       def add
         begin
-          type = params[:type]
+          ActionController::Base.helpers.sanitize(params[:type]).to_param
           id = params[:id]
           capability_ids = JSON.parse(params[:capability_ids])
 
@@ -117,7 +117,7 @@ module API
 
       def remove
         begin
-          type = params[:type]
+          ActionController::Base.helpers.sanitize(params[:type]).to_param
           id = params[:id]
           capability_ids = JSON.parse(params[:capability_ids])
 

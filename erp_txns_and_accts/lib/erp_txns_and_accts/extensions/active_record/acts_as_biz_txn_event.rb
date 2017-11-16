@@ -37,8 +37,7 @@ module ErpTxnsAndAccts
              #
              :has_status?, :had_status?, :has_had_status?, :get_status_for_date_time,
              :get_statuses_for_date_time_range, :current_status_application, :current_status_type,
-             :current_status, :current_status=, :previous_status, :add_status,
-             :biz_txn_party_roles
+             :current_status, :current_status=, :previous_status, :add_status
             ].each { |m| delegate m, :to => :biz_txn_event }
           end
         end

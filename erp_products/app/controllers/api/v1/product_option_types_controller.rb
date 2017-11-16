@@ -4,13 +4,20 @@ module API
 
 =begin
 
-  @api {get} /api/v1/product_option_types Index
+  @api {get} /api/v1/product_option_types
   @apiVersion 1.0.0
   @apiName GetProductOptionTypes
   @apiGroup ProductOptionType
+  @apiDescription Get Product Option Type
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} product_options ProductOptionType records
+  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+  @apiParam (query) {Number} [id] Id to filter by
+
+  @apiSuccess (200) {Object} get_product_option_types_response Response.
+  @apiSuccess (200) {Boolean} get_product_option_types_response.success If the request was sucessful
+  @apiSuccess (200) {Number} get_product_option_types_response.total_count Total count of records 
+  @apiSuccess (200) {Object[]} get_product_option_types_response.product_option_types ProductOptionType records
+  @apiSuccess (200) {Integer} get_product_option_types_response.product_option_types.id Id of ProductOptionType record
 
 =end
 
@@ -35,7 +42,7 @@ module API
         end
 
         if sort and dir
-          product_option_types = product_option_types.order("#{sort} #{dir}")
+          product_option_types = product_option_type.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         total_count = product_option_types.count

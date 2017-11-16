@@ -14,12 +14,12 @@ module Knitkit
 
           total = website.website_inquiries.count
 
-          inquiries = website.website_inquiries.limit(limit).offset(offset).order("#{sort} #{dir}")
+          inquiries = website.website_inquiries.limit(limit).offset(offset).order(ActiveRecord::Base.sanitize_order_params(sort, dir))
 
           render :json => {:success => true, :total => total, :inquiries => inquiries.collect { |inquiry|
-            inquiry.to_hash(:only => [:id, :first_name, :last_name, :message, :email, :created_at],
-                            :username => (inquiry.created_by.nil? ? '' : inquiry.created_by.username)) }
-          }
+                             inquiry.to_hash(:only => [:id, :first_name, :last_name, :message, :email, :created_at],
+                                             :username => (inquiry.created_by.nil? ? '' : inquiry.created_by.username)) }
+                           }
         end
 
         def destroy

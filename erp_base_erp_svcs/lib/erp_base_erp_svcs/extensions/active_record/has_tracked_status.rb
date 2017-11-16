@@ -51,7 +51,7 @@ module ErpBaseErpSvcs
             # scope record by its current status application
             # status_type_iids can either be an Array of status to scope by or a Hash with the parent status
             # as the key and the children statues to scope by as the value
-            scope :with_current_status, lambda { |status_type_iids=[]|
+            scope :with_current_status, lambda { |status_type_iids=nil|
               model_table = self.arel_table
               status_applications_tbl = StatusApplication.arel_table
 
@@ -72,12 +72,16 @@ module ErpBaseErpSvcs
                   status_ids = parent_status.children.where(:internal_identifier => status_type_iids.values.first).pluck(:id)
 
                 elsif status_type_iids.is_a?(Array)
-                  unless status_type_iids.empty?
+                  if status_type_iids.empty?
+                    status_ids = [0]
+                  else
                     status_ids = TrackedStatusType.where(:internal_identifier => status_type_iids).pluck(:id)
                   end
                 end
 
-                unless status_ids.empty?
+                if status_ids.empty?
+                  raise 'Invalid Tracked Status Type Passed'
+                else
                   statement = statement.where(TrackedStatusType.arel_table[:id].in status_ids)
                 end
               end
@@ -88,7 +92,7 @@ module ErpBaseErpSvcs
             # scope record by its current status application and exclude records with the passed statuses
             # status_type_iids can either be an Array of status to scope by or a Hash with the parent status
             # as the key and the children statues to scope by as the value
-            scope :without_current_status, lambda { |status_type_iids=[]|
+            scope :without_current_status, lambda { |status_type_iids=nil|
               model_table = self.arel_table
               status_applications_tbl = StatusApplication.arel_table
 
@@ -109,12 +113,16 @@ module ErpBaseErpSvcs
                   status_ids = parent_status.children.where(:internal_identifier => status_type_iids.values.first).pluck(:id)
 
                 elsif status_type_iids.is_a?(Array)
-                  unless status_type_iids.empty?
+                  if status_type_iids.empty?
+                    status_ids = [0]
+                  else status_type_iids.empty?
                     status_ids = TrackedStatusType.where(:internal_identifier => status_type_iids).pluck(:id)
                   end
                 end
 
-                unless status_ids.empty?
+                if status_ids.empty?
+                  raise 'Invalid Tracked Status Type Passed'
+                else
                   statement = statement.where(TrackedStatusType.arel_table[:id].not_in status_ids)
                 end
               end

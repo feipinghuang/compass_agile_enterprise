@@ -17,6 +17,8 @@ class BillingAccount < ActiveRecord::Base
 
   has_one  :recurring_payment, :dependent => :destroy
 
+  #has_many :subscriptions, :dependent => :destroy
+
   def dba_organization
     account_root.dba_organization
   end

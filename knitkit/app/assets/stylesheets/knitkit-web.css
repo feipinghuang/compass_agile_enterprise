@@ -9,6 +9,7 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require ./knitkit/bootstrap.min
+ *= require ./knitkit/font-awesome.min
  *= require ./knitkit/inline_editing
  *= require ./knitkit/submenu.css
  *= require ./knitkit/captcha.css

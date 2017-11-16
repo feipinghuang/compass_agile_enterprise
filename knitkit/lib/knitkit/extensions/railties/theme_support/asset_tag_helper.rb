@@ -282,13 +282,13 @@ module ActionView
         name = path.last
 
         directory = if path.length > 1
-                      #remove last element
-                      path.pop
+          #remove last element
+          path.pop
 
-                      "#{base_directory}/#{path.join('/')}"
-                    else
-                      base_directory
-                    end
+          "#{base_directory}/#{path.join('/')}"
+        else
+          base_directory
+        end
 
         return name, directory
       end

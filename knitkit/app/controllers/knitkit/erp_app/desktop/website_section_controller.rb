@@ -2,7 +2,7 @@ module Knitkit
   module ErpApp
     module Desktop
       class WebsiteSectionController < Knitkit::ErpApp::Desktop::AppController
-        before_filter :set_website_section, :only => [:detach_article, :update, :update_security, :add_layout, :get_layout, :save_layout]
+        before_filter :set_website_section, :only => [:detach_article, :update, :update_security, :add_layout, :get_layout, :save_layout, :enable_source_edit]
 
         def new
           begin
@@ -227,6 +227,22 @@ module Knitkit
           end
         end
 
+        def enable_source_edit
+          begin
+            current_user.with_capability('edit', 'WebsiteSectionLayout') do
+
+              @website_section.layout = HtmlBeautifier.beautify(@website_section.to_html)
+              @website_section.source_enabled = true
+              @website_section.save!
+
+              render :text => @website_section.layout
+
+            end
+          rescue ErpTechSvcs::Utils::CompassAccessNegotiator::Errors::UserDoesNotHaveCapability => ex
+            render :json => {:success => false, :message => ex.message}
+          end
+        end
+
         def available_articles_filter
           menu = []
           websites = Website.joins(:website_party_roles)
@@ -246,8 +262,9 @@ module Knitkit
         end
 
         def available_articles
-          website_id = params[:website_id]
-          current_articles = Article.joins(:website_section_contents).where("website_section_id = #{params[:section_id]}").all
+          website_id = Article.sanitize(params[:website_id])
+
+          current_articles = Article.joins(:website_section_contents).where("website_section_id = #{Article.sanitize(params[:section_id])}").all
 
           # Defaults to retrieving all articles
           available_articles = Article.with_party_role(current_user.party.dba_organization,

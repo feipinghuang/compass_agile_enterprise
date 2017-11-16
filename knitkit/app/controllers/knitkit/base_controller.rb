@@ -1,10 +1,16 @@
 module Knitkit
   class BaseController < ::ErpApp::ApplicationController
     before_filter :set_website
-    before_filter :set_login_path, :set_active_publication, :load_sections, :set_section, :except => [:view_current_publication]
-    acts_as_themed_controller 
+    before_filter :set_login_path, :set_active_publication, :load_sections, :set_section, :except => [:view_current_publication, :website_preview]
+    acts_as_themed_controller
 
-    layout 'knitkit/base'
+    layout 'knitkit/base', :except => :website_preview
+
+    def website_preview
+      website_section = website.website_sections.where(title: website.name).first if website.present?
+      @website_section_contents = website_section ? website_section.website_section_contents.order("position") : []
+      render :layout => false
+    end
 
     def website
       @website
@@ -12,18 +18,18 @@ module Knitkit
 
     def view_current_publication
       session[:website_version].delete_if{|item| item[:website_id] == @website.id}
-      redirect_to request.env["HTTP_REFERER"]
+      redirect_to URI.parse(request.env["HTTP_REFERER"])
     end
-  
+
     protected
     def set_website
       @website = Website.find_by_host(request.host_with_port)
     end
-    
+
     def load_sections
       @website_sections = @website.website_sections.positioned
     end
-    
+
     def set_section
       unless params[:section_id].nil?
         @website_section = WebsiteSection.find(params[:section_id])
@@ -42,7 +48,7 @@ module Knitkit
     end
 
     def set_login_path
-      @login_path = @website.configurations.first.get_configuration_item(ConfigurationItemType.find_by_internal_identifier('login_url')).options.first.value
+      @login_path = URI.parse(@website.configurations.first.get_configuration_item(ConfigurationItemType.find_by_internal_identifier('login_url')).options.first.value).to_s
     end
 
     def set_active_publication

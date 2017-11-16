@@ -29,7 +29,7 @@ module API
         end
 
         if sort and dir
-          financial_txns = financial_txns.order("#{sort} #{dir}")
+          financial_txns = financial_txns.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         total_count = financial_txns.count

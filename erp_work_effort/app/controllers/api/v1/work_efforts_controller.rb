@@ -68,7 +68,7 @@ module API
             root_ids = work_efforts.all.collect{|item| item.root.id}.uniq
             if root_ids.count > 0
               # if there are filters and no parent we need to return roots that have the requested filters OR their children have the filters
-              work_efforts = WorkEffort.where("(id in (#{work_efforts.roots.select('work_efforts.id').to_sql})) or (id in (#{root_ids.join(',')}))")
+              work_efforts = WorkEffort.where(WorkEffort.arel_table[:id].in(work_efforts.roots.select('work_efforts.id').to_sql).or(WorkEffort.arel_table[:id].in(root_ids.join(','))))
             end
           end
         else

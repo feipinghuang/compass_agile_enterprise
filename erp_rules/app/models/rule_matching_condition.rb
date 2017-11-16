@@ -5,7 +5,6 @@
 #   t.string  :lhs
 #   t.string  :operator
 #   t.string  :rhs
-#   t.text    :custom_statement
 #
 #   # foreign keys
 #   t.integer :business_rule_id
@@ -47,25 +46,11 @@ class RuleMatchingCondition < ActiveRecord::Base
     # to do this to FORCE a conversion to strings so that, from an external
     # perspective, you could treat question = "Y" and bp = 125 the same
 
-    if custom_statement && !custom_statement.blank?
-      result = eval(custom_statement)
-    else
-      result = eval( format_expression )
-    end
-
-    result
+    eval( format_expression )
   end
 
   def to_data_hash
-    to_hash(only: [:id, :description, :internal_identifier, :lhs, :operator, :rhs, :custom_statement])
-  end
-
-  def export
-    data = to_data_hash
-
-    data.delete(:id)
-
-    data
+    to_hash(only: [:id, :description, :internal_identifier, :lhs, :operator, :rhs])
   end
 
 end

@@ -1,9 +1,10 @@
 class SecurityRole < ActiveRecord::Base
+  attr_accessible :description, :internal_identifier
 
   acts_as_erp_type
   acts_as_nested_set
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
-  
+
   has_capability_accessors
   has_and_belongs_to_many :parties
 
@@ -12,12 +13,14 @@ class SecurityRole < ActiveRecord::Base
   validates_uniqueness_of :internal_identifier, :case_sensitive => false
   validates_length_of     :internal_identifier, :within => 3..100
 
-  attr_accessible :description, :internal_identifier
-
   def to_xml(options = {})
     default_only = []
     options[:only] = (options[:only] || []) + default_only
     super(options)
+  end
+
+  def to_s
+    internal_identifier
   end
 
   # creating method because we only want a getter, not a setter for iid

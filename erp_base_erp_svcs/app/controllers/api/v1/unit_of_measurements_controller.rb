@@ -12,10 +12,10 @@ module API
 
  @apiParam {String} [query] Query to search description by
 
- @apiSuccess {Boolean} success True if the request was successful
- @apiSuccess {Number} total_count Total count of records based on any filters applied
- @apiSuccess {Array} unit_of_measurements List of UnitOfMeasurement records
- @apiSuccess {Number} unit_of_measurements.id Id of UnitOfMeasurement
+ @apiSuccess (200) {Boolean} success True if the request was successful
+ @apiSuccess (200) {Number} total_count Total count of records based on any filters applied
+ @apiSuccess (200) {Object[]} unit_of_measurements List of UnitOfMeasurement records
+ @apiSuccess (200) {Number} unit_of_measurements.id Id of UnitOfMeasurement
 
 =end
 
@@ -43,7 +43,7 @@ module API
         end
 
         if sort and dir
-          statement = statement.order("#{sort} #{dir}")
+          statement = statement.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         if start and limit

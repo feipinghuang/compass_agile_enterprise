@@ -24,14 +24,16 @@ Gem::Specification.new do |s|
   s.add_dependency 'erp_app', "~> 4.2"
   s.add_development_dependency 'erp_dev_svcs', "~> 4.2"
 
-  s.add_dependency 'momentjs-rails', '~> 2.8'
-  s.add_dependency 'bootstrap3-datetimepicker-rails', '~> 4.7.14'
+  s.add_dependency 'momentjs-rails', '~> 2.9.0'
+  s.add_dependency 'bootstrap3-datetimepicker-rails', '~> 4.17.47'
 
-  s.add_dependency 'routing-filter','0.3.1'
-  s.add_dependency 'nokogiri','1.6.1'
-  s.add_dependency 'rubyzip','0.9.9'
-  s.add_dependency 'kramdown','1.0.1'
-  s.add_dependency 'html_truncator', '0.2'
-  s.add_dependency 'visual_captcha', '0.0.2'
+  s.add_dependency('routing-filter','0.3.1')
+  s.add_dependency('nokogiri','1.6.1')
+  s.add_dependency('rubyzip','0.9.9')
+  s.add_dependency('acts-as-taggable-on','2.3.3')
+  s.add_dependency('kramdown','1.0.1')
+  s.add_dependency('html_truncator', '0.2')
+  s.add_dependency('visual_captcha', '0.0.2')
+  s.add_dependency('htmlbeautifier', '1.3.1')
   
 end

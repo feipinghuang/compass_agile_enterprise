@@ -51,13 +51,13 @@ module ErpApp
           data = [].tap do |array|
             parties.each do |party|
               description_hash = {
-                  :id => party.id,
-                  :description => party.description,
-                  :address_line1 => nil,
-                  :address_line2 => nil,
-                  :city => nil,
-                  :state => nil,
-                  :zip => nil
+                :id => party.id,
+                :description => party.description,
+                :address_line1 => nil,
+                :address_line2 => nil,
+                :city => nil,
+                :state => nil,
+                :zip => nil
               }
 
               postal_address = party.primary_address
@@ -141,12 +141,12 @@ module ErpApp
           parties = statement.uniq.order("#{order_by} #{direction}").limit(limit).offset(offset).all
 
           render :json => {
-              :success => true,
-              :total => total, :parties => parties.collect do |item|
-                item.to_hash(:only => [:id, :description, :created_at, :updated_at],
-                             :model => item.business_party.class.name,
-                             :user_id => (item.user.nil? ? nil : item.user.id))
-              end
+            :success => true,
+            :total => total, :parties => parties.collect do |item|
+              item.to_hash(:only => [:id, :description, :created_at, :updated_at],
+                           :model => item.business_party.class.name,
+                           :user_id => (item.user.nil? ? nil : item.user.id))
+            end
           }
 
         end
@@ -155,26 +155,26 @@ module ErpApp
           party = Party.find(params[:id])
 
           data = if party.business_party.class == Organization
-                   party.business_party.to_hash(
-                       :only => [:description, :tax_id_number]
-                   )
-                 else
-                   party.business_party.to_hash(
-                       :only => [:current_personal_title,
-                                 :current_first_name,
-                                 :current_middle_name,
-                                 :current_last_name,
-                                 :current_suffix,
-                                 :current_nickname,
-                                 :current_passport_number,
-                                 :current_passport_expire_date,
-                                 :birth_date,
-                                 :gender,
-                                 :total_years_work_experience,
-                                 :marital_status,
-                                 :social_security_number
-                       ])
-                 end
+            party.business_party.to_hash(
+              :only => [:description, :tax_id_number]
+            )
+          else
+            party.business_party.to_hash(
+              :only => [:current_personal_title,
+                        :current_first_name,
+                        :current_middle_name,
+                        :current_last_name,
+                        :current_suffix,
+                        :current_nickname,
+                        :current_passport_number,
+                        :current_passport_expire_date,
+                        :birth_date,
+                        :gender,
+                        :total_years_work_experience,
+                        :marital_status,
+                        :social_security_number
+                        ])
+          end
 
           data[:id] = party.id
           data[:model] = party.business_party.class.name
@@ -185,7 +185,8 @@ module ErpApp
         end
 
         def update
-          party_type = params[:business_party_type]
+          party_type = ActionController::Base.helpers.sanitize(params[:business_party_type]).to_param
+
           klass = party_type.constantize
 
           party_id = params[:id]
@@ -247,7 +248,9 @@ module ErpApp
 
         def create
           result = {}
-          party_type = params[:business_party_type]
+          party_type = ActionController::Base.helpers.sanitize(params[:business_party_type]).to_param
+
+          klass = party_type.constantize
 
           begin
             ActiveRecord::Base.transaction do

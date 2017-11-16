@@ -1,5 +1,8 @@
 module ErpTechSvcs
   class SessionController < ActionController::Base
+
+    protect_from_forgery
+
     def create
       login = params[:login].strip
       if login(login, params[:password])

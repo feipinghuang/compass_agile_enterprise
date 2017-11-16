@@ -339,7 +339,7 @@ Ext.override(Ext.FormPanel, {
         }
 
         formData.append('authenticity_token', Compass.ErpApp.AuthentictyToken);
-        formData.append('client_utc_offset', new Date().getTimezoneOffset());
+        formData.append('client_utc_offset', (0 - new Date().getTimezoneOffset()));
 
         // get all file fields and append the data
         Ext.each(this.query('filefield'), function(fileField) {

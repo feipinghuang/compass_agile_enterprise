@@ -4,7 +4,7 @@ class AttributeValue < ActiveRecord::Base
   belongs_to :attributed_record, :polymorphic => true
   belongs_to :attribute_type
 
-  validates_format_of :value, :with => /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/, :if => :is_date?
+  validates_format_of :value, :with => /\A\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\z/, :if => :is_date?
   after_destroy :remove_unused_types
 
   def is_date?

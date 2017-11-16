@@ -48,7 +48,11 @@ class OrderTxn < ActiveRecord::Base
 
   # validation
   validates_format_of :email, :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/i, :on => :update, :allow_nil => true
-  validates :order_number, {uniqueness: true, :allow_nil => true}
+  validates_uniqueness_of :order_number,  :allow_nil => true, :unless => :skip_order_number_uniqueness_validation?
+  
+  def skip_order_number_uniqueness_validation?
+    false
+  end
 
   class << self
     # Filter records
@@ -328,7 +332,8 @@ class OrderTxn < ActiveRecord::Base
   def add_simple_product_offer_line_item(simple_product_offer)
     line_item = get_line_item_for_simple_product_offer(simple_product_offer)
 
-    product_type = simple_product_offer.product_type
+
+    product_type = simple_product_offer.product_offer.product_type
 
     if line_item
       line_item.quantity += 1
@@ -436,6 +441,7 @@ class OrderTxn < ActiveRecord::Base
   end
 
   def get_line_item_for_simple_product_offer(simple_product_offer)
+    # TODO: REEFACTOR
     line_items.detect { |oli| oli.product_offer.product_offer_record == simple_product_offer }
   end
 

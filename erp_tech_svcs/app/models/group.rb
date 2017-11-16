@@ -7,6 +7,8 @@
 
 # Security Group
 class Group < ActiveRecord::Base
+  attr_protected :created_at, :updated_at
+
   has_capability_accessors
 
   after_create  :create_party

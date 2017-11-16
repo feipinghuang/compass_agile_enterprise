@@ -4,16 +4,24 @@ module API
 
 =begin
 
-  @api {get} /api/v1/selected_product_options Index
+  @api {get} /api/v1/selected_product_options
   @apiVersion 1.0.0
   @apiName GetSelectedProductOptions
   @apiGroup SelectedProductOption
+  @apiDescription Get Selected Product Options  
 
-  @apiParam {String} selected_record_type Type of Selected Record to scope by
-  @apiParam {Integer} selected_record_id Id of Selected Record to scope by
+  @apiParam (query) {String} [sort] JSON string of date to control sorting {"property":"description", "direction":"ASC", "limit": 25, "start": 0}
+  @apiParam (query) {Number} [start] Start for paging
+  @apiParam (query) {Number} [offset] Offset for paging
+  @apiParam (query) {Number} [product_option_type_id] Id of ProductOptionType to filter by
+  @apiParam (query) {String} [selected_record_type] Type of Selected Record to scope by
+  @apiParam (query) {Number} [selected_record_id] Id of Selected Record to scope by
 
-  @apiSuccess {Boolean} success True if the request was successful
-  @apiSuccess {Array} selected_product_options SelectedProductOption records
+  @apiSuccess (200) {Object} get_selected_product_options Response.
+  @apiSuccess (200) {Boolean} get_selected_product_options.success If the request was sucessful
+  @apiSuccess (200) {Number} get_selected_product_options.total_count Total count of records 
+  @apiSuccess (200) {Object[]} get_selected_product_options.selected_product_options SelectedProductOption records
+  @apiSuccess (200) {Integer} get_selected_product_options.selected_product_options.id Id SelectedProductOption record      
 
 =end
 
@@ -29,7 +37,7 @@ module API
           dir = sort_hash[:direction] || 'ASC'
         end
 
-        if params[:sort] && params[:offset]
+        if params[:start] && params[:offset]
           limit = params[:limit] || 25
           start = params[:start] || 0
         end
@@ -41,7 +49,7 @@ module API
         end
 
         if sort and dir
-          selected_product_options = selected_product_options.order("#{sort} #{dir}")
+          selected_product_options = selected_product_options.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
         end
 
         total_count = selected_product_options.count

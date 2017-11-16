@@ -7,6 +7,7 @@ require 'erp_base_erp_svcs/extensions/core/string'
 require 'erp_base_erp_svcs/extensions/core/acts_as_aspector_on'
 
 #active record extensions
+require 'erp_base_erp_svcs/extensions/active_record/base'
 require 'erp_base_erp_svcs/extensions/active_record/acts_as_category'
 require 'erp_base_erp_svcs/extensions/active_record/acts_as_erp_type'
 require 'erp_base_erp_svcs/extensions/active_record/has_tracked_status'

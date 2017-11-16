@@ -56,7 +56,7 @@ class WorkEffort < ActiveRecord::Base
   include ErpTechSvcs::Utils::DefaultNestedSetMethods
   has_tracked_status
 
-  ## How is this Work Effort related to business parties, requesters, workers, approvers
+  ## How is this Work Effort related to business parties, requestors, workers, approvers
   has_party_roles
   has_contacts
 

@@ -23,25 +23,25 @@ module Knitkit
                   article.add_party_with_role(current_user.party.dba_organization, RoleType.iid('dba_org'))
 
                   result[:node] = if website_section_id.blank?
-                                    {:text => params[:title],
-                                     :id => article.id,
-                                     :objectType => 'Article',
-                                     :parentItemId => params[:section_id],
-                                     :siteId => nil,
-                                     :iconCls => 'x-column-header-wysiwyg',
-                                     :leaf => true
-                                    }
-                                  else
-                                    website_section = WebsiteSection.find(website_section_id)
-                                    article.website_sections << website_section
-                                    website_section_content = article.update_content_area_and_position_by_section(website_section,
-                                                                                                                  params['content_area'],
-                                                                                                                  params['position'])
+                    {:text => params[:title],
+                     :id => article.id,
+                     :objectType => 'Article',
+                     :parentItemId => params[:section_id],
+                     :siteId => nil,
+                     :iconCls => 'x-column-header-wysiwyg',
+                     :leaf => true
+                     }
+                  else
+                    website_section = WebsiteSection.find(website_section_id)
+                    article.website_sections << website_section
+                    website_section_content = article.update_content_area_and_position_by_section(website_section,
+                                                                                                  params['content_area'],
+                                                                                                  params['position'])
 
-                                    build_article_hash(website_section_content,
-                                                       website_section.website,
-                                                       website_section.is_blog?)
-                                  end
+                    build_article_hash(website_section_content,
+                                       website_section.website,
+                                       website_section.is_blog?)
+                  end
 
                   result[:success] = true
                 else
@@ -144,9 +144,9 @@ module Knitkit
           start = params[:start] || 0
 
           articles = Article.joins("INNER JOIN website_section_contents ON website_section_contents.content_id = contents.id")
-                         .where("website_section_id = #{website_section_id}")
+          .where("website_section_id = #{Article.sanitize(website_section_id)}")
           total_count = articles.count
-          articles = articles.order("#{sort} #{dir}").limit(limit).offset(start)
+          articles = articles.order(ActiveRecord::Base.sanitize_order_params(sort, dir)).limit(limit).offset(start)
 
           Article.class_exec(website_section_id) do
             @@website_section_id = website_section_id
@@ -186,11 +186,11 @@ module Knitkit
                                              RoleType.iid('dba_org')).includes(:website_section_contents)
 
           articles = articles.where(:website_section_contents => {:content_id => nil}) if params[:show_orphaned] == 'true'
-          articles = articles.where("UPPER(contents.internal_identifier) LIKE UPPER('%#{params[:iid]}%')") unless params[:iid].blank?
-          articles = articles.where("UPPER(contents.title) LIKE UPPER('%#{params[:title]}%')") unless params[:title].blank?
-          articles = articles.where("UPPER(contents.body_html) LIKE UPPER('%#{params[:content]}%')
-                                  OR UPPER(contents.excerpt_html) LIKE UPPER('%#{params[:content]}%')") unless params[:content].blank?
-          articles = articles.order("contents.#{sort} #{dir}")
+          articles = articles.where("UPPER(contents.internal_identifier) LIKE UPPER('%#{Article.sanitize(params[:iid])}%')") unless params[:iid].blank?
+          articles = articles.where("UPPER(contents.title) LIKE UPPER('%#{Article.sanitize(params[:title])}%')") unless params[:title].blank?
+          articles = articles.where("UPPER(contents.body_html) LIKE UPPER('%#{Article.sanitize(params[:content])}%')
+                                  OR UPPER(contents.excerpt_html) LIKE UPPER('%#{Article.sanitize(params[:content])}%')") unless params[:content].blank?
+          articles = articles.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
           total_count = articles.count
           articles = articles.limit(limit).offset(start)
 
@@ -314,4 +314,3 @@ module Knitkit
     end #Desktop
   end #ErpApp
 end #Knitkit
-

@@ -5,7 +5,7 @@ module ErpCommerce
     config.erp_commerce = ErpCommerce::Config
 
     initializer "erp_base_erp_svcs.merge_public" do |app|
-      app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
+      app.middleware.insert_after ::ActionDispatch::Static, ::ActionDispatch::Static, "#{root}/public"
     end
 
     ActiveSupport.on_load(:active_record) do

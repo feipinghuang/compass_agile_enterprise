@@ -49,7 +49,7 @@ module API
           format.json do
 
             if sort and dir
-              biz_txn_acct_roots = biz_txn_acct_roots.order("#{sort} #{dir}")
+              biz_txn_acct_roots = biz_txn_acct_roots.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
             end
 
             total_count = biz_txn_acct_roots.count

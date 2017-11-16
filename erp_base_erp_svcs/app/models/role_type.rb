@@ -1,5 +1,6 @@
 class RoleType < ActiveRecord::Base
-  attr_protected :created_at, :updated_at
+  attr_accessible :description, :internal_identifier
+
   acts_as_nested_set
   acts_as_erp_type
 
@@ -7,6 +8,10 @@ class RoleType < ActiveRecord::Base
 
   has_many :party_roles
   has_many :parties, :through => :party_roles
+
+  def to_s
+    internal_identifier
+  end
 
   # finds all child role types for given role types.
   #

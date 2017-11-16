@@ -42,6 +42,19 @@ class Organization < ActiveRecord::Base
     end
   end
 
+  # Get initials
+  #
+  # @return [String]
+  def initials
+    result = ''
+
+    if self.description
+      result = self.description[0]
+    end
+
+    result
+  end
+
   def to_label
     "#{description}"
   end

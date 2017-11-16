@@ -39,7 +39,7 @@ module API
           order_line_items = order_line_items.where('order_txn_id = ?', params[:order_txn_id])
 
           if sort and dir
-            order_line_items = order_txns.order("#{sort} #{dir}")
+            order_line_items = order_txns.order(ActiveRecord::Base.sanitize_order_params(sort, dir))
           end
 
           total_count = order_line_items.count

@@ -1,5 +1,8 @@
 module ErpTechSvcs
   class UserController < ActionController::Base
+
+    protect_from_forgery
+
     def activate
       login_url = params[:login_url].blank? ? ErpTechSvcs::Config.login_url : params[:login_url]
       if @user = User.load_from_activation_token(params[:activation_token])
@@ -60,6 +63,5 @@ module ErpTechSvcs
       end
     end
 
-
-  end #UserController
-end #ErpTechSvcs
+  end # UserController
+end # ErpTechSvcs

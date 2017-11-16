@@ -2,9 +2,9 @@
 #   t.integer :business_rule_id
 #   t.string  :description
 #   t.string  :expression
-#
+# 
 # end
-#
+# 
 # add_index :rule_actions, :business_rule_id
 
 class RuleAction < ActiveRecord::Base
@@ -27,14 +27,6 @@ class RuleAction < ActiveRecord::Base
 
   def to_data_hash
     to_hash(only: [:id, :description, :expression])
-  end
-
-  def export
-    data = to_data_hash
-
-    data.delete(:id)
-
-    data
   end
 
 end

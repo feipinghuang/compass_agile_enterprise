@@ -2,8 +2,8 @@ module ErpWorkEffort
   class Engine < Rails::Engine
     isolate_namespace ErpWorkEffort
 
-    initializer "erp_base_erp_svcs.merge_public" do |app|
-      app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
+    initializer "erp_work_effort.merge_public" do |app|
+      app.middleware.insert_after ::ActionDispatch::Static, ::ActionDispatch::Static, "#{root}/public"
     end
 
     ActiveSupport.on_load(:active_record) do
@@ -13,10 +13,6 @@ module ErpWorkEffort
     end
 
     ErpBaseErpSvcs.register_as_compass_ae_engine(config, self)
-
-    initializer "erp_work_effort.merge_public" do |app|
-      app.middleware.insert_before Rack::Runtime, ::ActionDispatch::Static, "#{root}/public"
-    end
 
   end
 end

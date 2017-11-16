@@ -32,6 +32,10 @@ module Widgets
         render
       end
 
+      def website_builder
+        render
+      end
+
       def update_user_information
         #### Get appropriate models ####
 

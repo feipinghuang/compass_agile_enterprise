@@ -9,6 +9,8 @@ module Widgets
         render
       end
 
+      alias :website_builder :index
+
       def new
         @website = Website.find_by_host(request.host_with_port)
         @configuration = @website.configurations.first
@@ -29,7 +31,12 @@ module Widgets
             @user.add_instance_attribute(:login_url, params[:login_url])
             @user.add_instance_attribute(:domain, primary_host.value)
 
-            if @user.save
+            before_create_user
+
+            # Check for errors on the model as save! doesn't check for any manually added errors
+            #
+            if @user.errors.count == 0
+              @user.save!
 
               # check if there is already a party with that email if there is tie the party to the user
               party = Party.find_by_email(@email, 'billing')
@@ -50,13 +57,15 @@ module Widgets
               party = @user.party
 
               # add party roles to party if present
-              unless params[:party_roles].blank?
+              if params[:party_roles].blank?
+                party.add_role_type('customer')
+              else
                 params[:party_roles].split(',').each do |role_type|
                   party.add_role_type(role_type)
                 end
-
-                party.save
               end
+
+              party.save!
 
               # associate the new party to the dba_organization of the current website
               @dba_party = @website.website_party_roles.where('role_type_id' => RoleType.iid('dba_org')).first.party
@@ -75,11 +84,24 @@ module Widgets
               render :update => {:id => "#{@uuid}_result", :view => :error}
             end
           end
+        rescue ActiveRecord::RecordInvalid
+
+          render :update => {:id => "#{@uuid}_result", :view => :error}
+
         rescue => ex
-          logger.error ex.message
-          logger.error ex.backtrace
+          Rails.logger.error ex.message
+          Rails.logger.error ex.backtrace.join("\n")
+
+          ExceptionNotifier.notify_exception(ex) if defined? ExceptionNotifier
+
+          @message = "There was an error trying to create your account.  Please try again later"
+
           render :update => {:id => "#{@uuid}_result", :view => :error}
         end
+      end
+
+      def before_create_user
+        # override in your code to do special registration logic
       end
 
       def after_registration

@@ -1,0 +1,56 @@
+variables:
+  POSTGRES_DB: ''
+
+# Cache gems in between builds
+cache:
+  paths:
+    - vendor/ruby
+
+# This is a basic example for a gem or script which doesn't use
+# services such as redis or postgres
+#before_script:
+ # - ruby -v                                   # Print out ruby version for debugging
+ # - gem install bundler  --no-ri --no-rdoc    # Bundler is not installed with the image
+ # - bundle install -j $(nproc) --path vendor  # Install dependencies into ./vendor/ruby
+
+
+#rubocop:
+#  script:
+#  - rubocop
+
+# rspec:
+#  script:
+#  - rspec spec
+
+# image: ruby:2.4.1
+
+run_tests:
+  script:
+    - cd ./erp_dev_svcs
+    - bundle
+    - gem build erp_dev_svcs.gemspec
+    - gem install *.gem
+    - cd ..
+    - compass_ae-dev execute bundle
+    - compass_ae-dev test
+  artifacts:
+    paths:
+      - coverage/
+  only:
+    - release_candidate
+    - master
+
+pages:
+  stage: deploy
+  dependencies:
+    - run_tests
+  script:
+    - mv coverage/ public/
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days
+  only:
+    - release_candidate
+    - master
+   

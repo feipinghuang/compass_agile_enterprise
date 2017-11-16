@@ -3,7 +3,7 @@ ErpApp::WidgetProxyController.class_eval do
   before_filter :set_website
 
   def index
-    @widget_name = params[:widget_name]
+    @widget_name = ActionController::Base.helpers.sanitize(params[:widget_name]).to_param
     @widget_action = params[:widget_action]
     @uuid = params[:uuid]
 

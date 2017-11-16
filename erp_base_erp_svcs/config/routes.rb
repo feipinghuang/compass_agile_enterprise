@@ -5,7 +5,6 @@ Rails.application.routes.draw do
       resources :parties, defaults: { :format => 'json' } do
         member do
           put :update_roles
-          get :related_parties
         end
 
         resources :role_types, defaults: { :format => 'json' }

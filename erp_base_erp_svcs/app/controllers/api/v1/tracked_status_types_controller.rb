@@ -2,6 +2,20 @@ module API
   module V1
     class TrackedStatusTypesController < BaseController
 
+=begin
+ @api {get} /api/v1/tracked_status_types
+ @apiVersion 1.0.0
+ @apiName GetTrackedStatusTypes
+ @apiGroup TrackedStatusType
+ @apiDescription Get TrackedStatusTypes
+ 
+ @apiSuccess (200) {Object} get_tracked_status_types_response Response
+ @apiSuccess (200) {Boolean} get_tracked_status_types_response.success True if the request was successful.
+ @apiSuccess (200) {Number} get_tracked_status_types_response.total_count Total count of records based on any filters applied.
+ @apiSuccess (200) {Object[]} get_tracked_status_types_response.role_types List of TrackedStatusType records.
+ @apiSuccess (200) {Number} get_tracked_status_types_response.role_types.id Id of TrackedStatusType.
+=end
+
       def index
         # look up parent by internal identifier
         if params[:parent].present?
@@ -22,7 +36,15 @@ module API
               render :json => {success: true, tracked_status_types: parent.children_to_tree_hash}
             end
             format.json do
-              render :json => {success: true, tracked_status_types: parent.children.all.collect{|item| item.to_data_hash}}
+              if params[:query].present?
+                tracked_status_types = parent.children.where(TrackedStatusType.arel_table[:description].matches("%#{params[:query]}%"))
+              else
+                tracked_status_types = parent.children
+              end
+
+              tracked_status_types = tracked_status_types.reorder(ActiveRecord::Base.sanitize_order_params(@sort, @dir))
+
+              render :json => {success: true, tracked_status_types: tracked_status_types.all.collect{|item| item.to_data_hash}}
             end
             format.all_representation do
 
@@ -43,7 +65,15 @@ module API
               render :json => {success: true, tracked_status_types: parent.children_to_tree_hash}
             end
             format.json do
-              render :json => {success: true, tracked_status_types: parent.children.all.collect{|item| item.to_data_hash}}
+              if params[:query].present?
+                tracked_status_types = parent.children.where(TrackedStatusType.arel_table[:description].matches("%#{params[:query]}%"))
+              else
+                tracked_status_types = parent.children
+              end
+
+              tracked_status_types = tracked_status_types.reorder(ActiveRecord::Base.sanitize_order_params(@sort, @dir))
+
+              render :json => {success: true, tracked_status_types: tracked_status_types.all.collect{|item| item.to_data_hash}}
             end
             format.all_representation do
 
@@ -91,6 +121,8 @@ module API
                 end
               end
               format.json do
+                tracked_status_types = tracked_status_types.reorder(ActiveRecord::Base.sanitize_order_params(@sort, @dir))
+
                 tracked_status_types.push(tracked_status_type.to_data_hash)
               end
             end
@@ -99,7 +131,7 @@ module API
 
           render :json => {success: true, tracked_status_types: tracked_status_type}
 
-          # get all role types
+          # get all TrackedStatusTypes
         else
           respond_to do |format|
             format.tree do
@@ -128,6 +160,21 @@ module API
         end
       end
 
+=begin
+ @api {get} /api/v1/tracked_status_types/:id
+ @apiVersion 1.0.0
+ @apiName GetTrackedStatusType
+ @apiGroup TrackedStatusType
+ @apiDescription Get TrackedStatusType
+ 
+ @apiParam (path) {Number} id Id or Internal Identifier of TrackedStatusType
+
+ @apiSuccess (200) {Object} get_tracked_status_type_response Response
+ @apiSuccess (200) {Boolean} get_tracked_status_type_response.success True if the request was successful.
+ @apiSuccess (200) {Object[]} get_tracked_status_type_response.role_type TrackedStatusType record.
+ @apiSuccess (200) {Number} get_tracked_status_type_response.role_type.id Id of TrackedStatusType.
+=end
+
       def show
         id = params[:id]
 
@@ -147,6 +194,23 @@ module API
           end
         end
       end
+
+=begin
+ @api {post} /api/v1/tracked_status_types
+ @apiVersion 1.0.0
+ @apiName CreateTrackedStatusType
+ @apiGroup TrackedStatusType
+ @apiDescription Create TrackedStatusType
+ 
+ @apiParam (body) {String} description Description
+ @apiParam (body) {String} [parent] If parent is sent and it is not 'No Parent' then it will be set as the parent of the new TrackedStatusType
+ @apiParam (body) {String} [default_parent] If default_parent is sent it will be set as the parent of the new TrackedStatusType
+
+ @apiSuccess (200) {Object} create_tracked_status_type_response Response
+ @apiSuccess (200) {Boolean} create_tracked_status_type_response.success True if the request was successful.
+ @apiSuccess (200) {Object[]} create_tracked_status_type_response.role_type TrackedStatusType record.
+ @apiSuccess (200) {Number} create_tracked_status_type_response.role_type.id Id of TrackedStatusType.
+=end
 
       def create
         description = params[:description].strip

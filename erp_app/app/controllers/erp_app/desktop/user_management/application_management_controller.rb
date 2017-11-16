@@ -14,19 +14,19 @@ module ErpApp
 
             current_applications = user.desktop_applications
             available_applications = if current_applications.empty?
-                                       accessible_applications
-                                     else
-                                       accessible_applications.where("applications.id not in (#{current_applications.collect(&:id).join(',')})")
-                                     end
+              accessible_applications
+            else
+              accessible_applications.where(Application.arel_table[:id].not_in(current_applications.collect(&:id).join(',')))
+            end
           else
             accessible_applications = Application.apps.scope_by_dba(current_user.party.dba_organization)
 
             current_applications = user.apps
             available_applications = if current_applications.empty?
-                                       accessible_applications
-                                     else
-                                       accessible_applications.where("applications.id not in (#{current_applications.collect(&:id).join(',')})")
-                                     end
+              accessible_applications
+            else
+              accessible_applications.where(Application.arel_table[:id].not_in(current_applications.collect(&:id).join(',')))
+            end
           end
 
           render :json => available_applications.map { |application| {:text => application.description,
@@ -41,10 +41,10 @@ module ErpApp
           user = User.find(user_id)
 
           current_applications = if desktop_applications
-                                   user.desktop_applications
-                                 else
-                                   user.apps
-                                 end
+            user.desktop_applications
+          else
+            user.apps
+          end
 
           render :json => current_applications.map { |application| {:text => application.description,
                                                                     :app_id => application.id,

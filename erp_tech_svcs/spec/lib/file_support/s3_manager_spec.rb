@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe ErpTechSvcs::FileSupport::S3Manager do
+  pending "Turn this back on when we have a S3 access key in a private repo"
+=begin
 
   before(:all) do
     ErpTechSvcs::FileSupport::S3Manager.setup_connection
@@ -74,6 +76,7 @@ describe ErpTechSvcs::FileSupport::S3Manager do
     result, message = @file_support.rename_file('not_real.txt', 'test_rename.txt')
     result.should eq false
     message.should eq ErpTechSvcs::FileSupport::Manager::FILE_FOLDER_DOES_NOT_EXIST
+
   end
 
   it "should allow you to move a file" do
@@ -92,5 +95,5 @@ describe ErpTechSvcs::FileSupport::S3Manager do
     result.should eq true
   end
 
-
+=end
 end
