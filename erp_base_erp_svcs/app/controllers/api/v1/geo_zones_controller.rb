@@ -34,9 +34,7 @@ module API
             end
 
           else
-            geo_zones GeoZone
-
-            render json: {success: true, geo_zones: GeoZone.all}
+            geo_zones = GeoZone
           end
 
           if params[:query]
