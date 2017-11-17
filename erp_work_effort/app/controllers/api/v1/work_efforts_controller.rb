@@ -4,7 +4,7 @@ module API
 
 =begin
 
- @api {get} /api/v1/work_efforts 
+ @api {get} /api/v1/work_efforts
  @apiVersion 1.0.0
  @apiName GetWorkEfforts
  @apiGroup WorkEffort
@@ -14,7 +14,7 @@ module API
  @apiParam (query) {String} [status] Comma separated list of TrackedStatusType internal identifiers to scope by
  @apiParam (query) {String} [parties] JSON encoded object containing comma separated separated party ids and role types to scope by
 
- @apiSuccess (200) {Object} get_work_efforts_response 
+ @apiSuccess (200) {Object} get_work_efforts_response
  @apiSuccess (200) {Boolean} get_work_efforts_response.success True if the request was successful
  @apiSuccess (200) {Object[]} get_work_efforts_response.work_efforts List of WorkEfforts
  @apiSuccess (200) {Integer} get_work_efforts_response.work_efforts.id Id of WorkEffort
@@ -32,7 +32,7 @@ module API
  @apiSuccess (200) {Integer} get_work_efforts_response.work_efforts.sequence Sequence of WorkEffort
  @apiSuccess (200) {DateTime} get_work_efforts_response.work_efforts.created_at When the WorkEffort was created
  @apiSuccess (200) {DateTime} get_work_efforts_response.work_efforts.updated_at When the WorkEffort was updated
- 
+
 =end
 
       def index
@@ -89,7 +89,7 @@ module API
           work_efforts = WorkEffort.where("(id in (#{node_sql})) or (id in (#{parent_sql}))")
         end
 
-        work_efforts = work_efforts.order("sequence ASC").uniq
+        work_efforts = work_efforts.order("position ASC").uniq
 
         render :json => {success: true,
                          total: work_efforts.count,
@@ -98,7 +98,7 @@ module API
 
 =begin
 
- @api {get} /api/v1/work_efforts/:id 
+ @api {get} /api/v1/work_efforts/:id
  @apiVersion 1.0.0
  @apiName GetWorkEffort
  @apiGroup WorkEffort
@@ -106,7 +106,7 @@ module API
 
  @apiParam (query) {Integer} id WorkEffort Id
 
- @apiSuccess (200) {Object} get_work_effort_response 
+ @apiSuccess (200) {Object} get_work_effort_response
  @apiSuccess (200) {Boolean} get_work_effort_response.success True if the request was successful
  @apiSuccess (200) {Object} get_work_effort_response.work_effort Work Effort record
  @apiSuccess (200) {Integer} get_work_effort_response.work_effort.id Id of WorkEffort
@@ -133,7 +133,7 @@ module API
         respond_to do |format|
           # if a tree format was requested then respond with the children of this WorkEffort
           format.tree do
-            render :json => {success: true, work_efforts: WorkEffort.where(parent_id: work_effort).order("sequence ASC").collect { |child| child.to_data_hash }}
+            render :json => {success: true, work_efforts: WorkEffort.where(parent_id: work_effort).order("position ASC").collect { |child| child.to_data_hash }}
           end
 
           # if a json format was requested then respond with the WorkEffort in json format
@@ -165,8 +165,8 @@ module API
   @apiParam (body) {Integer} [work_efforts.sequence] Sequence of WorkEffort
   @apiParam (body) {Integer} [work_efforts.parent_id ID] of Parent WorkEffort to put the newly created WorkEfforts under
   @apiParam (body) {Integer} [work_efforts.biz_txn_event_id] BizTxnEvent to relate to this WorkEffort
- 
-  @apiSuccess (200) {Object} create_work_effort_response 
+
+  @apiSuccess (200) {Object} create_work_effort_response
   @apiSuccess (200) {Boolean} create_work_effort_response.success True if the request was successful
   @apiSuccess (200) {Object[]} create_work_effort_response.work_efforts Array of created WorkEfforts
   @apiSuccess (200) {Integer} create_work_effort_response.work_efforts.id Id of WorkEffort
@@ -241,7 +241,7 @@ module API
   @apiParam (body) {Integer} [work_efforts.sequence] Sequence of WorkEffort
   @apiParam (body) {Integer} [work_efforts.parent_id ID] of Parent WorkEffort to put the updated WorkEfforts under
 
-  @apiSuccess (200) {Object} update_work_effort_response 
+  @apiSuccess (200) {Object} update_work_effort_response
   @apiSuccess (200) {Boolean} update_work_effort_response.success True if the request was successful
   @apiSuccess (200) {Object[]} update_work_effort_response.work_efforts Array of updated WorkEfforts
   @apiSuccess (200) {Integer} update_work_effort_response.work_efforts.id Id of WorkEffort
@@ -299,10 +299,10 @@ module API
   @apiName DeleteWorkEffort
   @apiGroup WorkEffort
   @apiDescription Delete WorkEffort
- 
+
   @apiParam (query) {Integer} id WorkEffort Id
 
-  @apiSuccess (200) {Object} delete_work_effort_response 
+  @apiSuccess (200) {Object} delete_work_effort_response
   @apiSuccess (200) {Boolean} delete_work_effort_response.success True if the request was successful
 
 =end
@@ -333,10 +333,10 @@ module API
   @apiName WorkEffortTimeEntriesAllowed
   @apiGroup WorkEffort
   @apiDescription Time Entries Allowed
-  
+
   @apiParam (query) {Integer} id WorkEffort Id
-  
-  @apiSuccess (200) {Object} time_entries_allowed_work_effort_response 
+
+  @apiSuccess (200) {Object} time_entries_allowed_work_effort_response
   @apiSuccess (200) {Boolean} time_entries_allowed_work_effort_response.success True if the request was successful
   @apiSuccess (200) {Boolean} time_entries_allowed_work_effort_response.allowed True if time entries are allowed
 
@@ -356,11 +356,11 @@ module API
   @apiName UpdateWorkEffortStatus
   @apiGroup WorkEffort
   @apiDescription Update status of WorkEffort
-   
+
   @apiParam (query) {Integer} id WorkEffort Id
   @apiParam (body) {String} status Internal identifier of status that should be set
 
-  @apiSuccess (200) {Object} update_status_work_effort_response 
+  @apiSuccess (200) {Object} update_status_work_effort_response
   @apiSuccess (200) {Boolean} update_status_work_effort_response.success True if the request was successful
 
 =end
@@ -417,8 +417,8 @@ module API
           work_effort.comments = data[:comments].strip
         end
 
-        if data[:sequence].present?
-          work_effort.sequence = data[:sequence]
+        if data[:position].present? && data[:position].to_i > 0
+          work_effort.position = data[:position]
         end
 
         if data[:status].present?
@@ -505,8 +505,8 @@ module API
           work_effort.comments = data[:comments].strip
         end
 
-        if data[:sequence].present?
-          work_effort.sequence = data[:sequence]
+        if data[:position].present? && data[:position].to_i > 0
+          work_effort.position = data[:position]
         end
 
         if data[:status].present?
