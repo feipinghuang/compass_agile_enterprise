@@ -227,14 +227,14 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                         for(var attr in properties) {
                             
                             if (attr == 'id') {
-                                element.id = properties.id
+                                element.id = properties.id.trim();
                             } else if (attr == 'className') {
-                                element.className = properties.className;
+                                element.className = properties.className.trim();
                             } else {
                                 if (element.tagName == 'IMG')
-                                    element[attr] = properties[attr];
+                                    element[attr] = properties[attr].trim();
                                 else
-                                    element.style[attr] = properties[attr];
+                                    element.style[attr] = properties[attr].trim();
                             }
                         }
                         // close the toolbar
@@ -257,7 +257,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                     color: 'green'
                 }
             }],
-            items: items 
+            items: items,
+            listeners: {
+                afterrender: function() {
+                    this.keyNav = Ext.create('Ext.util.KeyNav', this.el, {
+                        enter: function() {
+                            this.down('#saveButton').el.dom.click();
+                        },
+                        scope: this
+                    });
+                }
+            }
         });
         
     },
@@ -404,7 +414,17 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.ComponentPropertiesFormP
                 fieldLabel: 'Font Family',
                 name: 'font-family',
                 value: fontFamily
-            }]
+            }],
+            listeners: {
+                afterrender: function() {
+                    this.keyNav = Ext.create('Ext.util.KeyNav', this.el, {
+                        enter: function() {
+                            this.down('#saveButton').el.dom.click();
+                        },
+                        scope: this
+                    });
+                }
+            }
         });
     },
 
