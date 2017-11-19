@@ -11,7 +11,8 @@ ErpTechSvcs::SessionController.class_eval do
         request.xhr? ? (render :json => {:success => false, :errors => {:reason => message}}) : (render :text => message)
       else
         # log when someone logs in
-        ErpTechSvcs::ErpTechSvcsAuditLog.successful_login(current_user)
+        audit_log_service = ErpTechSvcs::Services::AuditLog.new(current_user)
+        audit_log_service.successful_login
 
         # set logout
         session[:logout_to] = params[:logout_to]

@@ -7,7 +7,8 @@ module ErpTechSvcs
       login = params[:login].strip
       if login(login, params[:password])
         # log when someone logs in
-        ErpTechSvcs::ErpTechSvcsAuditLog.successful_login(current_user)
+        audit_log_service = ErpTechSvcs::Services::AuditLog.new(current_user)
+        audit_log_service.successful_login
 
         # set logout
         session[:logout_to] = params[:logout_to]
@@ -31,8 +32,11 @@ module ErpTechSvcs
 
       logout
 
-      # log when someone logs out
-      ErpTechSvcs::ErpTechSvcsAuditLog.successful_logout(user) unless user.nil?
+      unless user.nil?
+        # log when someone logs in
+        audit_log_service = ErpTechSvcs::Services::AuditLog.new(user)
+        audit_log_service.successful_logout
+      end
 
       if logout_to
         redirect_to logout_to, :notice => message

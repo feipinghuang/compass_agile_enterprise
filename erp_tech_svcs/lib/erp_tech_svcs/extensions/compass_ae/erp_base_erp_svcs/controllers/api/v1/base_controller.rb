@@ -12,7 +12,8 @@ API::V1::BaseController.class_eval do
       end
 
       # log when someone logs in
-      ErpTechSvcs::ErpTechSvcsAuditLog.successful_login(user)
+      audit_log_service = ErpTechSvcs::Services::AuditLog.new(user)
+      audit_log_service.successful_login
 
       render :json => {success: true, user_id: user.id, auth_token: auth_token.token, auth_token_expires_at: auth_token.expires_at}
     else
@@ -25,7 +26,8 @@ API::V1::BaseController.class_eval do
       auth_token = user.generate_auth_token!
 
       # log when someone logs in
-      ErpTechSvcs::ErpTechSvcsAuditLog.successful_login(user)
+      audit_log_service = ErpTechSvcs::Services::AuditLog.new(user)
+      audit_log_service.successful_login
 
       render :json => {success: true, user_id: user.id, auth_token: auth_token.token, auth_token_expires_at: auth_token.expires_at}
     else
