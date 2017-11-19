@@ -3,7 +3,12 @@ module ErpTechSvcs
     class AuditLog
 
       def initialize(user, tenant=nil)
-        @user = user
+        if user.is_a? Integer
+          @user = User.find(user)
+        else
+          @user = user
+        end
+
         @tenant = tenant || user.party.dba_organization
       end
 
@@ -20,10 +25,6 @@ module ErpTechSvcs
 
       #Log when a user logs out
       def successful_logout
-        if user.is_a? Integer
-          user = User.find(user)
-        end
-
         ::AuditLog.create!(
           party_id: @user.party.id,
           event_record: @user,
