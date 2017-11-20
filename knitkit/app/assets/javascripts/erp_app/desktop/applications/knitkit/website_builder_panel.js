@@ -757,16 +757,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             });
         }
 
-        // Work around to prevent triggering of scroll 
-        // The verticall scroll is trigger by this:
-        // in a three column row the right most content block height is chopped off from bottom(don't know why)
-        // so forcing all the non removable content blocks to render with equal height.
-        var firstNonRemovableContainer = components.first();
-        Ext.each(components, function(cmp){
-            cmp.setHeight(firstNonRemovableContainer.getHeight());
-        });
-
-        
         var components = container.query('websitebuilderdropzone')
         var componentIndex = components.indexOf(draggedComponent);
         var componentsToDestroy = []
