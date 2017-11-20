@@ -390,7 +390,6 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
         me.on('render', function() {
             me.dragZone = Ext.create('Ext.dd.DragZone', me.getEl(), {
                 ddGroup: 'websiteBuilderPanelDDgroup',
-                scroll: true,
                 onBeforeDrag: function(data, e) {
                     if (me.hasEmptyContainerOrContentBlock()){
                         Ext.Msg.alert('Error', 'Cannot move when there are empty content blocks');
@@ -405,12 +404,12 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                     if (data.isContainer) {
                         if (me.hasOnlyOrNoContainer()) return false;
                         me.addAutoRemovableContainers(data.containerId);
+                        if (me.hasVerticalScroll()) {
+                            me.showScrollIndicator('top');
+                            me.showScrollIndicator('bottom');
+                        }
                     } else {
                         me.addAutoRemovableDropZones(data.panelId);
-                    }
-                    if (me.hasVerticalScroll()) {
-                        me.showScrollIndicator('top');
-                        me.showScrollIndicator('bottom');
                     }
                     me.disableComponents();
                     me.dragStarted = true;
@@ -757,6 +756,16 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 }
             });
         }
+
+        // Work around to prevent triggering of scroll 
+        // The verticall scroll is trigger by this:
+        // in a three column row the right most content block height is chopped off from bottom(don't know why)
+        // so forcing all the non removable content blocks to render with equal height.
+        var firstNonRemovableContainer = components.first();
+        Ext.each(components, function(cmp){
+            cmp.setHeight(firstNonRemovableContainer.getHeight());
+        });
+
         
         var components = container.query('websitebuilderdropzone')
         var componentIndex = components.indexOf(draggedComponent);
