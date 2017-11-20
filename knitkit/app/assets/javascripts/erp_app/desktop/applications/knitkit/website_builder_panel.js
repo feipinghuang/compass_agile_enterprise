@@ -570,14 +570,11 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
                 },
                 
                 validContentBlockDrop: function(target, dragData) {
-                    console.log(Ext.get(target).id);
                     if (Ext.get(target).id.indexOf('websitebuilderdropzone') === -1) {
                         return false;
                     } else {
                         var dropPanel = Ext.getCmp(Ext.get(target).id);
-                        if (dropPanel.empty
-                            &&
-                            (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget')) {
+                        if (dragData.componentType == dropPanel.componentType || dragData.componentType == 'widget') {
                             return true;
                         } else {
                             return false;
