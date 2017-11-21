@@ -603,6 +603,8 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
 
                 dropContentBlock: function(dropPanel, draggedPanel, data) {
                     if (dropPanel.autoRemovableDropZone) {
+                        dropPanel.flex = 1;
+                        dropPanel.updateLayout();
                         dropPanel.setBorder(1);
                         dropPanel.addCls('website-builder-dropzone');
                         dropPanel.autoRemovableDropZone = false;
@@ -745,13 +747,14 @@ Ext.define('Compass.ErpApp.Desktop.Applications.Knitkit.WebsiteBuilderPanel', {
             container.insert(colIndex*2, {
                 xtype: 'websitebuilderdropzone',
                 html: '',
-                height: 5,
                 componentType: 'content',
                 autoRemovableDropZone: true,
-                flex: 1,
+                width: 25,
                 listeners: {
                     render: function(comp) {
                         comp.setBorder(0);
+                        var cmp = comp.ownerCt.query('websitebuilderdropzone[autoRemovableDropZone=false]').first();
+                        comp.setHeight(cmp.getHeight());
                     }
                 }
             });
