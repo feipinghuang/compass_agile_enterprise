@@ -71,8 +71,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel", 
         var menuPanel = Ext.ComponentQuery.query('#knitkitMenuTreePanel').first();
         menuPanel.selectWebsite(website);
 
-        var hostPanel = Ext.ComponentQuery.query('#knitkitHostListPanel').first();
-        hostPanel.selectWebsite(website);
     },
 
     clearWebsite: function() {
@@ -85,8 +83,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel", 
         var menuPanel = Ext.ComponentQuery.query('#knitkitMenuTreePanel').first();
         menuPanel.clearWebsite();
 
-        var hostPanel = Ext.ComponentQuery.query('#knitkitHostListPanel').first();
-        hostPanel.clearWebsite();
     },
 
     initComponent: function() {
@@ -120,16 +116,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel", 
             }]
         });
 
-        var configPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Hosts',
-            autoScroll: true,
-            items: [{
-                xtype: 'knitkit_hostspanel'
-            }]
-
-        });
-
-        this.items = [siteContentsPanel, themesPanel, menuPanel, configPanel];
+        this.items = [siteContentsPanel, themesPanel, menuPanel];
 
         this.dockedItems = [{
             xtype: 'toolbar',

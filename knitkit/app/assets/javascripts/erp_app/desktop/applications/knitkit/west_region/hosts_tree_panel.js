@@ -26,8 +26,6 @@ var store = Ext.create('Ext.data.TreeStore', {
 
 Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.HostListPanel", {
     extend: "Ext.tree.Panel",
-    id: 'knitkitHostListPanel',
-    itemId: 'knitkitHostListPanel',
     alias: 'widget.knitkit_hostspanel',
     header: false,
 
@@ -36,20 +34,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.HostListPanel", {
     },
 
     store: store,
-
-    clearWebsite: function(){
-        var store = this.getStore();
-        store.getProxy().extraParams = {};
-        store.load();
-    },
-
-    selectWebsite: function (website) {
-        var store = this.getStore();
-        store.getProxy().extraParams = {
-            website_id: website.id
-        };
-        store.load();
-    },
 
     listeners: {
         'itemcontextmenu': function (view, record, htmlItem, index, e) {
@@ -68,6 +52,16 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.HostListPanel", {
                 });
                 contextMenu.showAt(e.xy);
             }
+        },
+
+        'render': function(panel) {
+            var knitkitWin = compassDesktop.getModule('knitkit-win');
+            var store = this.getStore();
+            store.getProxy().extraParams = {
+                website_id: knitkitWin.currentWebsite.id
+            };
+            store.load();
+
         }
     }
 

@@ -942,9 +942,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem = {
     text: 'New Host',
     iconCls: 'icon-add',
     handler: function(btn) {
-        var westRegion = Ext.ComponentQuery.query('#knitkitWestRegion').first(),
-            tree = westRegion.down('#knitkitHostListPanel'),
-            knitkitWin = compassDesktop.getModule('knitkit-win'),
+        var knitkitWin = compassDesktop.getModule('knitkit-win'),
             websiteId = knitkitWin.currentWebsite.id;
 
         Ext.create("Ext.window.Window", {
@@ -978,6 +976,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem = {
                     'click': function(button) {
                         var window = button.findParentByType('window');
                         var formPanel = window.query('form')[0];
+                        var tree = Ext.ComponentQuery.query('#knitkitHostListPanel').first();
 
                         formPanel.getForm().submit({
                             waitMsg: 'Please wait...',
@@ -985,7 +984,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem = {
                                 var obj = Ext.decode(action.response.responseText);
                                 if (obj.success) {
                                     window.close();
-                                    tree.getRootNode().appendChild(obj.node);
+                                    if (tree) tree.getRootNode().appendChild(obj.node);
                                 } else {
                                     Ext.Msg.alert("Error", obj.msg);
                                 }
@@ -1008,6 +1007,31 @@ Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem = {
     }
 };
 
+Compass.ErpApp.Desktop.Applications.Knitkit.availableHosts = {
+    text: 'Available Hosts',
+    iconCls: 'icon-document',
+    handler: function() {
+        Ext.create('Ext.window.Window', {
+            title: 'Available Hosts',
+            modal: true,
+            buttonAlign: 'center',
+            width: 300,
+            height: 300,
+            items: [{
+                xtype: 'knitkit_hostspanel',
+                id: 'knitkitHostListPanel',
+                itemId: 'knitkitHostListPanel'
+            }],
+            buttons: [{
+                text: 'Close',
+                handler: function(btn) {
+                    btn.up('window').close();
+                }
+            }]
+        }).show();
+    }
+}
+
 Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu = function() {
     return {
         text: 'Hosts',
@@ -1017,7 +1041,7 @@ Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu = function() {
         menu: {
             xtype: 'menu',
             items: [
-                Compass.ErpApp.Desktop.Applications.Knitkit.newHostMenuItem
+                Compass.ErpApp.Desktop.Applications.Knitkit.availableHosts
             ]
         }
     };
