@@ -67,10 +67,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel", 
 
         var themePanel = Ext.ComponentQuery.query('#themesTreePanel').first();
         themePanel.selectWebsite(website);
-
-        var menuPanel = Ext.ComponentQuery.query('#knitkitMenuTreePanel').first();
-        menuPanel.selectWebsite(website);
-
     },
 
     clearWebsite: function() {
@@ -79,10 +75,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel", 
 
         var themePanel = Ext.ComponentQuery.query('#themesTreePanel').first();
         themePanel.clearWebsite();
-
-        var menuPanel = Ext.ComponentQuery.query('#knitkitMenuTreePanel').first();
-        menuPanel.clearWebsite();
-
     },
 
     initComponent: function() {
@@ -108,15 +100,7 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit.SiteStructureTabPanel", 
 
         });
 
-        var menuPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Menus and Navigation',
-            autoScroll: true,
-            items: [{
-                xtype: 'knitkit_menutreepanel'
-            }]
-        });
-
-        this.items = [siteContentsPanel, themesPanel, menuPanel];
+        this.items = [siteContentsPanel, themesPanel];
 
         this.dockedItems = [{
             xtype: 'toolbar',

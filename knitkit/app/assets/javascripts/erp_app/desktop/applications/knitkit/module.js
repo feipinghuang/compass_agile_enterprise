@@ -77,7 +77,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
         };
 
         menuBar.down('#themeMenuItem').enable();
-        menuBar.down('#navigationMenuItem').enable();
         menuBar.down('#hostsMenuItem').enable();
         menuBar.down('#sectionsPagesMenuItem').enable();
         menuBar.down('#deleteWebsiteMenuItem').enable();
@@ -109,7 +108,6 @@ Ext.define("Compass.ErpApp.Desktop.Applications.Knitkit", {
                             Compass.ErpApp.Desktop.Applications.Knitkit.ArticlesMenu(),
                             Compass.ErpApp.Desktop.Applications.Knitkit.SectionsMenu(),
                             Compass.ErpApp.Desktop.Applications.Knitkit.ThemeMenu(),
-                            Compass.ErpApp.Desktop.Applications.Knitkit.NavigationMenu(),
                             Compass.ErpApp.Desktop.Applications.Knitkit.HostsMenu(),
                         ]
                     }
