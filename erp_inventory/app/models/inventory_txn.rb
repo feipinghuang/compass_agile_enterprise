@@ -36,6 +36,25 @@ class InventoryTxn < ActiveRecord::Base
   after_create :update_inventory_available!
   before_destroy :unapply!, :revert_inventory_available!
 
+  class << self
+    # Filter records
+    #
+    # @param filters [Hash] a hash of filters to be applied,
+    # @param statement [ActiveRecord::Relation] the query being built
+    # @return [ActiveRecord::Relation] the query being built
+    def apply_filters(filters, statement=nil)
+      unless statement
+        statement = InventoryTxn
+      end
+
+      if filters[:id]
+        statement = statement.where(id: filters[:id])
+      end
+
+      statement
+    end
+  end
+
   # Update number_available on InventoryEntry.
   #
   def update_inventory_available!
@@ -108,5 +127,23 @@ class InventoryTxn < ActiveRecord::Base
       self.save!
     end
   end
+
+  def to_data_hash
+    data = to_hash(only: [
+                       :id,
+                       :quantity,
+                       :acutal_quantity,
+                       :comments,
+                       :applied,
+                       :applied_at
+                   ],
+                   fixed_asset: fixed_asset.description,
+                   product_description: inventory_entry.description)
+
+
+
+    data
+  end
+
 
 end
